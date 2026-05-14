@@ -1,0 +1,112 @@
+P3 DEVELOPMENT PARTNERS LLC
+DATA RETENTION POLICY
+Effective Date: April 1, 2026
+www.trusteaseusa.com
+support@trusteaseusa.com  |  privacy@trusteaseusa.com
+1. Purpose and Scope
+This Data Retention Policy describes how P3 Development Partners LLC retains, archives, and disposes of personal and operational data collected through the Platform. This Policy applies to all data collected, processed, and stored by the Platform, including data provided by users, data retrieved through Plaid, and data generated through Platform operations.
+The purposes of this Policy are to: (a) define retention periods for each data category based on legal requirements, regulatory guidance, and operational necessity; (b) ensure compliance with applicable laws including CCPA/CPRA, Virginia CDPA, Colorado CPA, Connecticut CTDPA, HIPAA, and applicable financial data regulations; (c) minimize data storage consistent with the principle of data minimization; (d) establish clear procedures for data disposal; and (e) support user rights to data deletion.
+2. Data Retention Schedule
+Data Category
+Retention Period
+Justification
+Disposal Method
+User Account Data (name, email, password hash, phone)
+Account + 30 days
+Service delivery; account management
+Secure DB deletion; hash overwrite
+Beneficiary Profiles (name, DOB, SSN, address)
+Account + 7 years
+SSA record-keeping; benefits disputes; HIPAA
+Encrypted archive → cryptographic erasure
+Program Enrollment Records
+Account + 7 years
+Benefits compliance audit trail; SSA reporting
+Encrypted archive → secure deletion
+Income Records
+Account + 7 years
+IRS retention guidelines; SSA income verification
+Encrypted archive → secure deletion
+Asset Records
+Account + 7 years
+SSI resource compliance; Medicaid look-back
+Encrypted archive → secure deletion
+Bank Transactions (Plaid)
+60 months
+Medicaid 60-month look-back; SSI/SSDI compliance
+Automated purge via DB TTL index
+Daily Balance Snapshots
+60 months
+Peak daily balance review; state compliance
+Automated purge via DB TTL index
+Plaid Access Tokens
+Until disconnection/deletion
+Required for ongoing bank connectivity
+Token revocation via Plaid API + encrypted deletion
+AI Chat History
+90 days (auto TTL)
+Service quality; context continuity; privacy
+Automated deletion via MongoDB TTL index
+Uploaded Documents
+Account + 7 years
+Benefits verification; HIPAA medical records
+File-system overwrite (DoD 5220.22-M)
+Alert Records
+24 months
+Compliance monitoring audit trail
+Automated purge
+Audit Logs
+7 years
+Regulatory compliance; HIPAA; security investigation
+Encrypted archive → cryptographic erasure
+Consent Records
+Account + 7 years
+Legal proof of consent; regulatory compliance
+Encrypted archive → secure deletion
+Server & Application Logs
+90 days
+Debugging; security monitoring; performance
+Automated log rotation and deletion
+Analytics Data (aggregated)
+Indefinite (anonymized)
+Product improvement; irreversibly de-identified
+N/A — fully anonymized, non-reversible
+3. Special Retention Considerations
+3.1 Medicaid Look-Back Period
+Many states impose a Medicaid look-back period of up to sixty (60) months for asset transfers. To support users through this compliance window, financial records including bank transactions and balance snapshots are retained for sixty (60) months. Full asset and income records are retained for seven (7) years post-account to cover the most stringent look-back requirements.
+3.2 SSA Reporting and Overpayment Recovery
+The Social Security Administration may pursue overpayment recovery for SSI and SSDI benefits for extended periods. Beneficiary profile data, income records, and program enrollment data are retained for seven (7) years following account termination to support users in responding to overpayment claims and administrative appeals.
+3.3 HIPAA Compliance
+To the extent TrustEase processes Protected Health Information (PHI), we maintain compliance with HIPAA's minimum retention requirement of six (6) years from the date of creation or last effective date. Our seven-year retention schedule for uploaded documents and beneficiary records meets or exceeds this requirement. PHI is subject to the same encryption, access controls, and secure disposal methods outlined in this Policy.
+3.4 Legal Hold
+Notwithstanding the retention periods above, data subject to a legal hold, litigation, regulatory investigation, or government audit will be retained for the duration of the hold, regardless of whether the standard retention period has expired. Legal holds take precedence over routine deletion schedules and user deletion requests. Users will be notified when their data is subject to a legal hold, to the extent permitted by law.
+3.5 Plaid Data and Bank Account Disconnection
+Upon disconnection of a bank account: (a) the Plaid access token is immediately revoked through the Plaid API and deleted from our database within 24 hours; (b) no new data is retrieved from the disconnected account; (c) historical transaction data and balance snapshots remain subject to the retention periods in Section 2 to support ongoing compliance obligations. Users may request deletion of historical transaction data by contacting privacy@trusteaseusa.com.
+4. Data Deletion Procedures
+4.1 User-Initiated Deletion
+Users may request deletion of their account and associated data by contacting privacy@trusteaseusa.com or through account settings. We require confirmation from the account email address or authentication through the Platform. Upon receiving a verified deletion request:
+Active Plaid connections are disconnected and tokens revoked within 24 hours.
+User account credentials and session data are deleted within 30 days.
+AI chat history is immediately marked for deletion (effective within 24 hours).
+Data subject to regulatory retention periods is moved to an encrypted archive accessible only to authorized compliance personnel.
+Archived data is permanently deleted upon expiration of the applicable retention period.
+We will confirm completion of the deletion process via email within 45 days of the request.
+4.2 Automated Deletion
+MongoDB TTL Indexes: AI chat history is automatically deleted 90 days after the last interaction.
+Scheduled Purge Jobs: Bank transactions older than 60 months, alert records older than 24 months, and server logs older than 90 days are purged through scheduled background jobs.
+Inactive Account Handling: Accounts inactive for 36 consecutive months receive reactivation notices. If no response is received within 60 days, the account is marked for deactivation and data is archived per the retention schedule.
+4.3 Disposal Methods
+Cryptographic Erasure: Encryption keys are destroyed, rendering data permanently unrecoverable. Used for archived beneficiary profiles, program enrollment records, income records, asset records, and consent records.
+Secure Database Deletion: Database records are deleted and storage space overwritten to prevent recovery. Used for user account data, Plaid tokens, and alert records.
+File System Overwrite: Uploaded documents are deleted using DoD 5220.22-M or equivalent standards to prevent forensic recovery.
+Log Rotation: Application and server logs are rotated and overwritten on the defined schedule.
+5. Data Anonymization
+Analytics data designated for indefinite retention has undergone irreversible de-identification meeting or exceeding the CCPA standard for de-identified information. Our anonymization process includes: removal of all direct identifiers; aggregation of data to prevent individual re-identification; suppression of rare or unique data points that could enable re-identification; and technical and administrative safeguards to prevent re-identification. We conduct periodic re-identification risk assessments to ensure anonymized data remains de-identified.
+6. Third-Party Data Processors
+TrustEase engages the following categories of third-party service providers with access to user data: cloud infrastructure providers; Plaid, Inc. for bank account connectivity; customer support tools; and analytics and monitoring services (processing only de-identified or aggregated data). All processors are bound by data protection agreements requiring compliance with this Policy and applicable privacy laws. A complete list of active processors is available upon request at privacy@trusteaseusa.com.
+7. Exceptions to Standard Retention
+Data may be retained beyond standard retention periods when: (a) subject to active or anticipated litigation, legal claims, or regulatory proceedings; (b) subject to ongoing law enforcement investigations or government audits; (c) contractual obligations require extended retention; (d) data has been fully anonymized per Section 5; or (e) as backup and disaster recovery copies, which are overwritten on a rolling schedule not to exceed 90 days beyond the primary retention period.
+8. Policy Governance and Contact
+This Policy is reviewed at least annually and updated as necessary. Material changes will be communicated to users through email or in-Platform notifications. The Chief Privacy Officer is responsible for implementation and enforcement. All personnel with access to user data receive annual training on data retention obligations, secure data handling, and HIPAA compliance.
+Contact: privacy@trusteaseusa.com | P3 Development Partners LLC | www.trusteaseusa.com
+© 2026 P3 Development Partners LLC All rights reserved.

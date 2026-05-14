@@ -1,0 +1,116 @@
+<h2 class="sr-only">CliffSense onboarding complete screen with setup summary and next-step suggestions</h2>
+
+<style>
+.m365 { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #faf9f8; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; }
+.m365 .topbar { background: #2b5797; height: 48px; display: flex; align-items: center; padding: 0 16px; gap: 16px; color: #fff; }
+.m365 .brand { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+.m365 .brand-mark { display: inline-grid; grid-template-columns: 8px 8px; grid-template-rows: 8px 8px; gap: 1px; }
+.m365 .brand-mark span { display: block; }
+.m365 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 16px; }
+.m365 .avatar { width: 28px; height: 28px; border-radius: 50%; background: #c19c00; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+.m365 .main { padding: 36px 32px 28px; max-width: 720px; margin: 0 auto; }
+.m365 .hero { text-align: center; margin-bottom: 28px; }
+.m365 .check-circle { width: 64px; height: 64px; border-radius: 50%; background: #dff6dd; color: #107c10; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 16px; }
+.m365 .hero-title { font-size: 26px; font-weight: 500; color: #201f1e; margin: 0 0 6px; }
+.m365 .hero-sub { font-size: 14px; color: #605e5c; line-height: 1.6; max-width: 460px; margin: 0 auto; }
+.m365 .summary-card { background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; padding: 18px 20px; margin-bottom: 22px; }
+.m365 .summary-title { font-size: 13px; font-weight: 500; color: #201f1e; margin-bottom: 12px; }
+.m365 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.m365 .summary-cell { display: flex; gap: 10px; align-items: flex-start; }
+.m365 .summary-cell i { font-size: 20px; color: #2b5797; flex-shrink: 0; margin-top: 1px; }
+.m365 .summary-cell .label { font-size: 11px; color: #605e5c; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.m365 .summary-cell .value { font-size: 13px; font-weight: 500; color: #201f1e; line-height: 1.4; }
+.m365 .next-label { font-size: 14px; font-weight: 500; color: #201f1e; margin: 0 0 12px; }
+.m365 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.m365 .next-card { background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; padding: 16px; cursor: pointer; }
+.m365 .next-card:hover { border-color: #2b5797; }
+.m365 .next-icon { width: 36px; height: 36px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+.m365 .next-icon.a { background: #deecf9; color: #2b5797; }
+.m365 .next-icon.b { background: #fff4ce; color: #797673; }
+.m365 .next-icon.c { background: #dff6dd; color: #107c10; }
+.m365 .next-icon.d { background: #fde7e9; color: #a4262c; }
+.m365 .next-title { font-size: 14px; font-weight: 500; color: #201f1e; margin-bottom: 4px; }
+.m365 .next-desc { font-size: 12px; color: #605e5c; line-height: 1.5; }
+.m365 .cta-row { display: flex; justify-content: center; gap: 10px; padding-top: 16px; border-top: 0.5px solid #edebe9; }
+.m365 .btn-primary { background: #2b5797; color: #fff; border: none; padding: 10px 28px; border-radius: 2px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.m365 .btn-primary:hover { background: #1f4373; }
+.m365 .btn-primary i { font-size: 16px; }
+.m365 .btn-secondary { background: #fff; color: #201f1e; border: 0.5px solid #8a8886; padding: 10px 22px; border-radius: 2px; font-size: 14px; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.m365 .btn-secondary:hover { background: #f3f2f1; }
+.m365 .disclaimer-foot { font-size: 11px; color: #a19f9d; text-align: center; line-height: 1.5; max-width: 560px; margin: 18px auto 0; }
+</style>
+
+<div class="m365">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span><span style="background:#f25022"></span></span>
+      CliffSense
+    </div>
+    <div class="topbar-right">
+      <i class="ti ti-bell" aria-hidden="true"></i>
+      <i class="ti ti-settings" aria-hidden="true"></i>
+      <div class="avatar">MR</div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="hero">
+      <div class="check-circle"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <h1 class="hero-title">You're all set, Maya.</h1>
+      <p class="hero-sub">We're syncing your transactions now. You'll see your full dashboard in just a moment — and we'll email you whenever something needs your attention.</p>
+    </div>
+    <div class="summary-card">
+      <div class="summary-title">Your setup at a glance</div>
+      <div class="summary-grid">
+        <div class="summary-cell">
+          <i class="ti ti-building-bank" aria-hidden="true"></i>
+          <div>
+            <div class="label">Bank</div>
+            <div class="value">Chase ••4582<br>Ally ••9013</div>
+          </div>
+        </div>
+        <div class="summary-cell">
+          <i class="ti ti-target" aria-hidden="true"></i>
+          <div>
+            <div class="label">Programs</div>
+            <div class="value">SSI · SSDI<br>SNAP · Medicaid</div>
+          </div>
+        </div>
+        <div class="summary-cell">
+          <i class="ti ti-bell" aria-hidden="true"></i>
+          <div>
+            <div class="label">Notifications</div>
+            <div class="value">Daily digest<br>maya.r@example.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="next-label">A few things you might want to do next</div>
+    <div class="next-grid">
+      <div class="next-card">
+        <div class="next-icon a"><i class="ti ti-repeat" aria-hidden="true"></i></div>
+        <div class="next-title">Review detected income</div>
+        <div class="next-desc">We've found 3 recurring deposits. Confirm what's earned income vs. a benefit payment so alerts are accurate.</div>
+      </div>
+      <div class="next-card">
+        <div class="next-icon b"><i class="ti ti-target" aria-hidden="true"></i></div>
+        <div class="next-title">Add a custom limit</div>
+        <div class="next-desc">Set your own threshold — like "warn me if my balance goes above $1,800" — for extra peace of mind.</div>
+      </div>
+      <div class="next-card">
+        <div class="next-icon c"><i class="ti ti-folder" aria-hidden="true"></i></div>
+        <div class="next-title">Upload an award letter</div>
+        <div class="next-desc">Save your SSI award letter or eligibility notice to your vault for safekeeping and easy reference.</div>
+      </div>
+      <div class="next-card">
+        <div class="next-icon d"><i class="ti ti-message-circle" aria-hidden="true"></i></div>
+        <div class="next-title">Ask the advisor a question</div>
+        <div class="next-desc">Curious how a raise might affect your benefits? Ask our AI advisor for a general explanation.</div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <button class="btn-secondary"><i class="ti ti-player-play" aria-hidden="true"></i>Take a 2-min tour</button>
+      <button class="btn-primary">Go to my dashboard<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+    </div>
+    <div class="disclaimer-foot">CliffSense is an informational monitoring tool. It is not a substitute for a benefits counselor, attorney, or your local SSA office. Always verify decisions about your benefits with an authoritative source.</div>
+  </div>
+</div>

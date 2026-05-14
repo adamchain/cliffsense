@@ -1,0 +1,106 @@
+P3 DEVELOPMENT PARTNERS LLC
+PRIVACY POLICY
+Effective Date: April 1, 2026
+www.trusteaseusa.com
+support@trusteaseusa.com  |  privacy@trusteaseusa.com
+1. Introduction and Scope
+P3 Development Partners LLC ("TrustEase", "we", "us", or "our") is committed to protecting the privacy of individuals who use the TrustEase Platform. This Privacy Policy explains how we collect, use, disclose, and protect personal information and financial data in connection with the Platform. It applies to all users, including Beneficiaries and Advisors, and to all data collected through the Platform, including data retrieved via our Plaid integration.
+This Policy is designed to comply with applicable federal and state privacy laws, including the CCPA/CPRA, Virginia CDPA, Colorado CPA, Connecticut CTDPA, HIPAA, COPPA, and the Gramm-Leach-Bliley Act (GLBA) to the extent applicable.
+2. Information We Collect
+2.1 Information You Provide Directly
+Account Registration Data: Name, email address, password (hashed), phone number, account type (Beneficiary or Advisor).
+Beneficiary Profile Data: Social Security Number (SSN), date of birth, address, state of residence, disability documentation, and other information necessary for benefits monitoring.
+Financial Information: Income details, asset information, and financial records entered manually into the Platform.
+Uploaded Documents: Benefits-related documents, medical records, correspondence with government agencies, and other files uploaded for storage and verification.
+Communications: Messages sent to our support team and AI chat history generated through use of the Benefits Advisor.
+Advisor Authorization Documents: Powers of attorney, guardianship orders, representative payee designations, and other legal instruments establishing authority.
+2.2 Information Retrieved Through Plaid
+When you connect a bank account through our Plaid integration, we retrieve and process the following financial data on your behalf:
+Account information: Institution name, account type, masked account number, masked routing number;
+Real-time and historical account balances;
+Transaction history: Merchant names, amounts, categories, dates, and descriptions;
+Periodic balance snapshots for compliance monitoring purposes.
+We access this data using Plaid's tokenized access model. We do NOT store your financial institution login credentials. Plaid processes your credentials and issues us a secure access token. You may revoke our access to your bank account at any time by disconnecting the account through the Platform or by contacting Plaid directly.
+2.3 Automatically Collected Information
+Device and browser information (type, operating system, browser version);
+IP address and approximate geographic location;
+Platform usage data, clickstream data, and feature interactions;
+Error logs and performance metrics;
+Session tokens and cookies used for authentication and security.
+2.4 Information from Third Parties
+We may receive information from third-party service providers used in connection with Platform operations. We do not purchase personal information from data brokers.
+3. How We Use Your Information
+We use the information we collect for the following purposes:
+Service Delivery: To provide, maintain, and improve Platform features, including compliance monitoring, alert generation, AI guidance, and document management.
+Plaid Integration Operations: To establish and maintain connections with your financial institutions, retrieve authorized financial data, and synchronize account information.
+Compliance Monitoring: To calculate benefits compliance metrics, assess risk against program-specific eligibility thresholds, and generate compliance reports.
+Communications: To send alerts, notifications, account-related messages, and, with your consent, marketing communications.
+AI Personalization: To provide personalized AI-generated guidance based on your specific benefits profile using de-identified and aggregated data for model improvement.
+Security and Fraud Prevention: To detect, investigate, and prevent unauthorized access, fraudulent activity, or other illegal conduct.
+Legal Compliance: To comply with applicable laws, regulations, subpoenas, court orders, and government agency requests.
+Analytics: To analyze anonymized usage patterns to improve Platform performance and user experience.
+4. Legal Basis for Processing
+Contract Performance: Processing necessary to provide the Platform services you have requested.
+Legal Obligation: Processing required to comply with federal and state laws, including HIPAA, SSA requirements, Medicaid regulations, and applicable privacy laws.
+Legitimate Interests: Processing for security monitoring, fraud prevention, and product improvement, balanced against your privacy rights.
+Consent: Processing for which you have provided express consent, including connecting bank accounts through Plaid.
+5. How We Share Your Information
+5.1 With Service Providers
+We share personal information with third-party service providers subject to data protection agreements that restrict use to specified purposes and require compliance with applicable privacy laws:
+Plaid, Inc.: For bank account connectivity and financial data retrieval. Plaid's use of your data is governed by Plaid's Privacy Policy at https://plaid.com/legal.
+Cloud Infrastructure Providers: For hosting, data storage, and computing services (data stored within the United States).
+AI Service Providers: For natural language processing and AI feature operations, using de-identified or aggregated data where feasible.
+Customer Support Tools: For managing support tickets and user communications.
+Payment Processors: For processing subscription fees.
+5.2 With Advisors
+If you are a Beneficiary who has authorized an Advisor, that Advisor will have access to your benefits profile, financial data, compliance assessments, and other information associated with your account as authorized by you.
+5.3 Legal Disclosures
+We may disclose personal information: (a) in response to valid legal process including subpoenas, court orders, or government agency requests; (b) to protect the rights, property, or safety of TrustEase, our users, or others; (c) in connection with investigations of suspected fraud or illegal activity; (d) in connection with a merger, acquisition, or sale of all or substantially all of our assets, with notice to affected users.
+5.4 What We Do Not Do
+We do NOT sell your personal information.
+We do NOT share your financial data with advertisers or data brokers.
+We do NOT disclose PHI for marketing purposes.
+We do NOT provide your financial institution credentials to any party other than Plaid.
+6. Plaid-Specific Privacy Disclosures
+Authorized Access: By connecting a bank account, you expressly authorize TrustEase and Plaid to access the financial data described in Section 2.2 for the purposes of benefits compliance monitoring.
+Tokenized Access: Plaid issues TrustEase a secure access token. We do not store your bank login credentials. The access token is encrypted at rest.
+Revocation: You may disconnect your bank account at any time. Upon disconnection, we revoke the Plaid access token within 24 hours. Historical transaction data is retained per our Data Retention Policy.
+Plaid's Privacy Practices: TrustEase does not control Plaid's data practices. Review Plaid's End User Privacy Policy at https://plaid.com/legal before connecting your account.
+No Secondary Use: We do not use financial data retrieved through Plaid for any purpose other than providing the benefits compliance monitoring services.
+Data Minimization: We access only the financial data reasonably necessary to provide the compliance monitoring services described herein.
+7. Your Privacy Rights
+Depending on your state of residence, you may have the following rights:
+Right to Know / Access: Request information about the categories and specific pieces of personal information we have collected about you.
+Right to Delete: Request deletion of your personal information, subject to legal and regulatory retention requirements.
+Right to Correct: Request correction of inaccurate personal information.
+Right to Portability: Receive your personal information in a portable format.
+Right to Opt-Out of Sale: We do not sell personal information; this right is not applicable.
+Right to Non-Discrimination: We will not discriminate against you for exercising your privacy rights.
+HIPAA Rights: If we process your PHI, you have the right to access, amend, and receive an accounting of disclosures of your PHI.
+To exercise any of these rights, submit a request to privacy@trusteaseusa.com. We will verify your identity before processing the request and respond within the timeframes required by applicable law (generally 30–45 days).
+8. Data Security
+We implement comprehensive technical and organizational security measures to protect your personal and financial information. Key security measures include:
+Encryption of all personal and financial data in transit using TLS 1.2 or higher;
+Encryption of all personal and financial data at rest using AES-256 or equivalent;
+Plaid access tokens stored in encrypted fields, never in plaintext;
+Role-based access controls limiting employee access to personal data;
+Multi-factor authentication for all administrative access;
+Regular security audits, penetration testing, and vulnerability assessments;
+Incident response procedures for timely detection and notification of security breaches.
+9. Data Retention
+We retain personal information for the periods specified in our Data Retention Policy. In general, we retain data only as long as necessary to provide Platform services, comply with legal obligations, resolve disputes, and enforce agreements. Upon expiration of applicable retention periods, data is deleted or destroyed using secure disposal methods.
+10. Cookies and Tracking Technologies
+We use cookies and similar tracking technologies to operate and improve the Platform:
+Strictly Necessary Cookies: Required for Platform operation, authentication, and security. Cannot be disabled.
+Functional Cookies: Used to remember your preferences and settings.
+Analytics Cookies: Used to analyze Platform usage in aggregated, anonymized form.
+We do not use tracking technologies for advertising or behavioral profiling. You may configure your browser to reject non-essential cookies, but doing so may affect Platform functionality.
+11. Data Location
+All user data is stored on servers located within the United States. We do not transfer personal data outside the United States except as necessary to provide Platform services through vetted third-party processors with adequate data protection safeguards.
+12. Changes to This Privacy Policy
+We may update this Privacy Policy periodically to reflect changes in our data practices, applicable laws, or Platform features. Material changes will be communicated through email notification or in-Platform alerts at least thirty (30) days before taking effect.
+13. Contact Us — Privacy Inquiries
+Chief Privacy Officer: privacy@trusteaseusa.com
+General Inquiries: support@trusteaseusa.com
+P3 Development Partners LLC | www.trusteaseusa.com
+© 2026 P3 Development Partners LLC All rights reserved.

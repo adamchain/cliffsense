@@ -1,0 +1,128 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity/log-activity";
+
+export const runtime = "nodejs";
+
+const messageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(4000),
+});
+
+const bodySchema = z.object({
+  messages: z.array(messageSchema).min(1).max(40),
+});
+
+const SYSTEM_PROMPT = `You are CliffSense Advisor, an informational assistant that helps people understand US public-benefit programs (SSI, SSDI, SNAP, Medicaid, Section 8, TANF, WIC, LIHEAP, ACA, VA, ABLE) and how the CliffSense app surfaces thresholds, recurring income, and alerts.
+
+Ground rules (every response):
+- You are NOT a lawyer, financial advisor, tax professional, or benefits counselor.
+- You do NOT make eligibility determinations. For final answers, the user must contact the relevant agency or a qualified benefits counselor.
+- Cite general program rules in plain language. When state or year matters, say so and recommend the user verify with their state agency.
+- If a question is outside benefits or CliffSense product help, gently redirect.
+- Keep answers concise (3-6 short paragraphs or a tight bulleted list). Use everyday language.
+- Never invent specific dollar amounts or limits — refer the user to the Limits screen or the program's official rules.
+
+When the user asks about CliffSense features, you can describe: limits, alerts (predictive / breach / trend), recurring income detection, the file vault, and exports.`;
+
+function reqEnv(name: string): string | null {
+  const v = process.env[name];
+  return v && v.trim() !== "" ? v : null;
+}
+
+export async function POST(req: Request) {
+  const apiKey = reqEnv("ANTHROPIC_API_KEY");
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        error: "Advisor not configured",
+        details: "Set ANTHROPIC_API_KEY in the environment to enable the advisor.",
+      },
+      { status: 503 },
+    );
+  }
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const json = await req.json().catch(() => ({}));
+  const parsed = bodySchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  const model = reqEnv("ANTHROPIC_MODEL") ?? "claude-sonnet-4-6";
+  const maxTokens = Number(reqEnv("ANTHROPIC_MAX_TOKENS") ?? "1024");
+
+  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: Number.isFinite(maxTokens) ? maxTokens : 1024,
+      system: [
+        {
+          type: "text",
+          text: SYSTEM_PROMPT,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: parsed.data.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+    }),
+  }).catch((e: Error) => {
+    console.error("advisor upstream fetch failed", e);
+    return null;
+  });
+
+  if (!upstream) {
+    return NextResponse.json({ error: "Advisor unreachable" }, { status: 502 });
+  }
+  if (!upstream.ok) {
+    const text = await upstream.text().catch(() => "");
+    console.error("advisor upstream non-2xx", upstream.status, text.slice(0, 500));
+    return NextResponse.json(
+      { error: "Advisor failed", details: `Upstream status ${upstream.status}` },
+      { status: 502 },
+    );
+  }
+  const data = (await upstream.json().catch(() => ({}))) as {
+    content?: { type: string; text?: string }[];
+    usage?: {
+      input_tokens?: number;
+      output_tokens?: number;
+      cache_creation_input_tokens?: number;
+      cache_read_input_tokens?: number;
+    };
+  };
+  const reply = (data.content ?? [])
+    .filter((c) => c.type === "text" && typeof c.text === "string")
+    .map((c) => c.text!)
+    .join("\n")
+    .trim();
+
+  const lastUser = parsed.data.messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
+  await logActivity({
+    userId: session.user.id,
+    category: "advisor",
+    action: "advisor.message",
+    details: {
+      model,
+      promptChars: lastUser.length,
+      replyChars: reply.length,
+      inputTokens: data.usage?.input_tokens ?? null,
+      outputTokens: data.usage?.output_tokens ?? null,
+      cacheReadTokens: data.usage?.cache_read_input_tokens ?? null,
+      cacheCreateTokens: data.usage?.cache_creation_input_tokens ?? null,
+    },
+  });
+
+  return NextResponse.json({ reply });
+}

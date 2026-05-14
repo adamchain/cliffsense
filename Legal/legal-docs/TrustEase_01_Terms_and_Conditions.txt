@@ -1,0 +1,144 @@
+P3 DEVELOPMENT PARTNERS LLC
+TERMS AND CONDITIONS OF SERVICE
+Effective Date: April 1, 2026
+www.trusteaseusa.com
+support@trusteaseusa.com  |  privacy@trusteaseusa.com
+PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY BEFORE USING THE TRUSTEASE PLATFORM. BY ACCESSING OR USING THE PLATFORM, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY THESE TERMS. IF YOU DO NOT AGREE, DO NOT ACCESS OR USE THE PLATFORM.
+1. Definitions
+In these Terms, the following definitions apply unless the context requires otherwise:
+"Advisor"
+means an individual authorized by a Beneficiary or appointed through a legal instrument (power of attorney, guardianship order, or representative payee designation) to access and manage the Beneficiary's information on the Platform.
+"Beneficiary"
+means an individual who is a current or prospective recipient of government benefits programs including, but not limited to, Supplemental Security Income (SSI), Social Security Disability Insurance (SSDI), Disabled Adult Child (DAC) benefits, Medicare, Medicaid, Supplemental Nutrition Assistance Program (SNAP), and Qualified Medicare Beneficiary (QMB) programs.
+"Financial Data"
+means bank account information, transaction histories, account balances, income records, asset records, and any other financial information accessed through Plaid integration or manually entered into the Platform.
+"Linked Account"
+means a bank or financial account connected to the Platform through the Plaid integration service.
+"Platform"
+means the TrustEase web application, mobile application, API endpoints, AI-powered Benefits Advisor, and all related services, tools, and features provided by P3 Development Partners LLC
+"Plaid"
+means Plaid Inc., the third-party financial data aggregation service integrated into the Platform to facilitate bank account connectivity, balance monitoring, and transaction data retrieval. Plaid is a registered financial data service operating under applicable federal and state regulations.
+"Protected Health Information" or "PHI"
+means individually identifiable health information as defined under HIPAA, including information related to Medicare, Medicaid, medical conditions, diagnoses, treatments, and healthcare services.
+"User," "you," or "your"
+means any individual or entity that accesses or uses the Platform in any capacity, including Beneficiaries, Advisors, and other authorized users.
+"We," "us," "our," or "Company"
+means P3 Development Partners LLC, operator of the TrustEase Platform.
+2. Acceptance of Terms
+2.1 Agreement to Terms
+By creating an account, accessing, or using the Platform in any manner, you represent and warrant that you have read, understood, and agree to be bound by these Terms, our Privacy Policy, Data Retention Policy, Security Policy, and Plaid Integration Disclosure, each incorporated herein by reference. If you are using the Platform on behalf of a Beneficiary as an Advisor, you represent and warrant that you have the legal authority to bind such Beneficiary to these Terms.
+2.2 Eligibility
+To use the Platform, you must: (a) be at least 18 years of age or the age of legal majority in your jurisdiction, whichever is greater; (b) have the legal capacity to enter into a binding agreement; (c) not be prohibited from using the Platform under applicable law; and (d) if acting as an Advisor, possess valid legal authorization to act on behalf of the Beneficiary.
+2.3 Modifications to Terms
+We reserve the right to modify these Terms at any time. Material changes will be communicated through email notification, in-Platform alerts, or prominent posting at least thirty (30) days prior to taking effect. Your continued use of the Platform after the effective date constitutes acceptance of the updated Terms.
+3. Account Registration and Security
+3.1 Account Creation
+To access most Platform features, you must create an account by providing accurate, current, and complete registration information, including your full legal name, email address, and a secure password.
+3.2 Advisor Accounts
+If you register as an Advisor, you must provide your relationship to the Beneficiary and their identifying information. You represent and warrant that you have obtained all necessary legal authorizations, consents, and permissions to access and manage the Beneficiary's financial and benefits information.
+3.3 Account Security
+You are solely responsible for maintaining the confidentiality of your account credentials. You agree to: (a) create a strong password of at least eight (8) characters; (b) not share credentials with unauthorized persons; (c) notify us immediately at support@trusteaseusa.com of any unauthorized access or security breach; and (d) properly log out when using shared or public devices.
+3.4 Multi-Factor Authentication
+We strongly recommend enabling multi-factor authentication (MFA) for all accounts. We reserve the right to require MFA for accounts handling sensitive benefits information.
+4. Description of Services
+4.1 Platform Overview
+The TrustEase Platform is an AI-powered benefits protection and compliance monitoring tool designed to assist individuals with disabilities and their authorized representatives. Services include:
+Benefits Compliance Monitoring: Real-time tracking of income, assets, and financial transactions against program-specific eligibility thresholds for SSI, SSDI, DAC, Medicare, Medicaid, SNAP, QMB, and other programs.
+Bank Account Integration: Connection to financial institutions through Plaid for automated balance monitoring, transaction categorization, and financial data synchronization.
+AI-Powered Benefits Advisor: An artificial intelligence chatbot providing personalized guidance on benefits compliance, program rules, reporting obligations, and risk mitigation strategies.
+Alert System: Automated notifications when financial activity approaches or exceeds program thresholds, when reporting deadlines are imminent, or when regulatory changes may affect benefits.
+Document Management: Upload, storage, and AI-powered text extraction of benefits-related documents.
+Compliance Dashboard: Visual dashboards displaying risk indicators for each enrolled program, historical balance tracking, income analysis, and compliance status summaries.
+Benefits News: Aggregation of regulatory updates, policy changes, and news relevant to government benefits programs.
+4.2 Plaid Integration — Authorized Data Access
+The Platform integrates with Plaid to facilitate secure connectivity with your financial institutions. By connecting a bank account through Plaid, you expressly authorize the Platform and Plaid to: access your account information; retrieve transaction history; perform periodic balance checks and synchronization; and maintain an encrypted persistent connection for ongoing monitoring. We do not sell or share your financial data retrieved through Plaid with any third party except as required to provide Platform services or as required by law.
+4.3 AI-Powered Features — Critical Disclaimers
+IMPORTANT: The Platform's Benefits Advisor and other AI features utilize artificial intelligence and machine learning. AI may produce inaccurate, incomplete, outdated, or contradictory information. Platform output does NOT constitute legal, financial, tax, or government agency guidance. Verify all AI-generated recommendations with qualified professionals before making benefits-affecting decisions.
+5. Not Professional Advice
+TRUSTEASE IS NOT A LAW FIRM, ACCOUNTING FIRM, FINANCIAL ADVISORY FIRM, OR LICENSED BENEFITS COUNSELING SERVICE. Nothing on the Platform constitutes legal, financial, tax, accounting, or professional benefits counseling advice. No attorney-client, accountant-client, or fiduciary relationship is created between you and P3 Development Partners LLC by your use of the Platform.
+You should consult qualified attorneys, certified public accountants, financial advisors, licensed benefits specialists, or government agency representatives for personalized guidance, particularly when: making decisions affecting benefits eligibility; responding to government agency inquiries or overpayment notices; establishing special needs trusts; filing appeals; planning significant financial transactions; or navigating complex tax implications.
+6. Fees, Billing, and Payment Terms
+6.1 Subscription Plans
+TrustEase offers various subscription plans. Current pricing is available at https://www.trusteaseusa.com/pricing. We reserve the right to modify pricing with at least sixty (60) days advance notice to existing subscribers.
+6.2 Free Trial
+We may offer free trial periods for new users. At the conclusion of a free trial, your subscription will automatically convert to a paid plan unless you cancel before the trial end date.
+6.3 Billing
+Subscription fees are billed in advance on a monthly or annual basis. All fees are non-refundable except as required by applicable law. You authorize us to charge your designated payment method for all applicable fees.
+6.4 Cancellation
+You may cancel your subscription at any time through account settings or by contacting support@trusteaseusa.com. Cancellation takes effect at the end of the then-current billing period.
+7. Privacy and Data Protection
+Our collection, use, storage, and sharing of your personal and financial information is governed by our Privacy Policy, incorporated into these Terms by reference. Key commitments: we do not sell your personal information; we do not share financial data with advertisers or data brokers; we use Plaid's tokenized access model and never store your financial institution login credentials; all data is encrypted in transit and at rest.
+8. HIPAA Compliance
+To the extent TrustEase processes Protected Health Information (PHI), we maintain compliance with HIPAA and HITECH, implementing the administrative, physical, and technical safeguards required by the HIPAA Security Rule. PHI is processed only to the minimum extent necessary. We do not use PHI for marketing or advertising purposes.
+9. Children's Privacy (COPPA)
+9.1 Children Under 18
+We do not knowingly collect personal information directly from children under 18 without verifiable parental or guardian consent.
+9.2 Advisors Managing Minor Beneficiaries
+Parents, legal guardians, and authorized representatives may use the Platform to manage benefits information for minor Beneficiaries, representing that they have legal authority to act on behalf of the minor and consent to the collection and processing of the minor's information.
+9.3 COPPA Compliance
+For accounts managed on behalf of minor Beneficiaries, we comply with COPPA by: collecting only information necessary for benefits monitoring; obtaining verifiable parental/guardian consent; allowing parents/guardians to review, delete, or refuse further collection of the minor's information; and maintaining reasonable security procedures. Contact privacy@trusteaseusa.com to exercise these rights.
+10. Records Retention and Your Documentation Obligations
+IMPORTANT: The Platform's data retention periods may be shorter than government record-keeping requirements. You should maintain your own independent records. Do not rely solely on the Platform for long-term record-keeping.
+Government benefits programs require beneficiaries to retain financial records for extended periods. SSA may audit eligibility for up to 10 years in fraud cases; Medicaid programs have 5-year look-back periods; benefits appeals can take 2–3 years or longer. Use the Platform's data export tools to regularly back up your information.
+11. Government Cooperation and Legal Process
+11.1 Compliance with Legal Obligations
+We will comply with valid subpoenas, court orders, and other legal process issued by federal or state courts, the SSA, CMS, state Medicaid agencies, or other government entities. When legally permitted, we will attempt to provide you with advance notice of such requests.
+11.2 Fraud Investigations
+If we reasonably suspect fraudulent activity or violations of law, we reserve the right to report such suspicions to appropriate government authorities. We will not be liable for such reports made in good faith.
+12. Mandatory Reporting
+If TrustEase personnel or Platform users become aware of suspected abuse, neglect, or financial exploitation of a Beneficiary, we reserve the right—and may in some circumstances have a legal obligation—to report such concerns to Adult Protective Services, Child Protective Services, law enforcement, or other appropriate authorities.
+13. Emergency Resources
+The Platform is a benefits monitoring tool and is not designed for emergency assistance. If you need immediate help:
+Emergency Services: Call 911
+National Suicide Prevention Lifeline: Call or text 988
+Social Security Administration: 1-800-772-1213 (TTY: 1-800-325-0778)
+Disability Rights: Contact your state's Protection & Advocacy organization
+Adult Protective Services: Contact your state or county APS hotline
+WIPA / PABSS Programs: Free benefits counseling through your state
+14. Acceptable Use and Prohibited Conduct
+You agree not to:
+Violate any applicable federal, state, or local law or regulation;
+Use the Platform to commit benefits fraud or assist others in doing so;
+Access or attempt to access accounts or data belonging to other users;
+Reverse engineer, decompile, or attempt to extract source code from the Platform;
+Interfere with or disrupt the Platform or its security features;
+Use automated systems to access the Platform without our written permission;
+Provide false, inaccurate, or misleading information;
+Impersonate any person or entity or misrepresent your relationship to any person or entity.
+15. Intellectual Property Rights
+The Platform, including all software, technology, content, graphics, user interface, and documentation, is owned by P3 Development Partners LLC and protected by United States and international intellectual property laws. These Terms grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Platform solely for personal, non-commercial benefits monitoring purposes. All rights not expressly granted are reserved.
+16. User Content and Data Ownership
+You retain ownership of all data, information, and documents you upload to or create through the Platform. By submitting User Content, you grant us a worldwide, non-exclusive, royalty-free license to use, store, process, and display such content solely for the purpose of providing Platform services to you. This license terminates when you delete the content or close your account, subject to our Data Retention Policy.
+17. Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL P3 DEVELOPMENT PARTNERS LLC, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, AFFILIATES, SUCCESSORS, OR ASSIGNS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO: (A) LOSS OF GOVERNMENT BENEFITS OR ELIGIBILITY; (B) FINANCIAL LOSSES ARISING FROM RELIANCE ON PLATFORM GUIDANCE; (C) PENALTIES, OVERPAYMENTS, OR RECOVERY DEMANDS FROM GOVERNMENT AGENCIES; (D) LOSS OF DATA OR UNAUTHORIZED ACCESS TO YOUR FINANCIAL DATA; OR (E) INTERRUPTION OR DISRUPTION OF PLATFORM SERVICES. OUR TOTAL AGGREGATE LIABILITY SHALL NOT EXCEED THE GREATER OF (A) FEES PAID DURING THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED UNITED STATES DOLLARS ($100.00).
+18. Disclaimer of Warranties
+THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, COMPLETENESS, OR RELIABILITY. WE DO NOT WARRANT THAT THE PLATFORM WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE, OR THAT AI GUIDANCE, COMPLIANCE ASSESSMENTS, OR ALERTS WILL MEET YOUR EXPECTATIONS.
+19. Indemnification
+You agree to indemnify, defend, and hold harmless P3 Development Partners LLC and its officers, directors, employees, agents, affiliates, successors, and assigns from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising from: (a) your use of or access to the Platform; (b) your violation of these Terms; (c) your violation of any applicable law or regulation; (d) your provision of inaccurate or incomplete information; (e) infringement of third-party rights; or (f) unauthorized access to the Platform through your account.
+20. Termination
+20.1 Termination by You
+You may terminate your account at any time by contacting support@trusteaseusa.com or through account settings. Upon termination, your right to access the Platform will cease immediately.
+20.2 Termination by Us
+We may suspend or terminate your access at any time for: (a) violation of these Terms; (b) fraudulent, abusive, or illegal activity; (c) extended periods of inactivity; (d) requests by law enforcement or government agencies; or (e) discontinuation of the Platform.
+20.3 Survival
+Sections 5, 7, 8, 11, 12, 14, 15, 16, 17, 18, 19, 21, and 22 survive termination of these Terms.
+21. Dispute Resolution
+21.1 Informal Resolution
+Before initiating any formal dispute resolution proceeding, you agree to first contact us at support@trusteaseusa.com and attempt informal resolution for at least sixty (60) days.
+21.2 Binding Arbitration
+If the dispute cannot be resolved informally, you agree that any dispute, controversy, or claim arising out of or relating to these Terms shall be settled by binding arbitration administered by the American Arbitration Association (AAA) under its Commercial Arbitration Rules, conducted by a single arbitrator in Wilmington, Delaware.
+21.3 Class Action Waiver
+YOU AND THE COMPANY AGREE THAT EACH PARTY MAY BRING CLAIMS ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY, AND NOT AS A PLAINTIFF OR CLASS MEMBER IN ANY PURPORTED CLASS OR REPRESENTATIVE PROCEEDING.
+21.4 Exceptions
+Either party may seek injunctive or equitable relief in a court of competent jurisdiction to prevent actual or threatened infringement of intellectual property rights.
+22. Governing Law and Jurisdiction
+These Terms shall be governed by the laws of the State of Delaware, without regard to conflict of law provisions. You agree to submit to the exclusive personal jurisdiction of the state and federal courts located in Wilmington, Delaware for any permitted court proceedings.
+23. General Provisions
+These Terms, together with the Privacy Policy, Data Retention Policy, Security Policy, and Plaid Integration Disclosure, constitute the entire agreement between you and the Company with respect to the Platform. If any provision is held invalid or unenforceable, the remaining provisions continue in full force. Our failure to enforce any right or provision shall not constitute a waiver. You may not assign these Terms without our prior written consent. We may assign these Terms without restriction. We are committed to WCAG 2.1 Level AA accessibility standards; contact accessibility@trusteaseusa.com for accessibility support.
+24. Contact Information
+P3 Development Partners LLC
+Email: support@trusteaseusa.com
+Privacy Inquiries: privacy@trusteaseusa.com
+Accessibility Support: accessibility@trusteaseusa.com
+Website: https://www.trusteaseusa.com
+© 2026 P3 Development Partners LLC All rights reserved.

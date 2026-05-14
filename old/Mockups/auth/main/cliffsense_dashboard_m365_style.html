@@ -1,0 +1,245 @@
+<h2 class="sr-only">CliffSense dashboard in Microsoft 365 Fluent style showing benefit threshold status, alerts, and account summary</h2>
+
+<style>
+.m365 { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #faf9f8; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; }
+.m365 .topbar { background: #2b5797; height: 48px; display: flex; align-items: center; padding: 0 16px; gap: 16px; color: #fff; }
+.m365 .brand { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+.m365 .brand-mark { display: inline-grid; grid-template-columns: 8px 8px; grid-template-rows: 8px 8px; gap: 1px; }
+.m365 .brand-mark span { display: block; }
+.m365 .search { flex: 1; max-width: 460px; height: 30px; background: rgba(255,255,255,0.18); border-radius: 4px; display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.85); }
+.m365 .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 16px; }
+.m365 .avatar { width: 28px; height: 28px; border-radius: 50%; background: #c19c00; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+.m365 .body { display: flex; min-height: 540px; }
+.m365 .leftnav { width: 56px; background: #fff; border-right: 0.5px solid #edebe9; display: flex; flex-direction: column; padding: 8px 0; gap: 4px; }
+.m365 .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; font-size: 10px; color: #605e5c; cursor: pointer; border-left: 2px solid transparent; }
+.m365 .nav-item i { font-size: 18px; margin-bottom: 2px; }
+.m365 .nav-item.active { color: #2b5797; border-left-color: #2b5797; background: #f3f2f1; }
+.m365 .nav-item:hover:not(.active) { background: #f3f2f1; }
+.m365 .main { flex: 1; padding: 16px 20px; min-width: 0; }
+.m365 .breadcrumb { font-size: 12px; color: #605e5c; margin-bottom: 4px; }
+.m365 .pagetitle { font-size: 20px; font-weight: 500; color: #201f1e; margin: 0 0 14px; }
+.m365 .toolbar { display: flex; gap: 4px; padding: 6px 8px; background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; margin-bottom: 14px; align-items: center; font-size: 13px; }
+.m365 .tbtn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; color: #323130; border-radius: 2px; cursor: pointer; }
+.m365 .tbtn:hover { background: #f3f2f1; }
+.m365 .tbtn i { font-size: 16px; }
+.m365 .tbtn.primary { color: #2b5797; }
+.m365 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.m365 .card { background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; padding: 14px 16px; }
+.m365 .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.m365 .card-title { font-size: 14px; font-weight: 500; color: #201f1e; }
+.m365 .card-action { font-size: 12px; color: #2b5797; cursor: pointer; }
+.m365 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.m365 .stat { padding: 10px 12px; background: #faf9f8; border-radius: 4px; }
+.m365 .stat-label { font-size: 11px; color: #605e5c; margin-bottom: 4px; }
+.m365 .stat-value { font-size: 18px; font-weight: 500; color: #201f1e; }
+.m365 .stat-sub { font-size: 11px; color: #605e5c; margin-top: 2px; }
+.m365 .threshold-item { padding: 10px 0; border-bottom: 0.5px solid #edebe9; }
+.m365 .threshold-item:last-child { border-bottom: none; }
+.m365 .threshold-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.m365 .threshold-name { font-size: 13px; font-weight: 500; color: #201f1e; }
+.m365 .threshold-amount { font-size: 12px; color: #605e5c; font-variant-numeric: tabular-nums; }
+.m365 .bar { height: 4px; background: #edebe9; border-radius: 2px; overflow: hidden; }
+.m365 .bar-fill { height: 100%; border-radius: 2px; }
+.m365 .bar-fill.ok { background: #107c10; }
+.m365 .bar-fill.warn { background: #ca5010; }
+.m365 .bar-fill.danger { background: #a4262c; }
+.m365 .threshold-foot { display: flex; justify-content: space-between; font-size: 11px; color: #605e5c; margin-top: 4px; }
+.m365 .alert-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid #edebe9; align-items: flex-start; }
+.m365 .alert-item:last-child { border-bottom: none; }
+.m365 .alert-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.m365 .alert-icon.danger { background: #fde7e9; color: #a4262c; }
+.m365 .alert-icon.warn { background: #fed9cc; color: #ca5010; }
+.m365 .alert-icon.info { background: #deecf9; color: #2b5797; }
+.m365 .alert-body { flex: 1; min-width: 0; }
+.m365 .alert-title { font-size: 13px; color: #201f1e; font-weight: 500; margin-bottom: 2px; }
+.m365 .alert-desc { font-size: 12px; color: #605e5c; line-height: 1.4; }
+.m365 .alert-time { font-size: 11px; color: #a19f9d; margin-top: 4px; }
+.m365 .full { grid-column: 1 / -1; }
+.m365 .accounts { display: flex; flex-direction: column; gap: 4px; }
+.m365 .account-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; }
+.m365 .account-row .left { display: flex; align-items: center; gap: 10px; }
+.m365 .bank-logo { width: 28px; height: 28px; border-radius: 4px; background: #2b5797; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+.m365 .account-name { color: #201f1e; }
+.m365 .account-mask { color: #605e5c; font-size: 11px; }
+.m365 .account-balance { font-weight: 500; color: #201f1e; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="m365">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span><span style="background:#f25022"></span></span>
+      CliffSense
+    </div>
+    <div class="search"><i class="ti ti-search" aria-hidden="true"></i>Search transactions, alerts, documents</div>
+    <div class="topbar-right">
+      <i class="ti ti-bell" aria-hidden="true"></i>
+      <i class="ti ti-settings" aria-hidden="true"></i>
+      <i class="ti ti-help" aria-hidden="true"></i>
+      <div class="avatar">MR</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="leftnav">
+      <div class="nav-item active"><i class="ti ti-home" aria-hidden="true"></i>Home</div>
+      <div class="nav-item"><i class="ti ti-list-details" aria-hidden="true"></i>Transactions</div>
+      <div class="nav-item"><i class="ti ti-repeat" aria-hidden="true"></i>Recurring</div>
+      <div class="nav-item"><i class="ti ti-target" aria-hidden="true"></i>Limits</div>
+      <div class="nav-item"><i class="ti ti-bell" aria-hidden="true"></i>Alerts</div>
+      <div class="nav-item"><i class="ti ti-folder" aria-hidden="true"></i>Vault</div>
+      <div class="nav-item"><i class="ti ti-file-export" aria-hidden="true"></i>Reports</div>
+      <div class="nav-item"><i class="ti ti-message-circle" aria-hidden="true"></i>Advisor</div>
+    </div>
+    <div class="main">
+      <div class="breadcrumb">Home › Dashboard</div>
+      <h1 class="pagetitle">Good morning, Maya</h1>
+      <div class="toolbar">
+        <div class="tbtn primary"><i class="ti ti-plus" aria-hidden="true"></i>Add limit</div>
+        <div class="tbtn"><i class="ti ti-building-bank" aria-hidden="true"></i>Connect bank</div>
+        <div class="tbtn"><i class="ti ti-refresh" aria-hidden="true"></i>Sync now</div>
+        <div class="tbtn"><i class="ti ti-download" aria-hidden="true"></i>Export</div>
+      </div>
+      <div class="grid">
+        <div class="card full">
+          <div class="card-head">
+            <div class="card-title">This month at a glance</div>
+            <div class="card-action">View details</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat-label">Earned income</div>
+              <div class="stat-value">$1,284</div>
+              <div class="stat-sub">79% of SGA limit</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Asset balance</div>
+              <div class="stat-value">$1,840</div>
+              <div class="stat-sub">92% of SSI limit</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Active alerts</div>
+              <div class="stat-value">3</div>
+              <div class="stat-sub">1 requires action</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Threshold status</div>
+            <div class="card-action">All limits</div>
+          </div>
+          <div class="threshold-item">
+            <div class="threshold-head">
+              <div class="threshold-name">SSI resource limit</div>
+              <div class="threshold-amount">$1,840 / $2,000</div>
+            </div>
+            <div class="bar"><div class="bar-fill danger" style="width: 92%;"></div></div>
+            <div class="threshold-foot"><span>Asset balance</span><span style="color:#a4262c">$160 to limit</span></div>
+          </div>
+          <div class="threshold-item">
+            <div class="threshold-head">
+              <div class="threshold-name">SSDI substantial gainful activity</div>
+              <div class="threshold-amount">$1,284 / $1,620</div>
+            </div>
+            <div class="bar"><div class="bar-fill warn" style="width: 79%;"></div></div>
+            <div class="threshold-foot"><span>Monthly earned</span><span>$336 to limit</span></div>
+          </div>
+          <div class="threshold-item">
+            <div class="threshold-head">
+              <div class="threshold-name">SNAP gross income</div>
+              <div class="threshold-amount">$640 / $1,632</div>
+            </div>
+            <div class="bar"><div class="bar-fill ok" style="width: 39%;"></div></div>
+            <div class="threshold-foot"><span>Household of 1</span><span>$992 to limit</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Recent alerts</div>
+            <div class="card-action">View all</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon danger"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+            <div class="alert-body">
+              <div class="alert-title">Asset balance approaching SSI limit</div>
+              <div class="alert-desc">Your checking + savings is $1,840. Limit is $2,000.</div>
+              <div class="alert-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon warn"><i class="ti ti-trending-up" aria-hidden="true"></i></div>
+            <div class="alert-body">
+              <div class="alert-title">Income trend may exceed SGA</div>
+              <div class="alert-desc">At current pace, monthly earnings project to $1,712.</div>
+              <div class="alert-time">Yesterday</div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon info"><i class="ti ti-info-circle" aria-hidden="true"></i></div>
+            <div class="alert-body">
+              <div class="alert-title">New recurring deposit detected</div>
+              <div class="alert-desc">$430 from "ACME Payroll" — categorize as earned income?</div>
+              <div class="alert-time">2 days ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Connected accounts</div>
+            <div class="card-action">Manage</div>
+          </div>
+          <div class="accounts">
+            <div class="account-row">
+              <div class="left">
+                <div class="bank-logo">CH</div>
+                <div>
+                  <div class="account-name">Chase checking</div>
+                  <div class="account-mask">•••• 4582</div>
+                </div>
+              </div>
+              <div class="account-balance">$1,402.18</div>
+            </div>
+            <div class="account-row">
+              <div class="left">
+                <div class="bank-logo" style="background:#107c10">AL</div>
+                <div>
+                  <div class="account-name">Ally savings</div>
+                  <div class="account-mask">•••• 9013</div>
+                </div>
+              </div>
+              <div class="account-balance">$438.04</div>
+            </div>
+            <div class="account-row">
+              <div class="left">
+                <div class="bank-logo" style="background:#a4262c">CA</div>
+                <div>
+                  <div class="account-name">Capital One 360</div>
+                  <div class="account-mask">•••• 2247</div>
+                </div>
+              </div>
+              <div class="account-balance">$0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Programs enrolled</div>
+            <div class="card-action">Update</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; padding-top: 4px;">
+            <span style="font-size:12px; padding: 4px 10px; background:#deecf9; color:#2b5797; border-radius: 12px;">SSI</span>
+            <span style="font-size:12px; padding: 4px 10px; background:#deecf9; color:#2b5797; border-radius: 12px;">SSDI</span>
+            <span style="font-size:12px; padding: 4px 10px; background:#deecf9; color:#2b5797; border-radius: 12px;">SNAP</span>
+            <span style="font-size:12px; padding: 4px 10px; background:#deecf9; color:#2b5797; border-radius: 12px;">Medicaid</span>
+          </div>
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 0.5px solid #edebe9; font-size: 12px; color: #605e5c; line-height: 1.5;">
+            Limits and rules update annually. Last refreshed Jan 2026.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-cs-brand: #2b5797;
+  --color-cs-brand-hover: #1f4373;
+  --color-cs-surface: #faf9f8;
+  --color-cs-card: #ffffff;
+  --color-cs-border: #edebe9;
+  --color-cs-text: #201f1e;
+  --color-cs-text-secondary: #605e5c;
+  --color-cs-text-muted: #a19f9d;
+  --color-cs-success: #107c10;
+  --color-cs-warning: #ca5010;
+  --color-cs-danger: #a4262c;
+  --color-cs-info: #2b5797;
+  --color-cs-success-bg: #dff6dd;
+  --color-cs-warning-bg: #fed9cc;
+  --color-cs-danger-bg: #fde7e9;
+  --color-cs-info-bg: #deecf9;
+  --color-cs-nav-hover: #f3f2f1;
+  --color-cs-input-border: #8a8886;
+  --color-cs-input-bottom: #605e5c;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  background: var(--color-cs-surface);
+  color: var(--color-cs-text);
+}
+
+/* Subtle auth loading (signup / sign-in) */
+@keyframes cs-auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cs-auth-bar {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.35;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(320%);
+    opacity: 0.35;
+  }
+}
+
+.cs-auth-spinner {
+  animation: cs-auth-spin 0.95s cubic-bezier(0.5, 0.1, 0.3, 0.9) infinite;
+}
+
+.cs-auth-bar-track {
+  position: relative;
+  overflow: hidden;
+}
+
+.cs-auth-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 38%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent 0%, #2b5797 50%, #1f4373 100%);
+  animation: cs-auth-bar 1.25s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-auth-spinner,
+  .cs-auth-bar-fill {
+    animation: none !important;
+  }
+}

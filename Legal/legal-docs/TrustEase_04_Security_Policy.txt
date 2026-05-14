@@ -1,0 +1,70 @@
+P3 DEVELOPMENT PARTNERS LLC
+SECURITY POLICY
+Effective Date: April 1, 2026
+www.trusteaseusa.com
+support@trusteaseusa.com  |  privacy@trusteaseusa.com
+1. Overview and Security Commitment
+P3 Development Partners LLC is committed to protecting the security, confidentiality, integrity, and availability of user data, including sensitive financial information, Protected Health Information (PHI), and benefits-related data. This Security Policy describes the administrative, technical, and physical safeguards we implement to protect user information and maintain compliance with applicable security requirements, including the HIPAA Security Rule, applicable state data security laws, and Plaid's security requirements for integration partners.
+Our security program is aligned with industry-recognized frameworks including the NIST Cybersecurity Framework (CSF) and applicable provisions of NIST Special Publications 800-53 and 800-171. We regularly review and update our security practices to address evolving threats and regulatory requirements.
+2. Data Encryption
+2.1 Encryption in Transit
+All data transmitted between users and the Platform, and between Platform components and third-party services (including Plaid), is encrypted using Transport Layer Security (TLS) version 1.2 or higher. We enforce HTTPS for all Platform connections and implement HTTP Strict Transport Security (HSTS) to prevent protocol downgrade attacks. Outdated or insecure TLS versions and cipher suites are disabled.
+2.2 Encryption at Rest
+All personal information, financial data, and PHI stored by the Platform is encrypted at rest using AES-256 encryption or equivalent standards. Database-level encryption is implemented for all primary and backup data stores. Plaid access tokens are stored in encrypted fields and are never stored in plaintext. Encryption keys are managed using a dedicated key management service with strict access controls, key rotation policies, and audit logging.
+3. Access Controls
+3.1 Role-Based Access Control (RBAC)
+Access to user data is restricted to authorized personnel based on the principle of least privilege. We implement role-based access control (RBAC) to ensure employees and systems can only access the data necessary to perform their authorized functions. Access permissions are reviewed quarterly and revoked upon termination or role change.
+3.2 Multi-Factor Authentication
+Multi-factor authentication (MFA) is required for all administrative and privileged access to production systems and data stores. MFA is strongly recommended for all user accounts and may be required for accounts handling particularly sensitive benefits information.
+3.3 Administrative Access
+Administrative access to production systems is restricted to a limited number of authorized personnel. All administrative access is logged and monitored for anomalous activity. Remote administrative access is conducted through encrypted VPN connections with MFA. Privileged access management (PAM) tools are used to control and audit privileged operations.
+4. Infrastructure Security
+4.1 Cloud Security
+The Platform is hosted on cloud infrastructure providers that maintain SOC 2 Type II, ISO 27001, and other relevant security certifications. We implement network segmentation, virtual private cloud (VPC) configurations, and security groups to isolate production environments and restrict network access.
+4.2 Vulnerability Management
+We conduct regular vulnerability assessments and penetration testing of Platform infrastructure, applications, and APIs, at minimum annually and following significant changes. Critical and high-severity vulnerabilities are remediated within 30 days; medium-severity vulnerabilities within 90 days. Security patches for operating systems and dependencies are applied promptly.
+4.3 Intrusion Detection and Monitoring
+We implement continuous security monitoring, including intrusion detection and prevention systems (IDS/IPS), security information and event management (SIEM) tools, and automated alerting for suspicious activity. Logs from all Platform components are collected, retained, and reviewed for security events.
+5. Application Security
+5.1 Secure Development Lifecycle
+Security is integrated throughout our software development lifecycle (SDLC). We implement code review practices, static application security testing (SAST), dynamic application security testing (DAST), and dependency vulnerability scanning as part of our development and deployment processes.
+5.2 API Security
+All Platform APIs implement authentication using secure tokens, rate limiting, input validation, and output encoding to prevent injection attacks, unauthorized access, and abuse. API endpoints are protected against common vulnerabilities including those identified in the OWASP API Security Top 10.
+5.3 Plaid Integration Security
+Our Plaid integration is implemented using Plaid's recommended security architecture: (a) Plaid Link handles all credential entry — user credentials are entered directly into Plaid's interface and are never transmitted to or stored by TrustEase; (b) access tokens are stored encrypted and associated only with specific user accounts; (c) webhook endpoints are authenticated using Plaid's signature verification; (d) Plaid connections are operated with the minimum necessary data scopes.
+6. Physical Security
+Physical access to systems that process or store user data is restricted through the physical security controls of our cloud infrastructure providers, which include biometric access controls, surveillance systems, and on-site security personnel at data center facilities. TrustEase employees do not have direct physical access to production infrastructure. Remote work security policies require use of encrypted devices, VPN, and MFA for all access to production systems.
+7. Employee Security
+7.1 Background Checks
+All employees and contractors with access to user data undergo background screening as a condition of employment or engagement, consistent with applicable law.
+7.2 Security Training
+All personnel receive security awareness training at onboarding and annually thereafter, covering: data handling obligations, phishing and social engineering recognition, password security, incident reporting, HIPAA compliance (where applicable), and secure remote work practices.
+7.3 Confidentiality Obligations
+All employees and contractors with access to user data are bound by confidentiality obligations and non-disclosure agreements as conditions of their engagement.
+8. Incident Response
+8.1 Incident Detection and Response
+We maintain a formal incident response plan for detecting, investigating, containing, and remediating security incidents, including unauthorized access to or disclosure of personal information or PHI. Our incident response team is available 24/7 to respond to detected security events.
+8.2 Breach Notification
+In the event of a data breach, we will: (a) notify affected users without unreasonable delay, and within the timeframes required by applicable state breach notification laws (generally 30–72 hours for supervisory authority notification where required, and 30–45 days for individual notification); (b) notify the applicable state attorney general or supervisory authority as required; (c) for breaches involving PHI, comply with the HIPAA Breach Notification Rule requirements, including notification to HHS and, for breaches affecting 500 or more individuals, notification to prominent media outlets in the affected state.
+Breach notifications will include: the nature of the breach; categories of data involved; steps taken to address the breach; recommended actions for affected individuals; and contact information for further assistance.
+9. Business Continuity and Disaster Recovery
+We maintain business continuity and disaster recovery plans to ensure availability of critical Platform services in the event of significant disruptions. Key measures include:
+Regular backups of all critical data, with encrypted backup copies stored in geographically separate locations;
+Backup restoration tested at minimum annually;
+Recovery time objective (RTO) and recovery point objective (RPO) targets established for critical Platform components;
+Failover infrastructure to support service continuity in the event of primary system failure.
+10. Third-Party Security
+All third-party service providers with access to user data are subject to security due diligence before engagement and periodic reassessment. We require vendors to maintain security standards appropriate to the sensitivity of the data they access, demonstrated through SOC 2 reports, ISO 27001 certification, or equivalent. Data protection agreements with all processors include security requirements, breach notification obligations, and audit rights.
+11. User Security Responsibilities
+While TrustEase implements comprehensive security measures, users are responsible for the security of their accounts and devices. Recommended practices:
+Using a strong, unique password for your TrustEase account;
+Enabling multi-factor authentication;
+Not sharing your account credentials with unauthorized persons;
+Logging out of your account when using shared or public devices;
+Promptly notifying us at support@trusteaseusa.com of any suspected unauthorized access;
+Keeping your devices and browsers up-to-date with security patches.
+12. Security Contact
+To report a security vulnerability or incident: security@trusteaseusa.com
+General inquiries: support@trusteaseusa.com
+P3 Development Partners LLC | www.trusteaseusa.com
+© 2026 P3 Development Partners LLC All rights reserved.

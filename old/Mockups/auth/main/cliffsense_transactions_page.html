@@ -1,0 +1,204 @@
+<h2 class="sr-only">CliffSense transactions page in Microsoft 365 Fluent style with filterable table of bank transactions and category tags</h2>
+
+<style>
+.m365 { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: #faf9f8; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; }
+.m365 .topbar { background: #2b5797; height: 48px; display: flex; align-items: center; padding: 0 16px; gap: 16px; color: #fff; }
+.m365 .brand { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+.m365 .brand-mark { display: inline-grid; grid-template-columns: 8px 8px; grid-template-rows: 8px 8px; gap: 1px; }
+.m365 .brand-mark span { display: block; }
+.m365 .search { flex: 1; max-width: 460px; height: 30px; background: rgba(255,255,255,0.18); border-radius: 4px; display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.85); }
+.m365 .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 16px; }
+.m365 .avatar { width: 28px; height: 28px; border-radius: 50%; background: #c19c00; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+.m365 .body { display: flex; min-height: 540px; }
+.m365 .leftnav { width: 56px; background: #fff; border-right: 0.5px solid #edebe9; display: flex; flex-direction: column; padding: 8px 0; gap: 4px; }
+.m365 .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; font-size: 10px; color: #605e5c; cursor: pointer; border-left: 2px solid transparent; }
+.m365 .nav-item i { font-size: 18px; margin-bottom: 2px; }
+.m365 .nav-item.active { color: #2b5797; border-left-color: #2b5797; background: #f3f2f1; }
+.m365 .nav-item:hover:not(.active) { background: #f3f2f1; }
+.m365 .main { flex: 1; padding: 16px 20px; min-width: 0; }
+.m365 .breadcrumb { font-size: 12px; color: #605e5c; margin-bottom: 4px; }
+.m365 .pagetitle { font-size: 20px; font-weight: 500; color: #201f1e; margin: 0 0 14px; }
+.m365 .toolbar { display: flex; gap: 4px; padding: 6px 8px; background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; margin-bottom: 14px; align-items: center; font-size: 13px; }
+.m365 .tbtn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; color: #323130; border-radius: 2px; cursor: pointer; }
+.m365 .tbtn:hover { background: #f3f2f1; }
+.m365 .tbtn i { font-size: 16px; }
+.m365 .tbtn.primary { color: #2b5797; }
+.m365 .divider-v { width: 0.5px; height: 20px; background: #edebe9; margin: 0 4px; }
+.m365 .filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.m365 .filter-chip { font-size: 12px; padding: 4px 12px; background: #fff; border: 0.5px solid #edebe9; border-radius: 12px; color: #323130; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.m365 .filter-chip i { font-size: 13px; }
+.m365 .filter-chip.active { background: #deecf9; border-color: #2b5797; color: #2b5797; }
+.m365 .card { background: #fff; border: 0.5px solid #edebe9; border-radius: 4px; overflow: hidden; }
+.m365 table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.m365 th { text-align: left; padding: 8px 12px; background: #faf9f8; color: #605e5c; font-weight: 500; font-size: 11px; border-bottom: 0.5px solid #edebe9; }
+.m365 td { padding: 10px 12px; border-bottom: 0.5px solid #edebe9; vertical-align: middle; color: #201f1e; }
+.m365 tr:last-child td { border-bottom: none; }
+.m365 tr:hover td { background: #faf9f8; }
+.m365 .col-date { width: 90px; }
+.m365 .col-amount { width: 95px; text-align: right; font-variant-numeric: tabular-nums; }
+.m365 .col-cat { width: 140px; }
+.m365 .tx-name { color: #201f1e; }
+.m365 .tx-merch { color: #605e5c; font-size: 11px; margin-top: 2px; }
+.m365 .recurring-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 1px 6px; background: #fff4ce; color: #797673; border-radius: 8px; margin-left: 6px; }
+.m365 .amount-pos { color: #107c10; font-weight: 500; }
+.m365 .amount-neg { color: #201f1e; }
+.m365 .cat-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
+.m365 .cat-earned { background: #dff6dd; color: #107c10; }
+.m365 .cat-benefit { background: #deecf9; color: #2b5797; }
+.m365 .cat-other { background: #f3f2f1; color: #605e5c; }
+.m365 .cat-unclear { background: #fff4ce; color: #797673; }
+.m365 .cat-expense { background: #fafafa; color: #605e5c; }
+.m365 .pagination { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #faf9f8; border-top: 0.5px solid #edebe9; font-size: 12px; color: #605e5c; }
+.m365 .page-controls { display: flex; gap: 4px; }
+.m365 .page-controls i { padding: 4px 6px; cursor: pointer; border-radius: 2px; }
+.m365 .page-controls i:hover { background: #edebe9; }
+</style>
+
+<div class="m365">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span><span style="background:#f25022"></span></span>
+      CliffSense
+    </div>
+    <div class="search"><i class="ti ti-search" aria-hidden="true"></i>Search transactions, alerts, documents</div>
+    <div class="topbar-right">
+      <i class="ti ti-bell" aria-hidden="true"></i>
+      <i class="ti ti-settings" aria-hidden="true"></i>
+      <i class="ti ti-help" aria-hidden="true"></i>
+      <div class="avatar">MR</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="leftnav">
+      <div class="nav-item"><i class="ti ti-home" aria-hidden="true"></i>Home</div>
+      <div class="nav-item active"><i class="ti ti-list-details" aria-hidden="true"></i>Trans</div>
+      <div class="nav-item"><i class="ti ti-repeat" aria-hidden="true"></i>Recurring</div>
+      <div class="nav-item"><i class="ti ti-target" aria-hidden="true"></i>Limits</div>
+      <div class="nav-item"><i class="ti ti-bell" aria-hidden="true"></i>Alerts</div>
+      <div class="nav-item"><i class="ti ti-folder" aria-hidden="true"></i>Vault</div>
+      <div class="nav-item"><i class="ti ti-file-export" aria-hidden="true"></i>Reports</div>
+      <div class="nav-item"><i class="ti ti-message-circle" aria-hidden="true"></i>Advisor</div>
+    </div>
+    <div class="main">
+      <div class="breadcrumb">Home › Transactions</div>
+      <h1 class="pagetitle">Transactions</h1>
+      <div class="toolbar">
+        <div class="tbtn primary"><i class="ti ti-refresh" aria-hidden="true"></i>Sync</div>
+        <div class="divider-v"></div>
+        <div class="tbtn"><i class="ti ti-filter" aria-hidden="true"></i>Filter</div>
+        <div class="tbtn"><i class="ti ti-calendar" aria-hidden="true"></i>This month</div>
+        <div class="tbtn"><i class="ti ti-building-bank" aria-hidden="true"></i>All accounts</div>
+        <div class="divider-v"></div>
+        <div class="tbtn"><i class="ti ti-tag" aria-hidden="true"></i>Categorize</div>
+        <div class="tbtn"><i class="ti ti-download" aria-hidden="true"></i>Export</div>
+      </div>
+      <div class="filters">
+        <span class="filter-chip active">All <i class="ti ti-x" aria-hidden="true"></i></span>
+        <span class="filter-chip">Income</span>
+        <span class="filter-chip">Benefits</span>
+        <span class="filter-chip">Expenses</span>
+        <span class="filter-chip">Recurring only</span>
+        <span class="filter-chip">Needs review (3)</span>
+      </div>
+      <div class="card">
+        <table>
+          <colgroup>
+            <col class="col-date">
+            <col>
+            <col class="col-cat">
+            <col class="col-amount">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th style="text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>May 14</td>
+              <td>
+                <div class="tx-name">ACME Payroll<span class="recurring-badge"><i class="ti ti-repeat" style="font-size:10px"></i>Biweekly</span></div>
+                <div class="tx-merch">ACH deposit • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-earned"><i class="ti ti-briefcase" aria-hidden="true"></i>Earned income</span></td>
+              <td class="col-amount amount-pos">+$642.18</td>
+            </tr>
+            <tr>
+              <td>May 13</td>
+              <td>
+                <div class="tx-name">Walmart Grocery</div>
+                <div class="tx-merch">Debit • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-expense">Groceries</span></td>
+              <td class="col-amount amount-neg">−$84.32</td>
+            </tr>
+            <tr>
+              <td>May 12</td>
+              <td>
+                <div class="tx-name">Social Security Admin<span class="recurring-badge"><i class="ti ti-repeat" style="font-size:10px"></i>Monthly</span></div>
+                <div class="tx-merch">SSI payment • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-benefit"><i class="ti ti-shield-check" aria-hidden="true"></i>Benefit deposit</span></td>
+              <td class="col-amount amount-pos">+$967.00</td>
+            </tr>
+            <tr style="background: #fffbf4;">
+              <td>May 10</td>
+              <td>
+                <div class="tx-name">Side Hustle LLC</div>
+                <div class="tx-merch">Zelle transfer • Capital One ••2247</div>
+              </td>
+              <td><span class="cat-tag cat-unclear"><i class="ti ti-help-circle" aria-hidden="true"></i>Needs review</span></td>
+              <td class="col-amount amount-pos">+$200.00</td>
+            </tr>
+            <tr>
+              <td>May 8</td>
+              <td>
+                <div class="tx-name">Pacific Gas &amp; Electric<span class="recurring-badge"><i class="ti ti-repeat" style="font-size:10px"></i>Monthly</span></div>
+                <div class="tx-merch">Auto-pay • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-expense">Utilities</span></td>
+              <td class="col-amount amount-neg">−$78.40</td>
+            </tr>
+            <tr>
+              <td>May 5</td>
+              <td>
+                <div class="tx-name">Tax refund</div>
+                <div class="tx-merch">IRS TREAS 310 • Ally ••9013</div>
+              </td>
+              <td><span class="cat-tag cat-other">Other income</span></td>
+              <td class="col-amount amount-pos">+$420.00</td>
+            </tr>
+            <tr>
+              <td>May 1</td>
+              <td>
+                <div class="tx-name">Rent<span class="recurring-badge"><i class="ti ti-repeat" style="font-size:10px"></i>Monthly</span></div>
+                <div class="tx-merch">ACH • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-expense">Housing</span></td>
+              <td class="col-amount amount-neg">−$640.00</td>
+            </tr>
+            <tr>
+              <td>Apr 30</td>
+              <td>
+                <div class="tx-name">ACME Payroll<span class="recurring-badge"><i class="ti ti-repeat" style="font-size:10px"></i>Biweekly</span></div>
+                <div class="tx-merch">ACH deposit • Chase ••4582</div>
+              </td>
+              <td><span class="cat-tag cat-earned"><i class="ti ti-briefcase" aria-hidden="true"></i>Earned income</span></td>
+              <td class="col-amount amount-pos">+$642.18</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div>Showing 1–8 of 142 transactions</div>
+          <div class="page-controls">
+            <i class="ti ti-chevron-left" aria-hidden="true"></i>
+            <i class="ti ti-chevron-right" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

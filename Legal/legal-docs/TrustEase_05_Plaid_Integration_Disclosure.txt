@@ -1,0 +1,64 @@
+P3 DEVELOPMENT PARTNERS LLC
+PLAID INTEGRATION DISCLOSURE
+Effective Date: April 1, 2026
+www.trusteaseusa.com
+support@trusteaseusa.com  |  privacy@trusteaseusa.com
+This disclosure is provided in accordance with Plaid's Developer Policy and applicable financial data protection requirements. It describes how P3 Development Partners LLC integrates with Plaid, Inc. to access financial data on your behalf.
+1. What is Plaid?
+Plaid is a financial technology company that provides secure connectivity between users' bank accounts and authorized applications. Plaid's technology enables the TrustEase Platform to access your financial data — including account balances and transaction history — directly from your financial institution, using credentials you enter securely into Plaid's interface.
+Plaid is a registered financial services technology provider operating under applicable federal and state regulations, including the Electronic Fund Transfer Act (EFTA) and Regulation E. Plaid's privacy practices are governed by Plaid's End User Privacy Policy, available at https://plaid.com/legal.
+2. Why TrustEase Uses Plaid
+TrustEase uses Plaid to provide the core financial monitoring features of the Platform, including:
+Real-time and historical bank account balance monitoring for benefits compliance assessment;
+Transaction history retrieval and categorization for income and asset tracking;
+Automated detection of financial events that may affect benefits eligibility;
+Daily balance snapshots for Medicaid look-back compliance and SSI/SSDI resource limit monitoring.
+These services require access to your financial data that can only be obtained through a secure connection to your financial institution. Plaid provides the most secure and reliable method of establishing this connection without requiring you to share your bank login credentials with TrustEase.
+3. How the Plaid Connection Works
+3.1 The Connection Process
+When you choose to connect a bank account, you are presented with Plaid Link — a secure interface developed and operated by Plaid, not TrustEase.
+You enter your financial institution login credentials directly into Plaid Link. TrustEase never sees, receives, or stores your financial institution username or password.
+Plaid authenticates with your financial institution and obtains an access token, which is issued to TrustEase.
+TrustEase stores this access token in encrypted form. The token is used to retrieve your financial data from Plaid on an ongoing basis.
+TrustEase uses the access token to retrieve account information, balances, and transactions as described in this Disclosure.
+3.2 Ongoing Data Retrieval
+After connection, TrustEase uses the Plaid access token to:
+Retrieve your account balance periodically (frequency determined by your monitoring settings);
+Synchronize transaction history, including new transactions since the last sync;
+Generate daily balance snapshots for compliance monitoring;
+Retrieve updated account information as needed.
+4. Data Accessed Through Plaid
+TrustEase accesses the following categories of data through the Plaid integration, with your express authorization:
+Account identity information: Institution name, account name, account type, masked account and routing numbers;
+Account balances: Current and available balances, as well as credit limits for credit accounts;
+Transaction history: Transaction dates, amounts, merchant names, location information, and Plaid-assigned categories;
+Balance snapshots: Point-in-time balance records retained for the periods specified in the Data Retention Policy.
+TrustEase does NOT access: your financial institution login credentials; full account or routing numbers; credit report information; wire transfer initiation capabilities; or any capabilities to move, transfer, or authorize transactions from your accounts. Our Plaid integration is strictly read-only.
+5. User Controls and Revocation
+5.1 Disconnecting Your Account
+You may disconnect a connected bank account at any time by: (a) accessing the Bank Accounts section of your Platform account settings and selecting "Disconnect Account"; or (b) contacting us at support@trusteaseusa.com. Upon disconnection, we revoke the Plaid access token within 24 hours and do not retrieve any new data from the disconnected account.
+5.2 Revoking Access Through Plaid
+You may also revoke TrustEase's access to your financial data directly through Plaid's consumer portal at https://my.plaid.com. Revoking access through Plaid's portal has the same effect as disconnecting through the Platform.
+5.3 Historical Data After Disconnection
+Historical transaction data and balance snapshots retrieved before disconnection are retained for the periods specified in the Data Retention Policy to support ongoing benefits compliance obligations and potential benefits disputes. If you wish to request deletion of this historical data, you may submit a deletion request to privacy@trusteaseusa.com. Deletion requests will be honored to the extent permitted by applicable legal and regulatory requirements.
+6. Plaid's Terms and Privacy Policy
+Your use of the Plaid integration is subject to Plaid's End User Privacy Policy, available at https://plaid.com/legal. By connecting a bank account through the Platform, you acknowledge that you have reviewed and agree to be bound by Plaid's terms. TrustEase does not control Plaid's data practices and is not responsible for Plaid's handling of your data beyond our integration and use of data retrieved through the Plaid API.
+7. Security of the Plaid Integration
+TrustEase's Plaid integration implements Plaid's recommended security architecture:
+Plaid Link handles all credential entry; TrustEase never transmits or receives your bank login credentials;
+Access tokens are stored encrypted at rest and transmitted only over encrypted TLS connections;
+Webhook notifications from Plaid are authenticated using Plaid's signature verification mechanism;
+Our Plaid integration is scoped to the minimum data access necessary for the benefits compliance monitoring services described herein;
+We conduct regular security reviews of our Plaid integration as part of our broader security program.
+8. Consent and Authorization
+By connecting a bank account through the Platform, you: (a) expressly authorize TrustEase and Plaid to access your financial data as described in this Disclosure; (b) acknowledge that you have reviewed and agree to Plaid's End User Privacy Policy; and (c) acknowledge that you may revoke this authorization at any time as described in Section 5.
+Your authorization for us to access your financial data through Plaid is separate from your agreement to TrustEase's Terms of Service. You may disconnect your bank account at any time without terminating your TrustEase account.
+9. Changes to the Plaid Integration
+If we materially change how we use data retrieved through Plaid, we will notify you through email or in-Platform notification and, where required by applicable law or Plaid's Developer Policy, obtain your renewed consent before implementing such changes.
+10. Contact for Plaid-Related Questions
+If you have questions about our use of Plaid or the data we access through the Plaid integration:
+Privacy Team: privacy@trusteaseusa.com
+Support: support@trusteaseusa.com
+Website: www.trusteaseusa.com
+For questions about Plaid's own data practices: privacy@plaid.com | https://plaid.com/legal
+© 2026 P3 Development Partners LLC All rights reserved.
