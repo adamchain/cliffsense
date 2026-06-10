@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { OnboardingStep, OnboardingStepId } from "@/lib/onboarding/steps";
 import { onboardingStepIndex } from "@/lib/onboarding/steps";
+import { OnboardingExitButton } from "@/components/onboarding/onboarding-exit-button";
 
 export function OnboardingProgress({
   steps,
@@ -19,12 +19,7 @@ export function OnboardingProgress({
           <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
             Onboarding · Step {currentIdx + 1} of {total}
           </p>
-          <Link
-            href="/"
-            className="shrink-0 text-[11px] text-[var(--color-cs-brand)] hover:underline md:text-xs"
-          >
-            Exit to home
-          </Link>
+          <OnboardingExitButton />
         </div>
         <div className="flex items-stretch gap-1.5 sm:gap-2" role="list" aria-label="Onboarding progress">
           {steps.map((step, i) => {
