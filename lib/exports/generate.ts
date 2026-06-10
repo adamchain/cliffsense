@@ -4,6 +4,8 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Alert from "@/lib/db/models/Alert";
 import Threshold from "@/lib/db/models/Threshold";
 import ActivityLog from "@/lib/db/models/ActivityLog";
+import { renderReportPdf } from "@/lib/exports/pdf";
+import { buildZip } from "@/lib/exports/zip";
 
 export type Dataset =
   | "transactions"
@@ -266,13 +268,6 @@ export async function generateExport(opts: {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const base = `${opts.dataset}-${stamp}`;
 
-  if (opts.format === "pdf") {
-    throw new Error("PDF format isn't implemented yet — try CSV or JSON for now.");
-  }
-  if (opts.format === "zip") {
-    throw new Error("ZIP bundles aren't implemented yet — try CSV or JSON for now.");
-  }
-
   const collected: Collected[] = [];
   if (opts.dataset === "bundle") {
     for (const d of ["transactions", "recurring", "alerts", "thresholds", "activity"] as const) {
@@ -282,6 +277,43 @@ export async function generateExport(opts: {
     collected.push(
       await collectOne(opts.dataset, opts.userId, benObjectId, opts.fromDate, opts.toDate),
     );
+  }
+
+  const rowCount = collected.reduce((n, c) => n + c.rows.length, 0);
+  const rangeLabel =
+    opts.fromDate || opts.toDate ? `Range ${opts.fromDate || "…"} → ${opts.toDate || "…"}` : "All dates";
+
+  if (opts.format === "pdf") {
+    const sections = collected.map((c) => ({
+      heading: `${c.dataset} — ${c.rows.length} row(s)`,
+      lines: c.rows.length ? rowsToCsv(c.headers, c.rows).split("\n") : ["(no rows)"],
+    }));
+    const buffer = await renderReportPdf(
+      "CliffSense export",
+      `${opts.dataset} · generated ${new Date().toISOString()} · ${rangeLabel}`,
+      sections,
+    );
+    return { buffer, mimeType: "application/pdf", filename: `${base}.pdf`, rowCount };
+  }
+
+  if (opts.format === "zip") {
+    const files: Record<string, string> = {
+      "manifest.txt": [
+        "CliffSense export bundle",
+        `Generated: ${new Date().toISOString()}`,
+        `Dataset: ${opts.dataset}`,
+        rangeLabel,
+        "",
+        ...collected.map((c) => `${c.dataset}: ${c.rows.length} row(s)`),
+        "",
+        "Informational only. CliffSense does not determine eligibility.",
+      ].join("\n"),
+    };
+    for (const c of collected) {
+      files[`${c.dataset}.csv`] = rowsToCsv(c.headers, c.rows);
+      files[`${c.dataset}.json`] = JSON.stringify(c.rows, null, 2);
+    }
+    return { buffer: buildZip(files), mimeType: "application/zip", filename: `${base}.zip`, rowCount };
   }
 
   let text: string;
@@ -309,7 +341,6 @@ export async function generateExport(opts: {
     filename = `${base}.csv`;
   }
 
-  const rowCount = collected.reduce((n, c) => n + c.rows.length, 0);
   return {
     buffer: Buffer.from(text, "utf-8"),
     mimeType,

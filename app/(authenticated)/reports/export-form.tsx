@@ -9,8 +9,8 @@ type Dataset = "transactions" | "recurring" | "alerts" | "thresholds" | "activit
 const FORMATS: { id: Format; label: string; hint: string }[] = [
   { id: "csv", label: "CSV", hint: "Spreadsheet-friendly" },
   { id: "json", label: "JSON", hint: "Machine readable" },
-  { id: "pdf", label: "PDF", hint: "Coming soon" },
-  { id: "zip", label: "ZIP bundle", hint: "Coming soon" },
+  { id: "pdf", label: "PDF", hint: "Printable report" },
+  { id: "zip", label: "ZIP bundle", hint: "CSV + JSON archive" },
 ];
 
 const DATASETS: { id: Dataset; label: string }[] = [
