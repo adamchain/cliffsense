@@ -20,8 +20,14 @@ function matchesState(thresholdState: string | null | undefined, beneficiaryStat
 }
 
 function passesHouseholdRule(systemKey: string | undefined, householdSize: number): boolean {
+  if (!systemKey) return true;
   if (systemKey === "ssi_resources_couple_2025") return householdSize >= 2;
   if (systemKey === "ssi_resources_individual_2025") return householdSize < 2;
+  const snap = /^pa_snap_gross_hh(\d+)_/.exec(systemKey);
+  if (snap) {
+    const n = Number(snap[1]);
+    return n >= 6 ? householdSize >= 6 : householdSize === n;
+  }
   return true;
 }
 
@@ -83,6 +89,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   }
 
   const programs = (beneficiary.benefitsEnrolled ?? []).map((b) => b.program).filter(Boolean);
+  // System threshold `program` is stored uppercase; match case-insensitively.
+  const programKeys = programs.map((p) => String(p).toUpperCase());
   const now = new Date();
   const { prefix, y, m } = utcMonthPrefix(now);
   const monthEnd = endOfUtcMonth(y, m);
@@ -120,7 +128,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     Threshold.find({
       $and: [
         {
-          $or: [{ scope: "system", program: { $in: programs } }, { scope: "user", beneficiaryId }],
+          $or: [{ scope: "system", program: { $in: programKeys } }, { scope: "user", beneficiaryId }],
         },
         { effectiveFrom: { $lte: now } },
         { $or: [{ effectiveTo: null }, { effectiveTo: { $gte: now } }] },
@@ -186,7 +194,11 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         projectedValue = null;
         break;
       default:
-        continue;
+        // Reference-only types (unearned/annual/custom): surfaced in the library
+        // with their limit + source, but not auto-evaluated against a live metric.
+        currentValue = null;
+        projectedValue = null;
+        break;
     }
 
     const limitCents = th.limitCents as number;
