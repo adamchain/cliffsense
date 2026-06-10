@@ -1,66 +1,65 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { BrandMark } from "@/components/brand/brand-mark";
+import { InlineLoginForm } from "@/components/auth/inline-login-form";
 
 export default async function HomePage() {
   const session = await auth();
+
   return (
-    <div className="min-h-screen bg-[var(--color-cs-surface)] text-[var(--color-cs-text)]">
-      <header className="flex h-12 items-center justify-between border-b border-[var(--color-cs-border)] bg-[var(--color-cs-brand)] px-4 text-white">
-        <Link href="/" className="flex items-center gap-2 text-sm font-medium">
-          <BrandMark size="sm" />
-          CliffSense
-        </Link>
-        <nav className="flex items-center gap-3 text-sm">
-          {session ? (
-            <Link href="/dashboard" className="rounded px-2 py-1 hover:bg-white/15">
-              Dashboard
-            </Link>
-          ) : (
-            <>
-              <Link href="/auth/signin" className="rounded px-2 py-1 hover:bg-white/15">
-                Sign in
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="rounded bg-white/15 px-3 py-1 font-medium hover:bg-white/25"
-              >
-                Create account
-              </Link>
-            </>
-          )}
-        </nav>
-      </header>
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-2xl font-medium tracking-tight text-[var(--color-cs-text)]">
-          Stay under the limits that keep your benefits.
-        </h1>
-        <p className="mt-4 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-          CliffSense connects to your bank through Plaid, shows how deposits and balances compare to
-          common program thresholds, and emails you before you approach a limit — so you can plan with
-          your counselor or trustee.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          {!session && (
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center rounded-sm bg-[var(--color-cs-brand)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-            >
-              Get started
-            </Link>
-          )}
-          <Link
-            href="/resources"
-            className="inline-flex items-center rounded-sm border border-[var(--color-cs-input-border)] bg-white px-5 py-2 text-sm text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
-          >
-            Resources
+    <main className="flex min-h-screen items-center bg-[var(--color-cs-surface)] px-6 py-12 text-[var(--color-cs-text)]">
+      <div className="mx-auto grid w-full max-w-5xl items-center gap-12 md:grid-cols-2">
+        {/* Left: brand + value proposition */}
+        <section>
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-cs-brand)]">
+            <BrandMark size="sm" />
+            CliffSense
           </Link>
-        </div>
-        <p className="mt-12 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-          Informational tool only. Not legal, tax, or benefits advice. Thresholds change; always
-          confirm with SSA, your state agency, or a qualified benefits counselor.
-        </p>
-      </main>
-    </div>
+
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[var(--color-cs-text)] sm:text-4xl">
+            Stay under the limits that keep your benefits.
+          </h1>
+
+          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            CliffSense connects to your bank through Plaid, shows how deposits and balances compare to common program
+            thresholds, and emails you before you approach a limit — so you can plan with your counselor or trustee.
+          </p>
+
+          <div className="mt-6">
+            <Link
+              href="/resources"
+              className="inline-flex items-center rounded-sm border border-[var(--color-cs-input-border)] bg-white px-5 py-2 text-sm font-medium text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
+            >
+              Resources
+            </Link>
+          </div>
+
+          <p className="mt-10 max-w-xl text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
+            Informational tool only. Not legal, tax, or benefits advice. Thresholds change; always confirm with SSA,
+            your state agency, or a qualified benefits counselor.
+          </p>
+        </section>
+
+        {/* Right: login (or dashboard hand-off when already signed in) */}
+        <section className="w-full max-w-[400px] justify-self-center md:justify-self-end">
+          {session ? (
+            <div className="w-full rounded-lg border border-[var(--color-cs-border)] bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-medium text-[var(--color-cs-text)]">You&apos;re signed in</h2>
+              <p className="mt-1 text-[13px] text-[var(--color-cs-text-secondary)]">
+                Welcome back. Continue to your dashboard to check threshold status and alerts.
+              </p>
+              <Link
+                href="/dashboard"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-sm bg-[var(--color-cs-brand)] py-2.5 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
+              >
+                Go to dashboard
+              </Link>
+            </div>
+          ) : (
+            <InlineLoginForm />
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
