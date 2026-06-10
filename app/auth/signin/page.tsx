@@ -111,7 +111,7 @@ export default function SignInPage() {
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-xs font-medium text-[#323130]">
               <label htmlFor="password">Password</label>
-              <Link href="#" className="font-normal text-[var(--color-cs-brand)]">
+              <Link href="/auth/forgot" className="font-normal text-[var(--color-cs-brand)]">
                 Forgot?
               </Link>
             </div>

@@ -6,6 +6,7 @@ import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { SettingsForm } from "./settings-form";
 import { SignOutButton } from "./sign-out-button";
+import { DeleteAccountButton } from "./delete-account-button";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -84,9 +85,12 @@ export default async function SettingsPage() {
         <section className="md:col-span-2 rounded border border-[var(--color-cs-danger-bg)] bg-white p-4">
           <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-danger)]">Danger zone</h2>
           <p className="mb-3 text-[12px] text-[var(--color-cs-text-secondary)]">
-            Sign out of this session. Account deletion will be self-service when audit retention is finalized.
+            Sign out of this session, or permanently delete your account and all owned data.
           </p>
-          <SignOutButton />
+          <div className="flex flex-wrap items-center gap-3">
+            <SignOutButton />
+            <DeleteAccountButton />
+          </div>
         </section>
       </div>
     </>

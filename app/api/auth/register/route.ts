@@ -4,6 +4,11 @@ import bcrypt from "bcryptjs";
 import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { issueAuthToken } from "@/lib/auth/tokens";
+import { appUrl, sendEmail, withDisclaimer } from "@/lib/email/mailer";
+
+const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
 function isMongoBadAuth(e: unknown): boolean {
   if (!e || typeof e !== "object") return false;
@@ -20,6 +25,8 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "register", 5, 10 * 60 * 1000);
+  if (limited) return limited;
   try {
     const body = await req.json();
     const parsed = schema.safeParse(body);
@@ -47,6 +54,22 @@ export async function POST(req: Request) {
       action: "account.created",
       details: { accountType },
     });
+
+    // Fire-and-forget email verification (does not block sign-in).
+    try {
+      const token = await issueAuthToken(user._id, "email_verify", EMAIL_VERIFY_TTL_MS);
+      const link = `${appUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your CliffSense email",
+        text: withDisclaimer(
+          `Welcome to CliffSense. Confirm this email address to secure your account:\n${link}\n\nThis link expires in 24 hours.`,
+        ),
+      });
+    } catch (e) {
+      console.warn("verification email failed", e);
+    }
+
     return NextResponse.json({ ok: true, userId: user._id.toString() });
   } catch (e) {
     console.error(e);

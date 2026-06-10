@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { logActivity } from "@/lib/activity/log-activity";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,13 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const rl = rateLimit(`advisor:${session.user.id}`, 20, 5 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "You're sending messages too quickly. Please wait a moment." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } },
+    );
   }
   const json = await req.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(json);
