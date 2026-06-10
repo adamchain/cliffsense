@@ -21,6 +21,63 @@ function genId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+/** Render inline **bold** spans within a line of assistant text. */
+function renderInline(text: string, keyPrefix: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>;
+    }
+    return <span key={`${keyPrefix}-${i}`}>{part}</span>;
+  });
+}
+
+/**
+ * Lightweight markdown renderer for assistant replies — handles paragraphs,
+ * bullet/numbered lists, and inline bold without pulling in a dependency.
+ * The advisor is prompted to answer in short paragraphs or tight bullet lists.
+ */
+function FormattedMessage({ content }: { content: string }) {
+  const blocks = content.trim().split(/\n{2,}/);
+  return (
+    <div className="space-y-2">
+      {blocks.map((block, bi) => {
+        const lines = block.split("\n");
+        const isBulleted = lines.every((l) => /^\s*[-*]\s+/.test(l));
+        const isNumbered = lines.every((l) => /^\s*\d+\.\s+/.test(l));
+        if (isBulleted) {
+          return (
+            <ul key={bi} className="list-disc space-y-1 pl-5">
+              {lines.map((l, li) => (
+                <li key={li}>{renderInline(l.replace(/^\s*[-*]\s+/, ""), `${bi}-${li}`)}</li>
+              ))}
+            </ul>
+          );
+        }
+        if (isNumbered) {
+          return (
+            <ol key={bi} className="list-decimal space-y-1 pl-5">
+              {lines.map((l, li) => (
+                <li key={li}>{renderInline(l.replace(/^\s*\d+\.\s+/, ""), `${bi}-${li}`)}</li>
+              ))}
+            </ol>
+          );
+        }
+        return (
+          <p key={bi}>
+            {lines.map((l, li) => (
+              <span key={li}>
+                {renderInline(l, `${bi}-${li}`)}
+                {li < lines.length - 1 ? <br /> : null}
+              </span>
+            ))}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AdvisorChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -120,13 +177,17 @@ export function AdvisorChat() {
             className={`flex max-w-[80%] flex-col ${m.role === "user" ? "ml-auto items-end" : "items-start"}`}
           >
             <div
-              className={`rounded-md px-3 py-2 leading-relaxed ${
+              className={`rounded-2xl px-3.5 py-2 leading-relaxed ${
                 m.role === "user"
-                  ? "bg-[var(--color-cs-brand)] text-white"
-                  : "bg-[var(--color-cs-surface)] text-[var(--color-cs-text)]"
+                  ? "rounded-br-sm bg-[var(--color-cs-brand)] text-white"
+                  : "rounded-bl-sm border border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)]"
               }`}
             >
-              {m.content}
+              {m.role === "assistant" ? (
+                <FormattedMessage content={m.content} />
+              ) : (
+                <span className="whitespace-pre-wrap">{m.content}</span>
+              )}
             </div>
             <span className="mt-0.5 text-[10px] text-[var(--color-cs-text-muted)]">
               {new Date(m.createdAt).toLocaleTimeString()}
@@ -134,7 +195,13 @@ export function AdvisorChat() {
           </article>
         ))}
         {sending && (
-          <p className="text-[12px] italic text-[var(--color-cs-text-secondary)]">Advisor is thinking…</p>
+          <div className="flex max-w-[80%] items-start">
+            <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-[var(--color-cs-border)] bg-white px-3.5 py-2.5">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)] [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)] [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)]" />
+            </div>
+          </div>
         )}
         {error && <p className="text-[12px] text-[var(--color-cs-danger)]">{error}</p>}
       </div>
