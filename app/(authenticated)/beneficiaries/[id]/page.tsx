@@ -8,6 +8,8 @@ import Threshold from "@/lib/db/models/Threshold";
 import Alert from "@/lib/db/models/Alert";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
+import { getBeneficiaryAccessRole } from "@/lib/beneficiaries/access";
+import { SharingPanel } from "@/components/beneficiaries/sharing-panel";
 
 export default async function BeneficiaryDetailPage({
   params,
@@ -21,7 +23,10 @@ export default async function BeneficiaryDetailPage({
   const { id } = await params;
 
   await connectDB();
-  const ben = await Beneficiary.findOne({ _id: id, ownerUserId: session.user.id }).lean();
+  const role = await getBeneficiaryAccessRole(session.user.id, id);
+  if (!role) notFound();
+  const canManageSharing = role === "owner" || role === "co_manager";
+  const ben = await Beneficiary.findById(id).lean();
   if (!ben) notFound();
 
   const [connections, thresholds, recentAlerts] = await Promise.all([
@@ -179,6 +184,17 @@ export default async function BeneficiaryDetailPage({
             </ul>
           )}
         </section>
+
+        {canManageSharing && (
+          <section className="md:col-span-2 rounded border border-[var(--color-cs-border)] bg-white p-4">
+            <h2 className="mb-1 text-sm font-medium text-[var(--color-cs-text)]">Sharing &amp; access</h2>
+            <p className="mb-3 text-[12px] text-[var(--color-cs-text-secondary)]">
+              Invite family, a co-manager, or an agency caseworker. Viewers are read-only; co-managers can edit. The
+              beneficiary can also be invited to see what you see.
+            </p>
+            <SharingPanel beneficiaryId={ben._id.toString()} />
+          </section>
+        )}
       </div>
     </>
   );

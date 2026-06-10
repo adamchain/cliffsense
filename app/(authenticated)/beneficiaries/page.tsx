@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import BankConnection from "@/lib/db/models/BankConnection";
+import BeneficiaryAccess from "@/lib/db/models/BeneficiaryAccess";
 import { NewBeneficiaryButton } from "./new-beneficiary-button";
 
 export default async function BeneficiariesPage() {
@@ -13,7 +14,18 @@ export default async function BeneficiariesPage() {
   }
 
   await connectDB();
-  const list = await Beneficiary.find({ ownerUserId: session.user.id })
+  const accessRows = await BeneficiaryAccess.find({ userId: session.user.id, status: "active" })
+    .select("beneficiaryId role")
+    .lean();
+  const roleByBen = new Map<string, string>(
+    accessRows.map((r) => [String(r.beneficiaryId), r.role as string]),
+  );
+  const list = await Beneficiary.find({
+    $or: [
+      { ownerUserId: session.user.id },
+      { _id: { $in: accessRows.map((r) => r.beneficiaryId) } },
+    ],
+  })
     .sort({ isOwner: -1, createdAt: 1 })
     .lean();
 
@@ -59,6 +71,15 @@ export default async function BeneficiariesPage() {
             const id = b._id.toString();
             const banks = countById.get(id) ?? 0;
             const programs = (b.benefitsEnrolled ?? []).map((e) => e.program);
+            const isOwned = b.ownerUserId?.toString() === session.user!.id;
+            const sharedRole = roleByBen.get(id);
+            const roleChip = b.isOwner
+              ? "You"
+              : !isOwned && sharedRole === "viewer"
+                ? "Viewer"
+                : !isOwned && sharedRole === "co_manager"
+                  ? "Co-manager"
+                  : null;
             return (
               <li
                 key={id}
@@ -71,9 +92,9 @@ export default async function BeneficiariesPage() {
                   >
                     {b.firstName} {b.lastName}
                   </Link>
-                  {b.isOwner && (
+                  {roleChip && (
                     <span className="rounded bg-[var(--color-cs-info-bg)] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-cs-info)]">
-                      You
+                      {roleChip}
                     </span>
                   )}
                 </div>
