@@ -5,6 +5,7 @@ import { assertBeneficiaryWriteAccess } from "@/lib/beneficiaries/access";
 import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import Transaction from "@/lib/db/models/Transaction";
+import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
 
 const userCategoryEnum = z.enum([
   "earned_income",
@@ -98,5 +99,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     });
   }
 
-  return NextResponse.json({ transaction: tx });
+  const plain = tx.toObject();
+  const suggestedUserCategory = suggestUserCategoryFromPlaid({
+    amountCents: plain.amountCents,
+    pfcPrimary: plain.pfcPrimary,
+    pfcDetailed: plain.pfcDetailed,
+  });
+  return NextResponse.json({ transaction: { ...plain, suggestedUserCategory } });
 }

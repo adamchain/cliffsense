@@ -2,6 +2,7 @@ import type { UpdateFilter } from "mongodb";
 import type { PlaidApi } from "plaid";
 import type { Transaction as PlaidTransaction } from "plaid";
 import Transaction, { type TransactionDoc } from "@/lib/db/models/Transaction";
+import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
 import type { Types } from "mongoose";
 
 function dollarsToCents(amount: number): number {
@@ -29,6 +30,8 @@ function mapPlaidTransaction(
     merchantName: t.merchant_name ?? "",
     category: category || plaidCategory,
     plaidCategory,
+    pfcPrimary: primary ?? "",
+    pfcDetailed: detailed ?? "",
     pending: Boolean(t.pending),
   };
 }
@@ -57,31 +60,40 @@ export async function syncTransactionsForConnection(
     for (const t of [...(data.added ?? []), ...(data.modified ?? [])]) {
       byId.set(t.transaction_id, t);
     }
-    const docs = [...byId.values()].map((t) => mapPlaidTransaction(t, beneficiaryId, bankConnectionId));
 
-    if (docs.length > 0) {
-      const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
-        userCategory: "unclear",
-        excludedFromThresholds: false,
-        excludeReason: "",
-        notes: "",
-        recurringStreamId: null,
-        appliedRuleId: null,
-        lastUserEditedAt: null,
-      };
-      const ops = docs.map((doc) => ({
-        updateOne: {
-          filter: {
-            beneficiaryId,
-            plaidTransactionId: doc.plaidTransactionId as string,
+    const plaidTxs = [...byId.values()];
+    if (plaidTxs.length > 0) {
+      const ops = plaidTxs.map((t) => {
+        const doc = mapPlaidTransaction(t, beneficiaryId, bankConnectionId);
+        const suggested = suggestUserCategoryFromPlaid({
+          amountCents: doc.amountCents as number,
+          pfcPrimary: doc.pfcPrimary as string,
+          pfcDetailed: doc.pfcDetailed as string,
+        });
+        const initialCategory = suggested ?? "unclear";
+        const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
+          userCategory: initialCategory,
+          excludedFromThresholds: false,
+          excludeReason: "",
+          notes: "",
+          recurringStreamId: null,
+          appliedRuleId: null,
+          lastUserEditedAt: null,
+        };
+        return {
+          updateOne: {
+            filter: {
+              beneficiaryId,
+              plaidTransactionId: doc.plaidTransactionId as string,
+            },
+            update: {
+              $set: doc,
+              $setOnInsert: setOnInsert,
+            },
+            upsert: true,
           },
-          update: {
-            $set: doc,
-            $setOnInsert: setOnInsert,
-          },
-          upsert: true,
-        },
-      }));
+        };
+      });
       const bulk = await Transaction.bulkWrite(ops, { ordered: false });
       upserted += (bulk.upsertedCount ?? 0) + (bulk.modifiedCount ?? 0);
     }

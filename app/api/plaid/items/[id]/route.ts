@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import BankConnection from "@/lib/db/models/BankConnection";
 import Transaction from "@/lib/db/models/Transaction";
+import RecurringStream from "@/lib/db/models/RecurringStream";
 import { decryptPlaidToken } from "@/lib/plaid/crypto";
 import { getPlaidClient, isPlaidExchangeConfigured } from "@/lib/plaid/server";
 import { logActivity } from "@/lib/activity/log-activity";
@@ -106,6 +107,7 @@ export async function DELETE(
   }
 
   await Transaction.deleteMany({ bankConnectionId: conn._id });
+  await RecurringStream.deleteMany({ bankConnectionId: conn._id });
   await BankConnection.deleteOne({ _id: conn._id });
 
   await logActivity({

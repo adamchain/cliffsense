@@ -32,9 +32,12 @@ type TxRow = {
   name: string;
   merchantName: string;
   category: string;
+  pfcPrimary?: string;
+  pfcDetailed?: string;
   amountCents: number;
   pending: boolean;
   userCategory: UserCategory;
+  suggestedUserCategory?: UserCategory | null;
   excludedFromThresholds?: boolean;
 };
 
@@ -87,6 +90,7 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
   const [unclearTotal, setUnclearTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [applyingPlaid, setApplyingPlaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const limit = 50;
 
@@ -137,6 +141,37 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
       }
     })();
   }, [beneficiaryId]);
+
+  async function applyPlaidSuggestions() {
+    if (!beneficiaryId) return;
+    setApplyingPlaid(true);
+    setError(null);
+    const res = await fetch("/api/transactions/apply-suggestions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ beneficiaryId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setApplyingPlaid(false);
+    if (!res.ok) {
+      setError((data as { error?: string }).error ?? "Could not apply categories");
+      return;
+    }
+    setPage(1);
+    await load();
+    if (!beneficiaryId) return;
+    const params = new URLSearchParams({
+      beneficiaryId,
+      filter: "unclear",
+      page: "1",
+      limit: "1",
+    });
+    const u = await fetch(`/api/transactions?${params}`);
+    const udata = await u.json().catch(() => ({}));
+    if (u.ok) {
+      setUnclearTotal((udata as { total: number }).total ?? 0);
+    }
+  }
 
   async function patchCategory(id: string, userCategory: UserCategory) {
     const res = await fetch(`/api/transactions/${id}`, {
@@ -227,9 +262,9 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
           Accounts
         </ToolbarButton>
         <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
-        <ToolbarButton href="#">
+        <ToolbarButton onClick={() => void applyPlaidSuggestions()} disabled={applyingPlaid}>
           <IconTag size={16} stroke={1.5} aria-hidden />
-          Categorize
+          {applyingPlaid ? "Applying…" : "Apply Plaid categories"}
         </ToolbarButton>
         <ToolbarButton href="/reports">
           <IconDownload size={16} stroke={1.5} aria-hidden />
@@ -260,7 +295,7 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
       <div className="mb-3">
         <input
           type="search"
-          placeholder="Search description or merchant"
+          placeholder="Search description, merchant, or Plaid category"
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
@@ -290,7 +325,7 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
               <tr className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-left text-[11px] font-medium text-[var(--color-cs-text-secondary)]">
                 <th className="px-3 py-2">Date</th>
                 <th className="px-3 py-2">Description</th>
-                <th className="px-3 py-2">Category</th>
+                <th className="px-3 py-2">Your category</th>
                 <th className="px-3 py-2">Limits</th>
                 <th className="px-3 py-2 text-right">Amount</th>
               </tr>
@@ -332,6 +367,11 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
                         <div className="mt-0.5 text-[11px] text-[var(--color-cs-text-secondary)]">
                           {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
                         </div>
+                        {r.pfcPrimary ? (
+                          <div className="mt-1 text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
+                            Plaid: {[r.pfcPrimary, r.pfcDetailed].filter(Boolean).join(" › ")}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-3 py-2.5 align-top">
                         <div className="flex flex-col gap-1.5">
@@ -341,6 +381,16 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
                             <CategoryIcon cat={r.userCategory} />
                             {CATEGORY_LABEL[r.userCategory]}
                           </span>
+                          {r.suggestedUserCategory &&
+                          r.suggestedUserCategory !== r.userCategory &&
+                          r.suggestedUserCategory !== "unclear" ? (
+                            <p className="text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
+                              Suggested for limits:{" "}
+                              <span className="font-medium text-[var(--color-cs-text-secondary)]">
+                                {CATEGORY_LABEL[r.suggestedUserCategory]}
+                              </span>
+                            </p>
+                          ) : null}
                           <select
                             aria-label="Change category"
                             className="h-7 max-w-[180px] rounded-sm border border-[var(--color-cs-border)] bg-white px-1.5 text-[11px] text-[var(--color-cs-text)]"

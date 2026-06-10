@@ -17,7 +17,7 @@ import { BrandMark } from "@/components/brand/brand-mark";
 
 const nav = [
   { href: "/dashboard", label: "Home", icon: IconHome },
-  { href: "/transactions", label: "Transactions", icon: IconListDetails },
+  { href: "/transactions", label: "Banking", icon: IconListDetails },
   { href: "/recurring", label: "Recurring", icon: IconRepeat },
   { href: "/thresholds", label: "Limits", icon: IconTarget },
   { href: "/alerts", label: "Alerts", icon: IconBell },
@@ -39,10 +39,13 @@ export function AppShell({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      <header className="flex h-12 shrink-0 items-center gap-4 bg-[var(--color-cs-brand)] px-4 text-white">
-        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium">
-          <BrandMark size="sm" />
-          CliffSense
+      <header className="flex h-14 shrink-0 items-center gap-4 bg-[var(--color-cs-brand)] px-4 text-white sm:px-5">
+        <Link
+          href="/dashboard"
+          className="group flex items-center gap-3 rounded-md py-0.5 pl-0.5 pr-2 -ml-0.5 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+        >
+          <BrandMark size="xl" />
+          <span className="text-[15px] font-semibold tracking-tight sm:text-base">CliffSense</span>
         </Link>
         <div className="hidden max-w-[460px] flex-1 items-center gap-2 rounded bg-white/15 px-3 py-1.5 text-[13px] text-white/85 md:flex">
           <IconSearch size={16} aria-hidden className="opacity-80" />
@@ -109,26 +112,28 @@ export function ToolbarButton({
   primary,
   href,
   onClick,
+  disabled,
 }: {
   children: ReactNode;
   primary?: boolean;
   href?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   const className = `flex items-center gap-1.5 rounded-sm px-2.5 py-1 ${
     primary
       ? "text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
       : "text-[#323130] hover:bg-[var(--color-cs-nav-hover)]"
-  }`;
+  } ${disabled ? "pointer-events-none opacity-50" : ""}`;
   if (href) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href} className={className} aria-disabled={disabled}>
         {children}
       </Link>
     );
   }
   return (
-    <button type="button" onClick={onClick} className={className}>
+    <button type="button" onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
   );

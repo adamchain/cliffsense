@@ -1,12 +1,23 @@
-export function BrandMark({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const cell = size === "sm" ? "h-2 w-2" : size === "lg" ? "h-3 w-3" : "h-2.5 w-2.5";
-  const gap = size === "lg" ? "gap-0.5" : "gap-px";
+import Image from "next/image";
+
+const PX: Record<"sm" | "md" | "lg" | "xl", number> = {
+  sm: 18,
+  md: 22,
+  lg: 28,
+  /** Auth split layout / marketing hero */
+  xl: 40,
+};
+
+export function BrandMark({ size = "md" }: { size?: "sm" | "md" | "lg" | "xl" }) {
+  const px = PX[size];
   return (
-    <span className={`inline-grid grid-cols-2 grid-rows-2 ${gap}`} aria-hidden>
-      <span className={`block ${cell} bg-[#7fba00]`} />
-      <span className={`block ${cell} bg-[#00a4ef]`} />
-      <span className={`block ${cell} bg-[#ffb900]`} />
-      <span className={`block ${cell} bg-[#f25022]`} />
-    </span>
+    <Image
+      src="/cliffsense-icon.png"
+      alt=""
+      width={px}
+      height={px}
+      className="inline-block shrink-0 object-contain align-middle"
+      sizes={`${px}px`}
+    />
   );
 }

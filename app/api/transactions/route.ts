@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { assertBeneficiaryAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import Transaction from "@/lib/db/models/Transaction";
+import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
 import mongoose from "mongoose";
 
 const USER_CATEGORIES = [
@@ -64,7 +65,13 @@ export async function GET(req: Request) {
 
   if (q) {
     const rx = new RegExp(escapeRegex(q), "i");
-    query.$or = [{ name: rx }, { merchantName: rx }, { category: rx }];
+    query.$or = [
+      { name: rx },
+      { merchantName: rx },
+      { category: rx },
+      { pfcPrimary: rx },
+      { pfcDetailed: rx },
+    ];
   }
 
   const skip = (page - 1) * limit;
@@ -78,8 +85,17 @@ export async function GET(req: Request) {
     Transaction.countDocuments(query),
   ]);
 
+  const transactionsOut = transactions.map((t) => {
+    const suggestedUserCategory = suggestUserCategoryFromPlaid({
+      amountCents: t.amountCents,
+      pfcPrimary: t.pfcPrimary,
+      pfcDetailed: t.pfcDetailed,
+    });
+    return { ...t, suggestedUserCategory };
+  });
+
   return NextResponse.json({
-    transactions,
+    transactions: transactionsOut,
     total,
     page,
     limit,

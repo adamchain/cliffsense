@@ -14,6 +14,10 @@ const transactionSchema = new Schema(
     merchantName: { type: String, default: "" },
     category: { type: String, default: "" },
     plaidCategory: { type: String, default: "" },
+    /** Plaid personal_finance_category.primary (when available) */
+    pfcPrimary: { type: String, default: "" },
+    /** Plaid personal_finance_category.detailed */
+    pfcDetailed: { type: String, default: "" },
     pending: { type: Boolean, default: false },
     userCategory: {
       type: String,

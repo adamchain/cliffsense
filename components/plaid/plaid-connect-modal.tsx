@@ -108,10 +108,15 @@ export function PlaidConnectModal({
           }}
         >
           <div className="relative w-full max-w-md overflow-hidden rounded-md bg-white shadow-xl">
-            <header className="flex items-center justify-between border-b border-[var(--color-cs-border)] bg-[var(--color-cs-brand)] px-4 py-3 text-white">
-              <div className="flex items-center gap-2">
-                <BrandMark size="sm" />
-                <h2 id="plaid-connect-title" className="text-sm font-medium">
+            <header className="flex items-center justify-between border-b border-[var(--color-cs-border)] bg-[var(--color-cs-brand)] px-4 py-3.5 text-white">
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className="flex shrink-0 overflow-hidden rounded-[5px] shadow-[0_2px_10px_rgba(0,0,0,0.25)] ring-2 ring-white/35"
+                  aria-hidden
+                >
+                  <BrandMark size="lg" />
+                </span>
+                <h2 id="plaid-connect-title" className="truncate text-[15px] font-semibold tracking-tight">
                   Connect a bank
                 </h2>
               </div>

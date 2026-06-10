@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { AuthLoadingOverlay } from "@/components/auth/auth-loading-overlay";
+import {
+  authLabelClass,
+  authPrimaryButtonClass,
+  authTextInputClass,
+} from "@/components/auth/auth-field-classes";
 import { AuthSplitLayout } from "@/components/layout/auth-split-layout";
 import {
   IconCheck,
@@ -51,6 +56,56 @@ const toneBg: Record<string, string> = {
   c: "bg-[#fff4ce] text-[#797673]",
   d: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
 };
+
+const stepsMeta = [
+  { n: 1 as const, label: "Account type" },
+  { n: 2 as const, label: "Your info" },
+  { n: 3 as const, label: "Verify" },
+];
+
+function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
+  return (
+    <nav aria-label="Sign-up progress" className="mb-8">
+      <ol className="flex items-center gap-1 sm:gap-2">
+        {stepsMeta.map((s, i) => {
+          const done = step > s.n;
+          const active = step === s.n;
+          return (
+            <li key={s.n} className="flex min-w-0 flex-1 items-center last:flex-none">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold tabular-nums ${
+                    done || active
+                      ? "bg-[var(--color-cs-brand)] text-white shadow-[0_1px_0_rgba(0,0,0,0.12)]"
+                      : "border border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text-muted)]"
+                  }`}
+                  aria-current={active ? "step" : undefined}
+                >
+                  {done ? <IconCheck size={14} stroke={2.5} aria-hidden /> : s.n}
+                </span>
+                <span
+                  className={`hidden min-w-0 truncate text-xs sm:inline ${
+                    active ? "font-semibold text-[var(--color-cs-text)]" : "text-[var(--color-cs-text-secondary)]"
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < stepsMeta.length - 1 ? (
+                <span
+                  className={`mx-1.5 h-px min-w-[8px] flex-1 sm:mx-2 sm:min-w-[20px] ${
+                    step > s.n ? "bg-[var(--color-cs-brand)]/45" : "bg-[var(--color-cs-border)]"
+                  }`}
+                  aria-hidden
+                />
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -105,242 +160,239 @@ export default function SignUpPage() {
         />
       ) : null}
       <AuthSplitLayout
-      sideTitle="Keep your benefits. Know your threshold."
-      sideBody={
-        <>
-          <p className="text-[13px] leading-relaxed text-white/85">
-            CliffSense helps you see how bank deposits and balances relate to common program limits,
-            and emails you before you approach a threshold — so you can plan with your counselor or
-            agency.
-          </p>
-          <ul className="mt-5 flex flex-col gap-3 text-xs text-white/92">
-            {[
-              "Connect your bank securely through Plaid",
-              "Reference limits for SSI, SSDI, SNAP, Medicaid & more",
-              "Get email heads-up before you near a limit",
-              "Bank-level encryption, deletable anytime",
-            ].map((t) => (
-              <li key={t} className="flex gap-2.5">
-                <IconCheck className="mt-0.5 shrink-0 text-[#7fba00]" size={16} aria-hidden />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      }
-      sideFooter={
-        <p>
-          Informational tool only. Not legal or financial advice. By signing up you agree to our{" "}
-          <Link className="text-white/95 underline" href="#">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link className="text-white/95 underline" href="#">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      }
-    >
-      <div className="w-full max-w-[560px]">
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-cs-text-secondary)]">
-          <span
-            className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium ${
-              step >= 1 ? "bg-[var(--color-cs-brand)] text-white" : "bg-[#c8c6c4] text-white"
-            }`}
-          >
-            1
-          </span>
-          <span className={step === 1 ? "font-medium text-[var(--color-cs-text)]" : ""}>
-            Account type
-          </span>
-          <span className="mx-1 h-px w-6 bg-[#c8c6c4]" />
-          <span
-            className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium ${
-              step >= 2 ? "bg-[var(--color-cs-brand)] text-white" : "bg-[#c8c6c4] text-white"
-            }`}
-          >
-            2
-          </span>
-          <span className={step === 2 ? "font-medium text-[var(--color-cs-text)]" : ""}>
-            Your info
-          </span>
-          <span className="mx-1 h-px w-6 bg-[#c8c6c4]" />
-          <span
-            className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium ${
-              step >= 3 ? "bg-[var(--color-cs-brand)] text-white" : "bg-[#c8c6c4] text-white"
-            }`}
-          >
-            3
-          </span>
-          <span className={step === 3 ? "font-medium text-[var(--color-cs-text)]" : ""}>Verify</span>
-        </div>
-
-        {step === 1 && (
+        sideTitle="Keep your benefits. Know your threshold."
+        sideBody={
           <>
-            <h1 className="text-2xl font-medium text-[var(--color-cs-text)]">Create your account</h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              Tell us how you&apos;ll be using CliffSense. This shapes your setup and the features
-              you&apos;ll see.
+            <p>
+              CliffSense helps you see how bank deposits and balances relate to common program limits,
+              and emails you before you approach a threshold — so you can plan with your counselor or
+              agency.
             </p>
-            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              {types.map((t) => {
-                const Icon = t.icon;
-                const selected = accountType === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setAccountType(t.id)}
-                    className={`rounded border bg-white p-3.5 text-left transition-colors ${
-                      selected
-                        ? "border-2 border-[var(--color-cs-brand)] bg-[#f5faff] p-[13px]"
-                        : "border-[var(--color-cs-border)] hover:border-[var(--color-cs-brand)]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded ${toneBg[t.tone]}`}
-                      >
-                        <Icon size={18} stroke={1.5} aria-hidden />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-[var(--color-cs-text)]">{t.name}</div>
-                        <p className="text-xs leading-snug text-[var(--color-cs-text-secondary)]">
-                          {t.desc}
-                        </p>
-                      </div>
-                      <span
-                        className={`relative h-4 w-4 shrink-0 rounded-full border-[1.5px] ${
-                          selected ? "border-[var(--color-cs-brand)]" : "border-[#c8c6c4]"
-                        }`}
-                        aria-hidden
-                      >
-                        {selected && (
-                          <span className="absolute inset-[3px] rounded-full bg-[var(--color-cs-brand)]" />
-                        )}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mt-5 flex items-center justify-between border-t border-[var(--color-cs-border)] pt-4">
-              <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
-                Already have an account?{" "}
-                <Link href="/auth/signin" className="text-[var(--color-cs-brand)]">
-                  Sign in
-                </Link>
-              </p>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-              >
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <h1 className="text-2xl font-medium text-[var(--color-cs-text)]">Your details</h1>
-            <p className="mt-1.5 text-[13px] text-[var(--color-cs-text-secondary)]">
-              We&apos;ll use this on your dashboard and in alert emails.
-            </p>
-            <div className="mt-5 flex flex-col gap-3.5">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[#323130]" htmlFor="name">
-                  Full name
-                </label>
-                <input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-8 w-full rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 text-[13px] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[#323130]" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-8 w-full rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 text-[13px] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-[#323130]" htmlFor="password">
-                  Password (min 8 characters)
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-8 w-full rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 text-[13px] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
-                  required
-                  minLength={8}
-                />
-              </div>
-              {error && <p className="text-xs text-[var(--color-cs-danger)]">{error}</p>}
-            </div>
-            <div className="mt-5 flex justify-between border-t border-[var(--color-cs-border)] pt-4">
-              <button type="button" onClick={() => setStep(1)} className="text-sm text-[var(--color-cs-brand)]">
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                disabled={!name || !email || password.length < 8}
-                className="rounded-sm bg-[var(--color-cs-brand)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
-              >
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <h1 className="text-2xl font-medium text-[var(--color-cs-text)]">Review & create</h1>
-            <p className="mt-1.5 text-[13px] text-[var(--color-cs-text-secondary)]">
-              You&apos;re almost done. We&apos;ll send threshold reminders to{" "}
-              <strong>{email}</strong>.
-            </p>
-            <ul className="mt-4 space-y-2 rounded border border-[var(--color-cs-border)] bg-white p-4 text-[13px] text-[var(--color-cs-text-secondary)]">
-              <li>
-                <span className="text-[var(--color-cs-text-muted)]">Account type:</span>{" "}
-                {types.find((t) => t.id === accountType)?.name}
-              </li>
-              <li>
-                <span className="text-[var(--color-cs-text-muted)]">Name:</span> {name}
-              </li>
+            <ul className="mt-6 flex flex-col gap-3 text-[12px] leading-snug text-white/90">
+              {[
+                "Connect your bank securely through Plaid",
+                "Reference limits for SSI, SSDI, SNAP, Medicaid & more",
+                "Get email heads-up before you near a limit",
+                "Bank-level encryption; delete your data anytime",
+              ].map((t) => (
+                <li key={t} className="flex gap-3">
+                  <IconCheck className="mt-0.5 shrink-0 text-[var(--color-cs-success)]" size={18} stroke={2} aria-hidden />
+                  <span>{t}</span>
+                </li>
+              ))}
             </ul>
-            {error && <p className="mt-3 text-xs text-[var(--color-cs-danger)]">{error}</p>}
-            <div className="mt-5 flex justify-between border-t border-[var(--color-cs-border)] pt-4">
-              <button type="button" onClick={() => setStep(2)} className="text-sm text-[var(--color-cs-brand)]">
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={register}
-                disabled={loading}
-                className="rounded-sm bg-[var(--color-cs-brand)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-60"
-              >
-                {loading ? "Creating…" : "Create account"}
-              </button>
-            </div>
           </>
-        )}
-      </div>
-    </AuthSplitLayout>
+        }
+        sideFooter={
+          <p>
+            Informational tool only. Not legal or financial advice. By signing up you agree to our{" "}
+            <Link className="text-white/95 underline decoration-white/40 underline-offset-2 hover:decoration-white" href="/resources">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link className="text-white/95 underline decoration-white/40 underline-offset-2 hover:decoration-white" href="/resources">
+              Privacy policy
+            </Link>
+            .
+          </p>
+        }
+      >
+        <div className="w-full max-w-[560px]">
+          <SignupStepper step={step} />
+
+          {step === 1 && (
+            <>
+              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">
+                Create your account
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
+                Tell us how you&apos;ll be using CliffSense. This shapes your setup and the features
+                you&apos;ll see first.
+              </p>
+              <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {types.map((t) => {
+                  const Icon = t.icon;
+                  const selected = accountType === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setAccountType(t.id)}
+                      className={`rounded-[2px] border bg-white p-4 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] ${
+                        selected
+                          ? "border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] p-[15px] shadow-[0_1px_0_rgba(0,0,0,0.06)] ring-1 ring-[var(--color-cs-brand)]/15"
+                          : "border-[var(--color-cs-border)] hover:border-[var(--color-cs-brand)]/55 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[2px] ${toneBg[t.tone]}`}
+                        >
+                          <Icon size={20} stroke={1.5} aria-hidden />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold text-[var(--color-cs-text)]">{t.name}</div>
+                          <p className="mt-0.5 text-xs leading-snug text-[var(--color-cs-text-secondary)]">{t.desc}</p>
+                        </div>
+                        <span
+                          className={`relative mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${
+                            selected ? "border-[var(--color-cs-brand)]" : "border-[var(--color-cs-text-muted)]"
+                          }`}
+                          aria-hidden
+                        >
+                          {selected ? (
+                            <span className="absolute inset-[3px] rounded-full bg-[var(--color-cs-brand)]" />
+                          ) : null}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-[var(--color-cs-text-secondary)]">
+                  Already have an account?{" "}
+                  <Link href="/auth/signin" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[120px]`}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">Your details</h1>
+              <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
+                We&apos;ll use this on your dashboard and in alert emails.
+              </p>
+              <div className="mt-7 flex flex-col gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className={authLabelClass} htmlFor="name">
+                    Full name
+                  </label>
+                  <input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className={authTextInputClass}
+                    required
+                    autoComplete="name"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className={authLabelClass} htmlFor="email">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={authTextInputClass}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className={authLabelClass} htmlFor="password">
+                    Password (at least 8 characters)
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={authTextInputClass}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </div>
+                {error ? (
+                  <p
+                    className="rounded-[2px] border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
+                    role="alert"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+              </div>
+              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  disabled={!name || !email || password.length < 8}
+                  className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[120px]`}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">Review &amp; create</h1>
+              <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
+                You&apos;re almost done. We&apos;ll send threshold reminders to{" "}
+                <span className="font-semibold text-[var(--color-cs-text)]">{email}</span>.
+              </p>
+              <ul className="mt-6 space-y-0 overflow-hidden rounded-[2px] border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+                <li className="flex justify-between gap-4 border-b border-[var(--color-cs-border)] px-4 py-3">
+                  <span className="text-[var(--color-cs-text-muted)]">Account type</span>
+                  <span className="font-medium text-[var(--color-cs-text)] text-right">
+                    {types.find((t) => t.id === accountType)?.name}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-4 px-4 py-3">
+                  <span className="text-[var(--color-cs-text-muted)]">Name</span>
+                  <span className="max-w-[60%] truncate font-medium text-[var(--color-cs-text)] text-right">{name}</span>
+                </li>
+              </ul>
+              {error ? (
+                <p
+                  className="mt-4 rounded-[2px] border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              ) : null}
+              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={register}
+                  disabled={loading}
+                  className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[160px]`}
+                >
+                  {loading ? "Creating…" : "Create account"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </AuthSplitLayout>
     </>
   );
 }
