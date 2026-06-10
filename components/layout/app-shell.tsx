@@ -72,7 +72,7 @@ export function AppShell({
       </header>
       <div className="flex min-h-0 flex-1">
         <nav
-          className="flex w-14 shrink-0 flex-col gap-1 border-r border-[var(--color-cs-border)] bg-white py-2"
+          className="flex w-16 shrink-0 flex-col gap-1 border-r border-[var(--color-cs-border)] bg-white py-2 md:w-52"
           aria-label="Main"
         >
           {nav.map(({ href, label, icon: Icon }) => {
@@ -81,13 +81,13 @@ export function AppShell({
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] leading-tight ${
+                className={`flex flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] leading-tight md:flex-row md:justify-start md:gap-3 md:px-4 md:py-2.5 md:text-[13px] ${
                   active
-                    ? "border-l-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-nav-hover)] text-[var(--color-cs-brand)]"
+                    ? "border-l-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-nav-hover)] font-medium text-[var(--color-cs-brand)]"
                     : "border-l-2 border-transparent text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
                 }`}
               >
-                <Icon size={18} stroke={1.5} aria-hidden />
+                <Icon size={18} stroke={1.5} aria-hidden className="shrink-0" />
                 {label}
               </Link>
             );
