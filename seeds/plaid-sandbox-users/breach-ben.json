@@ -1,0 +1,84 @@
+{
+  "persona": "breach-ben",
+  "summary": "Ben just crossed the $2,000 SSI resource cap. Checking $1,950 + savings $300 = $2,250 after a tax refund deposit. Should trigger a breach alert.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "concern",
+    "expected_alerts": ["breach_ssi_resource"]
+  },
+  "seed": "cliffsense-breach-ben-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 1950.55,
+      "force_available_balance": 1950.55,
+      "currency": "USD",
+      "meta": {
+        "name": "Primary Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "2031"
+      },
+      "numbers": {
+        "account": "1111222233332031",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233332031",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Ben Ortega"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "4112 NW 9th St",
+              "city": "Miami",
+              "region": "FL",
+              "postal_code": "33126",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "ben.ortega@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550155", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1978-11-09"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-10", "date_posted": "2026-05-10", "amount": -1450.00, "currency": "USD", "description": "IRS TREAS 310 TAX REF" },
+        { "date_transacted": "2026-05-08", "date_posted": "2026-05-08", "amount": 32.18, "currency": "USD", "description": "Publix Supermarket" },
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-02", "date_posted": "2026-05-03", "amount": 720.00, "currency": "USD", "description": "Casita Linda Apts RENT" },
+
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-02", "date_posted": "2026-04-03", "amount": 720.00, "currency": "USD", "description": "Casita Linda Apts RENT" },
+        { "date_transacted": "2026-04-15", "date_posted": "2026-04-15", "amount": 41.22, "currency": "USD", "description": "Publix Supermarket" },
+        { "date_transacted": "2026-04-25", "date_posted": "2026-04-25", "amount": 28.00, "currency": "USD", "description": "FPL Power Bill" },
+
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-03-02", "date_posted": "2026-03-03", "amount": 720.00, "currency": "USD", "description": "Casita Linda Apts RENT" },
+        { "date_transacted": "2026-03-19", "date_posted": "2026-03-19", "amount": 53.40, "currency": "USD", "description": "Publix Supermarket" },
+
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-02-02", "date_posted": "2026-02-03", "amount": 720.00, "currency": "USD", "description": "Casita Linda Apts RENT" },
+
+        { "date_transacted": "2026-01-01", "date_posted": "2026-01-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-12-01", "date_posted": "2025-12-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-11-01", "date_posted": "2025-11-03", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-10-01", "date_posted": "2025-10-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 305.10,
+      "force_available_balance": 305.10,
+      "currency": "USD",
+      "meta": {
+        "name": "Savings",
+        "official_name": "Plaid Silver Standard Savings",
+        "limit": null,
+        "number": "2032"
+      }
+    }
+  ]
+}

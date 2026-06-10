@@ -1,0 +1,78 @@
+{
+  "persona": "sga-sam",
+  "summary": "Sam receives SSDI but his biweekly payroll ($850 x 2/mo = $1,700) is just over the 2025 SGA limit of $1,620/mo. Should trigger a SGA earned-income warning.",
+  "expected_cliffsense_state": {
+    "ssdi_sga_status": "concern",
+    "expected_alerts": ["sga_earned_income_breach"]
+  },
+  "seed": "cliffsense-sga-sam-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 812.66,
+      "force_available_balance": 812.66,
+      "currency": "USD",
+      "meta": {
+        "name": "Everyday Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "3001"
+      },
+      "numbers": {
+        "account": "1111222233333001",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233333001",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Samuel Chen"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "85 Mercer St",
+              "city": "Princeton",
+              "region": "NJ",
+              "postal_code": "08540",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "sam.chen@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550130", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1983-06-15"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-08", "date_posted": "2026-05-08", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-05-03", "date_posted": "2026-05-04", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" },
+        { "date_transacted": "2026-05-05", "date_posted": "2026-05-05", "amount": 950.00, "currency": "USD", "description": "Witherspoon House RENT" },
+        { "date_transacted": "2026-05-11", "date_posted": "2026-05-11", "amount": 88.62, "currency": "USD", "description": "Wegmans Princeton" },
+
+        { "date_transacted": "2026-04-24", "date_posted": "2026-04-24", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-04-10", "date_posted": "2026-04-10", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-04-03", "date_posted": "2026-04-03", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" },
+        { "date_transacted": "2026-04-05", "date_posted": "2026-04-05", "amount": 950.00, "currency": "USD", "description": "Witherspoon House RENT" },
+        { "date_transacted": "2026-04-19", "date_posted": "2026-04-19", "amount": 76.10, "currency": "USD", "description": "Wegmans Princeton" },
+
+        { "date_transacted": "2026-03-27", "date_posted": "2026-03-27", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-03-13", "date_posted": "2026-03-13", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-03-03", "date_posted": "2026-03-03", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" },
+        { "date_transacted": "2026-03-05", "date_posted": "2026-03-05", "amount": 950.00, "currency": "USD", "description": "Witherspoon House RENT" },
+
+        { "date_transacted": "2026-02-27", "date_posted": "2026-02-27", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-02-13", "date_posted": "2026-02-13", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-02-03", "date_posted": "2026-02-03", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" },
+        { "date_transacted": "2026-02-05", "date_posted": "2026-02-05", "amount": 950.00, "currency": "USD", "description": "Witherspoon House RENT" },
+
+        { "date_transacted": "2026-01-23", "date_posted": "2026-01-23", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-01-09", "date_posted": "2026-01-09", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2026-01-03", "date_posted": "2026-01-03", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" },
+
+        { "date_transacted": "2025-12-26", "date_posted": "2025-12-26", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2025-12-12", "date_posted": "2025-12-12", "amount": -850.00, "currency": "USD", "description": "Princeton Public Library Payroll" },
+        { "date_transacted": "2025-12-03", "date_posted": "2025-12-03", "amount": -1538.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC SSDI" }
+      ]
+    }
+  ]
+}

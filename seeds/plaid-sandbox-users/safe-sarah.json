@@ -1,0 +1,95 @@
+{
+  "persona": "safe-sarah",
+  "summary": "Sarah is comfortably under every SSI limit. One SSI deposit, modest expenses, total assets ~$600.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "ok",
+    "expected_alerts": []
+  },
+  "seed": "cliffsense-safe-sarah-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 412.18,
+      "force_available_balance": 412.18,
+      "currency": "USD",
+      "meta": {
+        "name": "Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "0001"
+      },
+      "numbers": {
+        "account": "1111222233334440",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233334440",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Sarah Atwood"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "1429 Halsey St",
+              "city": "Brooklyn",
+              "region": "NY",
+              "postal_code": "11237",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "sarah.atwood@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550101", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1962-07-04"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-03", "date_posted": "2026-05-04", "amount": 645.00, "currency": "USD", "description": "Brooklyn Rental LLC RENT" },
+        { "date_transacted": "2026-05-09", "date_posted": "2026-05-09", "amount": 58.12, "currency": "USD", "description": "Key Food Supermarket" },
+        { "date_transacted": "2026-05-12", "date_posted": "2026-05-12", "amount": 42.00, "currency": "USD", "description": "ConEd Energy" },
+
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-03", "date_posted": "2026-04-04", "amount": 645.00, "currency": "USD", "description": "Brooklyn Rental LLC RENT" },
+        { "date_transacted": "2026-04-11", "date_posted": "2026-04-11", "amount": 61.40, "currency": "USD", "description": "Key Food Supermarket" },
+        { "date_transacted": "2026-04-22", "date_posted": "2026-04-22", "amount": 39.55, "currency": "USD", "description": "ConEd Energy" },
+
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-03-03", "date_posted": "2026-03-04", "amount": 645.00, "currency": "USD", "description": "Brooklyn Rental LLC RENT" },
+        { "date_transacted": "2026-03-15", "date_posted": "2026-03-15", "amount": 54.22, "currency": "USD", "description": "Key Food Supermarket" },
+
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-02-03", "date_posted": "2026-02-04", "amount": 645.00, "currency": "USD", "description": "Brooklyn Rental LLC RENT" },
+        { "date_transacted": "2026-02-14", "date_posted": "2026-02-14", "amount": 47.81, "currency": "USD", "description": "Key Food Supermarket" },
+
+        { "date_transacted": "2026-01-01", "date_posted": "2026-01-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-01-04", "date_posted": "2026-01-05", "amount": 645.00, "currency": "USD", "description": "Brooklyn Rental LLC RENT" },
+
+        { "date_transacted": "2025-12-01", "date_posted": "2025-12-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-11-01", "date_posted": "2025-11-03", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-10-01", "date_posted": "2025-10-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-09-01", "date_posted": "2025-09-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-08-01", "date_posted": "2025-08-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-07-01", "date_posted": "2025-07-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 218.40,
+      "force_available_balance": 218.40,
+      "currency": "USD",
+      "meta": {
+        "name": "Savings",
+        "official_name": "Plaid Silver Standard Savings",
+        "limit": null,
+        "number": "0002"
+      },
+      "transactions": [
+        { "date_transacted": "2026-04-15", "date_posted": "2026-04-15", "amount": -50.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2026-02-15", "date_posted": "2026-02-15", "amount": -50.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2025-12-15", "date_posted": "2025-12-15", "amount": -25.00, "currency": "USD", "description": "Transfer from Checking" }
+      ]
+    }
+  ]
+}

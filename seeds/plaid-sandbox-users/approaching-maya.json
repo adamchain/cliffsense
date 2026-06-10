@@ -1,0 +1,98 @@
+{
+  "persona": "approaching-maya",
+  "summary": "Maya is at ~92% of the $2,000 SSI resource limit: checking $1,420 + savings $420 = $1,840. Should trigger predictive 'concern' alert.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "watch",
+    "expected_alerts": ["predictive_ssi_resource_warning"]
+  },
+  "seed": "cliffsense-approaching-maya-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 1420.00,
+      "force_available_balance": 1420.00,
+      "currency": "USD",
+      "meta": {
+        "name": "Everyday Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "1011"
+      },
+      "numbers": {
+        "account": "1111222233331011",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233331011",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Maya Lee"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "212 Bedford Ave",
+              "city": "Brooklyn",
+              "region": "NY",
+              "postal_code": "11211",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "maya.lee@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550110", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1991-03-22"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-12", "date_posted": "2026-05-12", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-05", "date_posted": "2026-05-05", "amount": 800.00, "currency": "USD", "description": "BedStuy Rentals RENT" },
+        { "date_transacted": "2026-05-08", "date_posted": "2026-05-08", "amount": 78.42, "currency": "USD", "description": "Trader Joes Williamsburg" },
+
+        { "date_transacted": "2026-04-28", "date_posted": "2026-04-29", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-04-14", "date_posted": "2026-04-14", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-05", "date_posted": "2026-04-05", "amount": 800.00, "currency": "USD", "description": "BedStuy Rentals RENT" },
+        { "date_transacted": "2026-04-18", "date_posted": "2026-04-18", "amount": 84.10, "currency": "USD", "description": "Trader Joes Williamsburg" },
+
+        { "date_transacted": "2026-03-31", "date_posted": "2026-04-01", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-03-17", "date_posted": "2026-03-17", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-03-03", "date_posted": "2026-03-03", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-03-05", "date_posted": "2026-03-05", "amount": 800.00, "currency": "USD", "description": "BedStuy Rentals RENT" },
+
+        { "date_transacted": "2026-02-17", "date_posted": "2026-02-17", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-02-03", "date_posted": "2026-02-03", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-02-05", "date_posted": "2026-02-05", "amount": 800.00, "currency": "USD", "description": "BedStuy Rentals RENT" },
+
+        { "date_transacted": "2026-01-20", "date_posted": "2026-01-20", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-01-06", "date_posted": "2026-01-06", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2026-01-01", "date_posted": "2026-01-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-01-05", "date_posted": "2026-01-05", "amount": 800.00, "currency": "USD", "description": "BedStuy Rentals RENT" },
+
+        { "date_transacted": "2025-12-23", "date_posted": "2025-12-23", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2025-12-09", "date_posted": "2025-12-09", "amount": -321.00, "currency": "USD", "description": "Greenpoint Coop Payroll" },
+        { "date_transacted": "2025-12-01", "date_posted": "2025-12-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 420.00,
+      "force_available_balance": 420.00,
+      "currency": "USD",
+      "meta": {
+        "name": "Savings",
+        "official_name": "Plaid Silver Standard Savings",
+        "limit": null,
+        "number": "1012"
+      },
+      "transactions": [
+        { "date_transacted": "2026-04-15", "date_posted": "2026-04-15", "amount": -100.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2026-02-15", "date_posted": "2026-02-15", "amount": -100.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2025-12-15", "date_posted": "2025-12-15", "amount": -120.00, "currency": "USD", "description": "Transfer from Checking" }
+      ]
+    }
+  ]
+}

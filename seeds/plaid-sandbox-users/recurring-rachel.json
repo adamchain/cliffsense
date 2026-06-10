@@ -1,0 +1,80 @@
+{
+  "persona": "recurring-rachel",
+  "summary": "Mix of recurring inflows and outflows for exercising the recurring detection + classification UI. Includes one stream miscategorized by Plaid (a payroll labeled like a benefit deposit) so testers can verify the recategorization flow.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "ok",
+    "expected_alerts": [],
+    "notes": "Tester should see: (1) at least 2 mature inflow streams, (2) at least 2 mature outflow streams, (3) one stream that arrives miscategorized and needs to be re-tagged from 'benefit_deposit' to 'earned_income'."
+  },
+  "seed": "cliffsense-recurring-rachel-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 612.18,
+      "force_available_balance": 612.18,
+      "currency": "USD",
+      "meta": {
+        "name": "Everyday Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "5001"
+      },
+      "numbers": {
+        "account": "1111222233335001",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233335001",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Rachel Diaz"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "1206 Folsom St",
+              "city": "San Francisco",
+              "region": "CA",
+              "postal_code": "94103",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "rachel.diaz@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550170", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1989-04-12"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-13", "date_posted": "2026-05-13", "amount": -210.50, "currency": "USD", "description": "ACE Hardware Deposit (looks like benefit)" },
+        { "date_transacted": "2026-05-10", "date_posted": "2026-05-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2026-05-08", "date_posted": "2026-05-08", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-02", "date_posted": "2026-05-03", "amount": 1100.00, "currency": "USD", "description": "Mission Heights Apts RENT" },
+
+        { "date_transacted": "2026-04-29", "date_posted": "2026-04-29", "amount": -210.50, "currency": "USD", "description": "ACE Hardware Deposit (looks like benefit)" },
+        { "date_transacted": "2026-04-24", "date_posted": "2026-04-24", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-04-10", "date_posted": "2026-04-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2026-04-10", "date_posted": "2026-04-10", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-02", "date_posted": "2026-04-03", "amount": 1100.00, "currency": "USD", "description": "Mission Heights Apts RENT" },
+
+        { "date_transacted": "2026-03-30", "date_posted": "2026-03-30", "amount": -210.50, "currency": "USD", "description": "ACE Hardware Deposit (looks like benefit)" },
+        { "date_transacted": "2026-03-27", "date_posted": "2026-03-27", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-03-13", "date_posted": "2026-03-13", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-03-10", "date_posted": "2026-03-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-03-02", "date_posted": "2026-03-03", "amount": 1100.00, "currency": "USD", "description": "Mission Heights Apts RENT" },
+
+        { "date_transacted": "2026-02-27", "date_posted": "2026-02-27", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-02-13", "date_posted": "2026-02-13", "amount": -480.00, "currency": "USD", "description": "Bayview Coffee Payroll" },
+        { "date_transacted": "2026-02-10", "date_posted": "2026-02-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+
+        { "date_transacted": "2026-01-10", "date_posted": "2026-01-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2026-01-01", "date_posted": "2026-01-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2025-12-10", "date_posted": "2025-12-10", "amount": 17.99, "currency": "USD", "description": "Netflix Subscription" },
+        { "date_transacted": "2025-12-01", "date_posted": "2025-12-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    }
+  ]
+}

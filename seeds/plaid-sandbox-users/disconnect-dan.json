@@ -1,0 +1,56 @@
+{
+  "persona": "disconnect-dan",
+  "summary": "Healthy account used to exercise the reconnect flow. After seeding, call POST /sandbox/item/reset_login on the resulting access_token to flip the Item to ITEM_LOGIN_REQUIRED — that surfaces the 'Reconnect' UI in Accounts.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "ok",
+    "expected_alerts": [],
+    "notes": "Flip with: curl -X POST https://sandbox.plaid.com/sandbox/item/reset_login -H 'Content-Type: application/json' -d '{\"client_id\":\"$PLAID_CLIENT_ID\",\"secret\":\"$PLAID_SECRET\",\"access_token\":\"$TOKEN\"}'. Then sync from Accounts — connection.status flips to 'login_required' and AccountConnectionActions renders Reconnect."
+  },
+  "seed": "cliffsense-disconnect-dan-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 542.18,
+      "force_available_balance": 542.18,
+      "currency": "USD",
+      "meta": {
+        "name": "Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "6001"
+      },
+      "numbers": {
+        "account": "1111222233336001",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233336001",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Daniel Whitaker"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "904 Elm Ave",
+              "city": "Austin",
+              "region": "TX",
+              "postal_code": "78704",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "dan.whitaker@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550190", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1980-02-19"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-03", "date_posted": "2026-05-04", "amount": 720.00, "currency": "USD", "description": "South Lamar Apts RENT" },
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-03", "date_posted": "2026-04-04", "amount": 720.00, "currency": "USD", "description": "South Lamar Apts RENT" },
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    }
+  ]
+}

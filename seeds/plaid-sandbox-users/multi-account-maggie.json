@@ -1,0 +1,115 @@
+{
+  "persona": "multi-account-maggie",
+  "summary": "Fiduciary case: Maggie manages 4 accounts across two institutions for her adult son. ABLE account ($7,800) should be excluded from SSI resource counting; the custodial account is also outside the resource limit.",
+  "expected_cliffsense_state": {
+    "ssi_resource_status": "ok",
+    "expected_alerts": [],
+    "notes": "Verify CliffSense excludes ABLE and custodial accounts; only checking + savings should count toward SSI resources."
+  },
+  "seed": "cliffsense-multi-account-maggie-v1",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 852.40,
+      "force_available_balance": 852.40,
+      "currency": "USD",
+      "meta": {
+        "name": "Household Checking",
+        "official_name": "Plaid Gold Standard 0% Interest Checking",
+        "limit": null,
+        "number": "4001"
+      },
+      "numbers": {
+        "account": "1111222233334001",
+        "ach_routing": "011401533",
+        "ach_account": "1111222233334001",
+        "ach_wire_routing": "021000021"
+      },
+      "identity": {
+        "names": ["Margaret Okafor"],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "77 Elmwood Dr",
+              "city": "Cleveland",
+              "region": "OH",
+              "postal_code": "44106",
+              "country": "US"
+            }
+          }
+        ],
+        "emails": [{ "data": "maggie.okafor@example.com", "primary": true, "type": "primary" }],
+        "phone_numbers": [{ "data": "+15555550160", "primary": true, "type": "mobile" }],
+        "date_of_birth": "1972-09-30"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-01", "date_posted": "2026-05-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-05-03", "date_posted": "2026-05-04", "amount": 685.00, "currency": "USD", "description": "University Heights Mgmt RENT" },
+        { "date_transacted": "2026-05-09", "date_posted": "2026-05-09", "amount": 92.15, "currency": "USD", "description": "Heinens Grocery" },
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-04-03", "date_posted": "2026-04-04", "amount": 685.00, "currency": "USD", "description": "University Heights Mgmt RENT" },
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-03-04", "date_posted": "2026-03-04", "amount": 685.00, "currency": "USD", "description": "University Heights Mgmt RENT" },
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" },
+        { "date_transacted": "2026-01-01", "date_posted": "2026-01-02", "amount": -967.00, "currency": "USD", "description": "SSA TREAS 310 XXSOC SEC" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 4218.30,
+      "force_available_balance": 4218.30,
+      "currency": "USD",
+      "meta": {
+        "name": "Household Savings",
+        "official_name": "Plaid Silver Standard Savings",
+        "limit": null,
+        "number": "4002"
+      },
+      "transactions": [
+        { "date_transacted": "2026-05-02", "date_posted": "2026-05-02", "amount": -200.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2026-04-02", "date_posted": "2026-04-02", "amount": -200.00, "currency": "USD", "description": "Transfer from Checking" },
+        { "date_transacted": "2026-03-02", "date_posted": "2026-03-02", "amount": -200.00, "currency": "USD", "description": "Transfer from Checking" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 7821.55,
+      "force_available_balance": 7821.55,
+      "currency": "USD",
+      "meta": {
+        "name": "STABLE ABLE Account",
+        "official_name": "STABLE Ohio ABLE Plan — Checking option",
+        "limit": null,
+        "number": "4003"
+      },
+      "transactions": [
+        { "date_transacted": "2026-04-15", "date_posted": "2026-04-15", "amount": -200.00, "currency": "USD", "description": "ABLE Contribution Maggie" },
+        { "date_transacted": "2026-03-15", "date_posted": "2026-03-15", "amount": -200.00, "currency": "USD", "description": "ABLE Contribution Maggie" },
+        { "date_transacted": "2026-02-15", "date_posted": "2026-02-15", "amount": -200.00, "currency": "USD", "description": "ABLE Contribution Maggie" },
+        { "date_transacted": "2026-01-15", "date_posted": "2026-01-15", "amount": -200.00, "currency": "USD", "description": "ABLE Contribution Maggie" }
+      ]
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 2102.10,
+      "force_available_balance": 2102.10,
+      "currency": "USD",
+      "meta": {
+        "name": "Custodial UTMA",
+        "official_name": "Custodial UTMA Account — Vanguard",
+        "limit": null,
+        "number": "4004"
+      },
+      "transactions": [
+        { "date_transacted": "2026-04-01", "date_posted": "2026-04-01", "amount": -50.00, "currency": "USD", "description": "Custodial Contribution" },
+        { "date_transacted": "2026-03-01", "date_posted": "2026-03-01", "amount": -50.00, "currency": "USD", "description": "Custodial Contribution" },
+        { "date_transacted": "2026-02-01", "date_posted": "2026-02-01", "amount": -50.00, "currency": "USD", "description": "Custodial Contribution" }
+      ]
+    }
+  ]
+}
