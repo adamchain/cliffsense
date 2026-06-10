@@ -52,6 +52,8 @@ export type ThresholdUiStatus = "ok" | "watch" | "concern";
 export type ThresholdDashboardRow = {
   _id: string;
   scope: string;
+  systemKey: string | null;
+  attached: boolean;
   program: string | null;
   thresholdType: string;
   label: string;
@@ -96,6 +98,9 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   const monthEnd = endOfUtcMonth(y, m);
   const benState = (beneficiary.state as string) ?? "";
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
+  const detachedKeys = new Set<string>(
+    (beneficiary.detachedThresholdKeys as string[] | undefined) ?? [],
+  );
 
   if (programs.length === 0) {
     return {
@@ -180,6 +185,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     if (!matchesState(th.state as string | null, benState)) continue;
     const sk = (th as { systemKey?: string }).systemKey;
     if (!passesHouseholdRule(sk, householdSize)) continue;
+    const attached = !(th.scope === "system" && sk ? detachedKeys.has(sk) : false);
 
     let currentValue: number | null = null;
     let projectedValue: number | null = null;
@@ -217,12 +223,15 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       !breachNow;
 
     let status: ThresholdUiStatus = "ok";
-    if (breachNow) status = "concern";
+    if (!attached) status = "ok"; // detached limits are not evaluated
+    else if (breachNow) status = "concern";
     else if (predictive || warnNow) status = "watch";
 
     rows.push({
       _id: String(th._id),
       scope: th.scope as string,
+      systemKey: sk ?? null,
+      attached,
       program: (th.program as string | null) ?? null,
       thresholdType: th.thresholdType as string,
       label: th.label as string,

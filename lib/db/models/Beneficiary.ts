@@ -36,6 +36,8 @@ const beneficiarySchema = new Schema(
     county: { type: String, default: "", trim: true },
     householdSize: { type: Number, default: 1, min: 1 },
     benefitsEnrolled: { type: [benefitEnrollmentSchema], default: [] },
+    /** systemKeys of bundled system thresholds the user has detached (opted out of). */
+    detachedThresholdKeys: { type: [String], default: [] },
   },
   { timestamps: true },
 );

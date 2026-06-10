@@ -181,6 +181,9 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const maxAsset = maxCheckingSavingsBalanceCents(accountsFlat);
 
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
+  const detachedKeys = new Set<string>(
+    (beneficiary.detachedThresholdKeys as string[] | undefined) ?? [],
+  );
 
   let alertsCreated = 0;
   const alertIdsCreated: Types.ObjectId[] = [];
@@ -189,6 +192,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     if (!matchesState(th.state as string | null, benState)) continue;
     const sk = (th as { systemKey?: string }).systemKey;
     if (!passesHouseholdRule(sk, householdSize)) continue;
+    // Skip system limits the user has detached — they should not fire alerts.
+    if (th.scope === "system" && sk && detachedKeys.has(sk)) continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;

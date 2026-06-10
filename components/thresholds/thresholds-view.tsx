@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
 
 type Row = {
   _id: string;
   scope: string;
+  systemKey: string | null;
+  attached: boolean;
   program: string | null;
   thresholdType: string;
   label: string;
@@ -43,6 +45,7 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     label: "",
@@ -68,31 +71,82 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
     void load();
   }, [load]);
 
-  async function addCustom(e: React.FormEvent) {
+  function openAdd() {
+    // Toggle the add form closed only when it's already open in add mode.
+    if (showAdd && editId === null) {
+      closeForm();
+      return;
+    }
+    setEditId(null);
+    setForm({ label: "", thresholdType: "monthly_earned_income", limitDollars: "" });
+    setShowAdd(true);
+  }
+
+  function startEdit(row: Row) {
+    setEditId(row._id);
+    setShowAdd(true);
+    setForm({
+      label: row.label,
+      thresholdType:
+        row.thresholdType === "asset_balance" ? "asset_balance" : "monthly_earned_income",
+      limitDollars: (row.limitCents / 100).toString(),
+    });
+  }
+
+  function closeForm() {
+    setShowAdd(false);
+    setEditId(null);
+    setForm({ label: "", thresholdType: "monthly_earned_income", limitDollars: "" });
+  }
+
+  async function submitForm(e: React.FormEvent) {
     e.preventDefault();
     if (!beneficiaryId) return;
     const dollars = Number(form.limitDollars);
     if (!form.label.trim() || !Number.isFinite(dollars) || dollars <= 0) return;
     setSaving(true);
     setError(null);
-    const res = await fetch("/api/thresholds", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        beneficiaryId,
-        label: form.label.trim(),
-        thresholdType: form.thresholdType,
-        limitCents: Math.round(dollars * 100),
-      }),
-    });
+    const res = editId
+      ? await fetch(`/api/thresholds/${editId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            label: form.label.trim(),
+            limitCents: Math.round(dollars * 100),
+          }),
+        })
+      : await fetch("/api/thresholds", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            beneficiaryId,
+            label: form.label.trim(),
+            thresholdType: form.thresholdType,
+            limitCents: Math.round(dollars * 100),
+          }),
+        });
     setSaving(false);
     if (!res.ok) {
       const j = await res.json().catch(() => ({}));
       setError((j as { error?: string }).error ?? "Save failed");
       return;
     }
-    setShowAdd(false);
-    setForm({ label: "", thresholdType: "monthly_earned_income", limitDollars: "" });
+    closeForm();
+    await load();
+  }
+
+  async function toggleAttach(systemKey: string, attached: boolean) {
+    if (!beneficiaryId) return;
+    setError(null);
+    const res = await fetch("/api/thresholds/attach", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ beneficiaryId, systemKey, attached }),
+    });
+    if (!res.ok) {
+      setError("Could not update");
+      return;
+    }
     await load();
   }
 
@@ -122,8 +176,9 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
       <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Limits</div>
       <h1 className="mb-2 text-xl font-medium text-[var(--color-cs-text)]">Thresholds</h1>
       <p className="mb-3 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Reference limits from enrolled programs plus any custom limits you add. Figures are informational—always confirm
-        with a benefits counselor or agency.
+        Reference limits from enrolled programs plus any custom limits you add. Attach or detach the system limits that
+        apply to you, and edit custom limits anytime. Figures are informational—always confirm with a benefits counselor
+        or agency.
       </p>
 
       <AppToolbar>
@@ -131,7 +186,7 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
           <IconRefresh size={16} stroke={1.5} aria-hidden />
           Refresh
         </ToolbarButton>
-        <ToolbarButton onClick={() => setShowAdd((v) => !v)}>
+        <ToolbarButton onClick={openAdd}>
           <IconPlus size={16} stroke={1.5} aria-hidden />
           Custom limit
         </ToolbarButton>
@@ -149,10 +204,12 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
 
       {showAdd && (
         <form
-          onSubmit={addCustom}
+          onSubmit={submitForm}
           className="mb-3 rounded border border-[var(--color-cs-border)] bg-white p-3 text-[13px]"
         >
-          <div className="mb-2 font-medium text-[var(--color-cs-text)]">Add custom limit</div>
+          <div className="mb-2 font-medium text-[var(--color-cs-text)]">
+            {editId ? "Edit limit" : "Add custom limit"}
+          </div>
           <div className="grid gap-2 sm:grid-cols-3">
             <label className="block sm:col-span-1">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Label</span>
@@ -166,8 +223,9 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Type</span>
               <select
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
+                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5 disabled:opacity-60"
                 value={form.thresholdType}
+                disabled={editId !== null}
                 onChange={(e) =>
                   setForm((f) => ({
                     ...f,
@@ -196,7 +254,7 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
             <button
               type="button"
               className="rounded-sm px-3 py-1.5 text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
-              onClick={() => setShowAdd(false)}
+              onClick={closeForm}
             >
               Cancel
             </button>
@@ -263,10 +321,16 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
             {!loading &&
               data?.rows.map((r) => {
                 const st = STATUS[r.status] ?? STATUS.ok;
+                const isSystem = r.scope !== "user";
                 const cur =
                   r.currentValueCents != null ? formatPlainUsdFromCents(r.currentValueCents) : "—";
                 return (
-                  <tr key={r._id} className="border-b border-[var(--color-cs-border)] last:border-0">
+                  <tr
+                    key={r._id}
+                    className={`border-b border-[var(--color-cs-border)] last:border-0 ${
+                      !r.attached ? "opacity-50" : ""
+                    }`}
+                  >
                     <td className="max-w-[280px] px-3 py-2">
                       <div className="font-medium text-[var(--color-cs-text)]">{r.label}</div>
                       {r.sourceUrl ? (
@@ -287,21 +351,48 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
                       {formatPlainUsdFromCents(r.limitCents)}
                     </td>
                     <td className="px-3 py-2">
-                      <span className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium ${st.className}`}>
-                        {st.label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {r.scope === "user" && (
-                        <button
-                          type="button"
-                          title="Delete custom limit"
-                          className="inline-flex rounded p-1 text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-danger)]"
-                          onClick={() => void removeUserThreshold(r._id)}
-                        >
-                          <IconTrash size={16} stroke={1.5} />
-                        </button>
+                      {r.attached ? (
+                        <span className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium ${st.className}`}>
+                          {st.label}
+                        </span>
+                      ) : (
+                        <span className="inline-block rounded bg-[var(--color-cs-surface)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-cs-text-muted)]">
+                          Off
+                        </span>
                       )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-end gap-1">
+                        {isSystem && r.systemKey && (
+                          <button
+                            type="button"
+                            className="rounded px-2 py-1 text-[11px] font-medium text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
+                            onClick={() => void toggleAttach(r.systemKey!, !r.attached)}
+                          >
+                            {r.attached ? "Detach" : "Attach"}
+                          </button>
+                        )}
+                        {r.scope === "user" && (
+                          <>
+                            <button
+                              type="button"
+                              title="Edit limit"
+                              className="inline-flex rounded p-1 text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-brand)]"
+                              onClick={() => startEdit(r)}
+                            >
+                              <IconPencil size={16} stroke={1.5} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete custom limit"
+                              className="inline-flex rounded p-1 text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-danger)]"
+                              onClick={() => void removeUserThreshold(r._id)}
+                            >
+                              <IconTrash size={16} stroke={1.5} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
