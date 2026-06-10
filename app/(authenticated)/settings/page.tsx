@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { SettingsForm } from "./settings-form";
+import { ProgramsForm } from "./programs-form";
 import { SignOutButton } from "./sign-out-button";
 import { DeleteAccountButton } from "./delete-account-button";
 
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
   const [user, ownerBen] = await Promise.all([
     User.findById(session.user.id).select("name email accountType notificationPrefs onboardingStep").lean(),
     Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
-      .select("firstName lastName state county householdSize")
+      .select("firstName lastName state county householdSize benefitsEnrolled")
       .lean(),
   ]);
 
@@ -45,6 +46,16 @@ export default async function SettingsPage() {
             initialHouseholdSize={ownerBen?.householdSize ?? 1}
           />
         </section>
+
+        {ownerBen && (
+          <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
+            <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Enrolled programs</h2>
+            <ProgramsForm
+              beneficiaryId={ownerBen._id.toString()}
+              initialPrograms={(ownerBen.benefitsEnrolled ?? []).map((b) => b.program)}
+            />
+          </section>
+        )}
 
         <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
           <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Account quick links</h2>

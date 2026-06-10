@@ -4,20 +4,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { BenefitsForm } from "./benefits-form";
-
-const PROGRAMS = [
-  "SSI",
-  "SSDI",
-  "SNAP",
-  "Medicaid",
-  "Section8",
-  "TANF",
-  "WIC",
-  "LIHEAP",
-  "ACA",
-  "VA",
-  "ABLE",
-] as const;
+import { PROGRAMS } from "@/lib/programs";
 
 export default async function OnboardingBenefitsPage() {
   const session = await auth();
