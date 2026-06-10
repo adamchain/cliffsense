@@ -24,12 +24,26 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
+    // Behind Railway's TLS proxy, Auth.js sets the `__Secure-`-prefixed cookie
+    // because NEXTAUTH_URL is https. getToken doesn't auto-detect this, so we
+    // must tell it to look for the secure cookie name (and matching salt).
+    secureCookie: process.env.NEXTAUTH_URL?.startsWith("https://") ?? false,
   });
 
   const isLoggedIn = !!token;
   const onboardingStep = (token?.onboardingStep as string | undefined) ?? "none";
 
-  if (pathname === "/" || publicPrefixes.some((p) => p !== "/" && pathname.startsWith(p))) {
+  if (pathname === "/") {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/auth/signin", req.url));
+    }
+    if (onboardingStep !== "complete") {
+      return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
+    }
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  if (publicPrefixes.some((p) => pathname.startsWith(p))) {
     if (pathname.startsWith("/auth") && isLoggedIn) {
       if (onboardingStep && onboardingStep !== "complete") {
         return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
@@ -37,9 +51,6 @@ export async function middleware(req: NextRequest) {
       if (onboardingStep === "complete") {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
-    }
-    if (pathname === "/" && isLoggedIn && onboardingStep !== "complete") {
-      return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
     }
     return NextResponse.next();
   }
