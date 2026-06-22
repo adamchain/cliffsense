@@ -61,9 +61,9 @@ export async function POST(req: Request) {
       const link = `${appUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
       await sendEmail({
         to: user.email,
-        subject: "Verify your CliffSense email",
+        subject: "Verify your MyBenefitsPA email",
         text: withDisclaimer(
-          `Welcome to CliffSense. Confirm this email address to secure your account:\n${link}\n\nThis link expires in 24 hours.`,
+          `Welcome to MyBenefitsPA. Confirm this email address to secure your account:\n${link}\n\nThis link expires in 24 hours.`,
         ),
       });
     } catch (e) {

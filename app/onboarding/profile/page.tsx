@@ -14,8 +14,8 @@ export default async function OnboardingProfilePage() {
     <aside className="hidden w-[260px] shrink-0 flex-col justify-between bg-[var(--color-cs-brand)] p-6 text-white md:flex">
       <div>
         <Link href="/" className="mb-6 flex items-center gap-2 text-sm font-medium">
-          <BrandMark size="sm" />
-          CliffSense
+          <BrandMark size="sm" onDark />
+          MyBenefitsPA
         </Link>
         <p className="text-sm leading-relaxed text-white/85">
           A few quick steps connect your profile, bank, and enrolled programs so thresholds are

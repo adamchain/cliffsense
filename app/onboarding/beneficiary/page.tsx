@@ -17,8 +17,8 @@ export default async function OnboardingBeneficiaryPage() {
     <aside className="hidden w-[260px] shrink-0 flex-col justify-between bg-[var(--color-cs-brand)] p-6 text-white md:flex">
       <div>
         <Link href="/" className="mb-6 flex items-center gap-2 text-sm font-medium">
-          <BrandMark size="sm" />
-          CliffSense
+          <BrandMark size="sm" onDark />
+          MyBenefitsPA
         </Link>
         <p className="text-sm text-white/85">
           Add the first person you support so activity and alerts stay scoped correctly.

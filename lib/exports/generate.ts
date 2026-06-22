@@ -289,7 +289,7 @@ export async function generateExport(opts: {
       lines: c.rows.length ? rowsToCsv(c.headers, c.rows).split("\n") : ["(no rows)"],
     }));
     const buffer = await renderReportPdf(
-      "CliffSense export",
+      "MyBenefitsPA export",
       `${opts.dataset} · generated ${new Date().toISOString()} · ${rangeLabel}`,
       sections,
     );
@@ -299,14 +299,14 @@ export async function generateExport(opts: {
   if (opts.format === "zip") {
     const files: Record<string, string> = {
       "manifest.txt": [
-        "CliffSense export bundle",
+        "MyBenefitsPA export bundle",
         `Generated: ${new Date().toISOString()}`,
         `Dataset: ${opts.dataset}`,
         rangeLabel,
         "",
         ...collected.map((c) => `${c.dataset}: ${c.rows.length} row(s)`),
         "",
-        "Informational only. CliffSense does not determine eligibility.",
+        "Informational only. MyBenefitsPA does not determine eligibility.",
       ].join("\n"),
     };
     for (const c of collected) {

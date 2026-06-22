@@ -32,7 +32,7 @@ export function composeDigestText(groups: DigestGroup[], frequency: "daily" | "w
     lines.push("");
   }
 
-  lines.push(`Open CliffSense: ${appUrl()}/alerts`);
+  lines.push(`Open MyBenefitsPA: ${appUrl()}/alerts`);
   return withDisclaimer(lines.join("\n"));
 }
 
@@ -98,7 +98,7 @@ export async function sendDigestForFrequency(frequency: "daily" | "weekly"): Pro
     }));
 
     const subject =
-      frequency === "weekly" ? "CliffSense weekly summary" : "CliffSense daily summary";
+      frequency === "weekly" ? "MyBenefitsPA weekly summary" : "MyBenefitsPA daily summary";
     const res = await sendEmail({ to, subject, text: composeDigestText(groups, frequency) });
     if (!res.ok) continue;
 

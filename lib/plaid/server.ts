@@ -56,7 +56,7 @@ export function getPlaidClient(): PlaidApi {
 }
 
 /**
- * Minimal Link product set for CliffSense. (Recurring is requested separately via Plaid
+ * Minimal Link product set for MyBenefitsPA. (Recurring is requested separately via Plaid
  * recurring APIs where supported — it is not valid in optional_products for many teams.)
  */
 export function linkTokenCreateConfig(): { products: Products[] } {

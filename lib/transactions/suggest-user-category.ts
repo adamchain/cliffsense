@@ -1,5 +1,5 @@
 /**
- * Maps Plaid Personal Finance Categories (+ amount direction) to CliffSense
+ * Maps Plaid Personal Finance Categories (+ amount direction) to MyBenefitsPA
  * `userCategory` values used for limits and reporting.
  *
  * @see https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv
@@ -42,7 +42,7 @@ const EXPENSE_PRIMARIES = new Set([
 ]);
 
 /**
- * Returns a suggested CliffSense category, or `null` when we should leave the row as `unclear`
+ * Returns a suggested MyBenefitsPA category, or `null` when we should leave the row as `unclear`
  * for manual review.
  */
 export function suggestUserCategoryFromPlaid(args: SuggestArgs): CliffUserCategory | null {

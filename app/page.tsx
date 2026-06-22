@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { BrandMark } from "@/components/brand/brand-mark";
 import { InlineLoginForm } from "@/components/auth/inline-login-form";
 
 export default async function HomePage() {
@@ -11,9 +11,15 @@ export default async function HomePage() {
       <div className="mx-auto grid w-full max-w-5xl items-center gap-12 md:grid-cols-2">
         {/* Left: brand + value proposition */}
         <section>
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-cs-brand)]">
-            <BrandMark size="sm" />
-            CliffSense
+          <Link href="/" className="inline-flex items-center" aria-label="MyBenefitsPA home">
+            <Image
+              src="/mybenefitspa-logo.png"
+              alt="MyBenefitsPA"
+              width={180}
+              height={142}
+              priority
+              className="h-14 w-auto"
+            />
           </Link>
 
           <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[var(--color-cs-text)] sm:text-4xl">
@@ -21,7 +27,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            CliffSense connects to your bank through Plaid, shows how deposits and balances compare to common program
+            MyBenefitsPA connects to your bank through Plaid, shows how deposits and balances compare to common program
             thresholds, and emails you before you approach a limit — so you can plan with your counselor or trustee.
           </p>
 

@@ -13,8 +13,8 @@ export default async function OnboardingNotificationsPage() {
   const aside = (
     <aside className="hidden w-[260px] shrink-0 flex-col bg-[var(--color-cs-brand)] p-6 text-white md:flex">
       <Link href="/" className="mb-6 flex items-center gap-2 text-sm font-medium">
-        <BrandMark size="sm" />
-        CliffSense
+        <BrandMark size="sm" onDark />
+        MyBenefitsPA
       </Link>
       <p className="text-sm text-white/85">
         Choose how often we email summaries. You can change this anytime in Settings.

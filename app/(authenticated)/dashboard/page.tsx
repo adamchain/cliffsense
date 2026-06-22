@@ -210,7 +210,7 @@ export default async function DashboardPage() {
                   <IconInfoCircle size={16} stroke={1.5} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[13px] font-medium">Welcome to CliffSense</div>
+                  <div className="text-[13px] font-medium">Welcome to MyBenefitsPA</div>
                   <p className="text-xs leading-snug text-[var(--color-cs-text-secondary)]">
                     Connect your bank and confirm enrolled programs to see how activity lines up with your benefit
                     programs. This is an informational assistant — not a determination of eligibility.

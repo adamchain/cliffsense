@@ -8,16 +8,35 @@ const PX: Record<"sm" | "md" | "lg" | "xl", number> = {
   xl: 40,
 };
 
-export function BrandMark({ size = "md" }: { size?: "sm" | "md" | "lg" | "xl" }) {
+/**
+ * The MyBenefitsPA state-and-check icon. Its navy outline is invisible on the
+ * brand-colored header/aside, so pass `onDark` to seat it on a white chip.
+ */
+export function BrandMark({
+  size = "md",
+  onDark = false,
+}: {
+  size?: "sm" | "md" | "lg" | "xl";
+  onDark?: boolean;
+}) {
   const px = PX[size];
-  return (
+  const img = (
     <Image
-      src="/cliffsense-icon.png"
+      src="/mybenefitspa-icon.png"
       alt=""
       width={px}
       height={px}
       className="inline-block shrink-0 object-contain align-middle"
       sizes={`${px}px`}
     />
+  );
+  if (!onDark) return img;
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center rounded-md bg-white align-middle shadow-sm"
+      style={{ width: px + 8, height: px + 8 }}
+    >
+      {img}
+    </span>
   );
 }

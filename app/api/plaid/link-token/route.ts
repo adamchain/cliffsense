@@ -74,7 +74,7 @@ export async function POST(req: Request) {
   const client = getPlaidClient();
   const base = {
     user: { client_user_id: beneficiaryId },
-    client_name: "CliffSense",
+    client_name: "MyBenefitsPA",
     language: "en" as const,
     country_codes: linkCountryCodes,
     webhook: getPlaidWebhookUrl(),

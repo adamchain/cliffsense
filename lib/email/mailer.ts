@@ -22,7 +22,7 @@ export function appUrl(): string {
 }
 
 export function defaultFrom(): string {
-  return process.env.RESEND_FROM_EMAIL?.trim() || "CliffSense <onboarding@resend.dev>";
+  return process.env.RESEND_FROM_EMAIL?.trim() || "MyBenefitsPA <onboarding@resend.dev>";
 }
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
@@ -61,8 +61,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 }
 
-const DISCLAIMER = "Informational only — CliffSense does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
+const DISCLAIMER = "Informational only — MyBenefitsPA does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
 
 export function withDisclaimer(body: string): string {
-  return `${body}\n\n— CliffSense\n${DISCLAIMER}`;
+  return `${body}\n\n— MyBenefitsPA\n${DISCLAIMER}`;
 }

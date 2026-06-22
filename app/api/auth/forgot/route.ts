@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const link = `${appUrl()}/auth/reset?token=${encodeURIComponent(token)}`;
     await sendEmail({
       to: user.email,
-      subject: "Reset your CliffSense password",
+      subject: "Reset your MyBenefitsPA password",
       text: withDisclaimer(
         `We received a request to reset your password. Set a new one here:\n${link}\n\nThis link expires in 1 hour. If you didn't request this, you can ignore this email.`,
       ),

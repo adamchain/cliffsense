@@ -39,7 +39,7 @@ export function AccountConnectionActions({
   }
 
   async function disconnect() {
-    if (!confirm(`Disconnect ${institutionName}? This removes its transactions from CliffSense.`)) {
+    if (!confirm(`Disconnect ${institutionName}? This removes its transactions from MyBenefitsPA.`)) {
       return;
     }
     setBusy("disconnect");

@@ -8,8 +8,8 @@ export default async function WelcomePage() {
     <div className="min-h-screen bg-[var(--color-cs-surface)] text-[var(--color-cs-text)]">
       <header className="flex h-12 items-center justify-between border-b border-[var(--color-cs-border)] bg-[var(--color-cs-brand)] px-4 text-white">
         <Link href="/auth/signin" className="flex items-center gap-2 text-sm font-medium">
-          <BrandMark size="sm" />
-          CliffSense
+          <BrandMark size="sm" onDark />
+          MyBenefitsPA
         </Link>
         <nav className="flex items-center gap-3 text-sm">
           {session ? (
@@ -36,7 +36,7 @@ export default async function WelcomePage() {
           Stay under the limits that keep your benefits.
         </h1>
         <p className="mt-4 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-          CliffSense connects to your bank through Plaid, shows how deposits and balances compare to
+          MyBenefitsPA connects to your bank through Plaid, shows how deposits and balances compare to
           common program thresholds, and emails you before you approach a limit — so you can plan with
           your counselor or trustee.
         </p>

@@ -111,7 +111,7 @@ export function PlaidConnectModal({
             <header className="flex items-center justify-between border-b border-[var(--color-cs-border)] bg-[var(--color-cs-brand)] px-4 py-3.5 text-white">
               <div className="flex min-w-0 items-center gap-3">
                 <span
-                  className="flex shrink-0 overflow-hidden rounded-[5px] shadow-[0_2px_10px_rgba(0,0,0,0.25)] ring-2 ring-white/35"
+                  className="flex shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,0.25)] ring-2 ring-white/35"
                   aria-hidden
                 >
                   <BrandMark size="lg" />
@@ -132,7 +132,7 @@ export function PlaidConnectModal({
 
             <div className="space-y-4 px-5 py-5">
               <p className="text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-                Plaid gives CliffSense read-only access to balances and transactions. We never
+                Plaid gives MyBenefitsPA read-only access to balances and transactions. We never
                 see your bank credentials and can&apos;t move money.
               </p>
 

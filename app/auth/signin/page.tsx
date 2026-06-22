@@ -165,7 +165,7 @@ export default function SignInPage() {
           Send me a sign-in link
         </button>
         <p className="mt-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
-          New to CliffSense?{" "}
+          New to MyBenefitsPA?{" "}
           <Link href="/auth/signup" className="font-medium text-[var(--color-cs-brand)]">
             Create an account
           </Link>

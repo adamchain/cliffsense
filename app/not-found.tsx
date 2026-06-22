@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-cs-surface)] px-6 text-center text-[var(--color-cs-text)]">
       <Link href="/" className="mb-6 flex items-center gap-2 text-sm font-medium text-[var(--color-cs-brand)]">
         <BrandMark size="sm" />
-        CliffSense
+        MyBenefitsPA
       </Link>
       <h1 className="text-2xl font-medium">Page not found</h1>
       <p className="mt-2 max-w-md text-[13px] text-[var(--color-cs-text-secondary)]">

@@ -224,8 +224,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
       !breachNow;
 
     const messages = {
-      breach: `Reference limit for “${th.label}” may be reached based on current activity in CliffSense. This is informational only—confirm with SSA, SNAP, or a qualified benefits counselor before taking action.`,
-      warn: `Activity is approaching a reference limit for “${th.label}”. Review recent deposits with a counselor; CliffSense does not determine eligibility.`,
+      breach: `Reference limit for “${th.label}” may be reached based on current activity in MyBenefitsPA. This is informational only—confirm with SSA, SNAP, or a qualified benefits counselor before taking action.`,
+      warn: `Activity is approaching a reference limit for “${th.label}”. Review recent deposits with a counselor; MyBenefitsPA does not determine eligibility.`,
       predictive: `Based on recurring patterns this month, gross earned activity could approach “${th.label}” before month-end. Confirm details with SSA or a representative.`,
     };
 

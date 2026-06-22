@@ -164,7 +164,7 @@ export default function SignUpPage() {
         sideBody={
           <>
             <p>
-              CliffSense helps you see how bank deposits and balances relate to common program limits,
+              MyBenefitsPA helps you see how bank deposits and balances relate to common program limits,
               and emails you before you approach a threshold — so you can plan with your counselor or
               agency.
             </p>
@@ -206,7 +206,7 @@ export default function SignUpPage() {
                 Create your account
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
-                Tell us how you&apos;ll be using CliffSense. This shapes your setup and the features
+                Tell us how you&apos;ll be using MyBenefitsPA. This shapes your setup and the features
                 you&apos;ll see first.
               </p>
               <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">

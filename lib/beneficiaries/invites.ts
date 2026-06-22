@@ -78,9 +78,9 @@ export async function createInvite(params: {
   const name = `${ben.firstName ?? ""} ${ben.lastName ?? ""}`.trim() || "a beneficiary";
   await sendEmail({
     to: email,
-    subject: "You've been invited to CliffSense",
+    subject: "You've been invited to MyBenefitsPA",
     text: withDisclaimer(
-      `You've been invited to help monitor benefit thresholds for ${name} on CliffSense as a ${
+      `You've been invited to help monitor benefit thresholds for ${name} on MyBenefitsPA as a ${
         params.role === "co_manager" ? "co-manager" : "viewer"
       }.\n\nAccept the invitation (sign in or create an account with this email address):\n${link}\n\nThis link expires in ${INVITE_TTL_DAYS} days.`,
     ),

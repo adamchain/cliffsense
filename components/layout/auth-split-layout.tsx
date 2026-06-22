@@ -25,8 +25,8 @@ export function AuthSplitLayout({
             href="/auth/signin"
             className="mb-6 inline-flex items-center gap-3.5 text-[17px] font-semibold tracking-tight text-white hover:text-white/95 lg:mb-10"
           >
-            <BrandMark size="xl" />
-            CliffSense
+            <BrandMark size="xl" onDark />
+            MyBenefitsPA
           </Link>
           <h2 className="text-[22px] font-semibold leading-snug tracking-tight text-white sm:text-[26px]">{sideTitle}</h2>
           <div className="mt-3 text-[13px] leading-[1.55] text-white/88 sm:mt-4">{sideBody}</div>

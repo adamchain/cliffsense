@@ -40,7 +40,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       continue;
     }
 
-    const subject = `CliffSense: ${level === "breach" ? "Important" : "Heads up"} — threshold activity`;
+    const subject = `MyBenefitsPA: ${level === "breach" ? "Important" : "Heads up"} — threshold activity`;
     const res = await sendEmail({ to, subject, text: withDisclaimer(a.message as string) });
     if (!res.ok) {
       continue;

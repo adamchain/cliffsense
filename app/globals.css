@@ -2,25 +2,29 @@
 
 @theme inline {
   --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  --color-cs-brand: #2b5797;
-  --color-cs-brand-hover: #1f4373;
-  --color-cs-surface: #faf9f8;
+  /* MyBenefitsPA brand palette (derived from the logo) */
+  --color-cs-brand: #1b6cc4;
+  --color-cs-brand-hover: #15579e;
+  --color-cs-navy: #0f2a4c;
+  --color-cs-accent-green: #67b13e;
+  --color-cs-accent-orange: #db8a1e;
+  --color-cs-surface: #f8fafc;
   --color-cs-card: #ffffff;
-  --color-cs-border: #edebe9;
-  --color-cs-text: #201f1e;
-  --color-cs-text-secondary: #605e5c;
-  --color-cs-text-muted: #a19f9d;
-  --color-cs-success: #107c10;
-  --color-cs-warning: #ca5010;
+  --color-cs-border: #e3e8ef;
+  --color-cs-text: #16243a;
+  --color-cs-text-secondary: #566175;
+  --color-cs-text-muted: #97a0ad;
+  --color-cs-success: #4f9e2a;
+  --color-cs-warning: #c2740f;
   --color-cs-danger: #a4262c;
-  --color-cs-info: #2b5797;
-  --color-cs-success-bg: #dff6dd;
-  --color-cs-warning-bg: #fed9cc;
+  --color-cs-info: #1b6cc4;
+  --color-cs-success-bg: #e7f4dc;
+  --color-cs-warning-bg: #fbe7cf;
   --color-cs-danger-bg: #fde7e9;
-  --color-cs-info-bg: #deecf9;
-  --color-cs-nav-hover: #f3f2f1;
-  --color-cs-input-border: #8a8886;
-  --color-cs-input-bottom: #605e5c;
+  --color-cs-info-bg: #e3eefb;
+  --color-cs-nav-hover: #eef2f7;
+  --color-cs-input-border: #8a909a;
+  --color-cs-input-bottom: #566175;
 }
 
 html,
@@ -67,7 +71,7 @@ body {
   width: 38%;
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, transparent 0%, #2b5797 50%, #1f4373 100%);
+  background: linear-gradient(90deg, transparent 0%, #1b6cc4 50%, #0f2a4c 100%);
   animation: cs-auth-bar 1.25s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 

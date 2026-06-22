@@ -10,7 +10,7 @@ const ROLE_LABEL: Record<string, string> = { co_manager: "co-manager", viewer: "
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-lg px-6 py-16 font-sans text-[var(--color-cs-text)]">
-      <h1 className="text-xl font-medium">CliffSense invitation</h1>
+      <h1 className="text-xl font-medium">MyBenefitsPA invitation</h1>
       <div className="mt-4 rounded border border-[var(--color-cs-border)] bg-white p-5 text-[13px] leading-relaxed">
         {children}
       </div>

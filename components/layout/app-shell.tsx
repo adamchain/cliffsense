@@ -44,8 +44,8 @@ export function AppShell({
           href="/dashboard"
           className="group flex items-center gap-3 rounded-md py-0.5 pl-0.5 pr-2 -ml-0.5 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
         >
-          <BrandMark size="xl" />
-          <span className="text-[15px] font-semibold tracking-tight sm:text-base">CliffSense</span>
+          <BrandMark size="lg" onDark />
+          <span className="text-[15px] font-semibold tracking-tight sm:text-base">MyBenefitsPA</span>
         </Link>
         <div className="hidden max-w-[460px] flex-1 items-center gap-2 rounded bg-white/15 px-3 py-1.5 text-[13px] text-white/85 md:flex">
           <IconSearch size={16} aria-hidden className="opacity-80" />

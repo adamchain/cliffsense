@@ -21,12 +21,12 @@ export default async function OnboardingPlaidPage() {
     <aside className="hidden w-[280px] shrink-0 flex-col justify-between bg-[var(--color-cs-brand)] p-7 text-white lg:flex">
       <div>
         <Link href="/" className="mb-8 flex items-center gap-2.5 text-base font-medium">
-          <BrandMark size="md" />
-          CliffSense
+          <BrandMark size="md" onDark />
+          MyBenefitsPA
         </Link>
         <h2 className="text-[22px] font-medium leading-snug">Connect your bank</h2>
         <p className="mt-3 text-[13px] leading-relaxed text-white/85">
-          Plaid lets CliffSense read balances and transactions — not move money. You can disconnect anytime.
+          Plaid lets MyBenefitsPA read balances and transactions — not move money. You can disconnect anytime.
         </p>
       </div>
       <p className="text-[11px] text-white/70">
@@ -66,7 +66,7 @@ export default async function OnboardingPlaidPage() {
 
       <div className="mt-6 max-w-xl rounded border border-[var(--color-cs-border)] bg-white p-6 shadow-sm">
         <div className="mb-5 flex items-center justify-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--color-cs-brand)] text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-[var(--color-cs-border)] bg-white">
             <BrandMark size="lg" />
           </div>
           <span className="select-none text-lg tracking-widest text-[var(--color-cs-text-muted)]" aria-hidden>
