@@ -15,10 +15,15 @@ export function AuthSplitLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[var(--color-cs-text)] lg:flex-row">
-      <aside className="relative flex w-full shrink-0 flex-col justify-between border-b border-white/10 bg-[var(--color-cs-brand)] px-6 py-8 text-white sm:px-8 sm:py-10 lg:w-[420px] lg:border-b-0 lg:border-r lg:px-11 lg:py-12">
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent"
+      <aside className="relative flex w-full shrink-0 flex-col justify-between overflow-hidden border-b border-white/10 bg-gradient-to-b from-[var(--color-cs-brand)] to-[var(--color-cs-navy)] px-6 py-8 text-white sm:px-8 sm:py-10 lg:w-[420px] lg:border-b-0 lg:border-r lg:px-11 lg:py-12">
+        {/* decorative accent circles, echoing the marketing landing page */}
+        <span
           aria-hidden
+          className="pointer-events-none absolute -right-24 -top-20 h-72 w-72 rounded-full bg-white/[0.06]"
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-16 left-10 h-44 w-44 rounded-full bg-[var(--color-cs-accent-orange)]/20"
         />
         <div className="relative z-[1]">
           <Link

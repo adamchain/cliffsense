@@ -284,7 +284,7 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
             className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs ${
               filter === c.id
                 ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]"
-                : "border-[var(--color-cs-border)] bg-white text-[#323130] hover:border-[var(--color-cs-brand)]"
+                : "border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
             }`}
           >
             {c.label}

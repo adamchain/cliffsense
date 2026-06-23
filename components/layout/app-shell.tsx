@@ -62,8 +62,7 @@ export function AppShell({
             <IconHelp size={18} stroke={1.5} />
           </span>
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-medium"
-            style={{ background: "#c19c00" }}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-cs-avatar)] text-[11px] font-medium"
             title={userName}
           >
             {userInitials}
@@ -101,7 +100,7 @@ export function AppShell({
 
 export function AppToolbar({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-3.5 flex flex-wrap items-center gap-1 rounded border border-[var(--color-cs-border)] bg-white p-1.5 text-[13px]">
+    <div className="mb-3.5 flex flex-wrap items-center gap-1 rounded-xl border border-[var(--color-cs-border)] bg-white p-1.5 text-[13px]">
       {children}
     </div>
   );
@@ -120,10 +119,10 @@ export function ToolbarButton({
   onClick?: () => void;
   disabled?: boolean;
 }) {
-  const className = `flex items-center gap-1.5 rounded-sm px-2.5 py-1 ${
+  const className = `flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${
     primary
       ? "text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
-      : "text-[#323130] hover:bg-[var(--color-cs-nav-hover)]"
+      : "text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
   } ${disabled ? "pointer-events-none opacity-50" : ""}`;
   if (href) {
     return (
@@ -151,9 +150,9 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded border border-[var(--color-cs-border)] bg-white p-4 md:p-4">
+    <section className="cs-card p-4 md:p-5">
       <div className="mb-2.5 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-[var(--color-cs-text)]">{title}</h2>
+        <h2 className="text-sm font-semibold text-[var(--color-cs-text)]">{title}</h2>
         {action && actionHref && (
           <Link
             href={actionHref}

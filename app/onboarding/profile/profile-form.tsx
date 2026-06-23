@@ -51,7 +51,7 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
     <form onSubmit={onSubmit} className="mt-8 max-w-md space-y-3.5">
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#323130]" htmlFor="fn">
+          <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="fn">
             First name
           </label>
           <input
@@ -63,7 +63,7 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#323130]" htmlFor="ln">
+          <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="ln">
             Last name
           </label>
           <input
@@ -76,13 +76,13 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-[#323130]" htmlFor="st">
+        <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="st">
           State (2 letters)
         </label>
         <UsStateSelect id="st" value={state} onChange={setState} disabled={loading} />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-[#323130]" htmlFor="hh">
+        <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="hh">
           Household size
         </label>
         <input

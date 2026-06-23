@@ -43,7 +43,7 @@ export function InlineLoginForm() {
       </p>
       <form className="mt-5 flex flex-col gap-3.5" onSubmit={onSubmit}>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#323130]" htmlFor="email">
+          <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="email">
             Email address
           </label>
           <input
@@ -59,7 +59,7 @@ export function InlineLoginForm() {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-xs font-medium text-[#323130]">
+          <div className="flex items-center justify-between text-xs font-medium text-[var(--color-cs-text)]">
             <label htmlFor="password">Password</label>
             <Link href="/auth/forgot" className="font-normal text-[var(--color-cs-brand)] hover:underline">
               Forgot?

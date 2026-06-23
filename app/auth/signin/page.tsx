@@ -86,14 +86,14 @@ export default function SignInPage() {
         </div>
       }
     >
-      <div className="w-full max-w-[360px]">
-        <h1 className="text-2xl font-medium text-[var(--color-cs-text)]">Sign in</h1>
-        <p className="mt-1.5 text-[13px] text-[var(--color-cs-text-secondary)]">
+      <div className="w-full max-w-[380px]">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[var(--color-cs-navy)]">Sign in</h1>
+        <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
           Use the email address you signed up with.
         </p>
-        <form className="mt-6 flex flex-col gap-3.5" onSubmit={onSubmit}>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-[#323130]" htmlFor="email">
+        <form className="mt-7 flex flex-col gap-4" onSubmit={onSubmit}>
+          <div className="flex flex-col gap-1.5">
+            <label className="cs-label" htmlFor="email">
               Email address
             </label>
             <input
@@ -105,13 +105,13 @@ export default function SignInPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="h-8 w-full rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 text-[13px] text-[var(--color-cs-text)] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
+              className="cs-input"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs font-medium text-[#323130]">
-              <label htmlFor="password">Password</label>
-              <Link href="/auth/forgot" className="font-normal text-[var(--color-cs-brand)]">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="cs-label" htmlFor="password">Password</label>
+              <Link href="/auth/forgot" className="text-xs font-semibold text-[var(--color-cs-brand)] hover:underline">
                 Forgot?
               </Link>
             </div>
@@ -125,32 +125,32 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="h-8 w-full rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 pr-9 text-[13px] text-[var(--color-cs-text)] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
+                className="cs-input pr-10"
               />
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-cs-text-secondary)]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
                 onClick={() => setShowPw(!showPw)}
                 aria-label={showPw ? "Hide password" : "Show password"}
               >
-                {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                {showPw ? <IconEyeOff size={18} /> : <IconEye size={18} />}
               </button>
             </div>
           </div>
-          <label className="mt-1 flex items-center gap-2 text-xs text-[#323130]">
-            <input type="checkbox" className="h-3.5 w-3.5 accent-[var(--color-cs-brand)]" />
+          <label className="mt-0.5 flex items-center gap-2 text-[13px] text-[var(--color-cs-text-secondary)]">
+            <input type="checkbox" className="h-4 w-4 accent-[var(--color-cs-brand)]" />
             Keep me signed in on this device
           </label>
-          {error && <p className="text-xs text-[var(--color-cs-danger)]">{error}</p>}
+          {error && <p className="text-[13px] font-medium text-[var(--color-cs-danger)]">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-sm bg-[var(--color-cs-brand)] py-2.5 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-60"
+            className="cs-btn cs-btn-primary mt-1 w-full"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <div className="my-5 flex items-center gap-2.5 text-[11px] text-[var(--color-cs-text-muted)]">
+        <div className="my-6 flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--color-cs-text-muted)]">
           <span className="h-px flex-1 bg-[var(--color-cs-border)]" />
           OR
           <span className="h-px flex-1 bg-[var(--color-cs-border)]" />
@@ -159,14 +159,14 @@ export default function SignInPage() {
           type="button"
           disabled
           title="Magic link coming soon"
-          className="flex w-full items-center justify-center gap-2 rounded-sm border border-[var(--color-cs-input-border)] bg-white py-2.5 text-[13px] text-[var(--color-cs-text)] opacity-50"
+          className="cs-btn cs-btn-secondary w-full"
         >
-          <IconMail size={16} className="text-[var(--color-cs-brand)]" aria-hidden />
+          <IconMail size={18} className="text-[var(--color-cs-brand)]" aria-hidden />
           Send me a sign-in link
         </button>
-        <p className="mt-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
+        <p className="mt-7 text-center text-sm text-[var(--color-cs-text-secondary)]">
           New to MyBenefitsPA?{" "}
-          <Link href="/auth/signup" className="font-medium text-[var(--color-cs-brand)]">
+          <Link href="/auth/signup" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
             Create an account
           </Link>
         </p>

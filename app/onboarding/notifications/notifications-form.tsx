@@ -43,7 +43,7 @@ export function NotificationsForm({ defaultEmail }: { defaultEmail: string }) {
   return (
     <form onSubmit={onSubmit} className="mt-8 max-w-md space-y-4">
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-[#323130]" htmlFor="em">
+        <label className="text-xs font-medium text-[var(--color-cs-text)]" htmlFor="em">
           Alert email
         </label>
         <input
@@ -55,7 +55,7 @@ export function NotificationsForm({ defaultEmail }: { defaultEmail: string }) {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-medium text-[#323130]">Frequency</p>
+        <p className="text-xs font-medium text-[var(--color-cs-text)]">Frequency</p>
         {frequencies.map((f) => (
           <label
             key={f.id}

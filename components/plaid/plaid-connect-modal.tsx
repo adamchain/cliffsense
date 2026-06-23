@@ -21,7 +21,7 @@ const VARIANT_CLASS: Record<Variant, string> = {
   ghost:
     "inline-flex items-center gap-2 rounded-sm border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]",
   toolbar:
-    "flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[13px] text-[#323130] hover:bg-[var(--color-cs-nav-hover)]",
+    "flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[13px] text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]",
 };
 
 export function PlaidConnectModal({

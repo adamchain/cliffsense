@@ -53,7 +53,7 @@ const types = [
 const toneBg: Record<string, string> = {
   a: "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]",
   b: "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]",
-  c: "bg-[#fff4ce] text-[#797673]",
+  c: "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]",
   d: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
 };
 
@@ -202,7 +202,7 @@ export default function SignUpPage() {
 
           {step === 1 && (
             <>
-              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">
+              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">
                 Create your account
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
@@ -218,7 +218,7 @@ export default function SignUpPage() {
                       key={t.id}
                       type="button"
                       onClick={() => setAccountType(t.id)}
-                      className={`rounded-[2px] border bg-white p-4 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] ${
+                      className={`rounded-xl border bg-white p-4 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] ${
                         selected
                           ? "border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] p-[15px] shadow-[0_1px_0_rgba(0,0,0,0.06)] ring-1 ring-[var(--color-cs-brand)]/15"
                           : "border-[var(--color-cs-border)] hover:border-[var(--color-cs-brand)]/55 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
@@ -226,7 +226,7 @@ export default function SignUpPage() {
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[2px] ${toneBg[t.tone]}`}
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${toneBg[t.tone]}`}
                         >
                           <Icon size={20} stroke={1.5} aria-hidden />
                         </div>
@@ -269,7 +269,7 @@ export default function SignUpPage() {
 
           {step === 2 && (
             <>
-              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">Your details</h1>
+              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">Your details</h1>
               <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
                 We&apos;ll use this on your dashboard and in alert emails.
               </p>
@@ -318,7 +318,7 @@ export default function SignUpPage() {
                 </div>
                 {error ? (
                   <p
-                    className="rounded-[2px] border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
+                    className="rounded-xl border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
                     role="alert"
                   >
                     {error}
@@ -347,12 +347,12 @@ export default function SignUpPage() {
 
           {step === 3 && (
             <>
-              <h1 className="text-[28px] font-semibold tracking-tight text-[var(--color-cs-text)]">Review &amp; create</h1>
+              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">Review &amp; create</h1>
               <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
                 You&apos;re almost done. We&apos;ll send threshold reminders to{" "}
                 <span className="font-semibold text-[var(--color-cs-text)]">{email}</span>.
               </p>
-              <ul className="mt-6 space-y-0 overflow-hidden rounded-[2px] border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+              <ul className="mt-6 space-y-0 overflow-hidden rounded-xl border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
                 <li className="flex justify-between gap-4 border-b border-[var(--color-cs-border)] px-4 py-3">
                   <span className="text-[var(--color-cs-text-muted)]">Account type</span>
                   <span className="font-medium text-[var(--color-cs-text)] text-right">
@@ -366,7 +366,7 @@ export default function SignUpPage() {
               </ul>
               {error ? (
                 <p
-                  className="mt-4 rounded-[2px] border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
+                  className="mt-4 rounded-xl border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
                   role="alert"
                 >
                   {error}

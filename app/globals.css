@@ -25,6 +25,7 @@
   --color-cs-nav-hover: #eef2f7;
   --color-cs-input-border: #8a909a;
   --color-cs-input-bottom: #566175;
+  --color-cs-avatar: #c19c00;
 }
 
 html,
@@ -32,6 +33,107 @@ body {
   font-family: var(--font-sans);
   background: var(--color-cs-surface);
   color: var(--color-cs-text);
+}
+
+/* ---------------------------------------------------------------------------
+ * Shared component classes — one place for buttons, inputs, and cards so the
+ * auth flow, the app, and the marketing landing page all read the same. Built
+ * from the cs palette above; matches the landing page's rounded, friendly look
+ * (pill buttons, soft cards, generous inputs). Layered as `components` so plain
+ * Tailwind utilities (w-full, sm:w-auto, mt-*, …) still override them.
+ * ------------------------------------------------------------------------- */
+@layer components {
+  .cs-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+  }
+  .cs-btn:disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .cs-btn-primary {
+    background: var(--color-cs-brand);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 42, 76, 0.12);
+  }
+  .cs-btn-primary:hover {
+    background: var(--color-cs-brand-hover);
+  }
+
+  .cs-btn-secondary {
+    background: #ffffff;
+    color: var(--color-cs-text);
+    border: 1px solid var(--color-cs-border);
+  }
+  .cs-btn-secondary:hover {
+    background: var(--color-cs-nav-hover);
+  }
+
+  .cs-btn-ghost {
+    background: transparent;
+    color: var(--color-cs-brand);
+    border: 2px solid var(--color-cs-brand);
+  }
+  .cs-btn-ghost:hover {
+    background: var(--color-cs-info-bg);
+  }
+
+  .cs-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-cs-text);
+  }
+
+  .cs-input {
+    height: 2.75rem;
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--color-cs-input-border);
+    background: #ffffff;
+    padding: 0 0.875rem;
+    font-size: 0.9375rem;
+    color: var(--color-cs-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cs-input::placeholder {
+    color: var(--color-cs-text-muted);
+  }
+  .cs-input:focus {
+    outline: none;
+    border-color: var(--color-cs-brand);
+    box-shadow: 0 0 0 3px rgba(27, 108, 196, 0.16);
+  }
+  .cs-input:disabled {
+    background: var(--color-cs-nav-hover);
+    color: var(--color-cs-text-muted);
+  }
+
+  /* Surface card — soft rounded panel used across app and marketing. */
+  .cs-card {
+    border-radius: 1rem;
+    border: 1px solid var(--color-cs-border);
+    background: var(--color-cs-card);
+  }
+
+  /* Orange uppercase eyebrow used above section headings on the landing page. */
+  .cs-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-cs-accent-orange);
+  }
 }
 
 /* Subtle auth loading (signup / sign-in) */
