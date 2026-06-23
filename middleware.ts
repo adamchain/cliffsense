@@ -35,7 +35,9 @@ export async function middleware(req: NextRequest) {
 
   if (pathname === "/") {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/auth/signin", req.url));
+      // Show the marketing landing page at the root URL without changing the
+      // address bar. Logged-in users fall through to onboarding/dashboard below.
+      return NextResponse.rewrite(new URL("/landing", req.url));
     }
     if (onboardingStep !== "complete") {
       return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
