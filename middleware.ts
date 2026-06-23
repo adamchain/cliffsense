@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { onboardingPathForStep } from "@/lib/onboarding/steps";
 
-const publicPrefixes = ["/", "/auth", "/resources", "/invite"];
+const publicPrefixes = ["/", "/landing", "/auth", "/resources", "/invite"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
