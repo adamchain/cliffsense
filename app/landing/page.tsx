@@ -518,9 +518,12 @@ export default function LandingPage() {
           <p className="text-sm text-[var(--color-cs-text-muted)]">
             © {new Date().getFullYear()} MyBenefitsPA. All rights reserved.
           </p>
-          <nav className="flex items-center gap-6 text-sm text-[var(--color-cs-text-secondary)]">
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--color-cs-text-secondary)]">
             <Link href="/resources" className="hover:text-[var(--color-cs-brand)]">Resources</Link>
-            <a href="#" className="hover:text-[var(--color-cs-brand)]">Privacy</a>
+            <Link href="/legal/privacy" className="hover:text-[var(--color-cs-brand)]">Privacy</Link>
+            <Link href="/legal/terms" className="hover:text-[var(--color-cs-brand)]">Terms</Link>
+            <Link href="/legal/security" className="hover:text-[var(--color-cs-brand)]">Security</Link>
+            <Link href="/legal/data-retention" className="hover:text-[var(--color-cs-brand)]">Data Retention</Link>
             <a
               href="mailto:support@mybenefitspa.com"
               className="inline-flex items-center gap-1.5 hover:text-[var(--color-cs-brand)]"
