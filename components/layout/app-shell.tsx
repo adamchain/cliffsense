@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { MobileTabBar, type NavItem } from "./mobile-tab-bar";
+import { MobileNavDrawer } from "./mobile-nav-drawer";
 import { TopbarControls } from "./topbar-controls";
 
 const nav: NavItem[] = [
@@ -63,8 +64,10 @@ export function AppShell({
   return (
     <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
       {/* ---------- Desktop sidebar (mobile uses the bottom tab bar) ---------- */}
+      {/* Pinned to the viewport: stays in place and scrolls internally, never
+          growing with or scrolling away with the page content. */}
       <nav
-        className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex"
+        className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto"
         aria-label="Main"
       >
         {/* Brand sits at the top of the sidebar */}
@@ -129,7 +132,13 @@ export function AppShell({
       {/* ---------- Main column (white) ---------- */}
       <div className="flex min-w-0 flex-1 flex-col bg-white">
         {/* ---------- Topbar: to the right of the sidebar ---------- */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-cs-border)] bg-white/85 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-[var(--color-cs-border)] bg-white/85 px-4 backdrop-blur sm:gap-3 sm:px-6">
+          {/* Hamburger opens the full nav drawer on mobile (sidebar is hidden there) */}
+          <MobileNavDrawer
+            nav={[...nav, ...secondaryNav.filter((n) => n.href !== "/settings")]}
+            activeHref={activeHref}
+            alertCount={alertCount}
+          />
           {/* Brand shows in the topbar only on mobile (sidebar is hidden there) */}
           <Link
             href="/dashboard"

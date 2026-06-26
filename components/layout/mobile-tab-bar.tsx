@@ -78,7 +78,7 @@ export function MobileTabBar({
             className="absolute inset-0 bg-[var(--color-cs-navy)]/40"
             onClick={() => setOpen(false)}
           />
-          <div className="cs-safe-bottom absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-5 pb-7 shadow-[var(--shadow-cs-float)]">
+          <div className="cs-safe-bottom absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-16 shadow-[var(--shadow-cs-float)]">
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--color-cs-border)]" />
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-bold text-[var(--color-cs-text)]">More</h2>

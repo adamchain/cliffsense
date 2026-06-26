@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
+import { AccountsPanel, type AccountConnection } from "@/components/transactions/accounts-panel";
 
 type UserCategory =
   | "earned_income"
@@ -80,8 +81,15 @@ function CategoryIcon({ cat }: { cat: UserCategory }) {
   return null;
 }
 
-export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | null }) {
+export function TransactionsView({
+  beneficiaryId,
+  connections = [],
+}: {
+  beneficiaryId: string | null;
+  connections?: AccountConnection[];
+}) {
   const [filter, setFilter] = useState("all");
+  const [showAccounts, setShowAccounts] = useState(false);
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [page, setPage] = useState(1);
@@ -257,9 +265,12 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
           <IconCalendar size={16} stroke={1.5} aria-hidden />
           Date range
         </ToolbarButton>
-        <ToolbarButton href="/accounts">
+        <ToolbarButton
+          primary={showAccounts}
+          onClick={() => setShowAccounts((v) => !v)}
+        >
           <IconBuildingBank size={16} stroke={1.5} aria-hidden />
-          Accounts
+          {showAccounts ? "Hide accounts" : `Accounts${connections.length ? ` (${connections.length})` : ""}`}
         </ToolbarButton>
         <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
         <ToolbarButton onClick={() => void applyPlaidSuggestions()} disabled={applyingPlaid}>
@@ -271,6 +282,10 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
           Export
         </ToolbarButton>
       </AppToolbar>
+
+      {showAccounts && (
+        <AccountsPanel beneficiaryId={beneficiaryId} connections={connections} />
+      )}
 
       <div className="mb-3 flex flex-wrap gap-1.5">
         {chips.map((c) => (
@@ -312,7 +327,7 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
       )}
 
       <section className="overflow-hidden rounded border border-[var(--color-cs-border)] bg-white">
-        <div className="overflow-x-auto">
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[640px] border-collapse text-[13px] table-fixed">
             <colgroup>
               <col className="w-[92px]" />
@@ -435,6 +450,89 @@ export function TransactionsView({ beneficiaryId }: { beneficiaryId: string | nu
             </tbody>
           </table>
         </div>
+
+        {/* ---------- Mobile card list ---------- */}
+        <div className="divide-y divide-[var(--color-cs-border)] sm:hidden">
+          {loading && rows.length === 0 ? (
+            <div className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">Loading…</div>
+          ) : rows.length === 0 ? (
+            <div className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">
+              No transactions yet. Connect a bank and run <strong>Sync</strong>, or widen your filters.
+            </div>
+          ) : (
+            rows.map((r) => {
+              const inflow = isInflowCents(r.amountCents);
+              const highlightUnclear = r.userCategory === "unclear";
+              const excluded = Boolean(r.excludedFromThresholds);
+              const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
+              return (
+                <div key={r._id} className={`px-3 py-3 ${highlightUnclear ? "bg-[#fffbf4]" : ""}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-[var(--color-cs-text)]">{r.name || "—"}</div>
+                      <div className="mt-0.5 truncate text-[11px] text-[var(--color-cs-text-secondary)]">
+                        {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
+                      </div>
+                    </div>
+                    <div
+                      className={`shrink-0 text-right font-medium tabular-nums ${
+                        inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
+                      }`}
+                    >
+                      {formatSignedUsd(r.amountCents)}
+                    </div>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[var(--color-cs-text-muted)]">
+                    <span>{formatShortDate(r.date)}</span>
+                    {r.pending && <span>· Pending</span>}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${badgeClass(r.userCategory)}`}
+                    >
+                      <CategoryIcon cat={r.userCategory} />
+                      {CATEGORY_LABEL[r.userCategory]}
+                    </span>
+                    <select
+                      aria-label="Change category"
+                      className="h-7 rounded-sm border border-[var(--color-cs-border)] bg-white px-1.5 text-[11px] text-[var(--color-cs-text)]"
+                      value={r.userCategory}
+                      onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
+                    >
+                      {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
+                        <option key={k} value={k}>
+                          {CATEGORY_LABEL[k]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {r.suggestedUserCategory &&
+                  r.suggestedUserCategory !== r.userCategory &&
+                  r.suggestedUserCategory !== "unclear" ? (
+                    <p className="mt-1.5 text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
+                      Suggested for limits:{" "}
+                      <span className="font-medium text-[var(--color-cs-text-secondary)]">
+                        {CATEGORY_LABEL[r.suggestedUserCategory]}
+                      </span>
+                    </p>
+                  ) : null}
+                  {countsTowardEarned && (
+                    <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] text-[var(--color-cs-text-secondary)]">
+                      <input
+                        type="checkbox"
+                        checked={!excluded}
+                        onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
+                        aria-label="Count this transaction toward earned-income limits"
+                      />
+                      <span>Count toward limits</span>
+                    </label>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
         <div className="flex items-center justify-between border-t border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-3.5 py-2.5 text-xs text-[var(--color-cs-text-secondary)]">
           <span>
             Showing {showingFrom}–{showingTo} of {total} transactions

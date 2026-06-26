@@ -20,6 +20,27 @@ type AlertRow = {
   };
 };
 
+/** Color accent (left bar + level pill) keyed to the alert's severity. */
+function levelAccent(level: string): { bar: string; pill: string } {
+  const l = level.toLowerCase();
+  if (l === "breach" || l === "critical" || l === "danger") {
+    return {
+      bar: "border-l-[var(--color-cs-danger)]",
+      pill: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
+    };
+  }
+  if (l === "warning" || l === "warn" || l === "watch") {
+    return {
+      bar: "border-l-[var(--color-cs-warning)]",
+      pill: "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]",
+    };
+  }
+  return {
+    bar: "border-l-[var(--color-cs-brand)]",
+    pill: "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]",
+  };
+}
+
 export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,15 +122,19 @@ export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) 
               snap?.currentValueCents != null && snap?.limitCents != null
                 ? `${formatPlainUsdFromCents(snap.currentValueCents)} vs ${formatPlainUsdFromCents(snap.limitCents)}`
                 : null;
+            const accent = levelAccent(a.level);
             return (
               <article
                 key={a._id}
-                className="rounded border border-[var(--color-cs-border)] bg-white p-3 text-[13px]"
+                className={`rounded border border-[var(--color-cs-border)] border-l-4 ${accent.bar} bg-white p-3 text-[13px]`}
               >
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">
-                    {a.level} · {a.trigger}
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${accent.pill}`}
+                  >
+                    {a.level}
                   </span>
+                  <span className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">{a.trigger}</span>
                   <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
                     {new Date(a.createdAt).toLocaleString()}
                   </span>
