@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AdminHomePage() {
   const session = await auth();
@@ -16,14 +17,14 @@ export default async function AdminHomePage() {
       </p>
       <ul className="mt-4 list-inside list-disc text-sm text-[var(--color-cs-brand)]">
         <li>
-          <a className="hover:underline" href="/admin/thresholds">
+          <Link className="hover:underline" href="/admin/thresholds">
             System thresholds
-          </a>
+          </Link>
         </li>
         <li>
-          <a className="hover:underline" href="/admin/users">
+          <Link className="hover:underline" href="/admin/users">
             Users
-          </a>
+          </Link>
         </li>
       </ul>
     </>
