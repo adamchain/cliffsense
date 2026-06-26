@@ -1,172 +1,88 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
-import {
-  IconArrowRight,
-  IconAdjustmentsHorizontal,
-  IconBell,
-  IconBuildingBank,
-  IconChartLine,
-  IconClockHour4,
-  IconFileText,
-  IconHeartHandshake,
-  IconLock,
-  IconMessageChatbot,
-  IconPhone,
-  IconSearch,
-  IconShieldCheck,
-} from "@tabler/icons-react";
+import { IconArrowRight, IconLock, IconShieldCheck, IconReceipt2 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "MyBenefitsPA — Stay under the limits that keep your benefits",
   description:
-    "MyBenefitsPA links to your bank, compares balances and deposits to benefit-program thresholds, and emails you before you approach a limit.",
+    "MyBenefitsPA links to your bank, compares balances and deposits to benefit-program limits, and helps you report changes on time — with calm, plain-language guidance.",
 };
 
 /* ----------------------------------------------------------------------------
- * Landing page — layout adapted from the "Soller" marketing template, restyled
- * with the MyBenefitsPA palette (brand blue + navy in place of purple, with
- * green/orange accent circles) and benefits-program copy. Server component;
- * the testimonial row uses native scroll-snap so no client JS is required.
+ * Landing page — clean and product-led. No decorative blobs or marketing
+ * chrome; the real app screenshots carry the page. Server component, no JS.
  * ------------------------------------------------------------------------- */
 
-function PillButton({
-  href,
-  children,
-  variant = "primary",
-}: {
-  href: string;
-  children: React.ReactNode;
-  variant?: "primary" | "ghost" | "ghost-dark";
-}) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition-colors";
-  const styles = {
-    primary:
-      "bg-[var(--color-cs-brand)] text-white shadow-sm hover:bg-[var(--color-cs-brand-hover)]",
-    ghost:
-      "border-2 border-[var(--color-cs-brand)] text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)]",
-    "ghost-dark":
-      "border-2 border-white/70 text-white hover:bg-white/10",
-  }[variant];
-  return (
-    <Link href={href} className={`${base} ${styles}`}>
-      {children}
-      <IconArrowRight size={20} stroke={2.2} />
-    </Link>
-  );
-}
-
-function FeatureItem({
-  icon: Icon,
-  title,
-  body,
-  onDark = false,
-}: {
-  icon: typeof IconBell;
-  title: string;
-  body: string;
-  onDark?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <span
-        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-          onDark ? "bg-white/10 text-white" : "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]"
-        }`}
-      >
-        <Icon size={30} stroke={1.8} />
-      </span>
-      <h3 className={`text-xl font-bold ${onDark ? "text-white" : "text-[var(--color-cs-text)]"}`}>
-        {title}
-      </h3>
-      <p className={`text-[15px] leading-relaxed ${onDark ? "text-white/75" : "text-[var(--color-cs-text-secondary)]"}`}>
-        {body}
-      </p>
-    </div>
-  );
-}
-
-/* Browser-chrome frame around a real product screenshot. */
-function BrowserFrame({
+/** A real desktop screenshot in a clean, lightly-framed card. */
+function Shot({
   src,
   alt,
-  width,
-  height,
   priority = false,
+  sizes = "(min-width: 1024px) 560px, 100vw",
 }: {
   src: string;
   alt: string;
-  width: number;
-  height: number;
   priority?: boolean;
+  sizes?: string;
 }) {
   return (
-    <div className="w-full overflow-hidden rounded-2xl border-4 border-white bg-white shadow-2xl ring-1 ring-[var(--color-cs-border)]">
-      <div className="flex items-center gap-2 border-b border-[var(--color-cs-border)] bg-white px-4 py-3">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#e11d48]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
-        <div className="mx-auto rounded bg-[var(--color-cs-surface)] px-10 py-1 text-[11px] text-[var(--color-cs-text-muted)]">
-          app.mybenefitspa.com
-        </div>
-      </div>
+    <div className="overflow-hidden rounded-2xl border border-[var(--color-cs-border)] bg-white shadow-[0_24px_60px_-30px_rgba(15,27,51,0.35)]">
       <Image
         src={src}
         alt={alt}
-        width={width}
-        height={height}
+        width={2880}
+        height={1800}
         priority={priority}
-        sizes="(min-width: 1024px) 640px, 100vw"
+        sizes={sizes}
         className="block h-auto w-full"
       />
     </div>
   );
 }
 
-/* Phone-chrome frame around a real mobile screenshot. */
-function PhoneFrame({ src, alt }: { src: string; alt: string }) {
+/** A real mobile screenshot in a simple rounded frame. */
+function PhoneShot({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative mx-auto w-[268px] overflow-hidden rounded-[2.2rem] border-[7px] border-white bg-white shadow-2xl ring-1 ring-[var(--color-cs-border)]">
-      <Image src={src} alt={alt} width={430} height={936} sizes="268px" className="block h-auto w-full" />
+    <div className="mx-auto w-full max-w-[230px] overflow-hidden rounded-[1.75rem] border border-[var(--color-cs-border)] bg-white shadow-[0_24px_60px_-30px_rgba(15,27,51,0.35)]">
+      <Image src={src} alt={alt} width={432} height={934} sizes="230px" className="block h-auto w-full" />
     </div>
   );
 }
 
-const TESTIMONIALS = [
-  {
-    icon: IconShieldCheck,
-    quote:
-      "I used to dread checking my account balance before the end of the month. Now I get a heads-up days early and can plan with my counselor instead of panicking.",
-    name: "Dana R.",
-    role: "SSI recipient",
-  },
-  {
-    icon: IconHeartHandshake,
-    quote:
-      "As a representative payee for my brother, this is the first tool that actually shows me how close he is to the resource limit — in plain language.",
-    name: "Marcus T.",
-    role: "Representative payee",
-  },
-  {
-    icon: IconBuildingBank,
-    quote:
-      "Linking the bank took two minutes. Seeing deposits compared to the thresholds, all in one place, took the guesswork out completely.",
-    name: "Priya N.",
-    role: "Medicaid waiver participant",
-  },
-  {
-    icon: IconClockHour4,
-    quote:
-      "The email reminder arrived the week before a back-pay deposit would have pushed us over. We had time to act. That alone was worth it.",
-    name: "Ellen & Joe",
-    role: "Caregivers",
-  },
-];
-
-/* Decorative circle. */
-function Blob({ className }: { className: string }) {
-  return <span aria-hidden className={`pointer-events-none absolute rounded-full ${className}`} />;
+/** Alternating text + screenshot row. */
+function Feature({
+  eyebrow,
+  title,
+  body,
+  src,
+  alt,
+  reverse = false,
+}: {
+  eyebrow: string;
+  title: string;
+  body: ReactNode;
+  src: string;
+  alt: string;
+  reverse?: boolean;
+}) {
+  return (
+    <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 lg:grid-cols-2 lg:gap-16">
+      <div className={reverse ? "lg:order-2" : ""}>
+        <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-[var(--color-cs-brand)]">
+          {eyebrow}
+        </p>
+        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[var(--color-cs-text)] sm:text-4xl">
+          {title}
+        </h2>
+        <p className="mt-4 text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)]">{body}</p>
+      </div>
+      <div className={reverse ? "lg:order-1" : ""}>
+        <Shot src={src} alt={alt} />
+      </div>
+    </div>
+  );
 }
 
 export default function LandingPage() {
@@ -174,7 +90,7 @@ export default function LandingPage() {
     <div className="overflow-x-hidden bg-white text-[var(--color-cs-text)]">
       {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/landing" className="flex items-center" aria-label="MyBenefitsPA home">
             <Image
               src="/mybenefitspa-logo.png"
@@ -182,25 +98,19 @@ export default function LandingPage() {
               width={180}
               height={142}
               priority
-              className="h-9 w-auto"
+              className="h-8 w-auto"
             />
           </Link>
-          <nav className="hidden items-center gap-8 text-[15px] font-medium text-[var(--color-cs-text)] md:flex">
-            <a href="#how-it-works" className="hover:text-[var(--color-cs-brand)]">How it works</a>
-            <a href="#features" className="hover:text-[var(--color-cs-brand)]">Features</a>
-            <a href="#stories" className="hover:text-[var(--color-cs-brand)]">Stories</a>
-            <Link href="/resources" className="hover:text-[var(--color-cs-brand)]">Resources</Link>
-          </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/auth/signin"
-              className="hidden rounded-full px-4 py-2 text-[15px] font-medium text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)] sm:inline-flex"
+              className="hidden rounded-full px-4 py-2 text-[15px] font-semibold text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)] sm:inline-flex"
             >
               Sign in
             </Link>
             <Link
               href="/auth/signup"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cs-brand)] px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-[var(--color-cs-brand-hover)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cs-brand)] px-5 py-2.5 text-[15px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
             >
               Get started
               <IconArrowRight size={18} stroke={2.2} />
@@ -210,281 +120,184 @@ export default function LandingPage() {
       </header>
 
       {/* ---------- Hero ---------- */}
-      <section className="relative isolate overflow-hidden">
-        {/* decorative shapes (right side, behind content) */}
-        <Blob className="right-[-120px] top-[-80px] h-[520px] w-[520px] bg-[var(--color-cs-info-bg)]" />
-        <Blob className="left-[44%] top-10 h-28 w-28 bg-[var(--color-cs-accent-orange)]/80" />
-        <Blob className="right-24 top-56 h-16 w-16 bg-[var(--color-cs-accent-green)]/70" />
-        <Blob className="right-[42%] bottom-10 hidden h-12 w-12 bg-[var(--color-cs-brand)]/30 lg:block" />
-
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-              Peace of mind for SSI, SSDI &amp; Medicaid
-            </p>
-            <h1 className="mt-4 text-5xl font-extrabold leading-[1.08] tracking-tight text-[var(--color-cs-navy)] sm:text-6xl">
-              Stay under the limits that keep your benefits.
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-              MyBenefitsPA links your bank, lines up your balances and deposits against the income and
-              resource limits for your programs, and warns you <em>before</em> you get close. Drag a slider
-              to test a raise or a big deposit — and see exactly which limits would tighten.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <PillButton href="/auth/signup">Get started free</PillButton>
-              <PillButton href="#how-it-works" variant="ghost">See how it works</PillButton>
-            </div>
-
-            {/* testimonial card */}
-            <div className="mt-12 flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">
-                <IconShieldCheck size={28} />
-              </span>
-              <div className="max-w-md">
-                <p className="text-[15px] italic text-[var(--color-cs-text)]">
-                  &ldquo;Finally, a calm way to see where I stand — no spreadsheets, no surprises.&rdquo;
-                </p>
-                <p className="text-sm text-[var(--color-cs-text-muted)]">Dana R. · SSI recipient</p>
-              </div>
-            </div>
-          </div>
-
-          {/* hero visual */}
-          <div className="relative">
-            <BrowserFrame
-              src="/marketing/dashboard.png"
-              alt="MyBenefitsPA dashboard showing each balance against its limit, with what-if sliders"
-              width={2876}
-              height={1564}
-              priority
-            />
-          </div>
+      <section className="mx-auto max-w-6xl px-6 pt-16 text-center sm:pt-20">
+        <h1 className="mx-auto max-w-3xl text-4xl font-extrabold leading-[1.08] tracking-tight text-[var(--color-cs-text)] sm:text-5xl md:text-6xl">
+          Stay under the limits that keep your benefits.
+        </h1>
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
+          MyBenefitsPA links your bank, lines up your balances and deposits against the income and
+          resource limits for your programs, and helps you report changes on time — in plain language.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/auth/signup"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cs-brand)] px-6 py-3.5 text-base font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
+          >
+            Get started free
+            <IconArrowRight size={20} stroke={2.2} />
+          </Link>
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-cs-border)] px-6 py-3.5 text-base font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
+          >
+            Sign in
+          </Link>
         </div>
-      </section>
 
-      {/* ---------- How it works (centered showcase) ---------- */}
-      <section id="how-it-works" className="relative isolate overflow-hidden py-24">
-        <Blob className="left-[-160px] top-24 h-[460px] w-[460px] bg-[var(--color-cs-info-bg)]" />
-        <Blob className="right-[-120px] top-40 h-72 w-72 bg-[var(--color-cs-accent-orange)]/15" />
-        <Blob className="left-24 top-16 h-20 w-20 bg-[var(--color-cs-accent-green)]/30" />
-
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-            Forms without the headache
-          </p>
-          <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-5xl">
-            Every benefit form, filled and ready
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-            The reporting and recertification forms for SSI, SSDI, SNAP, Medicaid, Section 8 and more — in one
-            place. The in-app ones pre-fill from your profile, so you just review, print or download, and use
-            the official link to submit.
-          </p>
-        </div>
-        <div className="mx-auto mt-14 max-w-5xl px-6">
-          <BrowserFrame
-            src="/marketing/reports-docs.png"
-            alt="Reports & Docs page listing SSI reporting and recertification forms with Fill out buttons"
-            width={2876}
-            height={1560}
+        <div className="mx-auto mt-12 max-w-5xl">
+          <Shot
+            src="/screenshots/dashboard.png"
+            alt="MyBenefitsPA dashboard: each balance shown against its limit, with a what-if income slider"
+            priority
+            sizes="(min-width: 1024px) 1024px, 100vw"
           />
         </div>
       </section>
 
-      {/* ---------- Feature section A (navy) ---------- */}
-      <section id="features" className="relative isolate overflow-hidden bg-[var(--color-cs-navy)] py-24">
-        <Blob className="right-10 top-10 h-56 w-56 bg-white/5" />
-        <Blob className="left-[-80px] bottom-[-60px] h-80 w-80 bg-[var(--color-cs-brand)]/30" />
-        <Blob className="right-1/3 bottom-20 h-24 w-24 bg-[var(--color-cs-accent-orange)]/40" />
-
-        <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
-          <div className="order-2 flex justify-center lg:order-1">
-            <PhoneFrame
-              src="/marketing/alerts-mobile.png"
-              alt="MyBenefitsPA alerts on a phone, warning that income is approaching a program limit"
-            />
-          </div>
-          <div className="order-1 lg:order-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-              Built around your programs
-            </p>
-            <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              Watching the things that count
-            </h2>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">
-              Resource and income limits aren&apos;t one-size-fits-all. MyBenefitsPA tracks the ones tied to
-              your benefits — and tells you the moment a balance gets close.
-            </p>
-            <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2">
-              <FeatureItem
-                onDark
-                icon={IconBuildingBank}
-                title="Bank-linked"
-                body="Securely connect accounts through Plaid — balances and deposits update automatically."
-              />
-              <FeatureItem
-                onDark
-                icon={IconChartLine}
-                title="Limits &amp; balances"
-                body="Each balance shown against its warning line and hard limit, color-coded at a glance."
-              />
-              <FeatureItem
-                onDark
-                icon={IconBell}
-                title="Early alerts"
-                body="A notice the moment a balance approaches a limit — by email and push, with time to act."
-              />
-              <FeatureItem
-                onDark
-                icon={IconShieldCheck}
-                title="Private &amp; secure"
-                body="Read-only access, encrypted in transit and at rest. We never move money or share your data."
-              />
-            </div>
-          </div>
+      {/* ---------- Trust strip ---------- */}
+      <section className="mx-auto mt-10 max-w-5xl px-6">
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-6 py-5 text-[14px] text-[var(--color-cs-text-secondary)] sm:flex-row sm:gap-8">
+          <span className="inline-flex items-center gap-2">
+            <IconLock size={18} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Read-only bank access
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <IconShieldCheck size={18} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Encrypted, money never moves
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <IconReceipt2 size={18} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Informational — not a determination
+          </span>
         </div>
       </section>
 
-      {/* ---------- Feature section B (light + orange accent panel) ---------- */}
-      <section className="relative isolate overflow-hidden py-24">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-[var(--color-cs-warning-bg)]/60"
+      {/* ---------- Feature rows ---------- */}
+      <div className="space-y-24 py-24 sm:space-y-28">
+        <Feature
+          eyebrow="Your money"
+          title="Every deposit, categorized for your limits"
+          body="Link accounts through Plaid and see income, benefits, and expenses in one place. Confirm a category and it counts the right way toward each program's income test — pending transactions and receipts included."
+          src="/screenshots/money.png"
+          alt="The Money screen: connected accounts and categorized transactions with receipts"
         />
-        <Blob className="left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 bg-[var(--color-cs-accent-orange)]/10" />
 
-        <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-              Make sense of it
-            </p>
-            <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-5xl">
-              Answers, search, and what-ifs
-            </h2>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-              When a number raises a question, just ask. The built-in advisor explains program rules in plain
-              language, and everything you&apos;ve got is a search away.
-            </p>
-            <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2">
-              <FeatureItem
-                icon={IconMessageChatbot}
-                title="AI advisor"
-                body="Ask why a limit turned yellow or what counts as income — clear answers, not legalese."
-              />
-              <FeatureItem
-                icon={IconSearch}
-                title="Global search"
-                body="Find any transaction, alert, limit, or form from the top bar. No match? Send it to the advisor."
-              />
-              <FeatureItem
-                icon={IconAdjustmentsHorizontal}
-                title="What-if planning"
-                body="Drag a slider to model a raise or a bigger balance and see which limits would get close."
-              />
-              <FeatureItem
-                icon={IconFileText}
-                title="Fillable forms"
-                body="Reporting and recertification forms pre-filled from your data — print or download in a click."
-              />
-            </div>
-          </div>
-          <div className="relative">
-            <BrowserFrame
-              src="/marketing/advisor.png"
-              alt="MyBenefitsPA AI advisor answering why an asset threshold turned yellow"
-              width={2874}
-              height={1568}
-            />
-          </div>
-        </div>
-      </section>
+        <Feature
+          reverse
+          eyebrow="Reporting"
+          title="Know what to report, and by when"
+          body={
+            <>
+              Every program&apos;s reporting clock in one place — scheduled paperwork you must file and change
+              reports for life events. Pick what changed and see, per program, whether you{" "}
+              <span className="font-semibold text-[var(--color-cs-text)]">report it</span> or{" "}
+              <span className="font-semibold text-[var(--color-cs-text)]">don&apos;t need to</span>, with the
+              deadline.
+            </>
+          }
+          src="/screenshots/calendar.png"
+          alt="The reporting calendar with a 'Do I need to report this?' panel by program"
+        />
 
-      {/* ---------- Testimonials (navy slider) ---------- */}
-      <section id="stories" className="relative isolate overflow-hidden bg-[var(--color-cs-navy)] py-24">
-        <Blob className="right-[-100px] top-[-120px] h-96 w-96 bg-[var(--color-cs-brand)]/30" />
-        <Blob className="left-10 bottom-10 h-40 w-40 bg-[var(--color-cs-accent-orange)]/30" />
+        <Feature
+          eyebrow="Paperwork"
+          title="Every benefit form, ready to fill"
+          body="The reporting and recertification forms for your enrolled programs — SSDI, SSI, SNAP, Medicaid, ABLE and more. Fill the in-app ones (pre-filled from your profile), then download or open the official form to submit."
+          src="/screenshots/reports.png"
+          alt="Reports & Docs: SSDI and ABLE reporting and recertification forms"
+        />
 
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-                Stories from the people we serve
+        <Feature
+          reverse
+          eyebrow="Guided forms"
+          title="Fill a form by answering a few questions"
+          body="Skip the dense PDF. The guided flow asks one plain-language question at a time and fills the form for you — switch to the full form anytime, and grab the official version when you're done."
+          src="/screenshots/guided-form.png"
+          alt="A guided, chat-style flow filling out the SSA-820 Work Activity Report"
+        />
+      </div>
+
+      {/* ---------- Mobile showcase ---------- */}
+      <section className="border-y border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] py-20">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-[var(--color-cs-brand)]">
+            On the go
+          </p>
+          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[var(--color-cs-text)] sm:text-4xl">
+            The whole thing fits in your pocket
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Ask the advisor, check your money, and keep receipts and documents — anywhere.
+          </p>
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
+            <div>
+              <PhoneShot
+                src="/screenshots/advisor-mobile.png"
+                alt="The AI advisor on a phone, answering a reporting question"
+              />
+              <p className="mt-4 text-[15px] font-semibold text-[var(--color-cs-text)]">Ask the advisor</p>
+              <p className="mt-1 text-[14px] text-[var(--color-cs-text-secondary)]">
+                Plain-language answers from your real numbers.
               </p>
-              <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-                Built for real lives, not edge cases
-              </h2>
             </div>
-            <PillButton href="/auth/signup" variant="ghost-dark">Join them</PillButton>
-          </div>
-
-          <div className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {TESTIMONIALS.map((t) => (
-              <figure
-                key={t.name}
-                className="flex w-[300px] shrink-0 snap-start flex-col rounded-2xl border border-[var(--color-cs-border)] bg-white p-8 shadow-xl sm:w-[340px]"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">
-                  <t.icon size={26} />
-                </span>
-                <blockquote className="mt-5 flex-1 text-[15px] leading-relaxed text-[var(--color-cs-text)]">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-                <figcaption className="mt-6 flex items-center gap-3 border-t border-[var(--color-cs-border)] pt-5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-surface)] text-[var(--color-cs-text-secondary)]">
-                    <IconHeartHandshake size={20} />
-                  </span>
-                  <div>
-                    <p className="text-[15px] font-semibold text-[var(--color-cs-text)]">{t.name}</p>
-                    <p className="text-sm text-[var(--color-cs-text-muted)]">{t.role}</p>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
+            <div>
+              <PhoneShot
+                src="/screenshots/money-mobile.png"
+                alt="The Money screen on a phone with connected accounts and transactions"
+              />
+              <p className="mt-4 text-[15px] font-semibold text-[var(--color-cs-text)]">Track your money</p>
+              <p className="mt-1 text-[14px] text-[var(--color-cs-text-secondary)]">
+                Accounts and categorized activity in one tap.
+              </p>
+            </div>
+            <div>
+              <PhoneShot
+                src="/screenshots/vault-mobile.png"
+                alt="A receipt stored in the vault on a phone"
+              />
+              <p className="mt-4 text-[15px] font-semibold text-[var(--color-cs-text)]">Keep your paperwork</p>
+              <p className="mt-1 text-[14px] text-[var(--color-cs-text-secondary)]">
+                Receipts and documents, safe in the vault.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ---------- Closing CTA ---------- */}
-      <section className="relative isolate overflow-hidden bg-[var(--color-cs-brand)] py-24">
-        <Blob className="right-[-120px] top-[-120px] h-96 w-96 bg-white/10" />
-        <Blob className="left-10 bottom-[-80px] h-72 w-72 bg-[var(--color-cs-navy)]/40" />
-        <Blob className="right-1/4 bottom-16 h-20 w-20 bg-[var(--color-cs-accent-orange)]/60" />
-
+      <section className="bg-[var(--color-cs-brand)] py-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
             Your benefits, protected. Start today.
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-white/85">
-            Free to set up. Link your bank, see where you stand, and let MyBenefitsPA keep watch.
+          <p className="mt-4 text-lg leading-relaxed text-white/85">
+            Free to set up. Link your bank, see where you stand, and stay on top of what to report.
           </p>
-          <div className="mt-9 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/auth/signup"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-base font-semibold text-[var(--color-cs-brand)] shadow-sm hover:bg-[var(--color-cs-surface)]"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-base font-semibold text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-surface)]"
             >
               Create your account
               <IconArrowRight size={20} stroke={2.2} />
             </Link>
-            <PillButton href="/resources" variant="ghost-dark">Browse resources</PillButton>
+            <Link
+              href="/resources"
+              className="inline-flex items-center gap-2 rounded-full border border-white/70 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10"
+            >
+              Browse resources
+            </Link>
           </div>
-          <p className="mt-6 inline-flex items-center gap-2 text-sm text-white/70">
-            <IconLock size={16} /> Read-only bank access · No money ever moves
-          </p>
         </div>
       </section>
 
       {/* ---------- Footer ---------- */}
       <footer className="bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/mybenefitspa-logo.png"
-              alt="MyBenefitsPA"
-              width={180}
-              height={142}
-              className="h-8 w-auto"
-            />
-          </div>
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <Image
+            src="/mybenefitspa-logo.png"
+            alt="MyBenefitsPA"
+            width={180}
+            height={142}
+            className="h-8 w-auto"
+          />
           <p className="text-sm text-[var(--color-cs-text-muted)]">
             © {new Date().getFullYear()} MyBenefitsPA. All rights reserved.
           </p>
@@ -493,18 +306,12 @@ export default function LandingPage() {
             <Link href="/legal/privacy" className="hover:text-[var(--color-cs-brand)]">Privacy</Link>
             <Link href="/legal/terms" className="hover:text-[var(--color-cs-brand)]">Terms</Link>
             <Link href="/legal/security" className="hover:text-[var(--color-cs-brand)]">Security</Link>
-            <Link href="/legal/data-retention" className="hover:text-[var(--color-cs-brand)]">Data Retention</Link>
-            <a
-              href="mailto:support@mybenefitspa.com"
-              className="inline-flex items-center gap-1.5 hover:text-[var(--color-cs-brand)]"
-            >
-              <IconPhone size={15} /> Support
-            </a>
+            <a href="mailto:support@mybenefitspa.com" className="hover:text-[var(--color-cs-brand)]">Support</a>
           </nav>
         </div>
         <div className="border-t border-[var(--color-cs-border)]">
-          <p className="mx-auto max-w-7xl px-6 py-5 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Informational tool only. Not legal, tax, or benefits advice. Program thresholds change; always
+          <p className="mx-auto max-w-6xl px-6 py-5 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
+            Informational tool only. Not legal, tax, or benefits advice. Program limits change; always
             confirm with SSA, your state agency, or a qualified benefits counselor before acting.
           </p>
         </div>

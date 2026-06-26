@@ -91,6 +91,9 @@ export async function POST(req: Request) {
     systemBlocks.push({ type: "text", text: accountContext });
   }
 
+  // Stream the reply so the UI can render it as it's written, rather than
+  // waiting for the whole message. We forward only the text deltas to the
+  // client as a plain-text stream; usage is captured for logging at the end.
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -101,6 +104,7 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       model,
       max_tokens: Number.isFinite(maxTokens) ? maxTokens : 1024,
+      stream: true,
       system: systemBlocks,
       messages: parsed.data.messages.map((m) => ({
         role: m.role,
@@ -115,7 +119,7 @@ export async function POST(req: Request) {
   if (!upstream) {
     return NextResponse.json({ error: "Advisor unreachable" }, { status: 502 });
   }
-  if (!upstream.ok) {
+  if (!upstream.ok || !upstream.body) {
     const text = await upstream.text().catch(() => "");
     console.error("advisor upstream non-2xx", upstream.status, text.slice(0, 500));
     return NextResponse.json(
@@ -123,37 +127,83 @@ export async function POST(req: Request) {
       { status: 502 },
     );
   }
-  const data = (await upstream.json().catch(() => ({}))) as {
-    content?: { type: string; text?: string }[];
-    usage?: {
-      input_tokens?: number;
-      output_tokens?: number;
-      cache_creation_input_tokens?: number;
-      cache_read_input_tokens?: number;
-    };
-  };
-  const reply = (data.content ?? [])
-    .filter((c) => c.type === "text" && typeof c.text === "string")
-    .map((c) => c.text!)
-    .join("\n")
-    .trim();
 
+  const userId = session.user.id;
   const lastUser = parsed.data.messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
-  await logActivity({
-    userId: session.user.id,
-    category: "advisor",
-    action: "advisor.message",
-    details: {
-      model,
-      hasAccountContext: Boolean(accountContext),
-      promptChars: lastUser.length,
-      replyChars: reply.length,
-      inputTokens: data.usage?.input_tokens ?? null,
-      outputTokens: data.usage?.output_tokens ?? null,
-      cacheReadTokens: data.usage?.cache_read_input_tokens ?? null,
-      cacheCreateTokens: data.usage?.cache_creation_input_tokens ?? null,
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const upstreamBody = upstream.body;
+
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const reader = upstreamBody.getReader();
+      let buffer = "";
+      let reply = "";
+      let inputTokens: number | null = null;
+      let outputTokens: number | null = null;
+      let cacheReadTokens: number | null = null;
+      let cacheCreateTokens: number | null = null;
+
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buffer.indexOf("\n")) !== -1) {
+            const line = buffer.slice(0, nl).trim();
+            buffer = buffer.slice(nl + 1);
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+            try {
+              const evt = JSON.parse(payload) as {
+                type?: string;
+                delta?: { type?: string; text?: string };
+                message?: { usage?: Record<string, number> };
+                usage?: Record<string, number>;
+              };
+              if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+                const t = evt.delta.text ?? "";
+                reply += t;
+                controller.enqueue(encoder.encode(t));
+              } else if (evt.type === "message_start") {
+                const u = evt.message?.usage ?? {};
+                inputTokens = u.input_tokens ?? null;
+                cacheReadTokens = u.cache_read_input_tokens ?? null;
+                cacheCreateTokens = u.cache_creation_input_tokens ?? null;
+              } else if (evt.type === "message_delta") {
+                outputTokens = evt.usage?.output_tokens ?? outputTokens;
+              }
+            } catch {
+              // ignore keepalive pings / non-JSON lines
+            }
+          }
+        }
+      } catch (e) {
+        console.error("advisor stream error", e);
+      } finally {
+        controller.close();
+        void logActivity({
+          userId,
+          category: "advisor",
+          action: "advisor.message",
+          details: {
+            model,
+            hasAccountContext: Boolean(accountContext),
+            promptChars: lastUser.length,
+            replyChars: reply.length,
+            inputTokens,
+            outputTokens,
+            cacheReadTokens,
+            cacheCreateTokens,
+          },
+        });
+      }
     },
   });
 
-  return NextResponse.json({ reply });
+  return new Response(stream, {
+    headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+  });
 }
