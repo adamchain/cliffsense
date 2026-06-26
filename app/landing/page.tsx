@@ -78,7 +78,7 @@ function ModuleCard({
   return (
     <div
       className={`relative flex h-[340px] w-[260px] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl p-5 text-white ${gradient} ${
-        featured ? "ring-2 ring-[var(--color-cs-navy)] ring-offset-2" : ""
+        featured ? "ring-2 ring-[var(--color-cs-brand)] ring-offset-2" : ""
       }`}
     >
       <div className="flex items-center justify-between">
@@ -270,7 +270,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/auth/signup"
-              className="inline-flex items-center rounded-full bg-[var(--color-cs-navy)] px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#1b2b4a]"
+              className="inline-flex items-center rounded-full bg-[var(--color-cs-brand)] px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)] transition-colors hover:bg-[var(--color-cs-brand-hover)]"
             >
               Get started
             </Link>
@@ -291,7 +291,7 @@ export default function LandingPage() {
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/auth/signup"
-            className="inline-flex items-center rounded-full bg-[var(--color-cs-navy)] px-7 py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-[#1b2b4a]"
+            className="inline-flex items-center rounded-full bg-[var(--color-cs-brand)] px-7 py-3.5 text-[16px] font-semibold text-white shadow-[0_12px_26px_-12px_rgba(75,99,240,0.9)] transition-colors hover:bg-[var(--color-cs-brand-hover)]"
           >
             Start free
           </Link>
@@ -345,7 +345,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-6 inline-flex items-center rounded-full bg-[var(--color-cs-navy)] px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-[#1b2b4a]"
+            className="mt-6 inline-flex items-center rounded-full bg-[var(--color-cs-brand)] px-5 py-2.5 text-[14px] font-semibold text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)] transition-colors hover:bg-[var(--color-cs-brand-hover)]"
           >
             Explore the suite
           </Link>
@@ -498,11 +498,24 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="lg:order-1">
-            <div className="rounded-3xl bg-gradient-to-b from-white/15 to-white/[0.03] p-2.5">
-              <Shot
-                src="/screenshots/money.png"
-                alt="The Money screen: connected accounts and categorized transactions"
-              />
+            <div className="relative pb-8 pl-6 sm:pb-0 sm:pl-10">
+              <div className="rounded-3xl bg-gradient-to-b from-white/15 to-white/[0.03] p-2.5">
+                <Shot
+                  src="/screenshots/money.png"
+                  alt="The Money screen: connected accounts and categorized transactions"
+                />
+              </div>
+              {/* Mobile view, the same money screen in a recipient's pocket. */}
+              <div className="absolute -bottom-2 left-0 w-[116px] overflow-hidden rounded-[1.4rem] border-[5px] border-[#0b1426] bg-white shadow-[0_24px_50px_-18px_rgba(0,0,0,0.7)] sm:-bottom-6 sm:w-[150px]">
+                <Image
+                  src="/screenshots/money-mobile.png"
+                  alt="The Money screen on a phone"
+                  width={432}
+                  height={934}
+                  sizes="150px"
+                  className="block h-auto w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
