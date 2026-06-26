@@ -7,12 +7,15 @@ import {
   IconCalendarEvent,
   IconCheck,
   IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
   IconExternalLink,
   IconPlus,
   IconRefresh,
   IconShieldCheck,
   IconSparkles,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { programLabel, programMetaFor } from "@/lib/benefits/program-meta";
@@ -118,6 +121,10 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [openProgram, setOpenProgram] = useState<string | null>(null);
+  const initialMonth = new Date();
+  const [viewYear, setViewYear] = useState(initialMonth.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialMonth.getMonth()); // 0-11
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [form, setForm] = useState({
     program: "",
     dueDate: "",
@@ -186,16 +193,28 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   }, [programs, deadlines]);
 
   const upcoming = agenda.filter((a) => !a.completed);
-  const months = useMemo(() => {
+  const itemsByDate = useMemo(() => {
     const map = new Map<string, AgendaItem[]>();
     for (const item of upcoming) {
+      const arr = map.get(item.date) ?? [];
+      arr.push(item);
+      map.set(item.date, arr);
+    }
+    return map;
+  }, [upcoming]);
+  const visibleAgenda = selectedDate
+    ? upcoming.filter((a) => a.date === selectedDate)
+    : upcoming;
+  const months = useMemo(() => {
+    const map = new Map<string, AgendaItem[]>();
+    for (const item of visibleAgenda) {
       const key = monthLabel(item.date);
       const arr = map.get(key) ?? [];
       arr.push(item);
       map.set(key, arr);
     }
     return [...map.entries()];
-  }, [upcoming]);
+  }, [visibleAgenda]);
 
   const change = CHANGE_TYPES.find((c) => c.key === changeKey) ?? CHANGE_TYPES[0];
   const referenceCodes = showAll ? Object.keys(REPORTING_SCHEDULES) : enrolledCodes;
@@ -374,9 +393,56 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         {/* ---------------- Agenda ---------------- */}
         <section>
-          <h2 className="mb-2 text-[15px] font-bold text-[var(--color-cs-text)]">Upcoming</h2>
+          <MonthGrid
+            year={viewYear}
+            month={viewMonth}
+            itemsByDate={itemsByDate}
+            selectedDate={selectedDate}
+            onSelect={(d) => setSelectedDate((cur) => (cur === d ? null : d))}
+            onPrev={() => {
+              const m = viewMonth - 1;
+              if (m < 0) {
+                setViewMonth(11);
+                setViewYear((y) => y - 1);
+              } else setViewMonth(m);
+            }}
+            onNext={() => {
+              const m = viewMonth + 1;
+              if (m > 11) {
+                setViewMonth(0);
+                setViewYear((y) => y + 1);
+              } else setViewMonth(m);
+            }}
+            onToday={() => {
+              const t = new Date();
+              setViewYear(t.getFullYear());
+              setViewMonth(t.getMonth());
+              setSelectedDate(null);
+            }}
+          />
+
+          <div className="mb-2 mt-4 flex items-center justify-between gap-2">
+            <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">
+              {selectedDate ? dayLabel(selectedDate) : "Upcoming"}
+            </h2>
+            {selectedDate && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate(null)}
+                className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+              >
+                <IconX size={12} stroke={2} aria-hidden />
+                Clear day filter
+              </button>
+            )}
+          </div>
           {loading && <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>}
-          {!loading && upcoming.length === 0 && (
+          {!loading && selectedDate && visibleAgenda.length === 0 && (
+            <p className="rounded-lg border border-[var(--color-cs-border)] bg-white p-3 text-[13px] text-[var(--color-cs-text-secondary)]">
+              No reporting items on this day.
+            </p>
+          )}
+          {!loading && !selectedDate && upcoming.length === 0 && (
             <div className="rounded-lg border border-[var(--color-cs-border)] bg-white p-4 text-[13px] text-[var(--color-cs-text-secondary)]">
               No upcoming reporting dates yet. Use{" "}
               <button
@@ -691,6 +757,143 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         </div>
       </section>
     </>
+  );
+}
+
+const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+
+/** A month grid with a dot on each day that has a reporting item (red =
+ *  scheduled/suspension risk, blue = change report). Click a day to filter the
+ *  agenda; click again or "Clear" to unfilter. */
+function MonthGrid({
+  year,
+  month,
+  itemsByDate,
+  selectedDate,
+  onSelect,
+  onPrev,
+  onNext,
+  onToday,
+}: {
+  year: number;
+  month: number;
+  itemsByDate: Map<string, AgendaItem[]>;
+  selectedDate: string | null;
+  onSelect: (date: string) => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onToday: () => void;
+}) {
+  const first = new Date(year, month, 1);
+  const startWeekday = first.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = todayIso();
+  const monthName = first.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const dateOf = (d: number) => `${year}-${pad(month + 1)}-${pad(d)}`;
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startWeekday; i += 1) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d += 1) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div className="rounded-lg border border-[var(--color-cs-border)] bg-white p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-[14px] font-bold text-[var(--color-cs-text)]">{monthName}</div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onToday}
+            className="rounded-md px-2 py-1 text-[11px] font-semibold text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)]"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={onPrev}
+            aria-label="Previous month"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
+          >
+            <IconChevronLeft size={16} stroke={1.8} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            aria-label="Next month"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
+          >
+            <IconChevronRight size={16} stroke={1.8} aria-hidden />
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
+        {WEEKDAYS.map((d, i) => (
+          <div key={i}>{d}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((d, i) => {
+          if (d == null) return <div key={`b-${i}`} className="aspect-square" />;
+          const date = dateOf(d);
+          const items = itemsByDate.get(date) ?? [];
+          const hasScheduled = items.some((x) => x.track === "scheduled");
+          const hasEvent = items.some((x) => x.track === "event");
+          const isToday = date === today;
+          const isSelected = date === selectedDate;
+          return (
+            <button
+              key={date}
+              type="button"
+              onClick={() => onSelect(date)}
+              className={`relative flex aspect-square flex-col items-center justify-center rounded-md text-[12px] transition-colors ${
+                isSelected
+                  ? "bg-[var(--color-cs-brand)] font-bold text-white"
+                  : isToday
+                    ? "bg-[var(--color-cs-info-bg)] font-semibold text-[var(--color-cs-brand)] ring-1 ring-[var(--color-cs-brand)]"
+                    : items.length
+                      ? "font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
+                      : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
+              }`}
+              title={items.length ? `${items.length} reporting item${items.length === 1 ? "" : "s"}` : undefined}
+            >
+              <span>{d}</span>
+              {items.length > 0 && (
+                <span className="mt-0.5 flex gap-0.5">
+                  {hasScheduled && (
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        isSelected ? "bg-white" : "bg-[var(--color-cs-danger)]"
+                      }`}
+                    />
+                  )}
+                  {hasEvent && (
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        isSelected ? "bg-white/70" : "bg-[var(--color-cs-brand)]"
+                      }`}
+                    />
+                  )}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-2 flex items-center gap-3 text-[10px] text-[var(--color-cs-text-secondary)]">
+        <span className="inline-flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cs-danger)]" />
+          Scheduled
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cs-brand)]" />
+          Change report
+        </span>
+      </div>
+    </div>
   );
 }
 

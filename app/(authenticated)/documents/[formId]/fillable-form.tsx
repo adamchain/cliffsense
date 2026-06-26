@@ -5,6 +5,7 @@ import {
   IconArrowBackUp,
   IconDownload,
   IconExternalLink,
+  IconFileCheck,
   IconListDetails,
   IconMessageChatbot,
   IconPrinter,
@@ -101,6 +102,9 @@ export function FormExperience({
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [mode, setMode] = useState<Mode>("guided");
   const [downloading, setDownloading] = useState(false);
+  const [downloadingOfficial, setDownloadingOfficial] = useState(false);
+  const [officialMsg, setOfficialMsg] = useState<string | null>(null);
+  const officialAvailable = Boolean(form.officialFill);
 
   // Fields that arrived with a value already filled in from the user's data.
   const prefilled = useMemo(
@@ -110,8 +114,20 @@ export function FormExperience({
 
   const set = (name: string, v: string) => setValues((prev) => ({ ...prev, [name]: v }));
 
+  function saveBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function downloadPdf() {
     setDownloading(true);
+    setOfficialMsg(null);
     try {
       const res = await fetch(`/api/forms/${form.id}/pdf`, {
         method: "POST",
@@ -119,17 +135,36 @@ export function FormExperience({
         body: JSON.stringify({ values }),
       });
       if (!res.ok) return;
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `mybenefitspa-${form.id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      saveBlob(await res.blob(), `mybenefitspa-${form.id}.pdf`);
     } finally {
       setDownloading(false);
+    }
+  }
+
+  /** Fetch + auto-fill the actual government PDF; fall back to the summary on miss. */
+  async function downloadOfficialPdf() {
+    setDownloadingOfficial(true);
+    setOfficialMsg(null);
+    try {
+      const res = await fetch(`/api/forms/${form.id}/official-pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values }),
+      });
+      if (res.ok) {
+        saveBlob(await res.blob(), `${form.id}-official-filled.pdf`);
+        setOfficialMsg("Official form downloaded — review every field before you submit it.");
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as { details?: string };
+      setOfficialMsg(
+        data.details ??
+          "Couldn't auto-fill the official PDF right now — use the MyBenefitsPA summary instead.",
+      );
+    } catch {
+      setOfficialMsg("Network error fetching the official PDF — try the MyBenefitsPA summary.");
+    } finally {
+      setDownloadingOfficial(false);
     }
   }
 
@@ -185,6 +220,10 @@ export function FormExperience({
             prefilled={prefilled}
             onDownload={downloadPdf}
             downloading={downloading}
+            onDownloadOfficial={downloadOfficialPdf}
+            downloadingOfficial={downloadingOfficial}
+            officialAvailable={officialAvailable}
+            officialMsg={officialMsg}
             onPrint={() => window.print()}
             onReviewFull={() => setMode("classic")}
           />
@@ -205,10 +244,25 @@ export function FormExperience({
       {mode === "classic" ? (
         <div className="flex flex-col gap-4 print:hidden">
           <div className="flex flex-wrap items-center gap-2">
+            {officialAvailable ? (
+              <button
+                type="button"
+                onClick={downloadOfficialPdf}
+                disabled={downloadingOfficial}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
+              >
+                <IconFileCheck size={16} stroke={1.8} aria-hidden />
+                {downloadingOfficial ? "Filling official PDF…" : "Download official PDF (auto-filled)"}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold ${
+                officialAvailable
+                  ? "border border-[var(--color-cs-border)] text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
+                  : "bg-[var(--color-cs-brand)] text-white hover:bg-[var(--color-cs-brand-hover)]"
+              }`}
             >
               <IconPrinter size={16} stroke={1.8} aria-hidden />
               Print
@@ -220,7 +274,7 @@ export function FormExperience({
               className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-cs-border)] px-3 py-2 text-[13px] font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
             >
               <IconDownload size={16} stroke={1.8} aria-hidden />
-              {downloading ? "Preparing…" : "Download PDF"}
+              {downloading ? "Preparing…" : officialAvailable ? "MyBenefitsPA summary" : "Download PDF"}
             </button>
             <button
               type="button"
@@ -231,6 +285,9 @@ export function FormExperience({
               Reset
             </button>
           </div>
+          {officialMsg ? (
+            <p className="-mt-2 text-[12px] text-[var(--color-cs-text-secondary)]">{officialMsg}</p>
+          ) : null}
           {form.sections.map((section) => (
             <section key={section.title} className="cs-card p-5">
               <h2 className="text-[14px] font-bold text-[var(--color-cs-text)]">{section.title}</h2>

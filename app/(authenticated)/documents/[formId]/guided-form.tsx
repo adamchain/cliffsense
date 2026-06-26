@@ -6,6 +6,7 @@ import {
   IconArrowRight,
   IconCheck,
   IconDownload,
+  IconFileCheck,
   IconListDetails,
   IconPlayerSkipForward,
   IconPrinter,
@@ -31,6 +32,10 @@ export function GuidedForm({
   prefilled,
   onDownload,
   downloading,
+  onDownloadOfficial,
+  downloadingOfficial,
+  officialAvailable,
+  officialMsg,
   onPrint,
   onReviewFull,
 }: {
@@ -40,6 +45,10 @@ export function GuidedForm({
   prefilled: Set<string>;
   onDownload: () => void;
   downloading: boolean;
+  onDownloadOfficial: () => void;
+  downloadingOfficial: boolean;
+  officialAvailable: boolean;
+  officialMsg: string | null;
   onPrint: () => void;
   onReviewFull: () => void;
 }) {
@@ -110,14 +119,29 @@ export function GuidedForm({
         </section>
 
         <div className="flex flex-wrap items-center gap-2">
+          {officialAvailable ? (
+            <button
+              type="button"
+              onClick={onDownloadOfficial}
+              disabled={downloadingOfficial}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3.5 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
+            >
+              <IconFileCheck size={16} stroke={1.8} aria-hidden />
+              {downloadingOfficial ? "Filling official PDF…" : "Download official PDF (auto-filled)"}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onDownload}
             disabled={downloading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3.5 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-semibold disabled:opacity-50 ${
+              officialAvailable
+                ? "border border-[var(--color-cs-border)] text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
+                : "bg-[var(--color-cs-brand)] text-white hover:bg-[var(--color-cs-brand-hover)]"
+            }`}
           >
             <IconDownload size={16} stroke={1.8} aria-hidden />
-            {downloading ? "Preparing…" : "Download PDF"}
+            {downloading ? "Preparing…" : officialAvailable ? "MyBenefitsPA summary" : "Download PDF"}
           </button>
           <button
             type="button"
@@ -144,6 +168,9 @@ export function GuidedForm({
             Edit answers
           </button>
         </div>
+        {officialMsg ? (
+          <p className="-mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">{officialMsg}</p>
+        ) : null}
         <div ref={bottomRef} />
       </div>
     );

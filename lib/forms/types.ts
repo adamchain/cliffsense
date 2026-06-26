@@ -92,6 +92,14 @@ export type FillableFormDef = {
   sections: FormSection[];
   /** Printed at the foot of the generated document. */
   disclaimer: string;
+  /**
+   * When set, MyBenefitsPA can fetch the official fillable PDF at `officialUrl`
+   * and auto-fill its AcroForm fields. Keys are this form's field `name`s; values
+   * are keyword phrases matched (case-insensitively) against each official field's
+   * internal name + tooltip text. Only set for forms whose officialUrl is a
+   * fillable government PDF; omit for helper worksheets / portal links.
+   */
+  officialFill?: { matchers: Record<string, string[]> };
 };
 
 export type PrefillValues = Partial<Record<PrefillKey, string>>;

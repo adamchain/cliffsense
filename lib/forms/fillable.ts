@@ -51,6 +51,16 @@ const SSA_795: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  officialFill: {
+    matchers: {
+      name: ["name of claimant", "claimant", "your name", "print name", "name"],
+      ssn: ["social security number", "ssn", "social security"],
+      statement: ["statement", "the following", "remarks", "i want to state"],
+      signedDate: ["date signed", "date of signature", "date"],
+      phone: ["telephone number", "daytime telephone", "phone"],
+      address: ["mailing address", "address", "street address"],
+    },
+  },
 };
 
 /** A universal income / household change worksheet. Not an official form — a
@@ -164,6 +174,26 @@ const SSA_821: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  officialFill: {
+    matchers: {
+      name: ["name of wage earner", "wage earner", "claimant name", "your name", "name"],
+      ssn: ["social security number", "ssn", "social security"],
+      employerName: ["name of employer", "employer name", "employer", "company name"],
+      jobTitle: ["type of work", "kind of work", "job title", "occupation", "duties", "your job"],
+      employerAddress: ["employer address", "address of employer", "employer mailing", "address"],
+      startDate: ["date you started", "date work began", "began working", "start date", "date started"],
+      endDate: ["date you stopped", "date work ended", "stopped working", "last day", "date stopped"],
+      hoursPerWeek: ["hours per week", "hours a week", "hours each week", "number of hours"],
+      payRate: ["rate of pay", "pay rate", "hourly rate", "rate of earnings"],
+      grossMonthly: ["gross monthly", "monthly earnings", "amount earned", "gross earnings", "gross amount"],
+      specialConditions: ["special conditions", "extra help", "subsidy", "special arrangements"],
+      irweDescription: ["impairment related work expenses", "work expenses related", "irwe"],
+      irweMonthly: ["amount you pay", "expense amount", "monthly expense"],
+      remarks: ["remarks", "additional information", "explain", "comments"],
+      signedDate: ["date signed", "today date", "date of signature", "date"],
+      phone: ["telephone number", "daytime telephone", "phone number", "telephone"],
+    },
+  },
 };
 
 /** SSA-820 — Work Activity Report (Self-Employment). Reports self-employment
@@ -240,6 +270,29 @@ const SSA_820: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  officialFill: {
+    matchers: {
+      name: ["name of wage earner", "wage earner", "claimant name", "your name", "name"],
+      ssn: ["social security number", "ssn", "social security"],
+      businessName: ["name of business", "business name", "trade name"],
+      businessType: ["type of business", "kind of business", "nature of business", "trade"],
+      startDate: ["date business started", "date you started", "began", "start date"],
+      endDate: ["date you stopped", "date business ended", "stopped", "last day"],
+      hoursPerMonth: ["hours per month", "hours a month", "number of hours"],
+      duties: ["duties", "services you perform", "what you do", "describe your work"],
+      netEarningsMonthly: ["net earnings", "monthly net", "net monthly", "net profit"],
+      netEarningsAnnual: ["annual net", "yearly net", "net earnings year"],
+      salaryMonthly: ["salary", "owner draw", "amount you draw", "monthly salary"],
+      workChanges: ["changes in work", "change in your work", "work activity changed"],
+      unincurredExpenses: ["unincurred", "paid by someone else", "business expenses paid"],
+      unpaidHelp: ["unpaid help", "help from others", "assistance from others"],
+      irweDescription: ["impairment related work expenses", "work expenses related", "irwe"],
+      irweMonthly: ["amount you pay", "expense amount", "monthly expense"],
+      remarks: ["remarks", "additional information", "explain", "comments"],
+      signedDate: ["date signed", "date of signature", "date"],
+      phone: ["telephone number", "daytime telephone", "phone"],
+    },
+  },
 };
 
 /** PA 564 (SAR) — Semi-Annual Reporting form for SNAP / Cash Assistance. */
@@ -343,6 +396,23 @@ const VA_21P_0969: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  officialFill: {
+    matchers: {
+      name: ["name of veteran", "veteran name", "claimant name", "your name", "name"],
+      fileNumber: ["va file number", "file number", "social security number", "claim number"],
+      socialSecurity: ["social security benefit", "social security income", "amount of social security"],
+      otherPensions: ["pension", "retirement", "annuity"],
+      wages: ["wages", "earnings", "gross wages", "employment income"],
+      interestDividends: ["interest", "dividends", "interest and dividends"],
+      otherIncome: ["other income", "additional income"],
+      bankAccounts: ["cash", "bank account", "checking", "savings"],
+      investments: ["stocks", "bonds", "investments", "mutual funds"],
+      realProperty: ["real property", "real estate", "land", "property"],
+      otherAssets: ["other assets", "additional assets"],
+      expectedChanges: ["expected", "anticipated", "changes in income"],
+      signedDate: ["date signed", "date of signature", "date"],
+    },
+  },
 };
 
 export const FILLABLE_FORMS: Record<string, FillableFormDef> = {
