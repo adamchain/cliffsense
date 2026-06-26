@@ -13,6 +13,8 @@ const notificationPrefsSchema = new Schema(
       trend: { type: Boolean, default: true },
     },
     email: { type: String, default: "" },
+    // Extra recipients copied on every alert/digest, in addition to the primary address.
+    additionalEmails: { type: [String], default: [] },
   },
   { _id: false },
 );

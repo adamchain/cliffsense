@@ -8,6 +8,7 @@ import { SettingsForm } from "./settings-form";
 import { ProgramsForm } from "./programs-form";
 import { SignOutButton } from "./sign-out-button";
 import { DeleteAccountButton } from "./delete-account-button";
+import { PushToggle } from "@/components/push/push-toggle";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -42,6 +43,12 @@ export default async function SettingsPage() {
             initialName={user.name ?? ""}
             initialFrequency={user.notificationPrefs?.frequency ?? "daily"}
             initialNotifyEmail={user.notificationPrefs?.email ?? ""}
+            initialAlertTypes={{
+              predictive: user.notificationPrefs?.alertTypes?.predictive ?? true,
+              breach: user.notificationPrefs?.alertTypes?.breach ?? true,
+              trend: user.notificationPrefs?.alertTypes?.trend ?? true,
+            }}
+            initialAdditionalEmails={user.notificationPrefs?.additionalEmails ?? []}
             initialState={ownerBen?.state ?? ""}
             initialHouseholdSize={ownerBen?.householdSize ?? 1}
           />
@@ -56,6 +63,14 @@ export default async function SettingsPage() {
             />
           </section>
         )}
+
+        <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
+          <h2 className="mb-1 text-sm font-medium text-[var(--color-cs-text)]">Push notifications</h2>
+          <p className="mb-3 text-[12px] text-[var(--color-cs-text-secondary)]">
+            Get alerts on this device the moment a threshold changes — in addition to email.
+          </p>
+          <PushToggle />
+        </section>
 
         <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
           <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Account quick links</h2>

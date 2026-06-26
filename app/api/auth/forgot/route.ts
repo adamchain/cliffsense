@@ -4,7 +4,8 @@ import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { issueAuthToken } from "@/lib/auth/tokens";
-import { appUrl, sendEmail, withDisclaimer } from "@/lib/email/mailer";
+import { appUrl, sendEmail } from "@/lib/email/mailer";
+import { renderEmail } from "@/lib/email/template";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
 const schema = z.object({ email: z.string().email() });
@@ -31,13 +32,16 @@ export async function POST(req: Request) {
   try {
     const token = await issueAuthToken(user._id, "password_reset", RESET_TTL_MS);
     const link = `${appUrl()}/auth/reset?token=${encodeURIComponent(token)}`;
-    await sendEmail({
-      to: user.email,
-      subject: "Reset your MyBenefitsPA password",
-      text: withDisclaimer(
-        `We received a request to reset your password. Set a new one here:\n${link}\n\nThis link expires in 1 hour. If you didn't request this, you can ignore this email.`,
-      ),
+    const { html, text } = renderEmail({
+      heading: "Reset your password",
+      preheader: "Set a new MyBenefitsPA password.",
+      paragraphs: [
+        "We received a request to reset the password on your MyBenefitsPA account. Click below to choose a new one.",
+        "This link expires in 1 hour. If you didn't request this, you can safely ignore this email — your password won't change.",
+      ],
+      cta: { label: "Reset password", url: link },
     });
+    await sendEmail({ to: user.email, subject: "Reset your MyBenefitsPA password", html, text });
   } catch (e) {
     console.warn("forgot-password email failed", e);
   }

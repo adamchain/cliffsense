@@ -17,6 +17,14 @@ const patchSchema = z.object({
     .object({
       frequency: z.enum(["realtime", "daily", "weekly"]).optional(),
       email: z.string().email().optional().or(z.literal("")),
+      alertTypes: z
+        .object({
+          predictive: z.boolean().optional(),
+          breach: z.boolean().optional(),
+          trend: z.boolean().optional(),
+        })
+        .optional(),
+      additionalEmails: z.array(z.string().email()).max(10).optional(),
     })
     .optional(),
   ownerProfile: z
@@ -56,6 +64,27 @@ export async function PATCH(req: Request) {
   if (notificationPrefs?.email !== undefined) {
     user.notificationPrefs = user.notificationPrefs ?? {};
     user.notificationPrefs.email = notificationPrefs.email;
+  }
+  if (notificationPrefs?.alertTypes) {
+    user.notificationPrefs = user.notificationPrefs ?? {};
+    const current = user.notificationPrefs.alertTypes ?? {
+      predictive: true,
+      breach: true,
+      trend: true,
+    };
+    const next = notificationPrefs.alertTypes;
+    user.notificationPrefs.alertTypes = {
+      predictive: next.predictive ?? current.predictive,
+      breach: next.breach ?? current.breach,
+      trend: next.trend ?? current.trend,
+    };
+  }
+  if (notificationPrefs?.additionalEmails !== undefined) {
+    user.notificationPrefs = user.notificationPrefs ?? {};
+    // De-duplicate, normalize, and drop the primary if it slipped into the list.
+    user.notificationPrefs.additionalEmails = Array.from(
+      new Set(notificationPrefs.additionalEmails.map((e) => e.toLowerCase().trim())),
+    ).filter(Boolean);
   }
   await user.save();
 

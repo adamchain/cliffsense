@@ -10,7 +10,7 @@ import {
   authPrimaryButtonClass,
   authTextInputClass,
 } from "@/components/auth/auth-field-classes";
-import { AuthSplitLayout } from "@/components/layout/auth-split-layout";
+import { AuthPageShell } from "@/components/layout/auth-page-shell";
 import {
   IconCheck,
   IconUser,
@@ -65,7 +65,7 @@ const stepsMeta = [
 
 function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
   return (
-    <nav aria-label="Sign-up progress" className="mb-8">
+    <nav aria-label="Sign-up progress" className="mt-5">
       <ol className="flex items-center gap-1 sm:gap-2">
         {stepsMeta.map((s, i) => {
           const done = step > s.n;
@@ -107,6 +107,22 @@ function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
   );
 }
 
+const stepHeadings: Record<1 | 2 | 3, { title: string; intro: React.ReactNode }> = {
+  1: {
+    title: "Create your account",
+    intro:
+      "Tell us how you’ll be using MyBenefitsPA. This shapes your setup and the features you’ll see first.",
+  },
+  2: {
+    title: "Your details",
+    intro: "We’ll use this on your dashboard and in alert emails.",
+  },
+  3: {
+    title: "Review & create",
+    intro: null,
+  },
+};
+
 export default function SignUpPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -114,9 +130,13 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** Step 3: create the account, which emails a 6-digit confirmation code. */
   async function register() {
     setError(null);
     setLoading(true);
@@ -132,14 +152,44 @@ export default function SignUpPage() {
         setLoading(false);
         return;
       }
-      const sign = await signIn("credentials", {
+      setCodeSent(true);
+      setLoading(false);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  /** Resend the confirmation code without recreating the account. */
+  async function resendCode() {
+    setError(null);
+    setSendingCode(true);
+    try {
+      await fetch("/api/auth/login-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch {
+      setError("Could not resend the code. Please try again.");
+    } finally {
+      setSendingCode(false);
+    }
+  }
+
+  /** Verify the emailed code; a valid code confirms the email and signs in. */
+  async function verifyAndCreate() {
+    setError(null);
+    setLoading(true);
+    try {
+      const sign = await signIn("email-code", {
         email,
-        password,
+        code,
         redirect: false,
         callbackUrl: "/onboarding/profile",
       });
       if (sign?.error) {
-        setError("Account created but sign-in failed. Try signing in.");
+        setError("That code is invalid or expired. Request a new one.");
         setLoading(false);
         return;
       }
@@ -151,6 +201,8 @@ export default function SignUpPage() {
     }
   }
 
+  const heading = stepHeadings[step];
+
   return (
     <>
       {loading ? (
@@ -159,57 +211,33 @@ export default function SignUpPage() {
           subtitle="Securing your session and preparing your workspace…"
         />
       ) : null}
-      <AuthSplitLayout
-        sideTitle="Keep your benefits. Know your threshold."
-        sideBody={
-          <>
-            <p>
-              MyBenefitsPA helps you see how bank deposits and balances relate to common program limits,
-              and emails you before you approach a threshold — so you can plan with your counselor or
-              agency.
-            </p>
-            <ul className="mt-6 flex flex-col gap-3 text-[12px] leading-snug text-white/90">
-              {[
-                "Connect your bank securely through Plaid",
-                "Reference limits for SSI, SSDI, SNAP, Medicaid & more",
-                "Get email heads-up before you near a limit",
-                "Bank-level encryption; delete your data anytime",
-              ].map((t) => (
-                <li key={t} className="flex gap-3">
-                  <IconCheck className="mt-0.5 shrink-0 text-[var(--color-cs-success)]" size={18} stroke={2} aria-hidden />
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        }
-        sideFooter={
-          <p>
-            Informational tool only. Not legal or financial advice. By signing up you agree to our{" "}
-            <Link className="text-white/95 underline decoration-white/40 underline-offset-2 hover:decoration-white" href="/resources">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link className="text-white/95 underline decoration-white/40 underline-offset-2 hover:decoration-white" href="/resources">
-              Privacy policy
-            </Link>
-            .
+      <AuthPageShell width="lg">
+        {/* ---------- Heading ---------- */}
+        <header className="border-b border-[var(--color-cs-border)] pb-7">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
+            Create account
           </p>
-        }
-      >
-        <div className="w-full max-w-[560px]">
           <SignupStepper step={step} />
+          <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-4xl">
+            {heading.title}
+          </h1>
+          {heading.intro ? (
+            <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              {heading.intro}
+            </p>
+          ) : (
+            <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              You’re almost done. We’ll send threshold reminders to{" "}
+              <span className="font-semibold text-[var(--color-cs-text)]">{email}</span>.
+            </p>
+          )}
+        </header>
 
+        {/* ---------- Form card ---------- */}
+        <div className="mt-8 rounded-lg border border-[var(--color-cs-border)] bg-white p-6 sm:p-7">
           {step === 1 && (
             <>
-              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">
-                Create your account
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
-                Tell us how you&apos;ll be using MyBenefitsPA. This shapes your setup and the features
-                you&apos;ll see first.
-              </p>
-              <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {types.map((t) => {
                   const Icon = t.icon;
                   const selected = accountType === t.id;
@@ -249,7 +277,7 @@ export default function SignUpPage() {
                   );
                 })}
               </div>
-              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-[var(--color-cs-text-secondary)]">
                   Already have an account?{" "}
                   <Link href="/auth/signin" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
@@ -269,11 +297,7 @@ export default function SignUpPage() {
 
           {step === 2 && (
             <>
-              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">Your details</h1>
-              <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
-                We&apos;ll use this on your dashboard and in alert emails.
-              </p>
-              <div className="mt-7 flex flex-col gap-5">
+              <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className={authLabelClass} htmlFor="name">
                     Full name
@@ -325,7 +349,7 @@ export default function SignUpPage() {
                   </p>
                 ) : null}
               </div>
-              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
@@ -345,14 +369,9 @@ export default function SignUpPage() {
             </>
           )}
 
-          {step === 3 && (
+          {step === 3 && !codeSent && (
             <>
-              <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-cs-navy)]">Review &amp; create</h1>
-              <p className="mt-2 text-sm text-[var(--color-cs-text-secondary)]">
-                You&apos;re almost done. We&apos;ll send threshold reminders to{" "}
-                <span className="font-semibold text-[var(--color-cs-text)]">{email}</span>.
-              </p>
-              <ul className="mt-6 space-y-0 overflow-hidden rounded-xl border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+              <ul className="space-y-0 overflow-hidden rounded-xl border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
                 <li className="flex justify-between gap-4 border-b border-[var(--color-cs-border)] px-4 py-3">
                   <span className="text-[var(--color-cs-text-muted)]">Account type</span>
                   <span className="font-medium text-[var(--color-cs-text)] text-right">
@@ -372,7 +391,18 @@ export default function SignUpPage() {
                   {error}
                 </p>
               ) : null}
-              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+              <p className="mt-5 text-xs leading-relaxed text-[var(--color-cs-text-secondary)]">
+                By creating an account you agree to our{" "}
+                <Link href="/legal/terms" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link href="/legal/privacy" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
                 <button
                   type="button"
                   onClick={() => setStep(2)}
@@ -386,13 +416,77 @@ export default function SignUpPage() {
                   disabled={loading}
                   className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[160px]`}
                 >
-                  {loading ? "Creating…" : "Create account"}
+                  {loading ? "Sending code…" : "Create account"}
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 3 && codeSent && (
+            <>
+              <p className="text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
+                We emailed a 6-digit code to{" "}
+                <span className="font-semibold text-[var(--color-cs-text)]">{email}</span>. Enter it
+                below to confirm your email and finish creating your account.
+              </p>
+              <div className="mt-5 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className={authLabelClass} htmlFor="signup-code">
+                    6-digit code
+                  </label>
+                  <button
+                    type="button"
+                    onClick={resendCode}
+                    disabled={sendingCode}
+                    className="text-xs font-semibold text-[var(--color-cs-brand)] hover:underline disabled:opacity-50"
+                  >
+                    {sendingCode ? "Sending…" : "Resend"}
+                  </button>
+                </div>
+                <input
+                  id="signup-code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="123456"
+                  className={`${authTextInputClass} tracking-[0.4em]`}
+                />
+              </div>
+              {error ? (
+                <p
+                  className="mt-4 rounded-xl border border-[var(--color-cs-danger)]/25 bg-[var(--color-cs-danger-bg)] px-3 py-2.5 text-xs font-medium text-[var(--color-cs-danger)]"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              ) : null}
+              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCodeSent(false);
+                    setCode("");
+                    setError(null);
+                  }}
+                  className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={verifyAndCreate}
+                  disabled={loading || code.length !== 6}
+                  className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[160px]`}
+                >
+                  {loading ? "Verifying…" : "Verify & continue"}
                 </button>
               </div>
             </>
           )}
         </div>
-      </AuthSplitLayout>
+      </AuthPageShell>
     </>
   );
 }

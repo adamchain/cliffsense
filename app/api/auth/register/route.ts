@@ -5,10 +5,11 @@ import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
-import { issueAuthToken } from "@/lib/auth/tokens";
-import { appUrl, sendEmail, withDisclaimer } from "@/lib/email/mailer";
+import { issueLoginCode } from "@/lib/auth/tokens";
+import { sendEmail } from "@/lib/email/mailer";
+import { renderEmail } from "@/lib/email/template";
 
-const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
+const LOGIN_CODE_TTL_MS = 10 * 60 * 1000;
 
 function isMongoBadAuth(e: unknown): boolean {
   if (!e || typeof e !== "object") return false;
@@ -55,19 +56,24 @@ export async function POST(req: Request) {
       details: { accountType },
     });
 
-    // Fire-and-forget email verification (does not block sign-in).
+    // Email a 6-digit code; entering it on the sign-up screen confirms the
+    // address and signs the new account in. Does not block account creation.
     try {
-      const token = await issueAuthToken(user._id, "email_verify", EMAIL_VERIFY_TTL_MS);
-      const link = `${appUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`;
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your MyBenefitsPA email",
-        text: withDisclaimer(
-          `Welcome to MyBenefitsPA. Confirm this email address to secure your account:\n${link}\n\nThis link expires in 24 hours.`,
-        ),
+      const code = await issueLoginCode(user._id, LOGIN_CODE_TTL_MS);
+      const { html, text } = renderEmail({
+        heading: "Your sign-in code",
+        preheader: `${code} is your MyBenefitsPA sign-in code.`,
+        paragraphs: [
+          "Welcome to MyBenefitsPA. Enter this code on the sign-up screen to confirm your email and finish creating your account.",
+        ],
+        code,
+        bodyText:
+          "This code expires in 10 minutes. If you didn't create an account, you can safely ignore this email.",
+        bodyHtml: `<p style="margin:0;font-size:13px;line-height:1.6;color:#566175;">This code expires in 10 minutes. If you didn't create an account, you can safely ignore this email.</p>`,
       });
+      await sendEmail({ to: user.email, subject: `Your MyBenefitsPA sign-in code: ${code}`, html, text });
     } catch (e) {
-      console.warn("verification email failed", e);
+      console.warn("registration code email failed", e);
     }
 
     return NextResponse.json({ ok: true, userId: user._id.toString() });

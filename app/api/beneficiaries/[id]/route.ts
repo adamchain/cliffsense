@@ -8,6 +8,7 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import { logActivity } from "@/lib/activity/log-activity";
 import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
+import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 
 const programEnum = z.enum([
   "SSI",
@@ -79,7 +80,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       beneficiaryId: new mongoose.Types.ObjectId(id),
       actorUserId: session.user.id,
     });
-    await sendAlertEmailsForNewAlerts(er.alertIdsCreated.map((x) => x.toString()));
+    const ids = er.alertIdsCreated.map((x) => x.toString());
+    await sendAlertEmailsForNewAlerts(ids);
+    await sendAlertPushForNewAlerts(ids);
   } catch (e) {
     console.warn("evaluateThresholdsForBeneficiary after benefits update", e);
   }

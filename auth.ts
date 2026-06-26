@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { logActivity } from "@/lib/activity/log-activity";
+import { consumeLoginCode } from "@/lib/auth/tokens";
 
 const nextAuth = NextAuth({
   trustHost: true,
@@ -32,6 +33,48 @@ const nextAuth = NextAuth({
         const ok = await bcrypt.compare(String(credentials.password), user.hashedPassword);
         if (!ok) {
           return null;
+        }
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name ?? "",
+          accountType: user.accountType,
+          isAdmin: user.isAdmin,
+          onboardingStep: user.onboardingStep ?? "none",
+        };
+      },
+    }),
+    Credentials({
+      id: "email-code",
+      name: "email-code",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        code: { label: "Code", type: "text" },
+      },
+      authorize: async (credentials) => {
+        if (!credentials?.email || !credentials?.code) {
+          return null;
+        }
+        const email = String(credentials.email).toLowerCase().trim();
+        const code = String(credentials.code).replace(/\D/g, "");
+        if (code.length !== 6) {
+          return null;
+        }
+        await connectDB();
+        const user = await User.findOne({ email }).lean();
+        if (!user) {
+          return null;
+        }
+        const ok = await consumeLoginCode(user._id, code);
+        if (!ok) {
+          return null;
+        }
+        // A valid email code also proves ownership of the address.
+        if (!user.emailVerified) {
+          await User.updateOne(
+            { _id: user._id, emailVerified: null },
+            { $set: { emailVerified: new Date() } },
+          );
         }
         return {
           id: user._id.toString(),
@@ -74,14 +117,15 @@ const nextAuth = NextAuth({
   },
   events: {
     signIn: async ({ user, account }) => {
-      if (account?.provider !== "credentials" || !user?.id) return;
+      const provider = account?.provider;
+      if ((provider !== "credentials" && provider !== "email-code") || !user?.id) return;
       await connectDB();
       await User.updateOne({ _id: user.id }, { $set: { lastLoginAt: new Date() } });
       await logActivity({
         userId: user.id,
         category: "auth",
         action: "login",
-        details: { provider: account.provider },
+        details: { provider },
       });
     },
   },

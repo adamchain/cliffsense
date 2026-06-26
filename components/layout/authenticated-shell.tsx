@@ -8,14 +8,21 @@ export function AuthenticatedShell({
   children,
   userName,
   userInitials,
+  alertCount = 0,
 }: {
   children: ReactNode;
   userName: string;
   userInitials: string;
+  alertCount?: number;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   return (
-    <AppShell activeHref={pathname} userName={userName} userInitials={userInitials}>
+    <AppShell
+      activeHref={pathname}
+      userName={userName}
+      userInitials={userInitials}
+      alertCount={alertCount}
+    >
       {children}
     </AppShell>
   );

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AuthenticatedShell } from "@/components/layout/authenticated-shell";
+import { countUnreadAlertsForUser } from "@/lib/alerts/unread-count";
 
 function initials(name: string, email: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -23,10 +24,12 @@ export default async function AuthenticatedGroupLayout({
     redirect("/auth/signin");
   }
   const display = session.user.name?.trim() || session.user.email || "User";
+  const alertCount = await countUnreadAlertsForUser(session.user.id).catch(() => 0);
   return (
     <AuthenticatedShell
       userName={display}
       userInitials={initials(display, session.user.email ?? "")}
+      alertCount={alertCount}
     >
       {children}
     </AuthenticatedShell>

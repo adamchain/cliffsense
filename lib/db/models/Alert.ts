@@ -17,6 +17,8 @@ const alertSchema = new Schema(
     },
     emailSent: { type: Boolean, default: false },
     emailSentAt: { type: Date, default: null },
+    pushSent: { type: Boolean, default: false },
+    pushSentAt: { type: Date, default: null },
     acknowledgedAt: { type: Date, default: null },
   },
   { timestamps: { createdAt: true, updatedAt: false } },

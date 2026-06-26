@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/mongodb";
 import BankConnection from "@/lib/db/models/BankConnection";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
+import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 import { logActivity } from "@/lib/activity/log-activity";
 import { decryptPlaidToken } from "@/lib/plaid/crypto";
 import { getPlaidClient, isPlaidExchangeConfigured } from "@/lib/plaid/server";
@@ -92,7 +93,9 @@ export async function runBeneficiaryPlaidSync(params: {
     actorUserId: params.actorUserId,
   });
 
-  await sendAlertEmailsForNewAlerts(evalResult.alertIdsCreated.map((id) => id.toString()));
+  const newAlertIds = evalResult.alertIdsCreated.map((id) => id.toString());
+  await sendAlertEmailsForNewAlerts(newAlertIds);
+  await sendAlertPushForNewAlerts(newAlertIds);
 
   await logActivity({
     userId: params.actorUserId,
