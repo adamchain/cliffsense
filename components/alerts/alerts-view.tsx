@@ -114,7 +114,7 @@ export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) 
                     {new Date(a.createdAt).toLocaleString()}
                   </span>
                   {a.status === "new" && (
-                    <span className="rounded bg-[#deecf9] px-1.5 py-0.5 text-[11px] text-[#2b5797]">New</span>
+                    <span className="cs-pill bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">New</span>
                   )}
                 </div>
                 {snap?.thresholdLabel && (

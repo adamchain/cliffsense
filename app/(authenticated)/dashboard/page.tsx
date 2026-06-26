@@ -96,8 +96,8 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Dashboard</div>
-      <h1 className="mb-3.5 text-xl font-medium text-[var(--color-cs-text)]">Dashboard</h1>
+      <div className="mb-1 text-xs font-medium text-[var(--color-cs-text-secondary)]">Home › Dashboard</div>
+      <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-[var(--color-cs-text)]">Dashboard</h1>
       <AppToolbar>
         <ToolbarButton primary href="/thresholds">
           <IconPlus size={16} stroke={1.5} aria-hidden />
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
         <Card title="This month at a glance" action="View details" actionHref="/thresholds">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {glance.map((s) => (
-              <div key={s.label} className="rounded bg-[var(--color-cs-surface)] px-3 py-2.5">
+              <div key={s.label} className="rounded-2xl bg-[var(--color-cs-surface)] px-4 py-3.5">
                 <div className="text-[11px] text-[var(--color-cs-text-secondary)]">{s.label}</div>
                 <div className="text-lg font-medium tabular-nums">{s.value}</div>
                 <div className="mt-0.5 text-[11px] text-[var(--color-cs-text-secondary)]">{s.sub}</div>

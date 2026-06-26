@@ -4,18 +4,17 @@ import {
   IconBell,
   IconFileExport,
   IconFolder,
-  IconHelp,
   IconHome,
   IconListDetails,
   IconMessageCircle,
   IconRepeat,
-  IconSearch,
   IconSettings,
   IconTarget,
 } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
+import { MobileTabBar, type NavItem } from "./mobile-tab-bar";
 
-const nav = [
+const nav: NavItem[] = [
   { href: "/dashboard", label: "Home", icon: IconHome },
   { href: "/transactions", label: "Banking", icon: IconListDetails },
   { href: "/recurring", label: "Recurring", icon: IconRepeat },
@@ -26,81 +25,132 @@ const nav = [
   { href: "/advisor", label: "Advisor", icon: IconMessageCircle },
 ];
 
+/** The four destinations that get their own slot in the mobile tab bar; the
+ *  rest live behind the "More" sheet. */
+const PRIMARY_HREFS = ["/dashboard", "/transactions", "/thresholds", "/alerts"];
+
 export function AppShell({
   children,
   userName,
   userInitials,
   activeHref,
+  alertCount = 0,
 }: {
   children: ReactNode;
   userName: string;
   userInitials: string;
   activeHref: string;
+  alertCount?: number;
 }) {
+  const badge = alertCount > 9 ? "9+" : String(alertCount);
+  const primary = nav.filter((n) => PRIMARY_HREFS.includes(n.href));
+  const more = nav.filter((n) => !PRIMARY_HREFS.includes(n.href));
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      <header className="flex h-14 shrink-0 items-center gap-4 bg-[var(--color-cs-brand)] px-4 text-white sm:px-5">
+      {/* ---------- Header: light, bold, like the samples ---------- */}
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)]/85 px-4 backdrop-blur sm:px-6">
         <Link
           href="/dashboard"
-          className="group flex items-center gap-3 rounded-md py-0.5 pl-0.5 pr-2 -ml-0.5 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+          className="flex items-center gap-2.5 rounded-xl py-1 pr-2 hover:opacity-90"
         >
-          <BrandMark size="lg" onDark />
-          <span className="text-[15px] font-semibold tracking-tight sm:text-base">MyBenefitsPA</span>
-        </Link>
-        <div className="hidden max-w-[460px] flex-1 items-center gap-2 rounded bg-white/15 px-3 py-1.5 text-[13px] text-white/85 md:flex">
-          <IconSearch size={16} aria-hidden className="opacity-80" />
-          <span className="truncate">Search transactions, alerts, documents</span>
-        </div>
-        <div className="ml-auto flex items-center gap-3.5">
-          <Link href="/alerts" className="text-white hover:opacity-90" aria-label="Alerts">
-            <IconBell size={18} stroke={1.5} />
-          </Link>
-          <Link href="/settings" className="text-white hover:opacity-90" aria-label="Settings">
-            <IconSettings size={18} stroke={1.5} />
-          </Link>
-          <span className="text-white hover:opacity-90" aria-label="Help">
-            <IconHelp size={18} stroke={1.5} />
+          <BrandMark size="lg" />
+          <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
+            MyBenefitsPA
           </span>
+        </Link>
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/alerts"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
+            aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
+          >
+            <IconBell size={19} stroke={1.7} />
+            {alertCount > 0 && (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                {badge}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/settings"
+            className="hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] sm:flex"
+            aria-label="Settings"
+          >
+            <IconSettings size={19} stroke={1.7} />
+          </Link>
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-cs-avatar)] text-[11px] font-medium"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-[13px] font-bold text-white"
             title={userName}
           >
             {userInitials}
           </div>
         </div>
       </header>
+
       <div className="flex min-h-0 flex-1">
+        {/* ---------- Desktop sidebar (mobile uses the bottom tab bar) ---------- */}
         <nav
-          className="flex w-16 shrink-0 flex-col gap-1 border-r border-[var(--color-cs-border)] bg-white py-2 md:w-52"
+          className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex"
           aria-label="Main"
         >
           {nav.map(({ href, label, icon: Icon }) => {
             const active = activeHref === href || activeHref.startsWith(href + "/");
+            const showCount = href === "/alerts" && alertCount > 0;
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] leading-tight md:flex-row md:justify-start md:gap-3 md:px-4 md:py-2.5 md:text-[13px] ${
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
                   active
-                    ? "border-l-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-nav-hover)] font-medium text-[var(--color-cs-brand)]"
-                    : "border-l-2 border-transparent text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
+                    ? "bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)]"
+                    : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
                 }`}
               >
-                <Icon size={18} stroke={1.5} aria-hidden className="shrink-0" />
+                <Icon size={20} stroke={active ? 2 : 1.7} aria-hidden />
                 {label}
+                {showCount && (
+                  <span
+                    className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold leading-none ${
+                      active ? "bg-white/25 text-white" : "bg-[var(--color-cs-danger)] text-white"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
+          <Link
+            href="/settings"
+            className={`mt-1 flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
+              activeHref === "/settings" || activeHref.startsWith("/settings/")
+                ? "bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)]"
+                : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
+            }`}
+          >
+            <IconSettings size={20} stroke={1.7} aria-hidden />
+            Settings
+          </Link>
         </nav>
-        <div className="min-w-0 flex-1 p-4 md:p-5">{children}</div>
+
+        {/* Bottom padding on mobile clears the fixed tab bar. */}
+        <div className="min-w-0 flex-1 p-4 pb-28 sm:p-6 lg:pb-6">{children}</div>
       </div>
+
+      <MobileTabBar
+        primary={primary}
+        more={more}
+        activeHref={activeHref}
+        alertCount={alertCount}
+      />
     </div>
   );
 }
 
 export function AppToolbar({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-3.5 flex flex-wrap items-center gap-1 rounded-xl border border-[var(--color-cs-border)] bg-white p-1.5 text-[13px]">
+    <div className="mb-4 flex flex-wrap items-center gap-1 rounded-2xl border border-[var(--color-cs-border)] bg-white p-1.5 text-[13px] shadow-[var(--shadow-cs-card)]">
       {children}
     </div>
   );
@@ -119,9 +169,9 @@ export function ToolbarButton({
   onClick?: () => void;
   disabled?: boolean;
 }) {
-  const className = `flex items-center gap-1.5 rounded-lg px-2.5 py-1 ${
+  const className = `flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-semibold ${
     primary
-      ? "text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
+      ? "text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)]"
       : "text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
   } ${disabled ? "pointer-events-none opacity-50" : ""}`;
   if (href) {
@@ -150,13 +200,13 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="cs-card p-4 md:p-5">
-      <div className="mb-2.5 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[var(--color-cs-text)]">{title}</h2>
+    <section className="cs-card p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">{title}</h2>
         {action && actionHref && (
           <Link
             href={actionHref}
-            className="cursor-pointer text-xs text-[var(--color-cs-brand)] hover:underline"
+            className="cursor-pointer text-xs font-semibold text-[var(--color-cs-brand)] hover:underline"
           >
             {action}
           </Link>

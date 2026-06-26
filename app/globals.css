@@ -1,31 +1,44 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  /* MyBenefitsPA brand palette (derived from the logo) */
-  --color-cs-brand: #1b6cc4;
-  --color-cs-brand-hover: #15579e;
-  --color-cs-navy: #0f2a4c;
-  --color-cs-accent-green: #67b13e;
-  --color-cs-accent-orange: #db8a1e;
-  --color-cs-surface: #f8fafc;
+  /* Plus Jakarta Sans (wired in app/layout.tsx) gives the rounded, friendly
+   * fintech type from the mobile samples; falls back to the system stack. */
+  --font-sans: var(--font-jakarta), "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ---------------------------------------------------------------------------
+   * MyBenefitsPA palette — tuned to the mobile design samples:
+   * royal-blue primary, near-black navy ink, cool light-gray app background,
+   * white surfaces with generous rounding and soft shadows.
+   * ------------------------------------------------------------------------- */
+  --color-cs-brand: #4b63f0;
+  --color-cs-brand-hover: #3a50e0;
+  --color-cs-brand-soft: #e9ecfd;
+  --color-cs-navy: #0f1b33;
+  --color-cs-accent-green: #2fb37b;
+  --color-cs-accent-orange: #f2994a;
+  --color-cs-surface: #f0f2f7;
   --color-cs-card: #ffffff;
-  --color-cs-border: #e3e8ef;
-  --color-cs-text: #16243a;
-  --color-cs-text-secondary: #566175;
-  --color-cs-text-muted: #97a0ad;
-  --color-cs-success: #4f9e2a;
-  --color-cs-warning: #c2740f;
-  --color-cs-danger: #a4262c;
-  --color-cs-info: #1b6cc4;
-  --color-cs-success-bg: #e7f4dc;
-  --color-cs-warning-bg: #fbe7cf;
-  --color-cs-danger-bg: #fde7e9;
-  --color-cs-info-bg: #e3eefb;
-  --color-cs-nav-hover: #eef2f7;
-  --color-cs-input-border: #8a909a;
-  --color-cs-input-bottom: #566175;
-  --color-cs-avatar: #c19c00;
+  --color-cs-border: #eaecf3;
+  --color-cs-text: #0f1b33;
+  --color-cs-text-secondary: #8b93a7;
+  --color-cs-text-muted: #aab1c2;
+  --color-cs-success: #1f9d63;
+  --color-cs-warning: #d98717;
+  --color-cs-danger: #e5484d;
+  --color-cs-info: #4b63f0;
+  --color-cs-success-bg: #e3f5ec;
+  --color-cs-warning-bg: #fdf0dc;
+  --color-cs-danger-bg: #fdeaea;
+  --color-cs-info-bg: #e9ecfd;
+  --color-cs-nav-hover: #f3f5fb;
+  --color-cs-input-bg: #f3f5fb;
+  --color-cs-input-border: #e4e7f0;
+  --color-cs-input-bottom: #8b93a7;
+  --color-cs-avatar: #4b63f0;
+
+  /* Soft elevation used by the rounded surfaces. */
+  --shadow-cs-card: 0 12px 30px -18px rgba(15, 27, 51, 0.18);
+  --shadow-cs-float: 0 16px 40px -20px rgba(15, 27, 51, 0.28);
 }
 
 html,
@@ -36,10 +49,10 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Shared component classes — one place for buttons, inputs, and cards so the
- * auth flow, the app, and the marketing landing page all read the same. Built
- * from the cs palette above; matches the landing page's rounded, friendly look
- * (pill buttons, soft cards, generous inputs). Layered as `components` so plain
+ * Shared component classes — one place for buttons, inputs, cards, and the
+ * fintech building blocks (balance cards, circular action buttons, list rows,
+ * pill search, bottom nav) so the auth flow, the app, and the landing page all
+ * read as one rounded, friendly system. Layered as `components` so plain
  * Tailwind utilities (w-full, sm:w-auto, mt-*, …) still override them.
  * ------------------------------------------------------------------------- */
 @layer components {
@@ -48,13 +61,17 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 9999px;
-    padding: 0.625rem 1.25rem;
+    border-radius: 0.875rem;
+    padding: 0.75rem 1.35rem;
     font-size: 0.9375rem;
     font-weight: 600;
     line-height: 1.25rem;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+      box-shadow 0.15s ease, transform 0.05s ease;
     cursor: pointer;
+  }
+  .cs-btn:active {
+    transform: translateY(1px);
   }
   .cs-btn:disabled {
     opacity: 0.55;
@@ -64,7 +81,7 @@ body {
   .cs-btn-primary {
     background: var(--color-cs-brand);
     color: #ffffff;
-    box-shadow: 0 1px 2px rgba(15, 42, 76, 0.12);
+    box-shadow: 0 10px 22px -12px rgba(75, 99, 240, 0.85);
   }
   .cs-btn-primary:hover {
     background: var(--color-cs-brand-hover);
@@ -82,7 +99,7 @@ body {
   .cs-btn-ghost {
     background: transparent;
     color: var(--color-cs-brand);
-    border: 2px solid var(--color-cs-brand);
+    border: 1.5px solid var(--color-cs-brand);
   }
   .cs-btn-ghost:hover {
     background: var(--color-cs-info-bg);
@@ -96,12 +113,12 @@ body {
   }
 
   .cs-input {
-    height: 2.75rem;
+    height: 2.875rem;
     width: 100%;
-    border-radius: 0.625rem;
+    border-radius: 0.875rem;
     border: 1px solid var(--color-cs-input-border);
     background: #ffffff;
-    padding: 0 0.875rem;
+    padding: 0 1rem;
     font-size: 0.9375rem;
     color: var(--color-cs-text);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -112,28 +129,141 @@ body {
   .cs-input:focus {
     outline: none;
     border-color: var(--color-cs-brand);
-    box-shadow: 0 0 0 3px rgba(27, 108, 196, 0.16);
+    box-shadow: 0 0 0 3px rgba(75, 99, 240, 0.16);
   }
   .cs-input:disabled {
     background: var(--color-cs-nav-hover);
     color: var(--color-cs-text-muted);
   }
 
-  /* Surface card — soft rounded panel used across app and marketing. */
-  .cs-card {
-    border-radius: 1rem;
-    border: 1px solid var(--color-cs-border);
-    background: var(--color-cs-card);
+  /* Pill search field with a soft gray fill — the samples' search input. */
+  .cs-search {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    height: 3rem;
+    width: 100%;
+    border-radius: 9999px;
+    background: var(--color-cs-input-bg);
+    padding: 0 1.125rem;
+    color: var(--color-cs-text-secondary);
+  }
+  .cs-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.9375rem;
+    color: var(--color-cs-text);
+  }
+  .cs-search input::placeholder {
+    color: var(--color-cs-text-secondary);
+  }
+  .cs-search input:focus {
+    outline: none;
   }
 
-  /* Orange uppercase eyebrow used above section headings on the landing page. */
-  .cs-eyebrow {
+  /* Surface card — soft, generously rounded panel used across the app. */
+  .cs-card {
+    border-radius: 1.25rem;
+    border: 1px solid var(--color-cs-border);
+    background: var(--color-cs-card);
+    box-shadow: var(--shadow-cs-card);
+  }
+
+  /* Balance / account card — the signature blue (and navy) hero cards. */
+  .cs-balance-card {
+    border-radius: 1.5rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+    color: #ffffff;
+    background: var(--color-cs-brand);
+    box-shadow: 0 20px 40px -22px rgba(75, 99, 240, 0.75);
+  }
+  .cs-balance-card--dark {
+    background: var(--color-cs-navy);
+    box-shadow: 0 20px 40px -22px rgba(15, 27, 51, 0.7);
+  }
+
+  /* Circular white action button (Top up / Pay / Send / More). */
+  .cs-action {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.8125rem;
     font-weight: 600;
+    color: var(--color-cs-text);
+    cursor: pointer;
+  }
+  .cs-action-circle {
+    display: inline-flex;
+    height: 3.5rem;
+    width: 3.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: #ffffff;
+    color: var(--color-cs-text);
+    box-shadow: var(--shadow-cs-card);
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .cs-action:hover .cs-action-circle {
+    box-shadow: var(--shadow-cs-float);
+    transform: translateY(-1px);
+  }
+
+  /* Avatar + chevron list row (contacts, "Send money to", etc.). */
+  .cs-list-row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    width: 100%;
+    padding: 0.75rem 0.25rem;
+    text-align: left;
+    color: var(--color-cs-text);
+    transition: background-color 0.12s ease;
+  }
+  .cs-list-row:hover {
+    background: var(--color-cs-nav-hover);
+  }
+  .cs-avatar {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--color-cs-brand-soft);
+    color: var(--color-cs-brand);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  /* Status pills. */
+  .cs-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  /* Orange uppercase eyebrow above section headings on the landing page. */
+  .cs-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.18em;
     color: var(--color-cs-accent-orange);
   }
+}
+
+/* Honor the iOS home-indicator safe area for the bottom tab bar. */
+.cs-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Subtle auth loading (signup / sign-in) */
@@ -173,7 +303,7 @@ body {
   width: 38%;
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, transparent 0%, #1b6cc4 50%, #0f2a4c 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-cs-brand) 50%, var(--color-cs-navy) 100%);
   animation: cs-auth-bar 1.25s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
