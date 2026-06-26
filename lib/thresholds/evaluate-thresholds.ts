@@ -9,8 +9,12 @@ import Transaction from "@/lib/db/models/Transaction";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import {
   endOfUtcMonth,
+  grossMonthlyIncomeCents,
+  grossUpEarnedCents,
   maxCheckingSavingsBalanceCents,
+  monthlyIncomeBreakdownCents,
   projectRecurringEarnedRestOfMonthCents,
+  ssiCountableMonthlyIncomeCents,
   sumEarnedInflowTransactionsCents,
   utcMonthPrefix,
 } from "@/lib/thresholds/metrics";
@@ -165,8 +169,23 @@ export async function evaluateThresholdsForBeneficiary(input: {
     now,
     monthEnd,
   );
-  const currentEarned = txSum;
   const projectedEarned = txSum + recurringExtra;
+
+  const breakdown = monthlyIncomeBreakdownCents(
+    txRows.map((t) => ({
+      date: t.date,
+      amountCents: t.amountCents,
+      userCategory: t.userCategory,
+      pending: Boolean(t.pending),
+      excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    })),
+    prefix,
+  );
+  const projectedBreakdown = {
+    ...breakdown,
+    earnedNetCents: projectedEarned,
+    earnedGrossCents: grossUpEarnedCents(projectedEarned),
+  };
 
   const accountsFlat: { type: string; subtype?: string; currentBalanceCents: number }[] = [];
   for (const c of connections) {
@@ -200,8 +219,16 @@ export async function evaluateThresholdsForBeneficiary(input: {
 
     switch (th.thresholdType) {
       case "monthly_earned_income":
-        currentValue = currentEarned;
-        projectedValue = projectedEarned;
+        currentValue = breakdown.earnedGrossCents;
+        projectedValue = projectedBreakdown.earnedGrossCents;
+        break;
+      case "monthly_gross_income":
+        currentValue = grossMonthlyIncomeCents(breakdown);
+        projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        break;
+      case "monthly_unearned_income":
+        currentValue = ssiCountableMonthlyIncomeCents(breakdown);
+        projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
         break;
       case "asset_balance":
         currentValue = maxAsset;

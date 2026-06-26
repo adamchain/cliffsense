@@ -56,15 +56,12 @@ export default async function DashboardPage() {
     }));
   }
 
-  // Evaluable limits (earned income + asset balance) for the simple bar view
-  // and the what-if controls. Reference-only thresholds have no live value.
+  // Evaluable limits (earned / gross / countable income + asset balance) for the
+  // bar view and what-if controls. Each has a live value estimated from the
+  // beneficiary's categorized deposits and linked balances; annual/custom
+  // reference-only thresholds carry no live value and are skipped.
   const whatIfItems: WhatIfItem[] = (payload?.rows ?? [])
-    .filter(
-      (r) =>
-        r.attached &&
-        r.currentValueCents != null &&
-        (r.thresholdType === "monthly_earned_income" || r.thresholdType === "asset_balance"),
-    )
+    .filter((r) => r.attached && r.currentValueCents != null)
     .map((r) => ({
       id: r._id,
       label: r.label,

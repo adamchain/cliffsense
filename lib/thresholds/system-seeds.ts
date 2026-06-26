@@ -5,6 +5,7 @@ export type SystemThresholdSeed = {
   thresholdType:
     | "monthly_earned_income"
     | "monthly_unearned_income"
+    | "monthly_gross_income"
     | "annual_income"
     | "asset_balance"
     | "transaction_amount"
@@ -141,14 +142,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "Medicare Part D Extra Help (LIS) — monthly income (single, 2026)",
     description:
-      "2026 monthly income limit for a single individual: $2,015 ($24,180/year). Income from SSDI, DAC, and work all count toward this test. Reference only.",
+      "2026 monthly income limit for a single individual: $2,015 ($24,180/year). Income from SSDI, DAC, and work all count toward this test. Estimated from your linked accounts — informational only, not an eligibility determination.",
     sourceUrl: MEDICARE_EXTRA_HELP,
   },
   {
     systemKey: "extra_help_lis_resources_2026",
     program: "ACA",
     state: null,
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 18090_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -156,7 +157,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "Medicare Part D Extra Help (LIS) — resource limit (single, 2026)",
     description:
-      "2026 asset limit for a single individual: $18,090 (excludes home, car, and personal items). Reference only.",
+      "2026 asset limit for a single individual: $18,090 (excludes home, car, and personal items). Estimated from your linked accounts — informational only, not an eligibility determination.",
     sourceUrl: MEDICARE_EXTRA_HELP,
   },
 
@@ -175,7 +176,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — monthly income (2026)",
     description:
-      "2026 waiver income limit: $2,982/month (300% of the SSI Federal Benefit Rate). Only the applicant's income counts; SSDI and wages count, but DAC benefits are excluded (PA is a 1634 state). Waiver approval confers full Medicaid (\"deemed eligible\"), so ABD income limits do not apply. Reference only." +
+      "2026 waiver income limit: $2,982/month (300% of the SSI Federal Benefit Rate). Only the applicant's income counts; SSDI and wages count, but DAC benefits are excluded (PA is a 1634 state). Waiver approval confers full Medicaid (\"deemed eligible\"), so ABD income limits do not apply. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,
   },
@@ -183,7 +184,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_waiver_resources_2026",
     program: "Medicaid",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 8000_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -191,7 +192,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — asset limit (2026)",
     description:
-      "2026 waiver asset limit: $8,000 (higher for married applicants under spousal-impoverishment rules). Special Needs Trusts and ABLE balances are excluded. Reference only." +
+      "2026 waiver asset limit: $8,000 (higher for married applicants under spousal-impoverishment rules). Special Needs Trusts and ABLE balances are excluded. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,
   },
@@ -211,7 +212,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA Full Medicaid (ABD / Healthy Horizons) — monthly income (2026)",
     description:
-      "2026 Aged/Blind/Disabled Medicaid income limit: $1,330/month (single). SSDI counts as unearned income (less the $20 exclusion); earned income gets the $65 + ½ exclusions; DAC is excluded. Waiver enrollees exceed this but keep Medicaid via deemed eligibility. Reference only." +
+      "2026 Aged/Blind/Disabled Medicaid income limit: $1,330/month (single). SSDI counts as unearned income (less the $20 exclusion); earned income gets the $65 + ½ exclusions; DAC is excluded. Waiver enrollees exceed this but keep Medicaid via deemed eligibility. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
@@ -219,7 +220,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_medicaid_abd_resources_2026",
     program: "Medicaid",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 2000_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -227,7 +228,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA Full Medicaid (ABD) — asset limit (2026)",
     description:
-      "2026 ABD Medicaid asset limit: $2,000 (individual). Note: $8,000 may apply when Medicaid was entered through a waiver. SNT and ABLE balances are excluded. Reference only." +
+      "2026 ABD Medicaid asset limit: $2,000 (individual). Note: $8,000 may apply when Medicaid was entered through a waiver. SNT and ABLE balances are excluded. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
@@ -235,7 +236,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_mawd_resources_2026",
     program: "Medicaid",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 8000_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -243,7 +244,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA MAWD (Workers with Disabilities) — asset limit (2026)",
     description:
-      "Medical Assistance for Workers with Disabilities asset limit: $8,000 ($2,400 income-based tier). MAWD lets a working beneficiary keep Medicaid/Waiver coverage above SSDI's SGA limit, for a premium of ~5% of countable income. Reference only." +
+      "Medical Assistance for Workers with Disabilities asset limit: $8,000 ($2,400 income-based tier). MAWD lets a working beneficiary keep Medicaid/Waiver coverage above SSDI's SGA limit, for a premium of ~5% of countable income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
@@ -263,7 +264,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — monthly income (single)",
     description:
-      "QMB income limit: 100% FPL + $20 disregard ≈ $1,350/month (single). QMB pays Medicare Part A/B premiums and cost-sharing and does not block Waiver services. SSDI counts (less $20); earned income gets the $65 + ½ exclusions. Reference only." +
+      "QMB income limit: 100% FPL + $20 disregard ≈ $1,350/month (single). QMB pays Medicare Part A/B premiums and cost-sharing and does not block Waiver services. SSDI counts (less $20); earned income gets the $65 + ½ exclusions. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
@@ -271,7 +272,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_qmb_resources_2026",
     program: "Medicaid",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 9660_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -279,7 +280,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — resource limit (single)",
     description:
-      "QMB resource limit ≈ $9,660 (single). Applies regardless of Waiver enrollment or SSDI status. Reference only." +
+      "QMB resource limit ≈ $9,660 (single). Applies regardless of Waiver enrollment or SSDI status. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
@@ -291,7 +292,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh1_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 2610_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -299,7 +300,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 1 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 1-person household: $2,610. Gross income includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 1-person household: $2,610. Gross income includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -307,7 +308,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh2_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 3534_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -315,7 +316,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 2 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 2-person household: $3,534. Includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 2-person household: $3,534. Includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -323,7 +324,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh3_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 4458_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -331,7 +332,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 3 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 3-person household: $4,458. Includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 3-person household: $4,458. Includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -339,7 +340,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh4_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 5360_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -347,7 +348,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 4 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 4-person household: $5,360. Includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 4-person household: $5,360. Includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -355,7 +356,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh5_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 6284_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -363,7 +364,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 5 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 5-person household: $6,284. Includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 5-person household: $6,284. Includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -371,7 +372,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_gross_hh6_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "monthly_gross_income",
     limitCents: 7208_00,
     comparison: "lte",
     warnAtPercent: 0.9,
@@ -379,7 +380,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 6+ (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 6-or-more-person household: $7,208 (add ~$924 per additional person). Includes SSDI, DAC, and earned income. Reference only." +
+      "Gross monthly income limit (200% FPL) for a 6-or-more-person household: $7,208 (add ~$924 per additional person). Includes SSDI, DAC, and earned income. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
@@ -387,7 +388,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_resources_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "custom",
+    thresholdType: "asset_balance",
     limitCents: 4250_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -395,7 +396,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA SNAP — resource limit (elderly/disabled, if gross test failed)",
     description:
-      "Most PA households have no SNAP asset limit. The $4,250 federal resource limit applies only to households with an elderly or disabled member that fail the gross-income test. Reference only." +
+      "Most PA households have no SNAP asset limit. The $4,250 federal resource limit applies only to households with an elderly or disabled member that fail the gross-income test. Estimated from your linked accounts — informational only, not an eligibility determination." +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },

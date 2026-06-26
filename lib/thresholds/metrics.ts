@@ -62,6 +62,105 @@ export function sumEarnedInflowTransactionsCents(transactions: TxLike[], monthPr
   return sum;
 }
 
+/**
+ * PA earned-income gross-up. Bank deposits show NET pay (after withholding) but
+ * benefit programs count GROSS (pre-tax) income. For PA's low-income population,
+ * federal income-tax withholding is ~0, so the near-certain withholdings are
+ * FICA (7.65%) + PA flat income tax (3.07%) + local Earned Income Tax (~1%) ≈
+ * 11.7%. gross ≈ net / (1 − 0.117) ≈ net × 1.133. We use a slightly conservative
+ * 1.13 so we don't over-state income. Tunable in one place.
+ *
+ * Only applied to `earned_income` (wages). Benefit deposits (SSDI/SS) arrive at
+ * gross — Social Security has no withholding unless voluntarily elected — so they
+ * are NOT grossed up.
+ */
+export const EARNED_INCOME_GROSS_UP = 1.13;
+
+/** Standard SSI/Medicaid income disregards (cents): the $20 general income
+ *  exclusion and the $65 earned-income exclusion (remainder of earned halved). */
+export const SSI_GENERAL_INCOME_EXCLUSION_CENTS = 20_00;
+export const SSI_EARNED_INCOME_EXCLUSION_CENTS = 65_00;
+
+export function grossUpEarnedCents(netEarnedCents: number): number {
+  return Math.round(Math.max(0, netEarnedCents) * EARNED_INCOME_GROSS_UP);
+}
+
+export type MonthlyIncomeBreakdown = {
+  /** Net wage deposits tagged `earned_income`. */
+  earnedNetCents: number;
+  /** Wages grossed up to pre-tax (see EARNED_INCOME_GROSS_UP). */
+  earnedGrossCents: number;
+  /** Unearned benefit deposits (SSDI, SS, disability, unemployment, pension…). */
+  benefitCents: number;
+  /** Other income (interest, dividends, refunds). */
+  otherCents: number;
+};
+
+/**
+ * Sum this month's countable inflows by MyBenefitsPA `userCategory`. Transfers,
+ * expenses, unclear, pending, and threshold-excluded rows are ignored — so the
+ * categorization the user has already done is what drives the income estimate.
+ */
+export function monthlyIncomeBreakdownCents(
+  transactions: TxLike[],
+  monthPrefix: string,
+): MonthlyIncomeBreakdown {
+  let earnedNetCents = 0;
+  let benefitCents = 0;
+  let otherCents = 0;
+  for (const t of transactions) {
+    if (t.pending) continue;
+    if (t.excludedFromThresholds) continue;
+    if (!t.date.startsWith(monthPrefix)) continue;
+    if (t.amountCents >= 0) continue; // Plaid: inflows are negative
+    const amt = Math.abs(t.amountCents);
+    switch (t.userCategory) {
+      case "earned_income":
+        earnedNetCents += amt;
+        break;
+      case "benefit_deposit":
+        benefitCents += amt;
+        break;
+      case "other_income":
+        otherCents += amt;
+        break;
+      default:
+        break; // transfer / expense / unclear → not income
+    }
+  }
+  return {
+    earnedNetCents,
+    earnedGrossCents: grossUpEarnedCents(earnedNetCents),
+    benefitCents,
+    otherCents,
+  };
+}
+
+/** SNAP-style gross monthly income: every countable inflow, no disregards. */
+export function grossMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
+  return b.earnedGrossCents + b.benefitCents + b.otherCents;
+}
+
+/**
+ * SSI/Medicaid countable monthly income (ABD, QMB, Waiver, Extra Help): apply
+ * the $20 general exclusion (to unearned first, then any remainder to earned),
+ * the $65 earned exclusion, and halve the remaining earned. Does NOT model the
+ * DAC exclusion (indistinguishable from SSDI in bank data), so it can over-state
+ * for DAC recipients — surfaced as an estimate, never a determination.
+ */
+export function ssiCountableMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
+  const unearned = b.benefitCents + b.otherCents;
+  const generalToUnearned = Math.min(unearned, SSI_GENERAL_INCOME_EXCLUSION_CENTS);
+  const countableUnearned = unearned - generalToUnearned;
+  const generalLeftForEarned = SSI_GENERAL_INCOME_EXCLUSION_CENTS - generalToUnearned;
+  const earnedAfterExclusions = Math.max(
+    0,
+    b.earnedGrossCents - SSI_EARNED_INCOME_EXCLUSION_CENTS - generalLeftForEarned,
+  );
+  const countableEarned = Math.floor(earnedAfterExclusions / 2);
+  return countableUnearned + countableEarned;
+}
+
 export type RecurringLike = {
   type: string;
   userCategory: string;

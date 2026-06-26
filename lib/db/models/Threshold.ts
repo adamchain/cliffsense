@@ -17,6 +17,7 @@ const thresholdSchema = new Schema(
       enum: [
         "monthly_earned_income",
         "monthly_unearned_income",
+        "monthly_gross_income",
         "annual_income",
         "asset_balance",
         "transaction_amount",

@@ -7,8 +7,12 @@ import Transaction from "@/lib/db/models/Transaction";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import {
   endOfUtcMonth,
+  grossMonthlyIncomeCents,
+  grossUpEarnedCents,
   maxCheckingSavingsBalanceCents,
+  monthlyIncomeBreakdownCents,
   projectRecurringEarnedRestOfMonthCents,
+  ssiCountableMonthlyIncomeCents,
   sumEarnedInflowTransactionsCents,
   utcMonthPrefix,
 } from "@/lib/thresholds/metrics";
@@ -167,6 +171,25 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   const currentEarned = txSum;
   const projectedEarned = txSum + recurringExtra;
 
+  // Full income breakdown (earned / benefit / other) from the user's categorized
+  // deposits, plus a projected view where earned income includes the rest-of-month
+  // recurring payroll. Drives the gross- and countable-income limit valuations.
+  const breakdown = monthlyIncomeBreakdownCents(
+    txRows.map((t) => ({
+      date: t.date,
+      amountCents: t.amountCents,
+      userCategory: t.userCategory,
+      pending: Boolean(t.pending),
+      excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    })),
+    prefix,
+  );
+  const projectedBreakdown = {
+    ...breakdown,
+    earnedNetCents: projectedEarned,
+    earnedGrossCents: grossUpEarnedCents(projectedEarned),
+  };
+
   const accountsFlat: { type: string; subtype?: string; currentBalanceCents: number }[] = [];
   for (const c of connections) {
     for (const a of c.accounts ?? []) {
@@ -192,15 +215,27 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
 
     switch (th.thresholdType) {
       case "monthly_earned_income":
-        currentValue = currentEarned;
-        projectedValue = projectedEarned;
+        // SSI/SGA earned-income limits are tested on GROSS wages.
+        currentValue = breakdown.earnedGrossCents;
+        projectedValue = projectedBreakdown.earnedGrossCents;
+        break;
+      case "monthly_gross_income":
+        // SNAP gross-income test: all countable income, no disregards.
+        currentValue = grossMonthlyIncomeCents(breakdown);
+        projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        break;
+      case "monthly_unearned_income":
+        // ABD / QMB / Waiver "monthly income" limits use SSI countable-income
+        // methodology ($20 general + $65 earned + ½ remaining earned).
+        currentValue = ssiCountableMonthlyIncomeCents(breakdown);
+        projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
         break;
       case "asset_balance":
         currentValue = maxAsset;
         projectedValue = null;
         break;
       default:
-        // Reference-only types (unearned/annual/custom): surfaced in the library
+        // annual_income / transaction_amount / custom: surfaced in the library
         // with their limit + source, but not auto-evaluated against a live metric.
         currentValue = null;
         projectedValue = null;

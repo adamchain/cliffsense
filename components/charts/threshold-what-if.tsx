@@ -69,31 +69,55 @@ function niceStep(bound: number): number {
 }
 
 function Bar({
-  value,
+  current,
+  projected,
   limit,
   warnAt,
   status,
 }: {
-  value: number;
+  current: number;
+  projected: number | null;
   limit: number;
   warnAt: number;
   status: Status;
 }) {
-  const pct = limit > 0 ? (value / limit) * 100 : 0;
-  const fillPct = Math.max(0, Math.min(100, pct));
+  const toPct = (v: number) => Math.max(0, Math.min(100, limit > 0 ? (v / limit) * 100 : 0));
+  const curPct = toPct(current);
+  const projPct = projected != null ? toPct(projected) : null;
   const warnPct = Math.max(0, Math.min(100, warnAt * 100));
   return (
     <div className="relative h-3 w-full overflow-hidden rounded-full bg-[var(--color-cs-surface)]">
+      {/* Projected extension (income): lighter segment from current → projected. */}
+      {projPct != null && projPct > curPct ? (
+        <div
+          className="absolute top-0 h-full transition-[width,left] duration-200 ease-out"
+          style={{
+            left: `${curPct}%`,
+            width: `${projPct - curPct}%`,
+            backgroundColor: STATUS_COLOR[status],
+            opacity: 0.3,
+          }}
+        />
+      ) : null}
+      {/* Solid current fill. */}
       <div
-        className="h-full rounded-full transition-[width] duration-200 ease-out"
-        style={{ width: `${fillPct}%`, backgroundColor: STATUS_COLOR[status] }}
+        className="absolute top-0 h-full rounded-full transition-[width] duration-200 ease-out"
+        style={{ width: `${curPct}%`, backgroundColor: STATUS_COLOR[status] }}
       />
-      {/* Warn line */}
+      {/* Warn line. */}
       <span
         aria-hidden
         className="absolute top-0 h-full w-px bg-[#ca5010]/70"
         style={{ left: `${warnPct}%` }}
       />
+      {/* Projected month-end marker. */}
+      {projPct != null ? (
+        <span
+          aria-hidden
+          className="absolute top-0 h-full w-[2px] bg-[var(--color-cs-text)] transition-[left] duration-200 ease-out"
+          style={{ left: `${Math.min(100, projPct)}%` }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -168,13 +192,30 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
   const adjusted = useMemo(
     () =>
       items.map((it) => {
-        const delta = it.kind === "income" ? incomeDelta : assetDelta;
-        const value = Math.max(0, it.currentCents + delta);
+        if (it.kind === "asset") {
+          // A change in savings moves the balance we evaluate today.
+          const value = Math.max(0, it.currentCents + assetDelta);
+          return {
+            ...it,
+            currentValue: value,
+            projectedValue: null as number | null,
+            bindingValue: value,
+            status: evaluate("asset", value, it.limitCents, it.warnAtPercent),
+            baseStatus: evaluate("asset", it.currentCents, it.limitCents, it.warnAtPercent),
+          };
+        }
+        // A raise is future income: it shifts the projected month-end total,
+        // not the dollars already earned. Income only accumulates, so the
+        // projection can't fall below what's banked so far.
+        const baseProjected = it.projectedCents ?? it.currentCents;
+        const projected = Math.max(it.currentCents, baseProjected + incomeDelta);
         return {
           ...it,
-          adjustedCents: value,
-          status: evaluate(it.kind, value, it.limitCents, it.warnAtPercent),
-          baseStatus: evaluate(it.kind, it.currentCents, it.limitCents, it.warnAtPercent),
+          currentValue: it.currentCents,
+          projectedValue: projected,
+          bindingValue: projected,
+          status: evaluate("income", projected, it.limitCents, it.warnAtPercent),
+          baseStatus: evaluate("income", baseProjected, it.limitCents, it.warnAtPercent),
         };
       }),
     [items, incomeDelta, assetDelta],
@@ -185,8 +226,8 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
   if (items.length === 0) {
     return (
       <p className="text-xs text-[var(--color-cs-text-secondary)]">
-        Connect a bank and confirm your enrolled programs — your earned-income and asset limits will
-        appear here with a live bar for each.
+        Confirm your enrolled programs and connect a bank — your income and asset limits will appear
+        here with a live bar for each.
       </p>
     );
   }
@@ -239,7 +280,7 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
       {/* Bars */}
       <ul className="flex flex-col gap-4">
         {adjusted.map((it) => {
-          const headroom = it.limitCents - it.adjustedCents;
+          const headroom = it.limitCents - it.bindingValue;
           const changed = isWhatIf && it.status !== it.baseStatus;
           return (
             <li key={it.id} className="flex flex-col gap-1.5">
@@ -255,7 +296,8 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
                 </span>
               </div>
               <Bar
-                value={it.adjustedCents}
+                current={it.currentValue}
+                projected={it.projectedValue}
                 limit={it.limitCents}
                 warnAt={it.warnAtPercent}
                 status={it.status}
@@ -263,9 +305,11 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
               <div className="flex items-center justify-between text-[11px] text-[var(--color-cs-text-secondary)]">
                 <span className="tabular-nums">
                   <span className="font-medium text-[var(--color-cs-text)]">
-                    {formatUsd(it.adjustedCents)}
+                    {formatUsd(it.currentValue)}
                   </span>{" "}
-                  of {formatUsd(it.limitCents)} limit
+                  {it.projectedValue != null
+                    ? `· proj. ${formatUsd(it.projectedValue)} of ${formatUsd(it.limitCents)}`
+                    : `of ${formatUsd(it.limitCents)} limit`}
                 </span>
                 <span className="tabular-nums">
                   {headroom >= 0
@@ -279,8 +323,10 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
       </ul>
 
       <p className="text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-        The thin orange line marks the warning level; the end of each bar is the hard limit.
-        Informational only — not a determination of eligibility.
+        The thin orange line marks the warning level; the end of each bar is the hard limit. For
+        income, the lighter segment and dark marker show your projected month-end total. Income is
+        estimated from your categorized deposits, with wages adjusted to pre-tax (gross); program
+        disregards aren&apos;t fully modeled. Informational only — not a determination of eligibility.
       </p>
     </div>
   );
