@@ -4,11 +4,14 @@ import { redirect } from "next/navigation";
 import { AppToolbar, Card, ToolbarButton } from "@/components/layout/app-shell";
 import { ThresholdWhatIf, type WhatIfItem } from "@/components/charts/threshold-what-if";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
+import { ActionCenter } from "@/components/actions/action-center";
 import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
 import Alert from "@/lib/db/models/Alert";
 import BankConnection from "@/lib/db/models/BankConnection";
+import Transaction from "@/lib/db/models/Transaction";
 import { connectDB } from "@/lib/db/mongodb";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
+import { buildReportingActions, type ReportingAction } from "@/lib/reporting/reporting-actions";
 import {
   IconDownload,
   IconInfoCircle,
@@ -33,10 +36,16 @@ export default async function DashboardPage() {
   let activeAlerts = 0;
   let bankCount = 0;
   let recentAlerts: { id: string; message: string; createdAt: string; level: string }[] = [];
+  let reportingActions: ReportingAction[] = [];
 
   if (oid) {
     await connectDB();
-    const [p, alertCount, banks, alerts] = await Promise.all([
+    // Trailing window for new-income-source / income-change detection.
+    const now = new Date();
+    const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
+      .toISOString()
+      .slice(0, 10);
+    const [p, alertCount, banks, alerts, txns] = await Promise.all([
       loadThresholdDashboardPayload(oid),
       Alert.countDocuments({
         beneficiaryId: oid,
@@ -44,6 +53,9 @@ export default async function DashboardPage() {
       }),
       BankConnection.countDocuments({ beneficiaryId: oid, status: "active" }),
       Alert.find({ beneficiaryId: oid }).sort({ createdAt: -1 }).limit(4).select({ message: 1, createdAt: 1, level: 1 }).lean(),
+      Transaction.find({ beneficiaryId: oid, date: { $gte: sixMonthsAgo } })
+        .select({ date: 1, amountCents: 1, userCategory: 1, name: 1, merchantName: 1, pending: 1, excludedFromThresholds: 1 })
+        .lean(),
     ]);
     payload = p;
     activeAlerts = alertCount;
@@ -54,6 +66,26 @@ export default async function DashboardPage() {
       createdAt: (a.createdAt as Date).toISOString(),
       level: String(a.level ?? "info"),
     }));
+    reportingActions = buildReportingActions({
+      programs: payload.programsEnrolled,
+      rows: payload.rows.map((r) => ({
+        thresholdType: r.thresholdType,
+        label: r.label,
+        program: r.program,
+        status: r.status,
+        attached: r.attached,
+      })),
+      transactions: txns.map((t) => ({
+        date: String(t.date),
+        amountCents: Number(t.amountCents),
+        userCategory: String(t.userCategory ?? ""),
+        name: t.name ? String(t.name) : undefined,
+        merchantName: t.merchantName ? String(t.merchantName) : undefined,
+        pending: Boolean(t.pending),
+        excludedFromThresholds: Boolean(t.excludedFromThresholds),
+      })),
+      now,
+    });
   }
 
   // Evaluable limits (earned / gross / countable income + asset balance) for the
@@ -122,6 +154,7 @@ export default async function DashboardPage() {
           Export
         </ToolbarButton>
       </AppToolbar>
+      <ActionCenter actions={reportingActions} />
       <div className="grid gap-3 md:grid-cols-2">
         {beneficiaryId ? (
           <div className="md:col-span-2">
@@ -221,12 +254,12 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Connected accounts" action="Manage" actionHref="/accounts">
+        <Card title="Connected accounts" action="Manage" actionHref="/transactions">
           {bankCount > 0 ? (
             <p className="text-xs text-[var(--color-cs-text-secondary)]">
               <span className="font-medium text-[var(--color-cs-text)]">{bankCount}</span> active connection
               {bankCount === 1 ? "" : "s"}.{" "}
-              <Link href="/accounts" className="text-[var(--color-cs-brand)] hover:underline">
+              <Link href="/transactions" className="text-[var(--color-cs-brand)] hover:underline">
                 Manage banks
               </Link>
               .
@@ -234,7 +267,7 @@ export default async function DashboardPage() {
           ) : (
             <p className="text-xs text-[var(--color-cs-text-secondary)]">
               No accounts linked yet.{" "}
-              <Link href="/accounts" className="text-[var(--color-cs-brand)] hover:underline">
+              <Link href="/transactions" className="text-[var(--color-cs-brand)] hover:underline">
                 Manage banks
               </Link>
               .

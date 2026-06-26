@@ -248,8 +248,8 @@ export function TransactionsView({
 
   return (
     <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Transactions</div>
-      <h1 className="mb-3.5 text-xl font-medium text-[var(--color-cs-text)]">Transactions</h1>
+      <div className="mb-1 text-xs font-medium text-[var(--color-cs-text-secondary)]">Home › Money</div>
+      <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-[var(--color-cs-text)]">Money</h1>
 
       <AppToolbar>
         <ToolbarButton primary onClick={runSync}>

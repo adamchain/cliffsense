@@ -76,7 +76,7 @@ export default async function SettingsPage() {
           <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Account quick links</h2>
           <ul className="space-y-1.5 text-[13px]">
             <li>
-              <Link href="/accounts" className="text-[var(--color-cs-brand)] hover:underline">
+              <Link href="/transactions" className="text-[var(--color-cs-brand)] hover:underline">
                 Connected banks
               </Link>{" "}
               <span className="text-[var(--color-cs-text-secondary)]">— add or disconnect Plaid items</span>

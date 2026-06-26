@@ -4,7 +4,7 @@ import Link from "next/link";
 import { IconBuildingBank } from "@tabler/icons-react";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
-import { AccountConnectionActions } from "@/app/(authenticated)/accounts/connection-actions";
+import { AccountConnectionActions } from "@/components/transactions/connection-actions";
 
 export type AccountConnection = {
   id: string;

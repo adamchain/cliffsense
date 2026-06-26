@@ -171,8 +171,8 @@ export function RecurringView({ beneficiaryId }: { beneficiaryId: string | null 
                 <tr>
                   <td colSpan={8} className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">
                     No recurring streams yet. Connect a bank from{" "}
-                    <Link href="/accounts" className="text-[var(--color-cs-brand)] hover:underline">
-                      Accounts
+                    <Link href="/transactions" className="text-[var(--color-cs-brand)] hover:underline">
+                      Money
                     </Link>{" "}
                     and run <strong>Sync from Plaid</strong>.
                   </td>

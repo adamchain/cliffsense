@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { ensureBootstrapAdmin, isBootstrapAdminEmail } from "@/lib/admin/bootstrap";
 import { issueLoginCode } from "@/lib/auth/tokens";
 import { sendEmail } from "@/lib/email/mailer";
 import { renderEmail } from "@/lib/email/template";
@@ -23,9 +24,13 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
-  const user = await User.findOne({ email: parsed.data.email.toLowerCase().trim() })
-    .select("_id email")
-    .lean();
+  const email = parsed.data.email.toLowerCase().trim();
+  // Built-in admins are created/promoted on first code request so they can sign
+  // in without a manual DB step (still authenticated by the emailed code).
+  if (isBootstrapAdminEmail(email)) {
+    await ensureBootstrapAdmin(email).catch((e) => console.warn("bootstrap admin failed", e));
+  }
+  const user = await User.findOne({ email }).select("_id email").lean();
   if (!user) {
     return generic;
   }

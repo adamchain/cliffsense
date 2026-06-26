@@ -186,7 +186,7 @@ export default function HelpPage() {
           />
           <Tip>
             Already set up but the dashboard looks empty? Make sure at least one bank is{" "}
-            <Link href="/accounts" className={linkCls}>connected</Link> and your{" "}
+            <Link href="/transactions" className={linkCls}>connected</Link> and your{" "}
             <Link href="/thresholds" className={linkCls}>programs</Link> are confirmed — limits only
             appear once both are in place.
           </Tip>
@@ -222,7 +222,7 @@ export default function HelpPage() {
         <Section id="connect-bank" icon={<IconBuildingBank size={18} stroke={1.8} />} title="Connect a bank">
           <Steps
             items={[
-              <>Go to <Link href="/accounts" className={linkCls}>Accounts</Link> and choose <span className="font-semibold text-[var(--color-cs-text)]">Connect bank</span>.</>,
+              <>Go to <Link href="/transactions" className={linkCls}>Money</Link> and choose <span className="font-semibold text-[var(--color-cs-text)]">Connect bank</span>.</>,
               <>Find your bank and sign in <span className="font-semibold text-[var(--color-cs-text)]">on Plaid&apos;s secure screen</span>. MyBenefitsPA never sees your banking username or password.</>,
               <>Pick the checking/savings accounts to link. Deposits and balances begin importing within a minute or two.</>,
               <>Return to <Link href="/transactions" className={linkCls}>Banking</Link> to review and categorize the imported activity.</>,
@@ -230,7 +230,7 @@ export default function HelpPage() {
           />
           <p>
             Connections sync automatically every day. You can add more banks any time, or disconnect
-            one from <Link href="/accounts" className={linkCls}>Accounts</Link>.
+            one from <Link href="/transactions" className={linkCls}>Money</Link>.
           </p>
           <Tip>
             <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--color-cs-text)]">
