@@ -33,6 +33,13 @@ const userSchema = new Schema(
     lastLoginAt: { type: Date, default: null },
     notificationPrefs: { type: notificationPrefsSchema, default: () => ({}) },
     isAdmin: { type: Boolean, default: false },
+    // Account standing. "disabled" blocks all future sign-ins (enforced in auth).
+    status: {
+      type: String,
+      enum: ["active", "disabled"],
+      default: "active",
+      index: true,
+    },
     onboardingStep: {
       type: String,
       enum: ["none", "profile", "beneficiary", "plaid", "benefits", "notifications", "complete"],

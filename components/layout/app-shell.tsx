@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   IconBell,
+  IconCalendarEvent,
   IconFileExport,
   IconFileText,
   IconFolder,
@@ -24,6 +25,7 @@ const nav: NavItem[] = [
   { href: "/recurring", label: "Recurring", icon: IconRepeat },
   { href: "/thresholds", label: "Limits", icon: IconTarget },
   { href: "/alerts", label: "Alerts", icon: IconBell },
+  { href: "/calendar", label: "Calendar", icon: IconCalendarEvent },
   { href: "/documents", label: "Reports & Docs", icon: IconFileText },
   { href: "/advisor", label: "Advisor", icon: IconMessageCircle },
 ];

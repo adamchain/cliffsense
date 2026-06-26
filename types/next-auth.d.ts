@@ -7,6 +7,10 @@ declare module "next-auth" {
       accountType: string;
       isAdmin: boolean;
       onboardingStep: string;
+      /** Set while an admin is impersonating this user (the real admin's id). */
+      impersonatorId?: string;
+      /** The real admin's email, for the "viewing as" banner. */
+      impersonatorEmail?: string;
     } & DefaultSession["user"];
   }
 
@@ -22,5 +26,9 @@ declare module "next-auth/jwt" {
     accountType?: string;
     isAdmin?: boolean;
     onboardingStep?: string;
+    /** Impersonation: the real admin's identity, preserved so we can restore it. */
+    impersonatorId?: string;
+    impersonatorEmail?: string;
+    impersonatorName?: string;
   }
 }

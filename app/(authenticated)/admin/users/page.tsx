@@ -23,7 +23,7 @@ export default async function AdminUsersPage({
     filter.$or = [{ email: rx }, { name: rx }];
   }
   const users = await User.find(filter)
-    .select("email name accountType isAdmin onboardingStep createdAt lastLoginAt")
+    .select("email name accountType isAdmin status onboardingStep createdAt lastLoginAt")
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
@@ -68,12 +68,12 @@ export default async function AdminUsersPage({
           Search
         </button>
         {q && (
-          <a
+          <Link
             href="/admin/users"
             className="h-8 rounded-sm border border-[var(--color-cs-border)] px-3 pt-1.5 text-[12px] text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
           >
             Clear
-          </a>
+          </Link>
         )}
       </form>
 
@@ -92,6 +92,7 @@ export default async function AdminUsersPage({
                   <th className="px-3 py-2 text-right">Beneficiaries</th>
                   <th className="px-3 py-2">Joined</th>
                   <th className="px-3 py-2">Last login</th>
+                  <th className="px-3 py-2 text-right">Manage</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,11 +103,18 @@ export default async function AdminUsersPage({
                   >
                     <td className="px-3 py-2 align-top">
                       <div className="font-medium text-[var(--color-cs-text)]">{u.email}</div>
-                      {u.isAdmin && (
-                        <span className="mt-0.5 inline-block rounded bg-[var(--color-cs-info-bg)] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-cs-info)]">
-                          Admin
-                        </span>
-                      )}
+                      <div className="mt-0.5 flex flex-wrap gap-1">
+                        {u.isAdmin && (
+                          <span className="inline-block rounded bg-[var(--color-cs-info-bg)] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-cs-info)]">
+                            Admin
+                          </span>
+                        )}
+                        {u.status === "disabled" && (
+                          <span className="inline-block rounded bg-[var(--color-cs-danger-bg)] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-cs-danger)]">
+                            Disabled
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-3 py-2 align-top text-[var(--color-cs-text-secondary)]">
                       {u.name || "—"}
@@ -125,6 +133,14 @@ export default async function AdminUsersPage({
                     </td>
                     <td className="px-3 py-2 align-top text-[11px] text-[var(--color-cs-text-secondary)]">
                       {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "—"}
+                    </td>
+                    <td className="px-3 py-2 align-top text-right">
+                      <Link
+                        href={`/admin/users/${u._id.toString()}`}
+                        className="font-semibold text-[var(--color-cs-brand)] hover:underline"
+                      >
+                        Manage
+                      </Link>
                     </td>
                   </tr>
                 ))}

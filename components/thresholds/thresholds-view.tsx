@@ -5,6 +5,7 @@ import Link from "next/link";
 import { IconPencil, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
+import { programCodeKey, programLabel } from "@/lib/benefits/program-meta";
 
 type Row = {
   _id: string;
@@ -297,6 +298,10 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
         </div>
       )}
 
+      {data && data.rows.length > 0 && (
+        <ProgramCards rows={data.rows} />
+      )}
+
       <div className="overflow-x-auto rounded border border-[var(--color-cs-border)] bg-white">
         <table className="w-full min-w-[720px] border-collapse text-left text-[13px]">
           <thead className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-[11px] uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
@@ -408,5 +413,79 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
         </table>
       </div>
     </>
+  );
+}
+
+/**
+ * Per-program cards above the table — one card per program with attached limits,
+ * showing how many are over (concern) or approaching (watch), linking into the
+ * benefit-specific detail page with its "Ask AI how to fix" buttons.
+ */
+function ProgramCards({ rows }: { rows: Row[] }) {
+  const groups = new Map<
+    string,
+    { code: string; concern: number; watch: number; total: number }
+  >();
+  for (const r of rows) {
+    if (!r.program || !r.attached) continue;
+    const code = programCodeKey(r.program);
+    const g = groups.get(code) ?? { code, concern: 0, watch: 0, total: 0 };
+    g.total += 1;
+    if (r.status === "concern") g.concern += 1;
+    else if (r.status === "watch") g.watch += 1;
+    groups.set(code, g);
+  }
+  const cards = [...groups.values()].sort(
+    (a, b) => b.concern - a.concern || b.watch - a.watch || a.code.localeCompare(b.code),
+  );
+  if (cards.length === 0) return null;
+
+  return (
+    <div className="mb-3">
+      <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
+        By program
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {cards.map((c) => {
+          const tone =
+            c.concern > 0
+              ? "border-l-[var(--color-cs-danger)]"
+              : c.watch > 0
+                ? "border-l-[var(--color-cs-warning)]"
+                : "border-l-[#107c10]";
+          return (
+            <Link
+              key={c.code}
+              href={`/thresholds/${c.code}`}
+              className={`group rounded-lg border border-[var(--color-cs-border)] border-l-4 ${tone} bg-white p-3 transition-shadow hover:shadow-[var(--shadow-cs-card)]`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-[var(--color-cs-text)] group-hover:text-[var(--color-cs-brand)]">
+                  {programLabel(c.code)}
+                </span>
+                <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
+                  {c.total} limit{c.total === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px] font-medium">
+                {c.concern > 0 && (
+                  <span className="rounded px-2 py-0.5 bg-[#fde7e9] text-[#a4262c]">
+                    {c.concern} over
+                  </span>
+                )}
+                {c.watch > 0 && (
+                  <span className="rounded px-2 py-0.5 bg-[#fed9cc] text-[#ca5010]">
+                    {c.watch} approaching
+                  </span>
+                )}
+                {c.concern === 0 && c.watch === 0 && (
+                  <span className="rounded px-2 py-0.5 bg-[#dff6dd] text-[#107c10]">On track</span>
+                )}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AuthenticatedShell } from "@/components/layout/authenticated-shell";
+import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { countUnreadAlertsForUser } from "@/lib/alerts/unread-count";
 
 function initials(name: string, email: string) {
@@ -26,12 +27,17 @@ export default async function AuthenticatedGroupLayout({
   const display = session.user.name?.trim() || session.user.email || "User";
   const alertCount = await countUnreadAlertsForUser(session.user.id).catch(() => 0);
   return (
-    <AuthenticatedShell
-      userName={display}
-      userInitials={initials(display, session.user.email ?? "")}
-      alertCount={alertCount}
-    >
-      {children}
-    </AuthenticatedShell>
+    <>
+      {session.user.impersonatorId && (
+        <ImpersonationBanner email={session.user.email ?? undefined} />
+      )}
+      <AuthenticatedShell
+        userName={display}
+        userInitials={initials(display, session.user.email ?? "")}
+        alertCount={alertCount}
+      >
+        {children}
+      </AuthenticatedShell>
+    </>
   );
 }

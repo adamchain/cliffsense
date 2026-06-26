@@ -30,6 +30,9 @@ const nextAuth = NextAuth({
         if (!user?.hashedPassword) {
           return null;
         }
+        if (user.status === "disabled") {
+          return null;
+        }
         const ok = await bcrypt.compare(String(credentials.password), user.hashedPassword);
         if (!ok) {
           return null;
@@ -65,6 +68,9 @@ const nextAuth = NextAuth({
         if (!user) {
           return null;
         }
+        if (user.status === "disabled") {
+          return null;
+        }
         const ok = await consumeLoginCode(user._id, code);
         if (!ok) {
           return null;
@@ -97,9 +103,50 @@ const nextAuth = NextAuth({
         token.onboardingStep = (user as { onboardingStep?: string }).onboardingStep;
       }
       if (trigger === "update" && session) {
-        if (typeof session.name === "string") token.name = session.name;
-        if (typeof session.onboardingStep === "string") {
-          token.onboardingStep = session.onboardingStep;
+        const s = session as Record<string, unknown>;
+        if (s.action === "impersonate" && typeof s.targetUserId === "string") {
+          // Only a real, non-impersonating admin may start impersonation. The
+          // token's isAdmin still reflects the real admin here (not yet swapped).
+          if (token.isAdmin === true && !token.impersonatorId) {
+            await connectDB();
+            const target = await User.findById(s.targetUserId)
+              .select("email name accountType isAdmin onboardingStep")
+              .lean();
+            if (target && target._id.toString() !== token.sub) {
+              token.impersonatorId = token.sub;
+              token.impersonatorEmail = (token.email as string) ?? "";
+              token.impersonatorName = (token.name as string) ?? "";
+              token.sub = target._id.toString();
+              token.email = target.email;
+              token.name = target.name ?? "";
+              token.accountType = target.accountType;
+              token.isAdmin = Boolean(target.isAdmin);
+              token.onboardingStep = target.onboardingStep ?? "none";
+            }
+          }
+        } else if (s.action === "stopImpersonate") {
+          if (token.impersonatorId) {
+            await connectDB();
+            const admin = await User.findById(token.impersonatorId)
+              .select("email name accountType isAdmin onboardingStep")
+              .lean();
+            if (admin) {
+              token.sub = admin._id.toString();
+              token.email = admin.email;
+              token.name = admin.name ?? "";
+              token.accountType = admin.accountType;
+              token.isAdmin = Boolean(admin.isAdmin);
+              token.onboardingStep = admin.onboardingStep ?? "none";
+            }
+            token.impersonatorId = undefined;
+            token.impersonatorEmail = undefined;
+            token.impersonatorName = undefined;
+          }
+        } else {
+          if (typeof s.name === "string") token.name = s.name as string;
+          if (typeof s.onboardingStep === "string") {
+            token.onboardingStep = s.onboardingStep as string;
+          }
         }
       }
       return token;
@@ -111,6 +158,8 @@ const nextAuth = NextAuth({
         session.user.accountType = (token.accountType as string) ?? "beneficiary";
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.onboardingStep = (token.onboardingStep as string) ?? "none";
+        session.user.impersonatorId = token.impersonatorId;
+        session.user.impersonatorEmail = token.impersonatorEmail;
       }
       return session;
     },
@@ -134,5 +183,7 @@ const nextAuth = NextAuth({
 export const handlers = nextAuth.handlers;
 export const signIn = nextAuth.signIn;
 export const signOut = nextAuth.signOut;
+/** Server-side session/JWT update — used by admin impersonation routes. */
+export const updateSession = nextAuth.unstable_update;
 /** Dedupes session work when both a layout and a page call `auth()` in the same RSC request. */
 export const auth = cache(nextAuth.auth);

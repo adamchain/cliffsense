@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconExternalLink, IconRefresh, IconSparkles } from "@tabler/icons-react";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
+import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
+import { advisorAskHref, fixThresholdQuestion } from "@/lib/benefits/fix-prompts";
 
 type AlertRow = {
   _id: string;
@@ -15,6 +17,7 @@ type AlertRow = {
   createdAt: string;
   dataSnapshot?: {
     thresholdLabel?: string;
+    program?: string;
     limitCents?: number;
     currentValueCents?: number;
   };
@@ -147,6 +150,38 @@ export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) 
                 )}
                 <p className="text-[var(--color-cs-text)]">{a.message}</p>
                 {meta && <p className="mt-1 text-[11px] text-[var(--color-cs-text-secondary)]">{meta}</p>}
+                {(() => {
+                  const prog = snap?.program ? programCodeKey(snap.program) : null;
+                  const progMeta = prog ? programMetaFor(prog) : null;
+                  if (!prog || !progMeta || snap?.limitCents == null) return null;
+                  const fixHref = advisorAskHref(
+                    fixThresholdQuestion({
+                      program: prog,
+                      label: snap.thresholdLabel ?? progMeta.label,
+                      currentValueCents: snap.currentValueCents,
+                      limitCents: snap.limitCents,
+                      status: a.level === "breach" ? "concern" : "watch",
+                    }),
+                  );
+                  return (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Link
+                        href={fixHref}
+                        className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-2.5 py-1 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
+                      >
+                        <IconSparkles size={14} stroke={1.5} aria-hidden />
+                        Ask AI how to fix
+                      </Link>
+                      <Link
+                        href={`/thresholds/${prog}`}
+                        className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
+                      >
+                        <IconExternalLink size={13} stroke={1.5} aria-hidden />
+                        View {progMeta.label} limits
+                      </Link>
+                    </div>
+                  );
+                })()}
                 {a.status === "new" && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button
