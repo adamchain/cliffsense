@@ -66,18 +66,19 @@ export function MobileNavDrawer({
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
                       active
-                        ? "bg-[var(--color-cs-brand)] text-white"
+                        ? "text-[var(--color-cs-brand)]"
                         : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
                     }`}
                   >
-                    <Icon size={20} stroke={active ? 2 : 1.7} aria-hidden />
+                    <Icon
+                      size={20}
+                      stroke={active ? 2 : 1.7}
+                      className={active ? "fill-current" : undefined}
+                      aria-hidden
+                    />
                     {label}
                     {showCount && (
-                      <span
-                        className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold leading-none ${
-                          active ? "bg-white/25 text-white" : "bg-[var(--color-cs-danger)] text-white"
-                        }`}
-                      >
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[11px] font-bold leading-none text-white">
                         {badge}
                       </span>
                     )}
@@ -89,11 +90,16 @@ export function MobileNavDrawer({
                 onClick={() => setOpen(false)}
                 className={`mt-1 flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
                   isActive("/settings")
-                    ? "bg-[var(--color-cs-brand)] text-white"
+                    ? "text-[var(--color-cs-brand)]"
                     : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
                 }`}
               >
-                <IconSettings size={20} stroke={1.7} aria-hidden />
+                <IconSettings
+                  size={20}
+                  stroke={1.7}
+                  className={isActive("/settings") ? "fill-current" : undefined}
+                  aria-hidden
+                />
                 Settings
               </Link>
             </nav>

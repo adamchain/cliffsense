@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import {
   PDFCheckBox,
   PDFDocument,
@@ -13,28 +15,41 @@ import type { FillableFormDef, FormFieldDef } from "@/lib/forms/types";
 import { displayValue } from "@/lib/forms/format";
 
 /* ---------------------------------------------------------------------------
- * Fetches the official agency PDF and auto-fills its AcroForm fields from the
- * user's in-app answers. Fields are matched by keyword against each official
- * field's internal name + tooltip (the human-readable label SSA/VA set for
- * accessibility), so the mapping survives the cryptic field names these forms
- * use. Best-effort: only fields we can confidently match are filled; the user
- * reviews and completes the rest on the official PDF before filing.
+ * Auto-fills the real agency PDF's AcroForm fields from the user's in-app
+ * answers. The official blanks are bundled under public/forms/<id>.pdf —
+ * pre-decrypted/normalized (see scripts/prepare-official-forms.py) because SSA
+ * ships them encrypted + XFA, which a JS filler can't read. Fields are matched
+ * by keyword against each field's internal name + tooltip (the human-readable
+ * label SSA/VA set for accessibility), so the mapping survives their cryptic
+ * field names. Best-effort: only fields we can confidently match are filled;
+ * the user reviews and completes the rest before filing.
  * ------------------------------------------------------------------------- */
 
-/** Thrown when the official PDF can't be fetched or auto-filled — the caller
+/** Thrown when the official PDF can't be loaded or auto-filled — the caller
  *  falls back to the self-contained MyBenefitsPA summary PDF. */
 export class OfficialPdfUnavailable extends Error {}
 
 const FETCH_TIMEOUT_MS = 12_000;
 
-async function fetchOfficialPdf(url: string): Promise<ArrayBuffer> {
+/** Load the bundled, fill-ready official PDF; fall back to fetching the live
+ *  URL if the local copy is somehow absent. */
+async function loadTemplateBytes(form: FillableFormDef): Promise<Uint8Array | ArrayBuffer> {
+  const local = path.join(process.cwd(), "public", "forms", `${form.id}.pdf`);
+  try {
+    const bytes = await readFile(local);
+    if (bytes.length > 5 && bytes.subarray(0, 5).toString("latin1") === "%PDF-") {
+      return bytes;
+    }
+  } catch {
+    /* fall through to network */
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
+    const res = await fetch(form.officialUrl, {
       signal: controller.signal,
       headers: { "user-agent": "MyBenefitsPA/1.0 (+https://mybenefitspa.com)" },
-      // Cache the blank official PDF for a day — it rarely changes.
       next: { revalidate: 86_400 },
     });
     if (!res.ok) throw new OfficialPdfUnavailable(`upstream ${res.status}`);
@@ -46,7 +61,7 @@ async function fetchOfficialPdf(url: string): Promise<ArrayBuffer> {
     return buf;
   } catch (e) {
     if (e instanceof OfficialPdfUnavailable) throw e;
-    throw new OfficialPdfUnavailable(e instanceof Error ? e.message : "fetch failed");
+    throw new OfficialPdfUnavailable(e instanceof Error ? e.message : "load failed");
   } finally {
     clearTimeout(timer);
   }
@@ -91,7 +106,7 @@ export async function fillOfficialPdf(
     throw new OfficialPdfUnavailable("no official-fill mapping for this form");
   }
 
-  const buf = await fetchOfficialPdf(form.officialUrl);
+  const buf = await loadTemplateBytes(form);
   let pdf: PDFDocument;
   try {
     pdf = await PDFDocument.load(buf, { ignoreEncryption: true });

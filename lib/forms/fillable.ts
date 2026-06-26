@@ -51,14 +51,16 @@ const SSA_795: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-795 field tooltips.
   officialFill: {
     matchers: {
-      name: ["name of claimant", "claimant", "your name", "print name", "name"],
-      ssn: ["social security number", "ssn", "social security"],
-      statement: ["statement", "the following", "remarks", "i want to state"],
-      signedDate: ["date signed", "date of signature", "date"],
-      phone: ["telephone number", "daytime telephone", "phone"],
-      address: ["mailing address", "address", "street address"],
+      name: ["name of person making statement", "name of wage earner"],
+      ssn: ["social security number"],
+      relationship: ["relationship to wage earner", "relationship"],
+      statement: ["understanding that this statement", "i declare under penalty"],
+      signedDate: ["date month day year", "date"],
+      phone: ["telephone number"],
+      address: ["address number and street", "mailing address"],
     },
   },
 };
@@ -174,24 +176,19 @@ const SSA_821: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-821-BK field tooltips.
   officialFill: {
     matchers: {
-      name: ["name of wage earner", "wage earner", "claimant name", "your name", "name"],
-      ssn: ["social security number", "ssn", "social security"],
-      employerName: ["name of employer", "employer name", "employer", "company name"],
-      jobTitle: ["type of work", "kind of work", "job title", "occupation", "duties", "your job"],
-      employerAddress: ["employer address", "address of employer", "employer mailing", "address"],
-      startDate: ["date you started", "date work began", "began working", "start date", "date started"],
-      endDate: ["date you stopped", "date work ended", "stopped working", "last day", "date stopped"],
-      hoursPerWeek: ["hours per week", "hours a week", "hours each week", "number of hours"],
-      payRate: ["rate of pay", "pay rate", "hourly rate", "rate of earnings"],
-      grossMonthly: ["gross monthly", "monthly earnings", "amount earned", "gross earnings", "gross amount"],
-      specialConditions: ["special conditions", "extra help", "subsidy", "special arrangements"],
-      irweDescription: ["impairment related work expenses", "work expenses related", "irwe"],
-      irweMonthly: ["amount you pay", "expense amount", "monthly expense"],
-      remarks: ["remarks", "additional information", "explain", "comments"],
-      signedDate: ["date signed", "today date", "date of signature", "date"],
-      phone: ["telephone number", "daytime telephone", "phone number", "telephone"],
+      name: ["name of wage earner", "print your name", "claimant name", "your name"],
+      ssn: ["b n c number or s s n", "s s n"],
+      jobTitle: ["job title"],
+      payRate: ["rate of pay amount", "rate of pay"],
+      hoursPerWeek: ["average hours worked", "hours worked"],
+      employerAddress: ["mailing address"],
+      startDate: ["date work started", "work started"],
+      endDate: ["date work ended", "work ended"],
+      phone: ["telephone number"],
+      remarks: ["please use this space", "tell us more about"],
     },
   },
 };
@@ -270,27 +267,15 @@ const SSA_820: FillableFormDef = {
     },
   ],
   disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-820-BK field tooltips.
+  // The self-employment grid is highly structured, so we fill only the fields we
+  // can map unambiguously; the user completes the rest.
   officialFill: {
     matchers: {
-      name: ["name of wage earner", "wage earner", "claimant name", "your name", "name"],
-      ssn: ["social security number", "ssn", "social security"],
-      businessName: ["name of business", "business name", "trade name"],
-      businessType: ["type of business", "kind of business", "nature of business", "trade"],
-      startDate: ["date business started", "date you started", "began", "start date"],
-      endDate: ["date you stopped", "date business ended", "stopped", "last day"],
-      hoursPerMonth: ["hours per month", "hours a month", "number of hours"],
-      duties: ["duties", "services you perform", "what you do", "describe your work"],
-      netEarningsMonthly: ["net earnings", "monthly net", "net monthly", "net profit"],
-      netEarningsAnnual: ["annual net", "yearly net", "net earnings year"],
-      salaryMonthly: ["salary", "owner draw", "amount you draw", "monthly salary"],
-      workChanges: ["changes in work", "change in your work", "work activity changed"],
-      unincurredExpenses: ["unincurred", "paid by someone else", "business expenses paid"],
-      unpaidHelp: ["unpaid help", "help from others", "assistance from others"],
-      irweDescription: ["impairment related work expenses", "work expenses related", "irwe"],
-      irweMonthly: ["amount you pay", "expense amount", "monthly expense"],
-      remarks: ["remarks", "additional information", "explain", "comments"],
-      signedDate: ["date signed", "date of signature", "date"],
-      phone: ["telephone number", "daytime telephone", "phone"],
+      ssn: ["b n c number or s s n", "s s n"],
+      businessType: ["primary product or service"],
+      netEarningsAnnual: ["yearly income"],
+      phone: ["telephone number"],
     },
   },
 };
@@ -395,24 +380,10 @@ const VA_21P_0969: FillableFormDef = {
       ],
     },
   ],
+  // The VA 21P-0969 splits every money value into separate digit/cents boxes
+  // across repeating income rows, so reliable keyword auto-fill isn't feasible —
+  // the bundled blank is offered for the user to complete directly.
   disclaimer: STATEMENT_DISCLAIMER,
-  officialFill: {
-    matchers: {
-      name: ["name of veteran", "veteran name", "claimant name", "your name", "name"],
-      fileNumber: ["va file number", "file number", "social security number", "claim number"],
-      socialSecurity: ["social security benefit", "social security income", "amount of social security"],
-      otherPensions: ["pension", "retirement", "annuity"],
-      wages: ["wages", "earnings", "gross wages", "employment income"],
-      interestDividends: ["interest", "dividends", "interest and dividends"],
-      otherIncome: ["other income", "additional income"],
-      bankAccounts: ["cash", "bank account", "checking", "savings"],
-      investments: ["stocks", "bonds", "investments", "mutual funds"],
-      realProperty: ["real property", "real estate", "land", "property"],
-      otherAssets: ["other assets", "additional assets"],
-      expectedChanges: ["expected", "anticipated", "changes in income"],
-      signedDate: ["date signed", "date of signature", "date"],
-    },
-  },
 };
 
 export const FILLABLE_FORMS: Record<string, FillableFormDef> = {

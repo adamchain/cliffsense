@@ -27,6 +27,8 @@ const transactionSchema = new Schema(
     excludedFromThresholds: { type: Boolean, default: false, index: true },
     excludeReason: { type: String, default: "" },
     recurringStreamId: { type: Schema.Types.ObjectId, ref: "RecurringStream", default: null },
+    /** A receipt (VaultDocument) the user attached to this transaction. */
+    receiptDocumentId: { type: Schema.Types.ObjectId, ref: "VaultDocument", default: null },
     notes: { type: String, default: "" },
     appliedRuleId: { type: Schema.Types.ObjectId, ref: "ClassificationRule", default: null },
     lastUserEditedAt: { type: Date, default: null },

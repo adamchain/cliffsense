@@ -13,7 +13,13 @@ import {
   IconWallet,
 } from "@tabler/icons-react";
 
-type IconCmp = ComponentType<{ size?: number; stroke?: number; className?: string }>;
+type IconCmp = ComponentType<{
+  size?: number;
+  stroke?: number;
+  className?: string;
+  fill?: string;
+  "aria-hidden"?: boolean;
+}>;
 
 export type NavItem = { href: string; label: string; icon: IconCmp };
 /** A top-level nav group. `href` is where the group label links (its first/home

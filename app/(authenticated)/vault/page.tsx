@@ -8,6 +8,7 @@ import { VaultUpload } from "./vault-upload";
 import { VaultDocumentRow } from "./document-row";
 
 const CATEGORIES = [
+  { id: "receipts", label: "Receipts" },
   { id: "award_letter", label: "Award letters" },
   { id: "income_verification", label: "Income verification" },
   { id: "renewal", label: "Renewal & recert paperwork" },

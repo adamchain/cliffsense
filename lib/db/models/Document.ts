@@ -7,6 +7,7 @@ const documentSchema = new Schema(
     category: {
       type: String,
       enum: [
+        "receipts",
         "award_letter",
         "income_verification",
         "renewal",
@@ -16,6 +17,8 @@ const documentSchema = new Schema(
       ],
       default: "other",
     },
+    /** When this document is a receipt paired to a bank transaction. */
+    transactionId: { type: Schema.Types.ObjectId, ref: "Transaction", default: null, index: true },
     filename: { type: String, required: true, trim: true },
     mimeType: { type: String, default: "application/octet-stream" },
     sizeBytes: { type: Number, default: 0 },

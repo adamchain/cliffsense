@@ -3,12 +3,14 @@ import { auth } from "@/auth";
 import { assertBeneficiaryWriteAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
+import Transaction from "@/lib/db/models/Transaction";
 import { logActivity } from "@/lib/activity/log-activity";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_CATEGORIES = new Set([
+  "receipts",
   "award_letter",
   "income_verification",
   "renewal",
@@ -29,6 +31,7 @@ export async function POST(req: Request) {
   const beneficiaryId = form.get("beneficiaryId");
   const category = form.get("category");
   const file = form.get("file");
+  const transactionId = form.get("transactionId");
 
   if (typeof beneficiaryId !== "string" || !beneficiaryId) {
     return NextResponse.json({ error: "beneficiaryId required" }, { status: 400 });
@@ -53,17 +56,31 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
+
+  // When pairing a receipt to a transaction, confirm the transaction belongs to
+  // this beneficiary before linking either direction.
+  let linkedTxId: string | null = null;
+  if (cat === "receipts" && typeof transactionId === "string" && transactionId) {
+    const tx = await Transaction.findOne({ _id: transactionId, beneficiaryId }).select({ _id: 1 }).lean();
+    if (tx) linkedTxId = String(tx._id);
+  }
+
   const buf = Buffer.from(await file.arrayBuffer());
   const doc = await VaultDocument.create({
     beneficiaryId,
     userId: session.user.id,
     category: cat,
+    transactionId: linkedTxId,
     filename: file.name || "upload",
     mimeType: file.type || "application/octet-stream",
     sizeBytes: buf.length,
     content: buf,
     scanStatus: "clean",
   });
+
+  if (linkedTxId) {
+    await Transaction.updateOne({ _id: linkedTxId }, { $set: { receiptDocumentId: doc._id } });
+  }
 
   await logActivity({
     userId: session.user.id,

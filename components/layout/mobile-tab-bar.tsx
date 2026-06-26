@@ -47,7 +47,7 @@ export function MobileTabBar({
               }`}
             >
               <span className="relative">
-                <Icon size={22} stroke={active ? 2 : 1.7} aria-hidden />
+                <Icon size={22} stroke={active ? 2 : 1.7} className={active ? "fill-current" : undefined} aria-hidden />
                 {showCount && (
                   <span className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[8px] font-bold leading-none text-white">
                     {badge}
@@ -67,7 +67,7 @@ export function MobileTabBar({
           aria-haspopup="dialog"
           aria-expanded={open}
         >
-          <IconDots size={22} stroke={moreActive ? 2 : 1.7} aria-hidden />
+          <IconDots size={22} stroke={moreActive ? 2 : 1.7} className={moreActive ? "fill-current" : undefined} aria-hidden />
           More
         </button>
       </nav>

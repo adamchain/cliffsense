@@ -40,3 +40,6 @@ yarn-error.log*
 
 # nested clone / sample app (not part of this repo)
 old/app-sample-OLD/
+
+# Encrypted official-form originals (decrypted copies are committed; regenerate with scripts/prepare-official-forms.py)
+public/forms/*.src.pdf

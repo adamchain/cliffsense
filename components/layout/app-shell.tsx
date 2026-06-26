@@ -58,10 +58,11 @@ function SidebarGroup({
       ? "text-[var(--color-cs-text-muted)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
       : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]";
 
-  // Minimalist active style (matches the bottom utility tabs): flat brand fill,
-  // no shadow. Group parents stay subtle when active (children carry the state).
+  // Active leaf tab: brand-purple text + filled brand icon, no background fill.
+  // Group parents (with children) stay subtle when active — the active child
+  // carries the brand treatment.
   const parentClass = !hasChildren && active
-    ? "bg-[var(--color-cs-brand)] text-white"
+    ? "text-[var(--color-cs-brand)]"
     : hasChildren && active
       ? "bg-[var(--color-cs-nav-hover)] text-[var(--color-cs-text)]"
       : idle;
@@ -72,7 +73,12 @@ function SidebarGroup({
         href={section.href}
         className={`flex items-center gap-3 transition-colors ${sizing} ${parentClass}`}
       >
-        <Icon size={variant === "utility" ? 18 : 20} stroke={active ? 2 : 1.7} aria-hidden />
+        <Icon
+          size={variant === "utility" ? 18 : 20}
+          stroke={active ? 2 : 1.7}
+          className={!hasChildren && active ? "fill-current" : undefined}
+          aria-hidden
+        />
         {section.label}
         {containsAlerts && !active && <AlertBadge count={alertCount} />}
       </Link>
@@ -87,13 +93,18 @@ function SidebarGroup({
                 href={href}
                 className={`ml-3 flex items-center gap-2.5 rounded-xl py-2 pl-6 pr-3 text-[13px] font-medium transition-colors ${
                   childActive
-                    ? "bg-[var(--color-cs-brand)] text-white"
+                    ? "text-[var(--color-cs-brand)]"
                     : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
                 }`}
               >
-                <ChildIcon size={16} stroke={childActive ? 2 : 1.7} aria-hidden />
+                <ChildIcon
+                  size={16}
+                  stroke={childActive ? 2 : 1.7}
+                  className={childActive ? "fill-current" : undefined}
+                  aria-hidden
+                />
                 {label}
-                {href === "/alerts" && <AlertBadge count={alertCount} onBrand={childActive} />}
+                {href === "/alerts" && <AlertBadge count={alertCount} />}
               </Link>
             );
           })}

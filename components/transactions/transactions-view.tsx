@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   IconBriefcase,
   IconBuildingBank,
@@ -10,6 +10,8 @@ import {
   IconDownload,
   IconFilter,
   IconHelpCircle,
+  IconPaperclip,
+  IconReceipt,
   IconRefresh,
   IconShieldCheck,
   IconTag,
@@ -40,6 +42,7 @@ type TxRow = {
   userCategory: UserCategory;
   suggestedUserCategory?: UserCategory | null;
   excludedFromThresholds?: boolean;
+  receiptDocumentId?: string | null;
 };
 
 const FILTER_CHIPS: { id: string; label: string }[] = [
@@ -81,6 +84,39 @@ function CategoryIcon({ cat }: { cat: UserCategory }) {
   return null;
 }
 
+/** Per-row receipt control: a chip linking to the attached receipt, or an
+ *  "Add receipt" button that opens the shared file picker for this row. */
+function RowReceipt({
+  docId,
+  onAdd,
+  disabled,
+}: {
+  docId?: string | null;
+  onAdd: () => void;
+  disabled: boolean;
+}) {
+  if (docId) {
+    return (
+      <a
+        href={`/vault/${docId}`}
+        className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-success-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-cs-success)] hover:underline"
+      >
+        <IconReceipt size={12} stroke={1.8} aria-hidden /> Receipt
+      </a>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onAdd}
+      disabled={disabled}
+      className="inline-flex items-center gap-1 rounded-full border border-dashed border-[var(--color-cs-border)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-cs-text-secondary)] hover:border-[var(--color-cs-brand)] hover:text-[var(--color-cs-brand)] disabled:opacity-50"
+    >
+      <IconPaperclip size={12} stroke={1.8} aria-hidden /> Add receipt
+    </button>
+  );
+}
+
 export function TransactionsView({
   beneficiaryId,
   connections = [],
@@ -101,6 +137,48 @@ export function TransactionsView({
   const [applyingPlaid, setApplyingPlaid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const limit = 50;
+
+  // Receipts: a single hidden file input shared by the toolbar quick-add and the
+  // per-row "attach" buttons. receiptTargetRef holds the transaction to pair to
+  // (null = unpaired, lands in Vault › Receipts) across the async file dialog.
+  const receiptInputRef = useRef<HTMLInputElement | null>(null);
+  const receiptTargetRef = useRef<string | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptMsg, setReceiptMsg] = useState<string | null>(null);
+
+  function pickReceipt(transactionId: string | null) {
+    if (uploadingReceipt) return;
+    receiptTargetRef.current = transactionId;
+    receiptInputRef.current?.click();
+  }
+
+  async function onReceiptFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file later
+    if (!file || !beneficiaryId) return;
+    const targetId = receiptTargetRef.current;
+    setUploadingReceipt(true);
+    setReceiptMsg(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("beneficiaryId", beneficiaryId);
+    fd.append("category", "receipts");
+    if (targetId) fd.append("transactionId", targetId);
+    const res = await fetch("/api/vault/upload", { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    setUploadingReceipt(false);
+    if (!res.ok) {
+      setReceiptMsg((data as { error?: string }).error ?? "Receipt upload failed");
+      return;
+    }
+    const docId = (data as { document?: { id?: string } }).document?.id ?? null;
+    if (targetId && docId) {
+      setRows((prev) => prev.map((r) => (r._id === targetId ? { ...r, receiptDocumentId: docId } : r)));
+      setReceiptMsg("Receipt attached and saved to Vault › Receipts.");
+    } else {
+      setReceiptMsg("Receipt saved to Vault › Receipts.");
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -251,10 +329,23 @@ export function TransactionsView({
       <div className="mb-1 text-xs font-medium text-[var(--color-cs-text-secondary)]">Home › Money</div>
       <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-[var(--color-cs-text)]">Money</h1>
 
+      <input
+        ref={receiptInputRef}
+        type="file"
+        accept="image/*,application/pdf"
+        className="hidden"
+        onChange={onReceiptFile}
+        aria-hidden
+      />
+
       <AppToolbar>
         <ToolbarButton primary onClick={runSync}>
           <IconRefresh size={16} stroke={1.5} aria-hidden className={syncing ? "animate-spin" : ""} />
           {syncing ? "Syncing…" : "Sync"}
+        </ToolbarButton>
+        <ToolbarButton primary onClick={() => pickReceipt(null)} disabled={uploadingReceipt}>
+          <IconReceipt size={16} stroke={1.5} aria-hidden />
+          {uploadingReceipt ? "Uploading…" : "Add receipt"}
         </ToolbarButton>
         <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
         <ToolbarButton href="/reports">
@@ -326,6 +417,13 @@ export function TransactionsView({
         </p>
       )}
 
+      {receiptMsg && (
+        <p className="mb-3 flex items-center gap-1.5 text-xs text-[var(--color-cs-success)]">
+          <IconReceipt size={14} stroke={1.8} aria-hidden />
+          {receiptMsg}
+        </p>
+      )}
+
       <section className="overflow-hidden rounded border border-[var(--color-cs-border)] bg-white">
         <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[640px] border-collapse text-[13px] table-fixed">
@@ -387,6 +485,13 @@ export function TransactionsView({
                             Plaid: {[r.pfcPrimary, r.pfcDetailed].filter(Boolean).join(" › ")}
                           </div>
                         ) : null}
+                        <div className="mt-1.5">
+                          <RowReceipt
+                            docId={r.receiptDocumentId}
+                            onAdd={() => pickReceipt(r._id)}
+                            disabled={uploadingReceipt}
+                          />
+                        </div>
                       </td>
                       <td className="px-3 py-2.5 align-top">
                         <div className="flex flex-col gap-1.5">
@@ -516,6 +621,13 @@ export function TransactionsView({
                       </span>
                     </p>
                   ) : null}
+                  <div className="mt-2">
+                    <RowReceipt
+                      docId={r.receiptDocumentId}
+                      onAdd={() => pickReceipt(r._id)}
+                      disabled={uploadingReceipt}
+                    />
+                  </div>
                   {countsTowardEarned && (
                     <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] text-[var(--color-cs-text-secondary)]">
                       <input
