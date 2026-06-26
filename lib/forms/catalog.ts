@@ -24,7 +24,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ssi-ssa-821", program: "SSI", category: "reporting", formNumber: "SSA-821",
     title: "Work Activity Report — Employee", agency: "Social Security Administration",
     purpose: "Report wages and work activity from an employer.",
-    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-821.pdf",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-821.pdf", fillableId: "ssa-821",
   },
   {
     id: "ssi-ssa-820", program: "SSI", category: "reporting", formNumber: "SSA-820",
@@ -51,7 +51,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ssdi-ssa-821", program: "SSDI", category: "reporting", formNumber: "SSA-821",
     title: "Work Activity Report — Employee", agency: "Social Security Administration",
     purpose: "Report employee wages and work activity for SGA determinations.",
-    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-821.pdf",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-821.pdf", fillableId: "ssa-821",
   },
   {
     id: "ssdi-ssa-820", program: "SSDI", category: "reporting", formNumber: "SSA-820",
@@ -85,13 +85,13 @@ export const FORMS_CATALOG: CatalogForm[] = [
     purpose: "Six-month report of income, household, and residence changes.",
     frequency: "Every 6 months",
     officialUrl: "https://services.dpw.state.pa.us/oimpolicymanuals/snap/PA_564_(SAR)_(10-07).pdf",
-    fillableId: "change-report",
+    fillableId: "pa-564-sar",
   },
   {
     id: "snap-change", program: "SNAP", category: "reporting",
     title: "Report a change (COMPASS / phone)", agency: "PA Department of Human Services",
     purpose: "Report income or household changes online or by phone (due by the 10th of the next month).",
-    frequency: "As needed", officialUrl: "https://www.pa.gov/agencies/dhs/resources/for-residents/semi-annual-reporting", online: true,
+    frequency: "As needed", officialUrl: "https://www.pa.gov/agencies/dhs/resources/for-residents/semi-annual-reporting", online: true, fillableId: "change-report",
   },
   {
     id: "snap-pa600fs", program: "SNAP", category: "reapply", formNumber: "PA 600 FS",
@@ -113,7 +113,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ma-change", program: "Medicaid", category: "reporting",
     title: "Report a change (COMPASS / phone)", agency: "PA Department of Human Services",
     purpose: "Report income, household, or address changes for Medical Assistance.",
-    frequency: "As needed", officialUrl: "https://www.compass.dhs.pa.gov/", online: true,
+    frequency: "As needed", officialUrl: "https://www.compass.dhs.pa.gov/", online: true, fillableId: "change-report",
   },
   {
     id: "ma-pa600hc", program: "Medicaid", category: "reapply", formNumber: "PA 600 HC",
@@ -163,7 +163,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     purpose: "Six-month report of income/household changes for Cash Assistance.",
     frequency: "Every 6 months",
     officialUrl: "https://services.dpw.state.pa.us/oimpolicymanuals/snap/PA_564_(SAR)_(10-07).pdf",
-    fillableId: "change-report",
+    fillableId: "pa-564-sar",
   },
   {
     id: "tanf-pa600", program: "TANF", category: "reapply", formNumber: "PA 600",
@@ -215,7 +215,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     title: "Report a change (Pennie account)", agency: "Pennie (PA exchange)",
     purpose: "Update income/household within 30 days so your tax credit stays correct.",
     frequency: "Within 30 days",
-    officialUrl: "https://help.pennie.com/hc/en-us/articles/1500001872842-Reporting-changes-to-Pennie-throughout-the-year", online: true,
+    officialUrl: "https://help.pennie.com/hc/en-us/articles/1500001872842-Reporting-changes-to-Pennie-throughout-the-year", online: true, fillableId: "change-report",
   },
   {
     id: "aca-renewal", program: "ACA", category: "reapply",
@@ -229,7 +229,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "va-21p0969", program: "VA", category: "reporting", formNumber: "21P-0969",
     title: "Income and Asset Statement", agency: "U.S. Dept. of Veterans Affairs",
     purpose: "Report or update income, assets, and net worth for pension / Parents' DIC.",
-    frequency: "As needed", officialUrl: "https://www.vba.va.gov/pubs/forms/VBA-21P-0969-ARE.pdf",
+    frequency: "As needed", officialUrl: "https://www.vba.va.gov/pubs/forms/VBA-21P-0969-ARE.pdf", fillableId: "va-21p-0969",
   },
   {
     id: "va-21p8416", program: "VA", category: "reporting", formNumber: "21P-8416",

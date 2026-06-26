@@ -114,9 +114,167 @@ const CHANGE_REPORT: FillableFormDef = {
   disclaimer: STATEMENT_DISCLAIMER,
 };
 
+/** SSA-821 — Work Activity Report (Employee). Reports wages and work activity
+ *  from an employer; used in SGA determinations for SSI and SSDI. */
+const SSA_821: FillableFormDef = {
+  id: "ssa-821",
+  title: "Work Activity Report — Employee",
+  agency: "Social Security Administration",
+  purpose:
+    "Report wages and the details of work for an employer so SSA can evaluate substantial gainful activity (SSI and SSDI).",
+  officialUrl: "https://www.ssa.gov/forms/ssa-821.pdf",
+  officialLabel: "Official SSA-821 (PDF)",
+  sections: [
+    {
+      title: "Identification",
+      fields: [
+        { name: "name", label: "Name", type: "text", required: true, prefill: "beneficiaryFullName", width: "half" },
+        { name: "ssn", label: "Social Security number", type: "text", placeholder: "###-##-####", width: "half", help: "Optional here — enter it on the official form you file." },
+      ],
+    },
+    {
+      title: "Employer",
+      description: "List your most recent employer. If you had more than one, note the others under Remarks.",
+      fields: [
+        { name: "employerName", label: "Employer name", type: "text", required: true, width: "half" },
+        { name: "jobTitle", label: "Job title / duties", type: "text", width: "half" },
+        { name: "employerAddress", label: "Employer address", type: "textarea", width: "full" },
+        { name: "startDate", label: "Date work started", type: "date", width: "half" },
+        { name: "endDate", label: "Date work ended (if applicable)", type: "date", width: "half" },
+        { name: "hoursPerWeek", label: "Hours per week", type: "number", width: "half" },
+        { name: "payRate", label: "Rate of pay", type: "currency", width: "half", help: "Per hour, or note the period under Remarks." },
+        { name: "grossMonthly", label: "Gross monthly earnings", type: "currency", width: "half" },
+      ],
+    },
+    {
+      title: "Work conditions & expenses",
+      fields: [
+        { name: "specialConditions", label: "Special conditions or extra help", type: "textarea", width: "full", help: "Did you get extra help, work fewer hours, or have duties changed because of your condition? Describe it." },
+        { name: "irweDescription", label: "Impairment-related work expenses (IRWE)", type: "textarea", width: "half", help: "Things you pay for to be able to work (e.g. medication, transport, devices)." },
+        { name: "irweMonthly", label: "IRWE monthly amount", type: "currency", width: "half" },
+      ],
+    },
+    {
+      title: "Remarks & signature",
+      fields: [
+        { name: "remarks", label: "Remarks", type: "textarea", width: "full" },
+        { name: "signedDate", label: "Date", type: "date", required: true, prefill: "today", width: "half" },
+        { name: "phone", label: "Daytime phone", type: "tel", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+};
+
+/** PA 564 (SAR) — Semi-Annual Reporting form for SNAP / Cash Assistance. */
+const PA_564_SAR: FillableFormDef = {
+  id: "pa-564-sar",
+  title: "Semi-Annual Report (SAR)",
+  agency: "PA Department of Human Services",
+  purpose:
+    "Your six-month report of income, household, and expense changes that keeps SNAP and Cash Assistance correct.",
+  officialUrl: "https://www.pa.gov/agencies/dhs/resources/for-residents/semi-annual-reporting",
+  officialLabel: "PA DHS — Semi-Annual Reporting",
+  helper: true,
+  sections: [
+    {
+      title: "Household",
+      fields: [
+        { name: "name", label: "Head of household", type: "text", required: true, prefill: "beneficiaryFullName", width: "half" },
+        { name: "caseNumber", label: "Record / case number", type: "text", width: "half" },
+        { name: "county", label: "County", type: "text", prefill: "county", width: "half" },
+        { name: "householdSize", label: "People in household", type: "number", prefill: "householdSize", width: "half" },
+      ],
+    },
+    {
+      title: "Income",
+      description: "Report current income for everyone in the household. Note additional people under Other changes.",
+      fields: [
+        { name: "memberName", label: "Person with income", type: "text", width: "half" },
+        { name: "incomeSource", label: "Source / employer", type: "text", width: "half" },
+        { name: "grossMonthly", label: "Gross monthly income", type: "currency", width: "half" },
+        { name: "incomeChanged", label: "Did income change since last report?", type: "select", width: "half", options: [
+          { value: "no", label: "No change" },
+          { value: "increased", label: "Increased" },
+          { value: "decreased", label: "Decreased" },
+          { value: "ended", label: "Ended" },
+        ] },
+      ],
+    },
+    {
+      title: "Expenses (if changed)",
+      fields: [
+        { name: "rent", label: "Rent / mortgage (monthly)", type: "currency", width: "half" },
+        { name: "utilities", label: "Utilities (monthly)", type: "currency", width: "half" },
+        { name: "dependentCare", label: "Dependent / child care (monthly)", type: "currency", width: "half" },
+        { name: "medical", label: "Medical expenses (monthly)", type: "currency", width: "half" },
+      ],
+    },
+    {
+      title: "Other changes & signature",
+      fields: [
+        { name: "otherChanges", label: "Household / address / other changes", type: "textarea", width: "full" },
+        { name: "signedDate", label: "Date", type: "date", required: true, prefill: "today", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+};
+
+/** VA 21P-0969 — Income and Asset Statement for needs-based pension / DIC. */
+const VA_21P_0969: FillableFormDef = {
+  id: "va-21p-0969",
+  title: "Income and Asset Statement",
+  agency: "U.S. Dept. of Veterans Affairs",
+  purpose:
+    "Report or update income, assets, and net worth in support of a needs-based VA pension or Parents' DIC claim.",
+  officialUrl: "https://www.vba.va.gov/pubs/forms/VBA-21P-0969-ARE.pdf",
+  officialLabel: "Official VA 21P-0969 (PDF)",
+  sections: [
+    {
+      title: "Claimant",
+      fields: [
+        { name: "name", label: "Veteran / claimant name", type: "text", required: true, prefill: "beneficiaryFullName", width: "half" },
+        { name: "fileNumber", label: "VA file number / SSN", type: "text", width: "half", help: "Enter on the official form you file." },
+      ],
+    },
+    {
+      title: "Monthly income",
+      description: "Gross monthly amount from each source for you (and your dependents).",
+      fields: [
+        { name: "socialSecurity", label: "Social Security", type: "currency", width: "half" },
+        { name: "otherPensions", label: "Other pensions / retirement", type: "currency", width: "half" },
+        { name: "wages", label: "Wages / earnings", type: "currency", width: "half" },
+        { name: "interestDividends", label: "Interest / dividends", type: "currency", width: "half" },
+        { name: "otherIncome", label: "Other income (describe)", type: "textarea", width: "full" },
+      ],
+    },
+    {
+      title: "Assets / net worth",
+      fields: [
+        { name: "bankAccounts", label: "Cash & bank accounts", type: "currency", width: "half" },
+        { name: "investments", label: "Investments (stocks, bonds, funds)", type: "currency", width: "half" },
+        { name: "realProperty", label: "Real property (excluding your home)", type: "currency", width: "half" },
+        { name: "otherAssets", label: "Other assets (describe)", type: "textarea", width: "full" },
+      ],
+    },
+    {
+      title: "Certification",
+      fields: [
+        { name: "expectedChanges", label: "Expected income changes", type: "textarea", width: "full" },
+        { name: "signedDate", label: "Date", type: "date", required: true, prefill: "today", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+};
+
 export const FILLABLE_FORMS: Record<string, FillableFormDef> = {
   [SSA_795.id]: SSA_795,
   [CHANGE_REPORT.id]: CHANGE_REPORT,
+  [SSA_821.id]: SSA_821,
+  [PA_564_SAR.id]: PA_564_SAR,
+  [VA_21P_0969.id]: VA_21P_0969,
 };
 
 export function getFillableForm(id: string): FillableFormDef | null {
