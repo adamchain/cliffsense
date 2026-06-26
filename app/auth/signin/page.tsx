@@ -8,6 +8,22 @@ import { AuthLoadingOverlay } from "@/components/auth/auth-loading-overlay";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
 import { IconLock, IconShieldCheck, IconEye, IconEyeOff } from "@tabler/icons-react";
 
+/**
+ * Resolve the post-login destination to a path on the CURRENT origin. NextAuth
+ * builds `res.url` from NEXTAUTH_URL; if that env is stale (e.g. an old deploy
+ * URL) it would otherwise redirect users off-site. We keep only the path so the
+ * redirect always lands on the host the user is actually on.
+ */
+function sameOriginDest(url: string | null | undefined, fallback: string): string {
+  if (!url) return fallback;
+  try {
+    const u = new URL(url, window.location.origin);
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function SignInPage() {
   const searchParams = useSearchParams();
   /** Default `/` so middleware can send incomplete onboarding to the right step after login. */
@@ -39,7 +55,7 @@ export default function SignInPage() {
         setLoading(false);
         return;
       }
-      window.location.href = res?.url ?? callbackUrl;
+      window.location.href = sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/"));
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -86,7 +102,7 @@ export default function SignInPage() {
         setLoading(false);
         return;
       }
-      window.location.href = res?.url ?? callbackUrl;
+      window.location.href = sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/"));
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
