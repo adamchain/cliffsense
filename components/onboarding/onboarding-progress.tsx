@@ -29,7 +29,7 @@ export function OnboardingProgress({
               ? "bg-[var(--color-cs-brand)]"
               : active
                 ? "bg-[var(--color-cs-brand)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
-                : "bg-[#edebe9]";
+                : "bg-[var(--color-cs-input-bg)]";
             return (
               <div key={step.id} className="flex min-w-0 flex-1 flex-col gap-1" role="listitem">
                 <div

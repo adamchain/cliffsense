@@ -31,7 +31,7 @@ export function PlaidOnboardingActions({ beneficiaryId }: { beneficiaryId: strin
 
   if (!beneficiaryId) {
     return (
-      <div className="mt-6 rounded border border-[#deecf9] bg-[var(--color-cs-info-bg)] p-4 text-left">
+      <div className="mt-6 rounded-2xl border border-[var(--color-cs-border)] bg-[var(--color-cs-info-bg)] p-4 text-left">
         <p className="text-[13px] font-medium text-[var(--color-cs-text)]">
           We couldn&apos;t set up a beneficiary profile for your account yet.
         </p>
@@ -39,10 +39,7 @@ export function PlaidOnboardingActions({ beneficiaryId }: { beneficiaryId: strin
           Try refreshing the page. If this keeps happening, complete the profile step with your name and state, or sign
           out and sign back in.
         </p>
-        <Link
-          href="/onboarding/profile"
-          className="mt-4 inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-        >
+        <Link href="/onboarding/profile" className="cs-btn cs-btn-primary mt-4">
           Go to profile
           <IconArrowRight size={16} stroke={1.5} aria-hidden />
         </Link>

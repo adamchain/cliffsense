@@ -86,32 +86,35 @@ export function BenefitsForm({ programs }: { programs: readonly string[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-8 max-w-xl space-y-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {programs.map((p) => {
-          const on = selected.has(p);
-          return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => toggle(p)}
-              className={`rounded border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-                on
-                  ? "border-2 border-[var(--color-cs-brand)] bg-[#f5faff] py-[9px]"
-                  : "border-[var(--color-cs-border)] bg-white hover:border-[var(--color-cs-brand)]"
-              }`}
-            >
-              {p}
-            </button>
-          );
-        })}
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="cs-card p-6 md:p-7">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+          {programs.map((p) => {
+            const on = selected.has(p);
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => toggle(p)}
+                aria-pressed={on}
+                className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                  on
+                    ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)] ring-1 ring-[var(--color-cs-brand)]"
+                    : "border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {error && <p className="text-xs text-[var(--color-cs-danger)]">{error}</p>}
-      <div className="flex justify-end border-t border-[var(--color-cs-border)] pt-4">
+      {error && <p className="text-[13px] text-[var(--color-cs-danger)]">{error}</p>}
+      <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving || selected.size === 0}
-          className="rounded-sm bg-[var(--color-cs-brand)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
+          className="cs-btn cs-btn-primary"
         >
           {saving ? "Saving…" : "Continue"}
         </button>
