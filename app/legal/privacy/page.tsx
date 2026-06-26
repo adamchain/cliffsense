@@ -156,7 +156,7 @@ export default function PrivacyPolicyPage() {
         </p>
         <p>
           Users may revoke consent or disconnect integrations through account settings or by contacting
-          privacy@mybenefitspa.com. Revocation may limit or terminate Platform functionality.
+          support@mybenefitspa.com. Revocation may limit or terminate Platform functionality.
           Revocation does not require MyBenefitsPA to delete records retained for legal, security,
           dispute, audit, regulatory, or documented benefits-monitoring purposes.
         </p>
@@ -277,7 +277,7 @@ export default function PrivacyPolicyPage() {
         </p>
         <Bullets
           items={[
-            "Requests may be submitted to privacy@mybenefitspa.com. MyBenefitsPA will verify the requester's identity and authority before disclosing or deleting information.",
+            "Requests may be submitted to support@mybenefitspa.com. MyBenefitsPA will verify the requester's identity and authority before disclosing or deleting information.",
             "If a request is denied, MyBenefitsPA will provide the reason and, where required, instructions for appeal. Appeals will be reviewed by a person not involved in the original denial where practicable.",
             "Deletion requests may be limited by legal holds, security logs, fraud-prevention needs, dispute records, tax/accounting obligations, benefits-record retention needs, and other lawful exceptions.",
             "Authorized-agent requests require proof of authorization and may require direct confirmation from the user or legal representative.",
@@ -327,8 +327,8 @@ export default function PrivacyPolicyPage() {
           by posting an updated policy and, where required, email or in-Platform notice.
         </p>
         <p>
-          Privacy requests: privacy@mybenefitspa.com. Security reports: security@mybenefitspa.com.
-          General support: support@mybenefitspa.com. Website: www.mybenefitspa.com.
+          Privacy requests, security reports, and general support: support@mybenefitspa.com.
+          Website: www.mybenefitspa.com.
         </p>
       </Section>
     </article>

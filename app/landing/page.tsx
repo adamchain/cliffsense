@@ -3,16 +3,18 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   IconArrowRight,
+  IconAdjustmentsHorizontal,
   IconBell,
   IconBuildingBank,
   IconChartLine,
   IconClockHour4,
+  IconFileText,
   IconHeartHandshake,
   IconLock,
-  IconMail,
+  IconMessageChatbot,
   IconPhone,
+  IconSearch,
   IconShieldCheck,
-  IconWallet,
 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
@@ -85,11 +87,22 @@ function FeatureItem({
   );
 }
 
-/* A stylized in-browser dashboard mockup (wireframe-style placeholder). */
-function DashboardMock() {
+/* Browser-chrome frame around a real product screenshot. */
+function BrowserFrame({
+  src,
+  alt,
+  width,
+  height,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+}) {
   return (
-    <div className="w-full overflow-hidden rounded-2xl border-4 border-white bg-white shadow-2xl">
-      {/* top bar */}
+    <div className="w-full overflow-hidden rounded-2xl border-4 border-white bg-white shadow-2xl ring-1 ring-[var(--color-cs-border)]">
       <div className="flex items-center gap-2 border-b border-[var(--color-cs-border)] bg-white px-4 py-3">
         <span className="h-2.5 w-2.5 rounded-full bg-[#e11d48]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
@@ -98,87 +111,24 @@ function DashboardMock() {
           app.mybenefitspa.com
         </div>
       </div>
-      {/* body */}
-      <div className="flex h-[360px] bg-[var(--color-cs-info-bg)]">
-        {/* sidebar */}
-        <div className="hidden w-1/5 flex-col gap-3 bg-[#cfe0f7] p-4 sm:flex">
-          <div className="h-4 w-4/5 rounded bg-white/80" />
-          <div className="h-3 w-3/5 rounded bg-white/60" />
-          <div className="h-3 w-2/3 rounded bg-white/60" />
-          <div className="h-3 w-1/2 rounded bg-white/60" />
-        </div>
-        {/* main */}
-        <div className="flex-1 p-5">
-          <div className="mb-4 h-5 w-2/5 rounded bg-[#9bc1f0]" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
-              <div className="h-3 w-1/2 rounded bg-[var(--color-cs-success-bg)]" />
-              <div className="h-8 w-2/3 rounded bg-[var(--color-cs-success)]/30" />
-              <div className="h-2 w-full rounded bg-[var(--color-cs-border)]" />
-            </div>
-            <div className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
-              <div className="h-3 w-1/2 rounded bg-[var(--color-cs-warning-bg)]" />
-              <div className="h-8 w-2/3 rounded bg-[var(--color-cs-warning)]/30" />
-              <div className="h-2 w-full rounded bg-[var(--color-cs-border)]" />
-            </div>
-            <div className="col-span-2 flex items-end gap-2 rounded-xl bg-white p-4 shadow-sm">
-              {[40, 65, 50, 80, 55, 72, 48].map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t bg-[var(--color-cs-brand)]/70"
-                  style={{ height: `${h}px` }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        sizes="(min-width: 1024px) 640px, 100vw"
+        className="block h-auto w-full"
+      />
     </div>
   );
 }
 
-/* A stylized phone mockup. */
-function PhoneMock() {
+/* Phone-chrome frame around a real mobile screenshot. */
+function PhoneFrame({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative mx-auto w-[260px] overflow-hidden rounded-[2rem] border-[6px] border-white bg-[var(--color-cs-info-bg)] shadow-2xl">
-      <div className="h-[520px] p-5">
-        <div className="mb-5 flex items-center justify-between">
-          <div className="h-4 w-24 rounded bg-[#9bc1f0]" />
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-cs-brand)] shadow-sm">
-            <IconBell size={18} />
-          </span>
-        </div>
-        <div className="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
-          <div className="h-3 w-1/3 rounded bg-[var(--color-cs-success-bg)]" />
-          <div className="flex items-end gap-1.5">
-            {[30, 48, 36, 60, 44, 70, 52].map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t bg-[var(--color-cs-brand)]/70"
-                style={{ height: `${h}px` }}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 space-y-3">
-          {[
-            "bg-[var(--color-cs-success)]",
-            "bg-[var(--color-cs-warning)]",
-            "bg-[var(--color-cs-brand)]",
-          ].map((dot, i) => (
-            <div key={i} className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm">
-              <span className={`h-3 w-3 rounded-full ${dot}`} />
-              <div className="h-3 flex-1 rounded bg-[var(--color-cs-border)]" />
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* bottom nav */}
-      <div className="flex items-center justify-around border-t border-white bg-white/80 py-3 text-[var(--color-cs-brand)]">
-        <IconChartLine size={20} />
-        <IconWallet size={20} />
-        <IconBell size={20} />
-      </div>
+    <div className="relative mx-auto w-[268px] overflow-hidden rounded-[2.2rem] border-[7px] border-white bg-white shadow-2xl ring-1 ring-[var(--color-cs-border)]">
+      <Image src={src} alt={alt} width={430} height={936} sizes="268px" className="block h-auto w-full" />
     </div>
   );
 }
@@ -276,9 +226,9 @@ export default function LandingPage() {
               Stay under the limits that keep your benefits.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-              MyBenefitsPA links to your bank, compares your balances and deposits to common program
-              thresholds, and emails you <em>before</em> you approach a limit — so you can plan ahead with
-              your counselor or trustee.
+              MyBenefitsPA links your bank, lines up your balances and deposits against the income and
+              resource limits for your programs, and warns you <em>before</em> you get close. Drag a slider
+              to test a raise or a big deposit — and see exactly which limits would tighten.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <PillButton href="/auth/signup">Get started free</PillButton>
@@ -301,7 +251,13 @@ export default function LandingPage() {
 
           {/* hero visual */}
           <div className="relative">
-            <DashboardMock />
+            <BrowserFrame
+              src="/marketing/dashboard.png"
+              alt="MyBenefitsPA dashboard showing each balance against its limit, with what-if sliders"
+              width={2876}
+              height={1564}
+              priority
+            />
           </div>
         </div>
       </section>
@@ -314,18 +270,24 @@ export default function LandingPage() {
 
         <div className="mx-auto max-w-3xl px-6 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-            Always in the clear
+            Forms without the headache
           </p>
           <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-5xl">
-            See exactly where you stand
+            Every benefit form, filled and ready
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Connect once and MyBenefitsPA does the watching. Your dashboard shows each balance next to the
-            limit that matters, so a number is never a mystery.
+            The reporting and recertification forms for SSI, SSDI, SNAP, Medicaid, Section 8 and more — in one
+            place. The in-app ones pre-fill from your profile, so you just review, print or download, and use
+            the official link to submit.
           </p>
         </div>
         <div className="mx-auto mt-14 max-w-5xl px-6">
-          <DashboardMock />
+          <BrowserFrame
+            src="/marketing/reports-docs.png"
+            alt="Reports & Docs page listing SSI reporting and recertification forms with Fill out buttons"
+            width={2876}
+            height={1560}
+          />
         </div>
       </section>
 
@@ -336,8 +298,11 @@ export default function LandingPage() {
         <Blob className="right-1/3 bottom-20 h-24 w-24 bg-[var(--color-cs-accent-orange)]/40" />
 
         <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
-          <div className="order-2 lg:order-1">
-            <PhoneMock />
+          <div className="order-2 flex justify-center lg:order-1">
+            <PhoneFrame
+              src="/marketing/alerts-mobile.png"
+              alt="MyBenefitsPA alerts on a phone, warning that income is approaching a program limit"
+            />
           </div>
           <div className="order-1 lg:order-2">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
@@ -348,7 +313,7 @@ export default function LandingPage() {
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">
               Resource and income limits aren&apos;t one-size-fits-all. MyBenefitsPA tracks the ones tied to
-              your benefits and keeps the math out of sight.
+              your benefits — and tells you the moment a balance gets close.
             </p>
             <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2">
               <FeatureItem
@@ -360,20 +325,20 @@ export default function LandingPage() {
               <FeatureItem
                 onDark
                 icon={IconChartLine}
-                title="Threshold tracking"
-                body="See each balance measured against the resource and income limits for your programs."
+                title="Limits &amp; balances"
+                body="Each balance shown against its warning line and hard limit, color-coded at a glance."
               />
               <FeatureItem
                 onDark
                 icon={IconBell}
-                title="Early warnings"
-                body="Get a nudge as you near a limit — with enough lead time to actually do something."
+                title="Early alerts"
+                body="A notice the moment a balance approaches a limit — by email and push, with time to act."
               />
               <FeatureItem
                 onDark
                 icon={IconShieldCheck}
                 title="Private &amp; secure"
-                body="Read-only access, encrypted in transit. We never move money or share your data."
+                body="Read-only access, encrypted in transit and at rest. We never move money or share your data."
               />
             </div>
           </div>
@@ -391,40 +356,45 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
-              Calm, timely reminders
+              Make sense of it
             </p>
             <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-5xl">
-              Plan ahead, not in a panic
+              Answers, search, and what-ifs
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[var(--color-cs-text-secondary)]">
-              A back-pay deposit or a good month shouldn&apos;t cost you your coverage. MyBenefitsPA gives you
-              room to make a plan.
+              When a number raises a question, just ask. The built-in advisor explains program rules in plain
+              language, and everything you&apos;ve got is a search away.
             </p>
             <div className="mt-10 grid gap-x-10 gap-y-10 sm:grid-cols-2">
               <FeatureItem
-                icon={IconMail}
-                title="Email alerts"
-                body="Plain-language reminders land in your inbox before a balance gets close to a limit."
+                icon={IconMessageChatbot}
+                title="AI advisor"
+                body="Ask why a limit turned yellow or what counts as income — clear answers, not legalese."
               />
               <FeatureItem
-                icon={IconWallet}
-                title="Custom limits"
-                body="Use built-in program thresholds or set your own to match your situation."
+                icon={IconSearch}
+                title="Global search"
+                body="Find any transaction, alert, limit, or form from the top bar. No match? Send it to the advisor."
               />
               <FeatureItem
-                icon={IconChartLine}
-                title="Trend view"
-                body="Watch balances over time so a rising number never catches you off guard."
+                icon={IconAdjustmentsHorizontal}
+                title="What-if planning"
+                body="Drag a slider to model a raise or a bigger balance and see which limits would get close."
               />
               <FeatureItem
-                icon={IconClockHour4}
-                title="Lead time"
-                body="Catch a problem days or weeks early — time to call a counselor or trustee."
+                icon={IconFileText}
+                title="Fillable forms"
+                body="Reporting and recertification forms pre-filled from your data — print or download in a click."
               />
             </div>
           </div>
           <div className="relative">
-            <PhoneMock />
+            <BrowserFrame
+              src="/marketing/advisor.png"
+              alt="MyBenefitsPA AI advisor answering why an asset threshold turned yellow"
+              width={2874}
+              height={1568}
+            />
           </div>
         </div>
       </section>

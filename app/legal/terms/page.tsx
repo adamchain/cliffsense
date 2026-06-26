@@ -285,8 +285,7 @@ export default function TermsPage() {
           effective date means acceptance of the updated Terms.
         </p>
         <p>
-          General terms questions: support@mybenefitspa.com. Privacy questions:
-          privacy@mybenefitspa.com. Security reports: security@mybenefitspa.com. Website:
+          Terms, privacy, and security questions: support@mybenefitspa.com. Website:
           www.mybenefitspa.com.
         </p>
       </Section>

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { IconMenu2, IconSettings, IconX } from "@tabler/icons-react";
 import type { NavItem } from "./mobile-tab-bar";
 
@@ -20,24 +21,25 @@ export function MobileNavDrawer({
   alertCount?: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const badge = alertCount > 9 ? "9+" : String(alertCount);
   const isActive = (href: string) => activeHref === href || activeHref.startsWith(href + "/");
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] lg:hidden"
-      >
-        <IconMenu2 size={22} stroke={1.8} aria-hidden />
-      </button>
+  // Portals need a client mount; also lock body scroll while the drawer is open.
+  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+  // Rendered to <body> so the topbar's backdrop-blur (which would otherwise
+  // trap a fixed child inside the header) can't clip or hide the drawer.
+  const drawer = (
+    <div className="fixed inset-0 z-[100] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-[var(--color-cs-navy)]/40" onClick={() => setOpen(false)} />
           <div className="cs-safe-bottom absolute inset-y-0 left-0 flex w-72 max-w-[82%] flex-col bg-white shadow-[var(--shadow-cs-float)]">
             <div className="flex items-center justify-between px-4 py-4">
@@ -96,8 +98,23 @@ export function MobileNavDrawer({
               </Link>
             </nav>
           </div>
-        </div>
-      )}
+    </div>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Open menu"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] lg:hidden"
+      >
+        <IconMenu2 size={22} stroke={1.8} aria-hidden />
+      </button>
+
+      {open && mounted ? createPortal(drawer, document.body) : null}
     </>
   );
 }

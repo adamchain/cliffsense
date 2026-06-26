@@ -270,9 +270,8 @@ export default function SecurityPage() {
 
       <Section title="16. Contact">
         <p>
-          Security vulnerabilities or incidents should be reported to security@mybenefitspa.com. Privacy
-          requests should be sent to privacy@mybenefitspa.com. General support is available at
-          support@mybenefitspa.com.
+          Security vulnerabilities or incidents, privacy requests, and general support can all be
+          directed to support@mybenefitspa.com.
         </p>
       </Section>
     </article>

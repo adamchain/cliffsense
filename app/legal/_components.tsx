@@ -30,7 +30,7 @@ export function DocHeader({
               ["Website", "www.mybenefitspa.com"],
               ["Document Status", "Counsel Review Draft 1.0"],
               ["Document Date", "June 23, 2026"],
-              ["Public Contact", "support@mybenefitspa.com | privacy@mybenefitspa.com"],
+              ["Public Contact", "support@mybenefitspa.com"],
             ].map(([label, value]) => (
               <tr
                 key={label}

@@ -5,6 +5,7 @@ import {
   IconFileExport,
   IconFileText,
   IconFolder,
+  IconHelpCircle,
   IconHome,
   IconListDetails,
   IconMessageCircle,
@@ -32,6 +33,7 @@ const nav: NavItem[] = [
 const secondaryNav: NavItem[] = [
   { href: "/vault", label: "Vault", icon: IconFolder },
   { href: "/reports", label: "Exports", icon: IconFileExport },
+  { href: "/help", label: "Help", icon: IconHelpCircle },
   { href: "/settings", label: "Settings", icon: IconSettings },
 ];
 

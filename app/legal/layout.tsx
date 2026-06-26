@@ -54,8 +54,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
           </nav>
           <p className="mt-6 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
             © {new Date().getFullYear()} MyBenefitsPA Inc. Informational tool only. Not legal, tax, or
-            benefits advice. Questions: privacy@mybenefitspa.com · security@mybenefitspa.com ·
-            support@mybenefitspa.com.
+            benefits advice. Questions: support@mybenefitspa.com.
           </p>
         </div>
       </footer>

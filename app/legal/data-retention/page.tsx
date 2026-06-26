@@ -210,7 +210,7 @@ export default function DataRetentionPage() {
 
       <Section title="5. User-Initiated Deletion and Account Closure">
         <p>
-          Users may request deletion by contacting privacy@mybenefitspa.com or using account settings
+          Users may request deletion by contacting support@mybenefitspa.com or using account settings
           where available. MyBenefitsPA will verify identity and authority before deleting or exporting
           sensitive information.
         </p>
@@ -340,8 +340,8 @@ export default function DataRetentionPage() {
           holds, and secure handling.
         </p>
         <p>
-          Retention and deletion requests: privacy@mybenefitspa.com. Security incidents:
-          security@mybenefitspa.com. General support: support@mybenefitspa.com.
+          Retention and deletion requests, security incidents, and general support:
+          support@mybenefitspa.com.
         </p>
       </Section>
     </article>
