@@ -1,6 +1,12 @@
 import { AdvisorChat } from "./advisor-chat";
 
-export default function AdvisorPage() {
+export default async function AdvisorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ask?: string }>;
+}) {
+  const { ask } = await searchParams;
+  const initialQuestion = typeof ask === "string" ? ask.slice(0, 500) : undefined;
   return (
     <>
       <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Advisor</div>
@@ -14,7 +20,7 @@ export default function AdvisorPage() {
         <strong>Informational only.</strong> Not a lawyer, financial advisor, or benefits counselor.
         For final determinations, contact your benefits agency.
       </div>
-      <AdvisorChat />
+      <AdvisorChat initialQuestion={initialQuestion} />
     </>
   );
 }

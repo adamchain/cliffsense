@@ -166,6 +166,82 @@ const SSA_821: FillableFormDef = {
   disclaimer: STATEMENT_DISCLAIMER,
 };
 
+/** SSA-820 — Work Activity Report (Self-Employment). Reports self-employment
+ *  work and net earnings so SSA can evaluate substantial gainful activity. */
+const SSA_820: FillableFormDef = {
+  id: "ssa-820",
+  title: "Work Activity Report — Self-Employment",
+  agency: "Social Security Administration",
+  purpose:
+    "Report self-employment work, the services you provide, and your net earnings so SSA can evaluate substantial gainful activity (SSI and SSDI).",
+  officialUrl: "https://www.ssa.gov/forms/ssa-820.pdf",
+  officialLabel: "Official SSA-820 (PDF)",
+  sections: [
+    {
+      title: "Identification",
+      fields: [
+        { name: "name", label: "Name", type: "text", required: true, prefill: "beneficiaryFullName", width: "half", question: "First, what's the name this report is for?" },
+        { name: "ssn", label: "Social Security number", type: "text", placeholder: "###-##-####", width: "half", help: "Optional here — enter it on the official form you file.", question: "What's your Social Security number? (You can skip this and add it on the official form.)" },
+        { name: "claimType", label: "This is for", type: "select", width: "half", question: "Which benefit is this about?", options: [
+          { value: "ssi", label: "SSI" },
+          { value: "ssdi", label: "SSDI" },
+          { value: "both", label: "Both SSI and SSDI" },
+        ] },
+      ],
+    },
+    {
+      title: "Your business",
+      description: "Tell us about the business or self-employment you do.",
+      fields: [
+        { name: "businessName", label: "Business name", type: "text", width: "half", question: "What's the name of your business? (If it has no formal name, describe it — e.g. \"house cleaning\".)" },
+        { name: "businessType", label: "Type of business / trade", type: "text", width: "half", question: "What kind of work is it? (For example: rideshare driving, lawn care, online sales, consulting.)" },
+        { name: "ownership", label: "Your role in the business", type: "select", width: "half", question: "How are you involved in the business?", options: [
+          { value: "sole", label: "Sole owner" },
+          { value: "partner", label: "Partner" },
+          { value: "officer", label: "Corporate officer" },
+          { value: "other", label: "Other" },
+        ] },
+        { name: "startDate", label: "Date the business started", type: "date", width: "half", question: "When did you start this self-employment?" },
+        { name: "stillOperating", label: "Are you still working in the business?", type: "checkbox", width: "half", question: "Are you still working in the business today?" },
+        { name: "endDate", label: "Date you stopped (if applicable)", type: "date", width: "half", question: "If you've stopped, what date did you stop? (Skip if you're still working.)" },
+        { name: "hoursPerMonth", label: "Hours you work per month", type: "number", width: "half", question: "About how many hours a month do you put into the business?" },
+        { name: "duties", label: "What you do in the business", type: "textarea", width: "full", question: "In your own words, what do you do day to day in the business?", help: "List the tasks you handle — e.g. driving, bookkeeping, managing staff, selling." },
+      ],
+    },
+    {
+      title: "Services & earnings",
+      description: "These help SSA judge whether your work counts as substantial.",
+      fields: [
+        { name: "significantServices", label: "Do you provide significant services?", type: "checkbox", width: "full", question: "Do you provide significant services to the business — more than 45 hours a month, or more than half of what it takes to run it?", help: "If you manage the business or it couldn't run without you, this is usually Yes." },
+        { name: "netEarningsMonthly", label: "Net earnings from self-employment (monthly)", type: "currency", width: "half", prefill: "monthlyEarnedIncome", question: "Roughly what are your net monthly earnings (after business expenses)?", help: "We've estimated this from your recent deposits — adjust it to your actual net." },
+        { name: "netEarningsAnnual", label: "Net earnings from self-employment (annual)", type: "currency", width: "half", question: "And about how much do you net per year?" },
+        { name: "tookSalary", label: "Do you draw a salary or owner's pay?", type: "checkbox", width: "half", question: "Do you pay yourself a salary or regular draw from the business?" },
+        { name: "salaryMonthly", label: "Monthly salary / draw", type: "currency", width: "half", question: "If so, how much per month? (Skip if you don't.)" },
+      ],
+    },
+    {
+      title: "Changes, help & expenses",
+      description: "Anything that lowers what your work is really worth to you.",
+      fields: [
+        { name: "workChanges", label: "Changes in your work activity", type: "textarea", width: "full", question: "Have your hours, duties, or earnings changed at any point? Describe when and how.", help: "Note any periods you worked more or less, or earned more or less." },
+        { name: "unincurredExpenses", label: "Business expenses paid by someone else", type: "textarea", width: "full", question: "Does anyone else pay for things your business uses — like equipment from Vocational Rehab or an SBA grant?", help: "These \"unincurred\" expenses can be subtracted when SSA values your work." },
+        { name: "unpaidHelp", label: "Unpaid help from others", type: "textarea", width: "full", question: "Does anyone help with the business for free (family, friends)? Roughly what would that help cost to hire?" },
+        { name: "irweDescription", label: "Impairment-related work expenses (IRWE)", type: "textarea", width: "half", question: "Do you pay out of pocket for things you need in order to work — medication, transport, special equipment?" },
+        { name: "irweMonthly", label: "IRWE monthly amount", type: "currency", width: "half", question: "About how much do those work-related expenses cost you each month?" },
+      ],
+    },
+    {
+      title: "Remarks & signature",
+      fields: [
+        { name: "remarks", label: "Anything else to add", type: "textarea", width: "full", question: "Anything else SSA should know? Add it here." },
+        { name: "signedDate", label: "Date", type: "date", required: true, prefill: "today", width: "half", question: "What's today's date?" },
+        { name: "phone", label: "Daytime phone", type: "tel", width: "half", question: "Lastly, what's a daytime phone number SSA can reach you at?" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+};
+
 /** PA 564 (SAR) — Semi-Annual Reporting form for SNAP / Cash Assistance. */
 const PA_564_SAR: FillableFormDef = {
   id: "pa-564-sar",
@@ -273,6 +349,7 @@ export const FILLABLE_FORMS: Record<string, FillableFormDef> = {
   [SSA_795.id]: SSA_795,
   [CHANGE_REPORT.id]: CHANGE_REPORT,
   [SSA_821.id]: SSA_821,
+  [SSA_820.id]: SSA_820,
   [PA_564_SAR.id]: PA_564_SAR,
   [VA_21P_0969.id]: VA_21P_0969,
 };

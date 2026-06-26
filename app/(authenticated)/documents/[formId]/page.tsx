@@ -5,7 +5,8 @@ import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { getFillableForm, initialValues } from "@/lib/forms/fillable";
 import { buildPrefill } from "@/lib/forms/prefill";
-import { FillableForm } from "./fillable-form";
+import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
+import { FormExperience } from "./fillable-form";
 import { IconArrowLeft } from "@tabler/icons-react";
 
 export default async function FillableFormPage({
@@ -28,10 +29,26 @@ export default async function FillableFormPage({
     .select({ firstName: 1, lastName: 1, dateOfBirth: 1, state: 1, county: 1, householdSize: 1 })
     .lean();
 
-  const prefill = buildPrefill(beneficiary ?? null, {
-    name: session.user.name,
-    email: session.user.email,
-  });
+  // Pull live financial figures (monthly earned income, current bank balance)
+  // so money fields can auto-populate. Best-effort — never block the form.
+  let finances: { monthlyEarnedIncomeCents?: number; bankBalanceCents?: number } | undefined;
+  if (beneficiary?._id) {
+    try {
+      const payload = await loadThresholdDashboardPayload(beneficiary._id);
+      finances = {
+        monthlyEarnedIncomeCents: payload.metrics.currentEarnedIncomeCents,
+        bankBalanceCents: payload.metrics.maxDepositoryBalanceCents,
+      };
+    } catch {
+      finances = undefined;
+    }
+  }
+
+  const prefill = buildPrefill(
+    beneficiary ?? null,
+    { name: session.user.name, email: session.user.email },
+    finances,
+  );
   const initial = initialValues(form, prefill);
 
   return (
@@ -45,7 +62,7 @@ export default async function FillableFormPage({
           Reports &amp; Docs
         </Link>
       </div>
-      <FillableForm form={form} initialValues={initial} />
+      <FormExperience form={form} initialValues={initial} />
     </>
   );
 }

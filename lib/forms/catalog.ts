@@ -30,7 +30,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ssi-ssa-820", program: "SSI", category: "reporting", formNumber: "SSA-820",
     title: "Work Activity Report — Self-Employment", agency: "Social Security Administration",
     purpose: "Report self-employment work and earnings.",
-    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-820.pdf",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-820.pdf", fillableId: "ssa-820",
   },
   {
     id: "ssi-wage-reporting", program: "SSI", category: "reporting",
@@ -57,7 +57,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ssdi-ssa-820", program: "SSDI", category: "reporting", formNumber: "SSA-820",
     title: "Work Activity Report — Self-Employment", agency: "Social Security Administration",
     purpose: "Report self-employment work and earnings.",
-    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-820.pdf",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-820.pdf", fillableId: "ssa-820",
   },
   {
     id: "ssdi-mywagereport", program: "SSDI", category: "reporting",

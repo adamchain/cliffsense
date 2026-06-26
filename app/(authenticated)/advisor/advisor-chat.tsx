@@ -78,16 +78,27 @@ function FormattedMessage({ content }: { content: string }) {
   );
 }
 
-export function AdvisorChat() {
+export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const startedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, sending]);
+
+  // A question handed off from global search (/advisor?ask=…) starts the chat.
+  useEffect(() => {
+    const q = initialQuestion?.trim();
+    if (q && !startedRef.current) {
+      startedRef.current = true;
+      void send(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion]);
 
   async function send(text: string) {
     const trimmed = text.trim();

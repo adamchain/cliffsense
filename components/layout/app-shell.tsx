@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { MobileTabBar, type NavItem } from "./mobile-tab-bar";
+import { TopbarControls } from "./topbar-controls";
 
 const nav: NavItem[] = [
   { href: "/dashboard", label: "Home", icon: IconHome },
@@ -21,10 +22,16 @@ const nav: NavItem[] = [
   { href: "/recurring", label: "Recurring", icon: IconRepeat },
   { href: "/thresholds", label: "Limits", icon: IconTarget },
   { href: "/alerts", label: "Alerts", icon: IconBell },
-  { href: "/vault", label: "Vault", icon: IconFolder },
   { href: "/documents", label: "Reports & Docs", icon: IconFileText },
-  { href: "/reports", label: "Exports", icon: IconFileExport },
   { href: "/advisor", label: "Advisor", icon: IconMessageCircle },
+];
+
+/** Secondary/utility destinations — pinned to the bottom of the sidebar in a
+ *  smaller, quieter style. */
+const secondaryNav: NavItem[] = [
+  { href: "/vault", label: "Vault", icon: IconFolder },
+  { href: "/reports", label: "Exports", icon: IconFileExport },
+  { href: "/settings", label: "Settings", icon: IconSettings },
 ];
 
 /** The four destinations that get their own slot in the mobile tab bar; the
@@ -46,7 +53,12 @@ export function AppShell({
 }) {
   const badge = alertCount > 9 ? "9+" : String(alertCount);
   const primary = nav.filter((n) => PRIMARY_HREFS.includes(n.href));
-  const more = nav.filter((n) => !PRIMARY_HREFS.includes(n.href));
+  // Mobile "More" sheet keeps the secondary destinations too (Settings is
+  // appended by the tab bar itself, so it's excluded here to avoid a duplicate).
+  const more = [
+    ...nav.filter((n) => !PRIMARY_HREFS.includes(n.href)),
+    ...secondaryNav.filter((n) => n.href !== "/settings"),
+  ];
 
   return (
     <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
@@ -92,17 +104,26 @@ export function AppShell({
               </Link>
             );
           })}
-          <Link
-            href="/settings"
-            className={`mt-1 flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
-              activeHref === "/settings" || activeHref.startsWith("/settings/")
-                ? "bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)]"
-                : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
-            }`}
-          >
-            <IconSettings size={20} stroke={1.7} aria-hidden />
-            Settings
-          </Link>
+          {/* Utility group pinned to the bottom, smaller and quieter. */}
+          <div className="mt-auto flex flex-col gap-0.5 border-t border-[var(--color-cs-border)] pt-2">
+            {secondaryNav.map(({ href, label, icon: Icon }) => {
+              const active = activeHref === href || activeHref.startsWith(href + "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-2.5 rounded-xl px-4 py-2 text-[13px] font-medium transition-colors ${
+                    active
+                      ? "bg-[var(--color-cs-brand)] text-white"
+                      : "text-[var(--color-cs-text-muted)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
+                  }`}
+                >
+                  <Icon size={18} stroke={active ? 2 : 1.7} aria-hidden />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
       </nav>
 
       {/* ---------- Main column (white) ---------- */}
@@ -119,7 +140,11 @@ export function AppShell({
               MyBenefitsPA
             </span>
           </Link>
-          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+
+          {/* Back/forward + global search, aligned left and spanning the bar */}
+          <TopbarControls />
+
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               href="/alerts"
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"

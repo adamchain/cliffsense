@@ -9,7 +9,7 @@ import type { CatalogForm } from "@/lib/forms/types";
 import {
   IconExternalLink,
   IconFileText,
-  IconForms,
+  IconMessageChatbot,
   IconWorld,
 } from "@tabler/icons-react";
 
@@ -38,8 +38,8 @@ function FormRow({ form }: { form: CatalogForm }) {
             href={`/documents/${form.fillableId}`}
             className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
           >
-            <IconForms size={14} stroke={1.8} aria-hidden />
-            Fill &amp; print
+            <IconMessageChatbot size={14} stroke={1.8} aria-hidden />
+            Fill out
           </Link>
         ) : null}
         <a

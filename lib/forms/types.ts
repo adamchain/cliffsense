@@ -51,6 +51,8 @@ export type PrefillKey =
   | "state"
   | "county"
   | "householdSize"
+  | "monthlyEarnedIncome"
+  | "bankBalance"
   | "preparerName"
   | "preparerEmail"
   | "today";
@@ -64,6 +66,8 @@ export type FormFieldDef = {
   placeholder?: string;
   help?: string;
   prefill?: PrefillKey;
+  /** Conversational phrasing for the guided/chat experience; falls back to label. */
+  question?: string;
   /** Layout hint within a section's two-column grid. */
   width?: "full" | "half";
 };

@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   IconArrowBackUp,
   IconDownload,
   IconExternalLink,
+  IconListDetails,
+  IconMessageChatbot,
   IconPrinter,
 } from "@tabler/icons-react";
 import type { FillableFormDef, FormFieldDef } from "@/lib/forms/types";
 import { displayValue } from "@/lib/forms/format";
+import { GuidedForm } from "./guided-form";
 
 function Field({
   field,
@@ -86,7 +89,9 @@ function Field({
   );
 }
 
-export function FillableForm({
+type Mode = "guided" | "classic";
+
+export function FormExperience({
   form,
   initialValues,
 }: {
@@ -94,7 +99,14 @@ export function FillableForm({
   initialValues: Record<string, string>;
 }) {
   const [values, setValues] = useState<Record<string, string>>(initialValues);
+  const [mode, setMode] = useState<Mode>("guided");
   const [downloading, setDownloading] = useState(false);
+
+  // Fields that arrived with a value already filled in from the user's data.
+  const prefilled = useMemo(
+    () => new Set(Object.keys(initialValues).filter((k) => (initialValues[k] ?? "").trim() !== "")),
+    [initialValues],
+  );
 
   const set = (name: string, v: string) => setValues((prev) => ({ ...prev, [name]: v }));
 
@@ -134,61 +146,116 @@ export function FillableForm({
             </p>
           ) : null}
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {/* Mode toggle */}
+        <div className="inline-flex shrink-0 rounded-xl border border-[var(--color-cs-border)] bg-white p-0.5 text-[13px] font-semibold shadow-[var(--shadow-cs-card)]">
           <button
             type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
+            onClick={() => setMode("guided")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 ${
+              mode === "guided"
+                ? "bg-[var(--color-cs-brand)] text-white"
+                : "text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-text)]"
+            }`}
           >
-            <IconPrinter size={16} stroke={1.8} aria-hidden />
-            Print
+            <IconMessageChatbot size={16} stroke={1.8} aria-hidden />
+            Guided
           </button>
           <button
             type="button"
-            onClick={downloadPdf}
-            disabled={downloading}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-cs-border)] px-3 py-2 text-[13px] font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
+            onClick={() => setMode("classic")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 ${
+              mode === "classic"
+                ? "bg-[var(--color-cs-brand)] text-white"
+                : "text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-text)]"
+            }`}
           >
-            <IconDownload size={16} stroke={1.8} aria-hidden />
-            {downloading ? "Preparing…" : "Download PDF"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setValues(initialValues)}
-            className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
-          >
-            <IconArrowBackUp size={16} stroke={1.8} aria-hidden />
-            Reset
+            <IconListDetails size={16} stroke={1.8} aria-hidden />
+            Full form
           </button>
         </div>
       </div>
 
-      {/* ---------- Editable form (screen only) ---------- */}
-      <div className="flex flex-col gap-4 print:hidden">
-        {form.sections.map((section) => (
-          <section key={section.title} className="cs-card p-5">
-            <h2 className="text-[14px] font-bold text-[var(--color-cs-text)]">{section.title}</h2>
-            {section.description ? (
-              <p className="mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">{section.description}</p>
-            ) : null}
-            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {section.fields.map((field) => (
-                <Field key={field.name} field={field} value={values[field.name] ?? ""} onChange={(v) => set(field.name, v)} />
-              ))}
-            </div>
-          </section>
-        ))}
-        <a
-          href={form.officialUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-fit items-center gap-1.5 text-[13px] font-semibold text-[var(--color-cs-brand)] hover:underline"
-        >
-          <IconExternalLink size={15} stroke={1.8} aria-hidden />
-          {form.officialLabel}
-        </a>
-        <p className="text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">{form.disclaimer}</p>
-      </div>
+      {/* ---------- Guided (conversational) view ---------- */}
+      {mode === "guided" ? (
+        <div className="print:hidden">
+          <GuidedForm
+            form={form}
+            values={values}
+            onChange={set}
+            prefilled={prefilled}
+            onDownload={downloadPdf}
+            downloading={downloading}
+            onPrint={() => window.print()}
+            onReviewFull={() => setMode("classic")}
+          />
+          <a
+            href={form.officialUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex w-fit items-center gap-1.5 text-[13px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+          >
+            <IconExternalLink size={15} stroke={1.8} aria-hidden />
+            {form.officialLabel}
+          </a>
+          <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">{form.disclaimer}</p>
+        </div>
+      ) : null}
+
+      {/* ---------- Classic editable form (screen only) ---------- */}
+      {mode === "classic" ? (
+        <div className="flex flex-col gap-4 print:hidden">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)]"
+            >
+              <IconPrinter size={16} stroke={1.8} aria-hidden />
+              Print
+            </button>
+            <button
+              type="button"
+              onClick={downloadPdf}
+              disabled={downloading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-cs-border)] px-3 py-2 text-[13px] font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
+            >
+              <IconDownload size={16} stroke={1.8} aria-hidden />
+              {downloading ? "Preparing…" : "Download PDF"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setValues(initialValues)}
+              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+            >
+              <IconArrowBackUp size={16} stroke={1.8} aria-hidden />
+              Reset
+            </button>
+          </div>
+          {form.sections.map((section) => (
+            <section key={section.title} className="cs-card p-5">
+              <h2 className="text-[14px] font-bold text-[var(--color-cs-text)]">{section.title}</h2>
+              {section.description ? (
+                <p className="mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">{section.description}</p>
+              ) : null}
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {section.fields.map((field) => (
+                  <Field key={field.name} field={field} value={values[field.name] ?? ""} onChange={(v) => set(field.name, v)} />
+                ))}
+              </div>
+            </section>
+          ))}
+          <a
+            href={form.officialUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 text-[13px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+          >
+            <IconExternalLink size={15} stroke={1.8} aria-hidden />
+            {form.officialLabel}
+          </a>
+          <p className="text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">{form.disclaimer}</p>
+        </div>
+      ) : null}
 
       {/* ---------- Print/PDF document view (print only) ---------- */}
       <div className="hidden print:block">
