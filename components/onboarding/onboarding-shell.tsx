@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { IconArrowLeft } from "@tabler/icons-react";
 import type { OnboardingStepId } from "@/lib/onboarding/steps";
-import { getOnboardingSteps } from "@/lib/onboarding/steps";
+import { getOnboardingSteps, onboardingStepIndex } from "@/lib/onboarding/steps";
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
 
 type OnboardingShellProps = {
@@ -32,6 +33,8 @@ export function OnboardingShell({
   children,
 }: OnboardingShellProps) {
   const steps = getOnboardingSteps(accountType);
+  const idx = onboardingStepIndex(steps, currentStepId);
+  const prevStep = idx > 0 ? steps[idx - 1] : null;
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
       <OnboardingProgress steps={steps} currentStepId={currentStepId} />
@@ -46,7 +49,16 @@ export function OnboardingShell({
             className="h-8 w-auto"
           />
         </Link>
-        <div className="mt-7">
+        {prevStep ? (
+          <Link
+            href={prevStep.path}
+            className="mt-6 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+          >
+            <IconArrowLeft size={16} stroke={2} aria-hidden />
+            Back to {prevStep.label}
+          </Link>
+        ) : null}
+        <div className={prevStep ? "mt-4" : "mt-7"}>
           {eyebrow ? (
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
               {eyebrow}

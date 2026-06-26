@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { OnboardingStep, OnboardingStepId } from "@/lib/onboarding/steps";
 import { onboardingStepIndex } from "@/lib/onboarding/steps";
 import { OnboardingExitButton } from "@/components/onboarding/onboarding-exit-button";
@@ -30,8 +31,8 @@ export function OnboardingProgress({
               : active
                 ? "bg-[var(--color-cs-brand)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
                 : "bg-[var(--color-cs-input-bg)]";
-            return (
-              <div key={step.id} className="flex min-w-0 flex-1 flex-col gap-1" role="listitem">
+            const inner = (
+              <>
                 <div
                   className={`h-1.5 rounded-full transition-colors motion-reduce:transition-none ${segmentClass}`}
                   aria-hidden
@@ -47,6 +48,23 @@ export function OnboardingProgress({
                 >
                   {step.label}
                 </span>
+              </>
+            );
+            // Completed steps are clickable so the user can jump back to edit
+            // an earlier answer; the current and future steps are not links.
+            return done ? (
+              <Link
+                key={step.id}
+                href={step.path}
+                role="listitem"
+                title={`Back to ${step.label}`}
+                className="group flex min-w-0 flex-1 flex-col gap-1 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-cs-brand)]"
+              >
+                {inner}
+              </Link>
+            ) : (
+              <div key={step.id} className="flex min-w-0 flex-1 flex-col gap-1" role="listitem">
+                {inner}
               </div>
             );
           })}
