@@ -2,16 +2,12 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AppToolbar, Card, ToolbarButton } from "@/components/layout/app-shell";
-import { EarnedIncomeForecastChart } from "@/components/charts/earned-income-forecast-chart";
+import { ThresholdWhatIf, type WhatIfItem } from "@/components/charts/threshold-what-if";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
 import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
 import Alert from "@/lib/db/models/Alert";
 import BankConnection from "@/lib/db/models/BankConnection";
 import { connectDB } from "@/lib/db/mongodb";
-import {
-  loadEarnedIncomeHistory,
-  type EarnedIncomeHistory,
-} from "@/lib/thresholds/earned-income-history";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 import {
   IconDownload,
@@ -34,14 +30,13 @@ export default async function DashboardPage() {
   const oid = primary?._id;
 
   let payload: Awaited<ReturnType<typeof loadThresholdDashboardPayload>> | null = null;
-  let history: EarnedIncomeHistory | null = null;
   let activeAlerts = 0;
   let bankCount = 0;
   let recentAlerts: { id: string; message: string; createdAt: string; level: string }[] = [];
 
   if (oid) {
     await connectDB();
-    const [p, alertCount, banks, alerts, hist] = await Promise.all([
+    const [p, alertCount, banks, alerts] = await Promise.all([
       loadThresholdDashboardPayload(oid),
       Alert.countDocuments({
         beneficiaryId: oid,
@@ -49,7 +44,6 @@ export default async function DashboardPage() {
       }),
       BankConnection.countDocuments({ beneficiaryId: oid, status: "active" }),
       Alert.find({ beneficiaryId: oid }).sort({ createdAt: -1 }).limit(4).select({ message: 1, createdAt: 1, level: 1 }).lean(),
-      loadEarnedIncomeHistory(oid, 24),
     ]);
     payload = p;
     activeAlerts = alertCount;
@@ -60,12 +54,26 @@ export default async function DashboardPage() {
       createdAt: (a.createdAt as Date).toISOString(),
       level: String(a.level ?? "info"),
     }));
-    history = hist;
   }
 
-  const incomeRow = payload?.rows.find((r) => r.thresholdType === "monthly_earned_income");
-  const earnedLimit = incomeRow?.limitCents ?? null;
-  const earnedWarnAt = incomeRow?.warnAtPercent ?? null;
+  // Evaluable limits (earned income + asset balance) for the simple bar view
+  // and the what-if controls. Reference-only thresholds have no live value.
+  const whatIfItems: WhatIfItem[] = (payload?.rows ?? [])
+    .filter(
+      (r) =>
+        r.attached &&
+        r.currentValueCents != null &&
+        (r.thresholdType === "monthly_earned_income" || r.thresholdType === "asset_balance"),
+    )
+    .map((r) => ({
+      id: r._id,
+      label: r.label,
+      kind: r.thresholdType === "asset_balance" ? "asset" : "income",
+      currentCents: r.currentValueCents as number,
+      projectedCents: r.projectedValueCents,
+      limitCents: r.limitCents,
+      warnAtPercent: r.warnAtPercent,
+    }));
 
   const glance = payload
     ? [
@@ -118,20 +126,14 @@ export default async function DashboardPage() {
         </ToolbarButton>
       </AppToolbar>
       <div className="grid gap-3 md:grid-cols-2">
-        {beneficiaryId && history ? (
+        {beneficiaryId ? (
           <div className="md:col-span-2">
-            <Card title="Earned income — history & forecast" action="Details" actionHref="/thresholds">
-              <p className="mb-3 text-xs text-[var(--color-cs-text-secondary)]">
-                Earned inflow tagged{" "}
-                <span className="font-medium text-[var(--color-cs-text)]">earned income</span>. Past months
-                from your transaction history; the current month and next three are projected from the trailing
-                average, with a ±1σ band. Vertical markers show the next threshold resets.
+            <Card title="Limits & balances" action="All limits" actionHref="/thresholds">
+              <p className="mb-4 text-xs text-[var(--color-cs-text-secondary)]">
+                Where each balance sits against its limit today. Drag a slider to try a hypothetical —
+                like a raise or a bigger savings balance — and see which limits would get close.
               </p>
-              <EarnedIncomeForecastChart
-                history={history}
-                limitCents={earnedLimit}
-                warnAtPercent={earnedWarnAt}
-              />
+              <ThresholdWhatIf items={whatIfItems} />
             </Card>
           </div>
         ) : null}
