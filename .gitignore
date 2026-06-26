@@ -23,6 +23,11 @@
 *.pem
 .env
 .env*.local
+# Production env files (may contain real secrets — never commit)
+.env.production
+.env.prod
+env.prod
+env.production
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

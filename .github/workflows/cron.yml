@@ -1,0 +1,45 @@
+name: Scheduled jobs
+
+# Drives the app's cron endpoints on a schedule. Needed on hosts without native
+# cron auth (Railway/Render/Fly). Requires two repo settings:
+#   - Secret  CRON_SECRET    — must equal the app's CRON_SECRET env var
+#   - Variable CRON_BASE_URL — deployed base URL (falls back to the value below)
+# Schedules are UTC and mirror vercel.json.
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # daily 07:00 UTC — Plaid sync + threshold alerts
+    - cron: "30 12 * * *" # daily 12:30 UTC — daily digest emails
+    - cron: "0 13 * * 1" # Mondays 13:00 UTC — weekly digest emails
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Job to run manually
+        type: choice
+        options: [sync, digest-daily, digest-weekly]
+        default: sync
+
+env:
+  BASE_URL: ${{ vars.CRON_BASE_URL || 'https://cliffsense-production.up.railway.app' }}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Plaid sync + threshold alerts
+        if: github.event.schedule == '0 7 * * *' || github.event.inputs.target == 'sync'
+        run: |
+          curl -fsS -X POST "$BASE_URL/api/cron/sync" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Daily digest
+        if: github.event.schedule == '30 12 * * *' || github.event.inputs.target == 'digest-daily'
+        run: |
+          curl -fsS -X POST "$BASE_URL/api/cron/digest?frequency=daily" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Weekly digest
+        if: github.event.schedule == '0 13 * * 1' || github.event.inputs.target == 'digest-weekly'
+        run: |
+          curl -fsS -X POST "$BASE_URL/api/cron/digest?frequency=weekly" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
