@@ -11,10 +11,10 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "What counts as earned vs unearned income for SSI?",
-  "How is the SNAP gross income limit applied to a household of 3?",
-  "Why did my asset threshold turn yellow this month?",
-  "What's the difference between a predictive alert and a breach alert?",
+  "How is my income being categorized this month — earned vs unearned?",
+  "Am I close to any of my benefit limits right now?",
+  "Which exclusions apply to my wages for SSI this month?",
+  "Review my recent deposits — is there anything I should report?",
 ];
 
 function genId() {
