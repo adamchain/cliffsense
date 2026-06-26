@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   IconBell,
   IconFileExport,
+  IconFileText,
   IconFolder,
   IconHome,
   IconListDetails,
@@ -21,7 +22,8 @@ const nav: NavItem[] = [
   { href: "/thresholds", label: "Limits", icon: IconTarget },
   { href: "/alerts", label: "Alerts", icon: IconBell },
   { href: "/vault", label: "Vault", icon: IconFolder },
-  { href: "/reports", label: "Reports", icon: IconFileExport },
+  { href: "/documents", label: "Reports & Docs", icon: IconFileText },
+  { href: "/reports", label: "Exports", icon: IconFileExport },
   { href: "/advisor", label: "Advisor", icon: IconMessageCircle },
 ];
 
@@ -47,54 +49,23 @@ export function AppShell({
   const more = nav.filter((n) => !PRIMARY_HREFS.includes(n.href));
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      {/* ---------- Header: light, bold, like the samples ---------- */}
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)]/85 px-4 backdrop-blur sm:px-6">
+    <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
+      {/* ---------- Desktop sidebar (mobile uses the bottom tab bar) ---------- */}
+      <nav
+        className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex"
+        aria-label="Main"
+      >
+        {/* Brand sits at the top of the sidebar */}
         <Link
           href="/dashboard"
-          className="flex items-center gap-2.5 rounded-xl py-1 pr-2 hover:opacity-90"
+          className="mb-3 flex items-center gap-2.5 rounded-xl px-2 py-1 hover:opacity-90"
         >
           <BrandMark size="lg" />
           <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
             MyBenefitsPA
           </span>
         </Link>
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/alerts"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
-            aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
-          >
-            <IconBell size={19} stroke={1.7} />
-            {alertCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
-                {badge}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/settings"
-            className="hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] sm:flex"
-            aria-label="Settings"
-          >
-            <IconSettings size={19} stroke={1.7} />
-          </Link>
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-[13px] font-bold text-white"
-            title={userName}
-          >
-            {userInitials}
-          </div>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        {/* ---------- Desktop sidebar (mobile uses the bottom tab bar) ---------- */}
-        <nav
-          className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex"
-          aria-label="Main"
-        >
-          {nav.map(({ href, label, icon: Icon }) => {
+        {nav.map(({ href, label, icon: Icon }) => {
             const active = activeHref === href || activeHref.startsWith(href + "/");
             const showCount = href === "/alerts" && alertCount > 0;
             return (
@@ -132,7 +103,50 @@ export function AppShell({
             <IconSettings size={20} stroke={1.7} aria-hidden />
             Settings
           </Link>
-        </nav>
+      </nav>
+
+      {/* ---------- Main column (white) ---------- */}
+      <div className="flex min-w-0 flex-1 flex-col bg-white">
+        {/* ---------- Topbar: to the right of the sidebar ---------- */}
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-cs-border)] bg-white/85 px-4 backdrop-blur sm:px-6">
+          {/* Brand shows in the topbar only on mobile (sidebar is hidden there) */}
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 rounded-xl py-1 pr-2 hover:opacity-90 lg:hidden"
+          >
+            <BrandMark size="lg" />
+            <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
+              MyBenefitsPA
+            </span>
+          </Link>
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/alerts"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
+              aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
+            >
+              <IconBell size={19} stroke={1.7} />
+              {alertCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  {badge}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/settings"
+              className="hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] sm:flex"
+              aria-label="Settings"
+            >
+              <IconSettings size={19} stroke={1.7} />
+            </Link>
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-[13px] font-bold text-white"
+              title={userName}
+            >
+              {userInitials}
+            </div>
+          </div>
+        </header>
 
         {/* Bottom padding on mobile clears the fixed tab bar. */}
         <div className="min-w-0 flex-1 p-4 pb-28 sm:p-6 lg:pb-6">{children}</div>
