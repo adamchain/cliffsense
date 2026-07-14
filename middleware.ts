@@ -63,6 +63,20 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(signIn);
   }
 
+  // Admin surface: defense-in-depth on top of the per-page/route checks. Only a
+  // real admin who is NOT currently impersonating may reach it — during
+  // impersonation the token carries the target's (non-admin) isAdmin plus an
+  // impersonatorId, so both conditions must hold.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const isAdmin = token?.isAdmin === true && !token?.impersonatorId;
+    if (!isAdmin) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
   if (
     onboardingStep &&
     onboardingStep !== "complete" &&

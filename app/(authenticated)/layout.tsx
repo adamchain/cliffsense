@@ -35,6 +35,7 @@ export default async function AuthenticatedGroupLayout({
         userName={display}
         userInitials={initials(display, session.user.email ?? "")}
         alertCount={alertCount}
+        isAdmin={Boolean(session.user.isAdmin) && !session.user.impersonatorId}
       >
         {children}
       </AuthenticatedShell>

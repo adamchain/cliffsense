@@ -13,6 +13,11 @@ export const ADMIN_AUDIT_ACTIONS = [
   "enable_user",
   "start_impersonation",
   "stop_impersonation",
+  "create_threshold",
+  "update_threshold",
+  "delete_threshold",
+  "reset_threshold",
+  "revoke_invite",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

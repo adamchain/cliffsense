@@ -1,22 +1,14 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { notFound } from "next/navigation";
+import { requireAdmin } from "@/lib/admin/require-admin";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import BankConnection from "@/lib/db/models/BankConnection";
 import Alert from "@/lib/db/models/Alert";
-import AdminAuditLog from "@/lib/db/models/AdminAuditLog";
+import AdminAuditLog, { type AdminAuditAction } from "@/lib/db/models/AdminAuditLog";
+import { ADMIN_AUDIT_LABEL } from "@/lib/admin/audit-labels";
 import { UserAdminActions } from "./user-actions";
-
-const AUDIT_LABEL: Record<string, string> = {
-  grant_admin: "Granted admin",
-  revoke_admin: "Revoked admin",
-  disable_user: "Disabled account",
-  enable_user: "Enabled account",
-  start_impersonation: "Started impersonation",
-  stop_impersonation: "Stopped impersonation",
-};
 
 function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -32,8 +24,7 @@ export default async function AdminUserDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.isAdmin) redirect("/dashboard");
+  const session = await requireAdmin();
 
   const { id } = await params;
   await connectDB();
@@ -159,7 +150,7 @@ export default async function AdminUserDetailPage({
             {audit.map((a) => (
               <li key={a._id.toString()} className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0">
                 <span className="font-medium text-[var(--color-cs-text)]">
-                  {AUDIT_LABEL[a.action] ?? a.action}
+                  {ADMIN_AUDIT_LABEL[a.action as AdminAuditAction] ?? a.action}
                 </span>
                 <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
                   {a.actorEmail || "admin"} · {new Date(a.createdAt).toLocaleString()}

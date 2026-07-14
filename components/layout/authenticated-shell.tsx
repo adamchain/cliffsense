@@ -9,11 +9,13 @@ export function AuthenticatedShell({
   userName,
   userInitials,
   alertCount = 0,
+  isAdmin = false,
 }: {
   children: ReactNode;
   userName: string;
   userInitials: string;
   alertCount?: number;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   return (
@@ -22,6 +24,7 @@ export function AuthenticatedShell({
       userName={userName}
       userInitials={userInitials}
       alertCount={alertCount}
+      isAdmin={isAdmin}
     >
       {children}
     </AppShell>

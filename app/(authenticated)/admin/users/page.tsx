@@ -1,32 +1,46 @@
 import Link from "next/link";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/admin/require-admin";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const session = await auth();
-  if (!session?.user?.isAdmin) redirect("/dashboard");
+type Search = { q?: string; role?: string; status?: string; onboarding?: string };
 
-  const sp = await searchParams;
-  const q = (sp.q ?? "").trim();
+const LIMIT = 100;
 
-  await connectDB();
+function buildFilter(sp: Search): Record<string, unknown> {
   const filter: Record<string, unknown> = {};
+  const q = (sp.q ?? "").trim();
   if (q) {
     const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     filter.$or = [{ email: rx }, { name: rx }];
   }
-  const users = await User.find(filter)
-    .select("email name accountType isAdmin status onboardingStep createdAt lastLoginAt")
-    .sort({ createdAt: -1 })
-    .limit(100)
-    .lean();
+  if (sp.role === "admin") filter.isAdmin = true;
+  if (sp.status === "disabled") filter.status = "disabled";
+  if (sp.status === "active") filter.status = "active";
+  if (sp.onboarding === "incomplete") filter.onboardingStep = { $ne: "complete" };
+  return filter;
+}
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Search>;
+}) {
+  await requireAdmin();
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+
+  await connectDB();
+  const filter = buildFilter(sp);
+  const [users, matchCount] = await Promise.all([
+    User.find(filter)
+      .select("email name accountType isAdmin status onboardingStep createdAt lastLoginAt")
+      .sort({ createdAt: -1 })
+      .limit(LIMIT)
+      .lean(),
+    User.countDocuments(filter),
+  ]);
 
   const counts = users.length
     ? await Beneficiary.aggregate([
@@ -41,17 +55,52 @@ export default async function AdminUsersPage({
     ]),
   );
 
+  const chips: { label: string; params: Search; on: boolean }[] = [
+    { label: "All", params: { q }, on: !sp.role && !sp.status && !sp.onboarding },
+    { label: "Admins", params: { q, role: "admin" }, on: sp.role === "admin" },
+    { label: "Disabled", params: { q, status: "disabled" }, on: sp.status === "disabled" },
+    {
+      label: "Onboarding incomplete",
+      params: { q, onboarding: "incomplete" },
+      on: sp.onboarding === "incomplete",
+    },
+  ];
+  const toQuery = (p: Search) =>
+    "?" +
+    new URLSearchParams(
+      Object.entries(p).filter(([, v]) => v) as [string, string][],
+    ).toString();
+
   return (
     <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">
-        <Link href="/admin" className="hover:underline">Admin</Link> › Users
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-xl font-medium">Users</h1>
+        <span className="text-[12px] text-[var(--color-cs-text-secondary)]">
+          {matchCount.toLocaleString()} match{matchCount === 1 ? "" : "es"}
+          {matchCount > LIMIT ? ` · showing newest ${LIMIT}` : ""}
+        </span>
       </div>
-      <h1 className="mb-2 text-xl font-medium">Users</h1>
-      <p className="mb-3 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Platform users sorted by sign-up date. Most recent 100 shown.
-      </p>
+
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        {chips.map((c) => (
+          <Link
+            key={c.label}
+            href={`/admin/users${toQuery(c.params)}`}
+            className={`rounded-full border px-3 py-1 text-[12px] font-medium ${
+              c.on
+                ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]"
+                : "border-[var(--color-cs-border)] text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-surface)]"
+            }`}
+          >
+            {c.label}
+          </Link>
+        ))}
+      </div>
 
       <form className="mb-3 flex flex-wrap items-end gap-2 rounded border border-[var(--color-cs-border)] bg-white p-3 text-[13px]">
+        {sp.role && <input type="hidden" name="role" value={sp.role} />}
+        {sp.status && <input type="hidden" name="status" value={sp.status} />}
+        {sp.onboarding && <input type="hidden" name="onboarding" value={sp.onboarding} />}
         <label className="flex flex-col text-[11px] text-[var(--color-cs-text-secondary)]">
           Search email or name
           <input
@@ -69,7 +118,7 @@ export default async function AdminUsersPage({
         </button>
         {q && (
           <Link
-            href="/admin/users"
+            href={`/admin/users${toQuery({ role: sp.role, status: sp.status, onboarding: sp.onboarding })}`}
             className="h-8 rounded-sm border border-[var(--color-cs-border)] px-3 pt-1.5 text-[12px] text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
           >
             Clear

@@ -35,6 +35,13 @@ const thresholdSchema = new Schema(
     sourceUrl: { type: String, default: "" },
     /** Stable id for upserting bundled system rows */
     systemKey: { type: String, default: null, trim: true },
+    /**
+     * When set, an admin has hand-edited a bundled (seeded) system threshold.
+     * The idempotent reseeder skips rows carrying this marker so back-office
+     * overrides are not clobbered on the next evaluation. Cleared by "reset to
+     * bundled default", which lets the seed value flow back in.
+     */
+    overriddenByAdminAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

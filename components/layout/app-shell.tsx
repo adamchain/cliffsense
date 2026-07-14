@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IconBell, IconFolder, IconSettings } from "@tabler/icons-react";
+import { IconBell, IconFolder, IconSettings, IconShieldLock } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
@@ -147,24 +147,31 @@ function VaultCard({ activeHref }: { activeHref: string }) {
   );
 }
 
+const ADMIN_SECTION: NavSection = { label: "Admin", icon: IconShieldLock, href: "/admin" };
+
 export function AppShell({
   children,
   userName,
   userInitials,
   activeHref,
   alertCount = 0,
+  isAdmin = false,
 }: {
   children: ReactNode;
   userName: string;
   userInitials: string;
   activeHref: string;
   alertCount?: number;
+  isAdmin?: boolean;
 }) {
   const badge = alertCount > 9 ? "9+" : String(alertCount);
 
   // Mobile surfaces use the flattened leaf destinations.
   const leaves = flattenSections(ALL_SECTIONS);
-  const drawerNav = leaves.filter((n) => n.href !== "/settings");
+  const drawerNav = [
+    ...leaves.filter((n) => n.href !== "/settings"),
+    ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: IconShieldLock }] : []),
+  ];
   const tabPrimary = leaves.filter((n) => PRIMARY_HREFS.includes(n.href));
   const tabMore = leaves.filter((n) => !PRIMARY_HREFS.includes(n.href) && n.href !== "/settings");
 
@@ -209,6 +216,14 @@ export function AppShell({
                 variant="utility"
               />
             ))}
+            {isAdmin && (
+              <SidebarGroup
+                section={ADMIN_SECTION}
+                activeHref={activeHref}
+                alertCount={alertCount}
+                variant="utility"
+              />
+            )}
           </div>
         </div>
       </nav>
