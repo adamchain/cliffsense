@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import {
   IconBell,
+  IconBrain,
   IconCalendarEvent,
   IconFileExport,
   IconFileText,
@@ -54,6 +55,7 @@ export const PRIMARY_SECTIONS: NavSection[] = [
 export const UTILITY_SECTIONS: NavSection[] = [
   { label: "Vault", icon: IconFolder, href: "/vault" },
   { label: "Exports", icon: IconFileExport, href: "/reports" },
+  { label: "How it works", icon: IconBrain, href: "/how-it-works" },
   { label: "Help", icon: IconHelpCircle, href: "/help" },
   { label: "Settings", icon: IconSettings, href: "/settings" },
 ];
