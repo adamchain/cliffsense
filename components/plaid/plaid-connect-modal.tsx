@@ -182,7 +182,11 @@ export function PlaidConnectModal({
                   Preparing secure connection…
                 </p>
               ) : selectedId ? (
-                <PlaidConnectButton beneficiaryId={selectedId} onConnected={onConnected} />
+                <PlaidConnectButton
+                  beneficiaryId={selectedId}
+                  onConnected={onConnected}
+                  returnTo={typeof window !== "undefined" ? window.location.pathname : undefined}
+                />
               ) : (
                 <p className="text-center text-xs text-[var(--color-cs-text-secondary)]">
                   Add a beneficiary profile first to link a bank.

@@ -7,7 +7,7 @@ import { IconBuildingBank } from "@tabler/icons-react";
 const LINK_TOKEN_STORAGE_KEY = "cs.plaid.linkToken";
 const LINK_CONTEXT_STORAGE_KEY = "cs.plaid.linkContext";
 
-type StoredContext = { beneficiaryId: string; bankConnectionId?: string };
+type StoredContext = { beneficiaryId: string; bankConnectionId?: string; returnTo?: string };
 
 function PlaidLinkInner({
   linkToken,
@@ -75,11 +75,20 @@ export function PlaidConnectButton({
   beneficiaryId,
   onConnected,
   bankConnectionId,
+  returnTo,
 }: {
   beneficiaryId: string;
   onConnected: () => void | Promise<void>;
   /** When set, opens Plaid Link in update mode for re-authentication. */
   bankConnectionId?: string;
+  /**
+   * Where to send the user after a successful OAuth (out-of-app) connect. Set
+   * this for in-app connects (e.g. from the Money/Dashboard modal) so an OAuth
+   * bank like PNC — which bounces the user to PLAID_REDIRECT_URI
+   * (/onboarding/plaid) and back — returns them here instead of falling into
+   * the onboarding flow. Leave unset during onboarding so `onConnected` runs.
+   */
+  returnTo?: string;
 }) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -140,7 +149,7 @@ export function PlaidConnectButton({
       if (token) {
         if (typeof window !== "undefined") {
           window.sessionStorage.setItem(LINK_TOKEN_STORAGE_KEY, token);
-          const ctx: StoredContext = { beneficiaryId, bankConnectionId };
+          const ctx: StoredContext = { beneficiaryId, bankConnectionId, returnTo };
           window.sessionStorage.setItem(LINK_CONTEXT_STORAGE_KEY, JSON.stringify(ctx));
         }
         setLinkToken(token);
@@ -154,7 +163,7 @@ export function PlaidConnectButton({
     return () => {
       cancelled = true;
     };
-  }, [beneficiaryId, bankConnectionId]);
+  }, [beneficiaryId, bankConnectionId, returnTo]);
 
   const onLinkSuccess = useCallback(
     async (publicToken: string | null) => {
@@ -163,6 +172,19 @@ export function PlaidConnectButton({
           window.sessionStorage.removeItem(LINK_TOKEN_STORAGE_KEY);
           window.sessionStorage.removeItem(LINK_CONTEXT_STORAGE_KEY);
         }
+      };
+      // After an OAuth bounce (PNC et al.) the user returns to
+      // PLAID_REDIRECT_URI (/onboarding/plaid). If they started the connect
+      // in-app, send them back where they were instead of running the
+      // onboarding-advancing `onConnected` (which would rewind their step).
+      const oauthReturnTo = resumedContext?.returnTo;
+      const finish = async () => {
+        clearStorage();
+        if (oauthReturnTo && typeof window !== "undefined") {
+          window.location.assign(oauthReturnTo);
+          return;
+        }
+        await onConnected();
       };
       if (isUpdate && effectiveBankConnectionId) {
         const res = await fetch(`/api/plaid/items/${effectiveBankConnectionId}`, {
@@ -176,8 +198,7 @@ export function PlaidConnectButton({
           setError([data.error, data.details].filter(Boolean).join(" — ") || "Could not reconnect");
           return;
         }
-        clearStorage();
-        await onConnected();
+        await finish();
         return;
       }
       if (!publicToken) {
@@ -197,7 +218,7 @@ export function PlaidConnectButton({
       clearStorage();
       await onConnected();
     },
-    [effectiveBeneficiaryId, effectiveBankConnectionId, isUpdate, onConnected],
+    [effectiveBeneficiaryId, effectiveBankConnectionId, isUpdate, onConnected, resumedContext],
   );
 
   if (error) {

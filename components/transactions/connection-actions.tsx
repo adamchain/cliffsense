@@ -65,6 +65,7 @@ export function AccountConnectionActions({
             <PlaidConnectButton
               beneficiaryId={beneficiaryId}
               bankConnectionId={connectionId}
+              returnTo={typeof window !== "undefined" ? window.location.pathname : undefined}
               onConnected={() => {
                 setReconnecting(false);
                 router.refresh();
