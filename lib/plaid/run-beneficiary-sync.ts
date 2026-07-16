@@ -44,6 +44,8 @@ export async function runBeneficiaryPlaidSync(params: {
   const filter: Record<string, unknown> = {
     beneficiaryId: params.beneficiaryId,
     status: "active",
+    // Never try to Plaid-sync the synthetic "Imported statements" source.
+    source: { $ne: "import" },
   };
   if (params.bankConnectionId) {
     filter._id = params.bankConnectionId;

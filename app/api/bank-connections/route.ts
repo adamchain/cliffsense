@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   await connectDB();
-  const list = await BankConnection.find({ beneficiaryId })
+  const list = await BankConnection.find({ beneficiaryId, source: { $ne: "import" } })
     .select("plaidItemId plaidInstitutionId institutionName accounts status lastSyncAt createdAt")
     .lean();
 

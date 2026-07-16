@@ -19,7 +19,7 @@ export default async function TransactionsPage() {
   let connections: AccountConnection[] = [];
   if (beneficiaryId) {
     await connectDB();
-    const raw = await BankConnection.find({ beneficiaryId })
+    const raw = await BankConnection.find({ beneficiaryId, source: { $ne: "import" } })
       .select("institutionName status accounts lastSyncAt")
       .sort({ updatedAt: -1 })
       .lean();

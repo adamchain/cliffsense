@@ -16,8 +16,21 @@ const accountSchema = new Schema(
 const bankConnectionSchema = new Schema(
   {
     beneficiaryId: { type: Schema.Types.ObjectId, ref: "Beneficiary", required: true, index: true },
+    /**
+     * "plaid" for real Plaid Items; "import" for the synthetic source that owns
+     * manually-imported (CSV) transactions. Import sources have no access token
+     * and are skipped by the Plaid sync.
+     */
+    source: { type: String, enum: ["plaid", "import"], default: "plaid" },
     plaidItemId: { type: String, required: true, unique: true },
-    plaidAccessTokenEncrypted: { type: String, required: true },
+    plaidAccessTokenEncrypted: {
+      type: String,
+      // Only real Plaid connections carry an encrypted access token.
+      required: function (this: { source?: string }) {
+        return this.source !== "import";
+      },
+      default: "",
+    },
     plaidInstitutionId: { type: String, default: "" },
     institutionName: { type: String, default: "" },
     accounts: { type: [accountSchema], default: [] },

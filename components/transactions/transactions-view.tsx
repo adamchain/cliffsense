@@ -20,6 +20,7 @@ import Link from "next/link";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
 import { AccountsPanel, type AccountConnection } from "@/components/transactions/accounts-panel";
+import { ImportModal } from "@/components/imports/import-modal";
 
 type UserCategory =
   | "earned_income"
@@ -347,6 +348,7 @@ export function TransactionsView({
           <IconReceipt size={16} stroke={1.5} aria-hidden />
           {uploadingReceipt ? "Uploading…" : "Add receipt"}
         </ToolbarButton>
+        <ImportModal beneficiaryId={beneficiaryId} variant="toolbar" label="Import CSV" onImported={() => void load()} />
         <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
         <ToolbarButton href="/reports">
           <IconFilter size={16} stroke={1.5} aria-hidden />
