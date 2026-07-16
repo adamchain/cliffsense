@@ -101,9 +101,10 @@ export async function POST(req: Request) {
 
   const { valid, invalid } = normalizeRows(parsed.rows, parsed.rawLines, mapping);
 
-  await connectDB();
-  const benObjectId = new mongoose.Types.ObjectId(beneficiaryId);
-  const classified = await classifyRows(benObjectId, valid);
+  try {
+    await connectDB();
+    const benObjectId = new mongoose.Types.ObjectId(beneficiaryId);
+    const classified = await classifyRows(benObjectId, valid);
 
   const newCount = classified.filter((r) => r.dupStatus === "new").length;
   const duplicateCount = classified.length - newCount;
@@ -186,4 +187,8 @@ export async function POST(req: Request) {
       invalid: invalid.slice(0, 50),
     },
   });
+  } catch (err) {
+    console.error("import preview failed", err);
+    return NextResponse.json({ error: "Could not stage this import. Please try again." }, { status: 500 });
+  }
 }

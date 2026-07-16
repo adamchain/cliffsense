@@ -7,8 +7,11 @@ import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
  */
 const importRowSchema = new Schema(
   {
-    /** Stable synthetic id used as the Transaction `plaidTransactionId`. */
-    importKey: { type: String, required: true },
+    /**
+     * Stable synthetic id used as the Transaction `plaidTransactionId`.
+     * Empty at preview time; assigned when the batch is committed.
+     */
+    importKey: { type: String, default: "" },
     date: { type: String, required: true },
     postedDate: { type: String, default: "" },
     /** App convention: negative = money in, positive = money out. */
