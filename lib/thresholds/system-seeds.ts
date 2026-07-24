@@ -1,3 +1,5 @@
+import { SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
+
 export type SystemThresholdSeed = {
   systemKey: string;
   program: string;
@@ -76,7 +78,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SSI",
     state: null,
     thresholdType: "monthly_unearned_income",
-    limitCents: 994_00,
+    limitCents: SSI_FBR_INDIVIDUAL_CENTS,
     comparison: "lte",
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,

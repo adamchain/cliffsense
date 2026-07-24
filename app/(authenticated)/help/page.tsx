@@ -424,6 +424,10 @@ export default function HelpPage() {
             <Term name="SGA (Substantial Gainful Activity)">A monthly gross-earnings line used by SSDI.</Term>
             <Term name="QMB">A Medicare Savings Program that helps pay Medicare premiums and cost-sharing.</Term>
             <Term name="Waiver (HCBS / CHC)">Home- and community-based Medicaid that can confer full coverage above standard income limits.</Term>
+            <Term name="FBR (Federal Benefit Rate)">The base SSI monthly payment — $994 for an individual in 2026. SSI pays the FBR minus your countable income.</Term>
+            <Term name="SNT (Special Needs Trust)">A trust that holds assets for a person with a disability without counting toward resource limits. How it <em>pays out</em> still matters — see ISM.</Term>
+            <Term name="ISM (In-Kind Support &amp; Maintenance)">Food or shelter someone else pays for. Shelter paid by a trust counts as income but is capped at the Presumed Maximum Value; food paid to a vendor no longer counts (since Sept 30, 2024). Cash to the beneficiary counts dollar-for-dollar.</Term>
+            <Term name="PMV (Presumed Maximum Value)">The cap on how much ISM can reduce SSI: ⅓ of the FBR + $20 (≈ $351.33 in 2026). So a large rent payment from a trust lowers the check by only ~$331.33.</Term>
             <Term name="Plaid">The secure service that links your bank so balances and deposits can be read.</Term>
           </dl>
         </Section>

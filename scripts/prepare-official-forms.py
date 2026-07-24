@@ -33,6 +33,9 @@ SOURCES = {
     "ssa-795": "https://www.ssa.gov/forms/ssa-795.pdf",
     "ssa-820": "https://www.ssa.gov/forms/ssa-820.pdf",
     "va-21p-0969": "https://www.vba.va.gov/pubs/forms/VBA-21P-0969-ARE.pdf",
+    "ssa-827": "https://www.ssa.gov/forms/ssa-827.pdf",
+    "ssa-3373": "https://www.ssa.gov/forms/ssa-3373-bk.pdf",
+    "ssa-454": "https://www.ssa.gov/forms/ssa-454-bk.pdf",
 }
 
 os.makedirs(OUT_DIR, exist_ok=True)

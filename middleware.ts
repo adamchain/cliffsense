@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { onboardingPathForStep } from "@/lib/onboarding/steps";
 
-const publicPrefixes = ["/", "/landing", "/auth", "/resources", "/invite"];
+const publicPrefixes = ["/", "/landing", "/auth", "/resources", "/invite", "/status", "/apply"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -32,6 +32,25 @@ export async function middleware(req: NextRequest) {
 
   const isLoggedIn = !!token;
   const onboardingStep = (token?.onboardingStep as string | undefined) ?? "none";
+  const applicationStatus = (token?.applicationStatus as string | undefined) ?? "approved";
+
+  // Application review gate. Applicants acting for someone else are parked on
+  // /application (relationship form + document upload + live status) until an
+  // admin approves. Allow the application page, its APIs, auth, and the public
+  // status link; redirect everything else — including the dashboard and
+  // onboarding — to /application.
+  if (isLoggedIn && (applicationStatus === "pending_review" || applicationStatus === "rejected")) {
+    const allowed =
+      pathname.startsWith("/application") ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/status") ||
+      pathname.startsWith("/apply");
+    if (!allowed) {
+      return NextResponse.redirect(new URL("/application", req.url));
+    }
+    return NextResponse.next();
+  }
 
   if (pathname === "/") {
     if (!isLoggedIn) {

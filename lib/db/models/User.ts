@@ -40,6 +40,17 @@ const userSchema = new Schema(
       default: "active",
       index: true,
     },
+    // Application review gate. Self-beneficiaries, existing users, and admins are
+    // "approved" (default) — no gate. Applicants acting for someone else (family,
+    // fiduciary, nonprofit) start "pending_review" until an admin approves. See
+    // lib/applications and the Application model. "rejected" parks them on the
+    // status page with the reason.
+    applicationStatus: {
+      type: String,
+      enum: ["approved", "pending_review", "rejected"],
+      default: "approved",
+      index: true,
+    },
     onboardingStep: {
       type: String,
       enum: ["none", "profile", "beneficiary", "plaid", "benefits", "notifications", "complete"],

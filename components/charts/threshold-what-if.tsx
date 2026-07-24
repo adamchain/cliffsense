@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { IconArrowBackUp } from "@tabler/icons-react";
+import { IconArrowBackUp, IconChevronDown } from "@tabler/icons-react";
 
 /* ---------------------------------------------------------------------------
  * A deliberately simple threshold view: one horizontal bar per limit showing
@@ -176,6 +176,14 @@ function Control({
 export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
   const [incomeDelta, setIncomeDelta] = useState(0);
   const [assetDelta, setAssetDelta] = useState(0);
+  // The what-if sliders start collapsed so the panel reads as a calm status
+  // view; the user opens them only when they want to explore a change.
+  const [expanded, setExpanded] = useState(false);
+
+  const resetDeltas = () => {
+    setIncomeDelta(0);
+    setAssetDelta(0);
+  };
 
   const hasIncome = items.some((i) => i.kind === "income");
   const hasAsset = items.some((i) => i.kind === "asset");
@@ -234,48 +242,93 @@ export function ThresholdWhatIf({ items }: { items: WhatIfItem[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* What-if controls */}
-      <div className="grid gap-2.5 sm:grid-cols-2">
-        {hasIncome ? (
-          <Control
-            title="What if my monthly income changes?"
-            unit="/mo"
-            delta={incomeDelta}
-            bound={incomeBound}
-            step={niceStep(incomeBound)}
-            onChange={setIncomeDelta}
-          />
-        ) : null}
-        {hasAsset ? (
-          <Control
-            title="What if my balance changes?"
-            unit=""
-            delta={assetDelta}
-            bound={assetBound}
-            step={niceStep(assetBound)}
-            onChange={setAssetDelta}
-          />
-        ) : null}
-      </div>
-
-      {isWhatIf ? (
-        <div className="flex items-center justify-between rounded-xl border border-[var(--color-cs-brand)]/25 bg-[var(--color-cs-info-bg)] px-3 py-2">
-          <span className="text-[12px] font-medium text-[var(--color-cs-brand)]">
-            Showing a hypothetical — your real balances are unchanged.
-          </span>
+      {/* Collapsible what-if controls */}
+      <div className="rounded-2xl border border-[var(--color-cs-border)]">
+        <div className="flex items-center gap-2 pr-2">
           <button
             type="button"
-            onClick={() => {
-              setIncomeDelta(0);
-              setAssetDelta(0);
-            }}
-            className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="flex min-w-0 flex-1 items-center justify-between gap-2 px-4 py-3 text-left"
           >
-            <IconArrowBackUp size={14} stroke={2} aria-hidden />
-            Reset
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="text-[13px] font-semibold text-[var(--color-cs-text)]">
+                What if…
+              </span>
+              {isWhatIf ? (
+                <span className="shrink-0 rounded-full bg-[var(--color-cs-info-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-cs-brand)]">
+                  Hypothetical on
+                </span>
+              ) : (
+                <span className="truncate text-[11px] text-[var(--color-cs-text-muted)]">
+                  Explore how a change would affect your limits
+                </span>
+              )}
+            </span>
+            <IconChevronDown
+              size={18}
+              stroke={2}
+              aria-hidden
+              className={`shrink-0 text-[var(--color-cs-text-muted)] transition-transform duration-200 ${
+                expanded ? "rotate-180" : ""
+              }`}
+            />
           </button>
+          {isWhatIf ? (
+            <button
+              type="button"
+              onClick={resetDeltas}
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[12px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+            >
+              <IconArrowBackUp size={14} stroke={2} aria-hidden />
+              Reset
+            </button>
+          ) : null}
         </div>
-      ) : null}
+
+        {expanded ? (
+          <div className="flex flex-col gap-2.5 border-t border-[var(--color-cs-border)] px-4 py-3">
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {hasIncome ? (
+                <Control
+                  title="What if my monthly income changes?"
+                  unit="/mo"
+                  delta={incomeDelta}
+                  bound={incomeBound}
+                  step={niceStep(incomeBound)}
+                  onChange={setIncomeDelta}
+                />
+              ) : null}
+              {hasAsset ? (
+                <Control
+                  title="What if my balance changes?"
+                  unit=""
+                  delta={assetDelta}
+                  bound={assetBound}
+                  step={niceStep(assetBound)}
+                  onChange={setAssetDelta}
+                />
+              ) : null}
+            </div>
+
+            {isWhatIf ? (
+              <div className="flex items-center justify-between rounded-xl border border-[var(--color-cs-brand)]/25 bg-[var(--color-cs-info-bg)] px-3 py-2">
+                <span className="text-[12px] font-medium text-[var(--color-cs-brand)]">
+                  Showing a hypothetical — your real balances are unchanged.
+                </span>
+                <button
+                  type="button"
+                  onClick={resetDeltas}
+                  className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+                >
+                  <IconArrowBackUp size={14} stroke={2} aria-hidden />
+                  Reset
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
       {/* Bars */}
       <ul className="flex flex-col gap-4">

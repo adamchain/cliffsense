@@ -18,6 +18,11 @@ export const ADMIN_AUDIT_ACTIONS = [
   "delete_threshold",
   "reset_threshold",
   "revoke_invite",
+  "approve_application",
+  "reject_application",
+  "request_application_info",
+  "verify_application_document",
+  "reject_application_document",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

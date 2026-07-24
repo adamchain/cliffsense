@@ -44,6 +44,7 @@ const nextAuth = NextAuth({
           accountType: user.accountType,
           isAdmin: user.isAdmin,
           onboardingStep: user.onboardingStep ?? "none",
+          applicationStatus: user.applicationStatus ?? "approved",
         };
       },
     }),
@@ -89,6 +90,7 @@ const nextAuth = NextAuth({
           accountType: user.accountType,
           isAdmin: user.isAdmin,
           onboardingStep: user.onboardingStep ?? "none",
+          applicationStatus: user.applicationStatus ?? "approved",
         };
       },
     }),
@@ -101,6 +103,7 @@ const nextAuth = NextAuth({
         token.accountType = (user as { accountType?: string }).accountType;
         token.isAdmin = (user as { isAdmin?: boolean }).isAdmin;
         token.onboardingStep = (user as { onboardingStep?: string }).onboardingStep;
+        token.applicationStatus = (user as { applicationStatus?: string }).applicationStatus ?? "approved";
       }
       if (trigger === "update" && session) {
         const s = session as Record<string, unknown>;
@@ -110,7 +113,7 @@ const nextAuth = NextAuth({
           if (token.isAdmin === true && !token.impersonatorId) {
             await connectDB();
             const target = await User.findById(s.targetUserId)
-              .select("email name accountType isAdmin onboardingStep")
+              .select("email name accountType isAdmin onboardingStep applicationStatus")
               .lean();
             if (target && target._id.toString() !== token.sub) {
               token.impersonatorId = token.sub;
@@ -122,13 +125,14 @@ const nextAuth = NextAuth({
               token.accountType = target.accountType;
               token.isAdmin = Boolean(target.isAdmin);
               token.onboardingStep = target.onboardingStep ?? "none";
+              token.applicationStatus = target.applicationStatus ?? "approved";
             }
           }
         } else if (s.action === "stopImpersonate") {
           if (token.impersonatorId) {
             await connectDB();
             const admin = await User.findById(token.impersonatorId)
-              .select("email name accountType isAdmin onboardingStep")
+              .select("email name accountType isAdmin onboardingStep applicationStatus")
               .lean();
             if (admin) {
               token.sub = admin._id.toString();
@@ -137,10 +141,24 @@ const nextAuth = NextAuth({
               token.accountType = admin.accountType;
               token.isAdmin = Boolean(admin.isAdmin);
               token.onboardingStep = admin.onboardingStep ?? "none";
+              token.applicationStatus = admin.applicationStatus ?? "approved";
             }
             token.impersonatorId = undefined;
             token.impersonatorEmail = undefined;
             token.impersonatorName = undefined;
+          }
+        } else if (s.action === "refreshApplication") {
+          // After an admin decision, an applicant's token still says
+          // "pending_review". Re-read from the DB so the middleware gate lifts
+          // without forcing a full sign-out/in. Safe: only reads the caller's
+          // own record (token.sub).
+          await connectDB();
+          const fresh = await User.findById(token.sub)
+            .select("onboardingStep applicationStatus")
+            .lean();
+          if (fresh) {
+            token.onboardingStep = fresh.onboardingStep ?? "none";
+            token.applicationStatus = fresh.applicationStatus ?? "approved";
           }
         } else {
           if (typeof s.name === "string") token.name = s.name as string;
@@ -158,6 +176,7 @@ const nextAuth = NextAuth({
         session.user.accountType = (token.accountType as string) ?? "beneficiary";
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.onboardingStep = (token.onboardingStep as string) ?? "none";
+        session.user.applicationStatus = (token.applicationStatus as string) ?? "approved";
         session.user.impersonatorId = token.impersonatorId;
         session.user.impersonatorEmail = token.impersonatorEmail;
       }

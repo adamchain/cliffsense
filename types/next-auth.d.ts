@@ -7,6 +7,8 @@ declare module "next-auth" {
       accountType: string;
       isAdmin: boolean;
       onboardingStep: string;
+      /** Application review gate: "approved" | "pending_review" | "rejected". */
+      applicationStatus: string;
       /** Set while an admin is impersonating this user (the real admin's id). */
       impersonatorId?: string;
       /** The real admin's email, for the "viewing as" banner. */
@@ -18,6 +20,7 @@ declare module "next-auth" {
     accountType?: string;
     isAdmin?: boolean;
     onboardingStep?: string;
+    applicationStatus?: string;
   }
 }
 
@@ -26,6 +29,7 @@ declare module "next-auth/jwt" {
     accountType?: string;
     isAdmin?: boolean;
     onboardingStep?: string;
+    applicationStatus?: string;
     /** Impersonation: the real admin's identity, preserved so we can restore it. */
     impersonatorId?: string;
     impersonatorEmail?: string;

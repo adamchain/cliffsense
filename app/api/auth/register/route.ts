@@ -8,6 +8,9 @@ import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { issueLoginCode } from "@/lib/auth/tokens";
 import { sendEmail } from "@/lib/email/mailer";
 import { renderEmail } from "@/lib/email/template";
+import Application from "@/lib/db/models/Application";
+import { initialApplicationStatus, isReviewedRole, newStatusToken } from "@/lib/applications/review";
+import { sendApplicationReceivedEmail } from "@/lib/applications/emails";
 
 const LOGIN_CODE_TTL_MS = 10 * 60 * 1000;
 
@@ -42,12 +45,14 @@ export async function POST(req: Request) {
     }
     const hashedPassword = await bcrypt.hash(password, 12);
     const onboardingStep = accountType === "beneficiary" ? "profile" : "profile";
+    const applicationStatus = initialApplicationStatus(accountType);
     const user = await User.create({
       email: email.toLowerCase(),
       hashedPassword,
       name: name.trim(),
       accountType,
       onboardingStep,
+      applicationStatus,
     });
     await logActivity({
       userId: user._id,
@@ -55,6 +60,24 @@ export async function POST(req: Request) {
       action: "account.created",
       details: { accountType },
     });
+
+    // Applicants acting for someone else need admin review. Open an Application
+    // with a persistent status token and let them know it was received.
+    if (isReviewedRole(accountType)) {
+      const statusToken = newStatusToken();
+      await Application.create({
+        userId: user._id,
+        accountType,
+        status: "pending_review",
+        statusToken,
+        timeline: [{ type: "submitted", at: new Date(), note: "Application started." }],
+      });
+      try {
+        await sendApplicationReceivedEmail({ to: user.email, statusToken });
+      } catch (e) {
+        console.warn("application received email failed", e);
+      }
+    }
 
     // Email a 6-digit code; entering it on the sign-up screen confirms the
     // address and signs the new account in. Does not block account creation.

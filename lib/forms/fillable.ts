@@ -386,6 +386,250 @@ const VA_21P_0969: FillableFormDef = {
   disclaimer: STATEMENT_DISCLAIMER,
 };
 
+/** SSA-827 — Authorization to Disclose Information to SSA. The HIPAA-compliant
+ *  medical release SSA and state DDS use to pull records for a disability
+ *  determination or continuing disability review. Mostly a consent form: we
+ *  pre-fill the identity block; the user signs and dates the official PDF. */
+const SSA_827: FillableFormDef = {
+  id: "ssa-827",
+  title: "Authorization to Disclose Information to SSA",
+  agency: "Social Security Administration",
+  purpose:
+    "The HIPAA medical release that lets SSA and the state disability office (DDS) request your records. Usually signed first, so records can be gathered for a disability claim or continuing disability review. Good for 12 months.",
+  officialUrl: "https://www.ssa.gov/forms/ssa-827.pdf",
+  officialLabel: "Official SSA-827 (PDF)",
+  sections: [
+    {
+      title: "Whose records are being disclosed",
+      description: "Enter the person whose medical and other records SSA may request.",
+      fields: [
+        { name: "name", label: "Name (first, middle, last, suffix)", type: "text", required: true, prefill: "beneficiaryFullName", width: "half", question: "Whose records does this authorization cover? Enter their full name." },
+        { name: "ssn", label: "Social Security number", type: "text", placeholder: "###-##-####", width: "half", help: "Enter it on the official form you sign." },
+        { name: "dob", label: "Date of birth", type: "date", prefill: "dateOfBirth", width: "half" },
+      ],
+    },
+    {
+      title: "Contact information",
+      fields: [
+        { name: "address", label: "Street address", type: "text", width: "full" },
+        { name: "city", label: "City", type: "text", width: "half" },
+        { name: "state", label: "State", type: "text", prefill: "state", width: "half" },
+        { name: "zip", label: "ZIP code", type: "text", width: "half" },
+        { name: "phone", label: "Phone number", type: "tel", width: "half" },
+      ],
+    },
+    {
+      title: "Signature",
+      description:
+        "The official SSA-827 needs a wet (ink) signature. If you are signing for someone else, tick the parent / guardian / representative box on the printed form and add the second signature if your state requires one.",
+      fields: [
+        { name: "dateSigned", label: "Date signed", type: "date", required: true, prefill: "today", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-827 (06-2024) field tooltips.
+  // Signer-type checkboxes are left for the user to tick on the signed copy.
+  officialFill: {
+    matchers: {
+      name: ["name first middle last suffix", "whose records to be disclosed"],
+      ssn: ["s s n"],
+      dob: ["birthday"],
+      address: ["street address"],
+      city: ["city"],
+      state: ["p1 state fld"],
+      zip: ["zip"],
+      phone: ["phone number with area code"],
+      // Target the date field by internal name — the signature field's tooltip
+      // also contains "date signed", so a plain keyword would fill the signature.
+      dateSigned: ["p1 date1 fld"],
+    },
+  },
+};
+
+/** SSA-3373-BK — Function Report – Adult. The claimant's own account of how
+ *  their condition limits daily activities, feeding SSA's RFC assessment. A long
+ *  narrative form (10 pages); we guide the substantive answers, pre-fill the
+ *  header, and auto-fill what maps cleanly. The user completes the checkbox
+ *  grids (personal care, abilities, assistive devices) on the official PDF. */
+const SSA_3373: FillableFormDef = {
+  id: "ssa-3373",
+  title: "Function Report — Adult",
+  agency: "Social Security Administration",
+  purpose:
+    "Describe, in your own words, how your illnesses, injuries, or conditions limit your daily activities. Used at an initial disability claim, appeal, or review to judge your residual function. Keep answers consistent with your medical records.",
+  officialUrl: "https://www.ssa.gov/forms/ssa-3373-bk.pdf",
+  officialLabel: "Official SSA-3373-BK (PDF)",
+  sections: [
+    {
+      title: "About you",
+      fields: [
+        { name: "name", label: "Name", type: "text", required: true, prefill: "beneficiaryFullName", width: "half" },
+        { name: "ssn", label: "Social Security number", type: "text", placeholder: "###-##-####", width: "half", help: "Enter it on the official form you file." },
+        { name: "areaCode", label: "Phone area code", type: "text", width: "half" },
+        { name: "phone", label: "Daytime phone number", type: "tel", width: "half" },
+      ],
+    },
+    {
+      title: "How your condition limits you",
+      description: "Answer in your own words — be specific and concrete.",
+      fields: [
+        { name: "limitWork", label: "How do your conditions limit your ability to work?", type: "textarea", required: true, width: "full", question: "In your own words, how do your illnesses, injuries, or conditions limit your ability to work?" },
+        { name: "typicalDay", label: "Describe a typical day, from waking up to going to bed", type: "textarea", width: "full", question: "Walk through a typical day — what you do from the time you wake up until you go to bed." },
+        { name: "beforeVsNow", label: "What could you do before that you can't do now?", type: "textarea", width: "full", question: "What were you able to do before your conditions that you can't do now?" },
+      ],
+    },
+    {
+      title: "Daily activities",
+      fields: [
+        { name: "houseYardWork", label: "Household chores you can do (indoors & outdoors)", type: "textarea", width: "full" },
+        { name: "gettingAround", label: "How often do you go outside?", type: "textarea", width: "half" },
+        { name: "shoppingDescribe", label: "What do you shop for?", type: "textarea", width: "half" },
+      ],
+    },
+    {
+      title: "Abilities",
+      fields: [
+        { name: "walkDistance", label: "How far can you walk before needing to stop and rest?", type: "text", width: "half" },
+        { name: "payAttention", label: "How long can you pay attention?", type: "text", width: "half" },
+        { name: "followWritten", label: "How well do you follow written instructions?", type: "text", width: "half" },
+        { name: "followSpoken", label: "How well do you follow spoken instructions?", type: "text", width: "half" },
+        { name: "handleStress", label: "How well do you handle stress?", type: "text", width: "half" },
+        { name: "handleChanges", label: "How well do you handle changes in routine?", type: "text", width: "half" },
+      ],
+    },
+    {
+      title: "Remarks & who completed this",
+      fields: [
+        { name: "remarks", label: "Remarks (anything else to add)", type: "textarea", width: "full" },
+        { name: "preparerName", label: "Name of person completing this form", type: "text", prefill: "preparerName", width: "half" },
+        { name: "signedDate", label: "Date", type: "date", required: true, prefill: "today", width: "half" },
+        { name: "email", label: "Email address (optional)", type: "email", prefill: "preparerEmail", width: "half" },
+        { name: "address", label: "Address (number and street)", type: "text", width: "full" },
+        { name: "city", label: "City", type: "text", width: "half" },
+        { name: "state", label: "State", type: "text", prefill: "state", width: "half" },
+        { name: "zip", label: "ZIP code", type: "text", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-3373-BK (02-2024) tooltips.
+  // The two "Name" fields are disambiguated by internal field name (page 3 = the
+  // claimant, page 10 = person completing the form).
+  officialFill: {
+    matchers: {
+      name: ["bodypage3 0 name"],
+      ssn: ["social security number"],
+      areaCode: ["area code"],
+      phone: ["bodypage3 0 phone"],
+      limitWork: ["how do your illnesses injuries or conditions limit your ability to work"],
+      typicalDay: ["describe what you do from the time you wake up"],
+      beforeVsNow: ["what were you able to do before your illnesses"],
+      houseYardWork: ["list household chores"],
+      gettingAround: ["how often do you go outside"],
+      shoppingDescribe: ["describe what you shop for"],
+      walkDistance: ["how far can you walk before needing to stop"],
+      payAttention: ["for how long can you pay attention"],
+      followWritten: ["how well do you follow written instructions"],
+      followSpoken: ["how well do you follow spoken instructions"],
+      handleStress: ["how well do you handle stress"],
+      handleChanges: ["how well do you handle changes in routine"],
+      remarks: ["section e remarks"],
+      preparerName: ["name of person completing this form"],
+      signedDate: ["date mm dd yyyy"],
+      email: ["email address optional"],
+      address: ["address number and street"],
+      city: ["bodypage10 0 city"],
+      state: ["bodypage10 0 state"],
+      zip: ["zip code"],
+    },
+  },
+};
+
+/** SSA-454-BK — Continuing Disability Review Report. The substantive form SSA
+ *  uses at a CDR to decide whether someone still meets the disability standard.
+ *  A 12-page form; we pre-fill the identity + contact blocks and point the user
+ *  to the official PDF for the medical-provider, medication, and work-history
+ *  tables. Best paired with a signed SSA-827 so SSA can pull the records. */
+const SSA_454: FillableFormDef = {
+  id: "ssa-454",
+  title: "Continuing Disability Review Report",
+  agency: "Social Security Administration",
+  purpose:
+    "The long-form report SSA uses at a Continuing Disability Review to decide whether you still meet the disability standard — your conditions, treatment, medications, and any work since the last decision. Pair it with a signed SSA-827.",
+  officialUrl: "https://www.ssa.gov/forms/ssa-454-bk.pdf",
+  officialLabel: "Official SSA-454-BK (PDF)",
+  sections: [
+    {
+      title: "Section 1 — Information about you",
+      fields: [
+        { name: "name", label: "Name (first, middle, last)", type: "text", required: true, prefill: "beneficiaryFullName", width: "half" },
+        { name: "ssn", label: "Social Security number", type: "text", placeholder: "###-##-####", width: "half", help: "Enter it on the official form you file." },
+        { name: "mailingAddress", label: "Mailing address (street or PO box)", type: "text", width: "full" },
+        { name: "city", label: "City", type: "text", width: "half" },
+        { name: "state", label: "State", type: "text", prefill: "state", width: "half" },
+        { name: "zip", label: "ZIP code", type: "text", width: "half" },
+        { name: "phone", label: "Daytime phone number", type: "tel", width: "half" },
+        { name: "email", label: "Email address", type: "email", width: "half" },
+        { name: "heightFeet", label: "Height (feet)", type: "number", width: "half" },
+        { name: "heightInches", label: "Height (inches)", type: "number", width: "half" },
+        { name: "weightPounds", label: "Weight (pounds)", type: "number", width: "half" },
+      ],
+    },
+    {
+      title: "Section 2 — Someone we can contact",
+      description: "Someone (other than your doctors) who knows about your conditions and can help SSA reach you.",
+      fields: [
+        { name: "contactName", label: "Contact's name", type: "text", width: "half" },
+        { name: "contactRelationship", label: "Relationship to you", type: "text", width: "half" },
+        { name: "contactPhone", label: "Contact's daytime phone", type: "tel", width: "half" },
+      ],
+    },
+    {
+      title: "Remarks",
+      description:
+        "List your medical conditions, treatment, medications, and any work since your last decision on the official PDF's tables. Use this space for anything that didn't fit — it maps to Section 9 (Remarks).",
+      fields: [
+        { name: "remarks", label: "Remarks / additional information", type: "textarea", width: "full" },
+      ],
+    },
+    {
+      title: "Section 10 — Who is completing this report",
+      fields: [
+        { name: "preparerName", label: "Name of person completing this report", type: "text", prefill: "preparerName", width: "half" },
+        { name: "dateCompleted", label: "Date report completed", type: "date", required: true, prefill: "today", width: "half" },
+      ],
+    },
+  ],
+  disclaimer: STATEMENT_DISCLAIMER,
+  // Matchers calibrated against the real (decrypted) SSA-454-BK (06-2023) tooltips.
+  // City/State/ZIP repeat across sections, so those are matched by internal field
+  // name to hit the Section 1 (about-you) block specifically.
+  officialFill: {
+    matchers: {
+      name: ["1 ay name first"],
+      ssn: ["1 b social security number"],
+      mailingAddress: ["1 d mailing address"],
+      city: ["n1ccity"],
+      state: ["n1cstate"],
+      zip: ["n1czip"],
+      phone: ["1 f daytime phone"],
+      email: ["1 g email"],
+      heightFeet: ["height feet"],
+      heightInches: ["n3binches"],
+      weightPounds: ["weight pounds"],
+      contactName: ["someone we can contact"],
+      contactRelationship: ["2 b relationship"],
+      contactPhone: ["2 d daytime phone"],
+      // Section 9 remarks field, by internal name — the page-1 read-only intro
+      // also mentions "Section 9 - Remarks".
+      remarks: ["bodypage9 0 n7c"],
+      preparerName: ["name first middle initial last"],
+      dateCompleted: ["date report completed"],
+    },
+  },
+};
+
 export const FILLABLE_FORMS: Record<string, FillableFormDef> = {
   [SSA_795.id]: SSA_795,
   [CHANGE_REPORT.id]: CHANGE_REPORT,
@@ -393,6 +637,9 @@ export const FILLABLE_FORMS: Record<string, FillableFormDef> = {
   [SSA_820.id]: SSA_820,
   [PA_564_SAR.id]: PA_564_SAR,
   [VA_21P_0969.id]: VA_21P_0969,
+  [SSA_827.id]: SSA_827,
+  [SSA_3373.id]: SSA_3373,
+  [SSA_454.id]: SSA_454,
 };
 
 export function getFillableForm(id: string): FillableFormDef | null {

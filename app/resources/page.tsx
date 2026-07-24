@@ -104,9 +104,42 @@ export default function ResourcesPage() {
         ]}
       />
 
+      <RefTable
+        title="SSI & Special Needs Trust distributions — 2026"
+        rows={[
+          {
+            label: "SSI Federal Benefit Rate (FBR)",
+            value: "$994 / mo",
+            note: "Individual ($1,491 for an eligible couple). SSI pays the FBR minus countable income.",
+          },
+          {
+            label: "Cash paid to the beneficiary",
+            value: "$1-for-$1",
+            note: "Counts as unearned income — reduces SSI dollar-for-dollar after the $20 general exclusion. An SNT should never distribute cash.",
+          },
+          {
+            label: "Shelter paid to a vendor (ISM)",
+            value: "Capped ~$331 / mo",
+            note: "Rent, mortgage, property tax, gas, electric, water. Counted at the Presumed Maximum Value (PMV = ⅓ FBR + $20 ≈ $351.33), so a $1,500 rent payment lowers the check by only ~$331.33 — leaving ~$662.67 plus fully-paid housing.",
+          },
+          {
+            label: "Food / non-shelter paid to a vendor",
+            value: "$0 impact",
+            note: "Groceries, internet, phone, clothing, tuition. Fully excluded — SSA removed food from In-Kind Support & Maintenance effective Sept 30, 2024.",
+          },
+        ]}
+      />
+
+      <p className="mt-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+        Remember the formula, not the figure: <span className="font-medium text-[var(--color-cs-text)]">PMV = (⅓ × FBR) + $20</span>.
+        Only the FBR changes each January with the COLA, and the cap follows from it. The rule of thumb: an SNT should pay
+        vendors directly (never the beneficiary in cash), which limits any hit to the capped shelter reduction and makes
+        food and non-shelter payments cost nothing in benefits.
+      </p>
+
       <p className="mt-3 text-[12px] text-[var(--color-cs-text-secondary)]">
-        Note: SNT (Special Needs Trust) and ABLE account balances are excluded from countable assets across these
-        programs.
+        Note: SNT (Special Needs Trust) and ABLE account balances are excluded from countable <em>assets</em> across these
+        programs — separate from the <em>income</em> rules above, which govern how trust <em>payments</em> affect the monthly SSI check.
       </p>
 
       <section className="mt-8">

@@ -45,6 +45,24 @@ export const FORMS_CATALOG: CatalogForm[] = [
     frequency: "Periodic (1–6 yrs)",
     officialUrl: "https://www.ssa.gov/foia/resources/proactivedisclosure/2023/SSA-8202%20-%20Statement%20for%20Determining%20Continuing%20Eligibility%20for%20Supplemental%20Security%20Income%20Payment.pdf",
   },
+  {
+    id: "ssi-ssa-454", program: "SSI", category: "reapply", formNumber: "SSA-454-BK",
+    title: "Continuing Disability Review Report", agency: "Social Security Administration",
+    purpose: "Long-form medical review of your condition, treatment, and work — used at an SSI disability CDR (adult or child).",
+    frequency: "Periodic", officialUrl: "https://www.ssa.gov/forms/ssa-454-bk.pdf", fillableId: "ssa-454",
+  },
+  {
+    id: "ssi-ssa-3373", program: "SSI", category: "reapply", formNumber: "SSA-3373-BK",
+    title: "Function Report — Adult", agency: "Social Security Administration",
+    purpose: "Describe how your condition limits daily activities — feeds SSA's residual-function assessment at a claim, appeal, or review.",
+    frequency: "When requested", officialUrl: "https://www.ssa.gov/forms/ssa-3373-bk.pdf", fillableId: "ssa-3373",
+  },
+  {
+    id: "ssi-ssa-827", program: "SSI", category: "reapply", formNumber: "SSA-827",
+    title: "Authorization to Disclose Information to SSA", agency: "Social Security Administration",
+    purpose: "HIPAA medical release so SSA and the state DDS can request your records. Good for 12 months.",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-827.pdf", fillableId: "ssa-827",
+  },
 
   // ----------------------------- SSDI -----------------------------
   {
@@ -69,13 +87,25 @@ export const FORMS_CATALOG: CatalogForm[] = [
     id: "ssdi-ssa-454", program: "SSDI", category: "reapply", formNumber: "SSA-454-BK",
     title: "Continuing Disability Review Report", agency: "Social Security Administration",
     purpose: "Long-form medical review of your condition, treatment, and work since the last decision.",
-    frequency: "Periodic", officialUrl: "https://www.ssa.gov/forms/ssa-454-bk.pdf",
+    frequency: "Periodic", officialUrl: "https://www.ssa.gov/forms/ssa-454-bk.pdf", fillableId: "ssa-454",
   },
   {
     id: "ssdi-ssa-455", program: "SSDI", category: "reapply", formNumber: "SSA-455",
     title: "Disability Update Report", agency: "Social Security Administration",
     purpose: "Short mailed questionnaire that screens whether a full CDR is needed.",
     frequency: "Periodic", officialUrl: "https://www.ssa.gov/forms/ssa-455.pdf",
+  },
+  {
+    id: "ssdi-ssa-3373", program: "SSDI", category: "reapply", formNumber: "SSA-3373-BK",
+    title: "Function Report — Adult", agency: "Social Security Administration",
+    purpose: "Describe how your condition limits daily activities — feeds SSA's residual-function assessment at a claim, appeal, or review.",
+    frequency: "When requested", officialUrl: "https://www.ssa.gov/forms/ssa-3373-bk.pdf", fillableId: "ssa-3373",
+  },
+  {
+    id: "ssdi-ssa-827", program: "SSDI", category: "reapply", formNumber: "SSA-827",
+    title: "Authorization to Disclose Information to SSA", agency: "Social Security Administration",
+    purpose: "HIPAA medical release so SSA and the state DDS can request your records. Good for 12 months.",
+    frequency: "As needed", officialUrl: "https://www.ssa.gov/forms/ssa-827.pdf", fillableId: "ssa-827",
   },
 
   // ----------------------------- SNAP -----------------------------
