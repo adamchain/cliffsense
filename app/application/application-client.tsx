@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IconCheck, IconClock, IconAlertTriangle, IconUpload, IconRefresh } from "@tabler/icons-react";
 import type { SerializedApplication } from "@/lib/applications/serialize";
@@ -16,7 +15,6 @@ const DOC_REVIEW_STYLE: Record<string, string> = {
 };
 
 export function ApplicationClient({ initial }: { initial: SerializedApplication }) {
-  const router = useRouter();
   const { update } = useSession();
   const [app, setApp] = useState(initial);
   const [personName, setPersonName] = useState(initial.actingFor.personName);
@@ -27,12 +25,29 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
   const [notice, setNotice] = useState<string | null>(null);
 
   const refreshAndLeave = useCallback(async () => {
-    // Pull the fresh applicationStatus into the JWT, then let middleware route
-    // the now-approved user into onboarding.
-    await update({ action: "refreshApplication" });
-    router.replace("/");
-    router.refresh();
-  }, [update, router]);
+    // Pull the fresh applicationStatus into the JWT, then hard-navigate so
+    // middleware reads the updated cookie. Soft router.replace("/") races the
+    // Set-Cookie and bounces approved users back to /application forever.
+    setBusy(true);
+    setError(null);
+    try {
+      const next = await update({ action: "refreshApplication" });
+      const status = (next?.user as { applicationStatus?: string } | undefined)?.applicationStatus;
+      if (status && status !== "approved") {
+        setBusy(false);
+        setError(
+          "Your application is approved, but your session hasn't updated yet. Try Continue again, or sign out and sign back in.",
+        );
+        return;
+      }
+      window.location.assign("/");
+    } catch {
+      setBusy(false);
+      setError(
+        "Couldn't continue to setup. Try Continue again, or sign out and sign back in.",
+      );
+    }
+  }, [update]);
 
   useEffect(() => {
     if (initial.status === "approved") void refreshAndLeave();
@@ -128,6 +143,19 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
               ? "We couldn't approve your application yet. See the note below — you can upload a different document and we'll take another look."
               : "Because you're helping manage benefits for someone else, our team reviews your application before granting access. Tell us who you're helping and upload one authorization document."}
         </p>
+
+        {app.status === "approved" ? (
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => void refreshAndLeave()}
+              disabled={busy}
+              className="cs-btn cs-btn-primary"
+            >
+              {busy ? "Continuing…" : "Continue to setup"}
+            </button>
+          </div>
+        ) : null}
 
         {app.reviewNote ? (
           <div

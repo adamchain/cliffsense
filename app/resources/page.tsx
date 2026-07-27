@@ -1,3 +1,5 @@
+import { SntEstimator } from "@/components/benefits/snt-estimator";
+
 type Row = { label: string; value: string; note?: string };
 
 function RefTable({ title, rows }: { title: string; rows: Row[] }) {
@@ -129,6 +131,8 @@ export default function ResourcesPage() {
           },
         ]}
       />
+
+      <SntEstimator />
 
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
         Remember the formula, not the figure: <span className="font-medium text-[var(--color-cs-text)]">PMV = (⅓ × FBR) + $20</span>.

@@ -151,14 +151,29 @@ const nextAuth = NextAuth({
           // After an admin decision, an applicant's token still says
           // "pending_review". Re-read from the DB so the middleware gate lifts
           // without forcing a full sign-out/in. Safe: only reads the caller's
-          // own record (token.sub).
+          // own record (token.sub). Heal User↔Application desync if the
+          // Application was approved but User.applicationStatus wasn't.
           await connectDB();
           const fresh = await User.findById(token.sub)
             .select("onboardingStep applicationStatus")
             .lean();
           if (fresh) {
+            let applicationStatus = fresh.applicationStatus ?? "approved";
+            if (applicationStatus !== "approved") {
+              const { default: Application } = await import("@/lib/db/models/Application");
+              const app = await Application.findOne({ userId: token.sub }).select("status").lean();
+              if (app?.status === "approved") {
+                await User.updateOne(
+                  { _id: token.sub },
+                  { $set: { applicationStatus: "approved" } },
+                );
+                applicationStatus = "approved";
+              } else if (app?.status === "rejected") {
+                applicationStatus = "rejected";
+              }
+            }
             token.onboardingStep = fresh.onboardingStep ?? "none";
-            token.applicationStatus = fresh.applicationStatus ?? "approved";
+            token.applicationStatus = applicationStatus;
           }
         } else {
           if (typeof s.name === "string") token.name = s.name as string;
