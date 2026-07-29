@@ -22,6 +22,10 @@ const patchSchema = z.object({
           predictive: z.boolean().optional(),
           breach: z.boolean().optional(),
           trend: z.boolean().optional(),
+          cliff: z.boolean().optional(),
+          reporting: z.boolean().optional(),
+          snt: z.boolean().optional(),
+          able: z.boolean().optional(),
         })
         .optional(),
       additionalEmails: z.array(z.string().email()).max(10).optional(),
@@ -71,12 +75,20 @@ export async function PATCH(req: Request) {
       predictive: true,
       breach: true,
       trend: true,
+      cliff: true,
+      reporting: true,
+      snt: true,
+      able: true,
     };
     const next = notificationPrefs.alertTypes;
     user.notificationPrefs.alertTypes = {
       predictive: next.predictive ?? current.predictive,
       breach: next.breach ?? current.breach,
       trend: next.trend ?? current.trend,
+      cliff: next.cliff ?? current.cliff ?? true,
+      reporting: next.reporting ?? current.reporting ?? true,
+      snt: next.snt ?? current.snt ?? true,
+      able: next.able ?? current.able ?? true,
     };
   }
   if (notificationPrefs?.additionalEmails !== undefined) {

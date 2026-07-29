@@ -5,19 +5,12 @@ import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
 import Transaction from "@/lib/db/models/Transaction";
 import { logActivity } from "@/lib/activity/log-activity";
+import { VAULT_CATEGORY_IDS } from "@/lib/vault/categories";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED_CATEGORIES = new Set([
-  "receipts",
-  "award_letter",
-  "income_verification",
-  "renewal",
-  "asset_statement",
-  "correspondence",
-  "other",
-]);
+const ALLOWED_CATEGORIES = new Set<string>(VAULT_CATEGORY_IDS);
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -60,7 +53,11 @@ export async function POST(req: Request) {
   // When pairing a receipt to a transaction, confirm the transaction belongs to
   // this beneficiary before linking either direction.
   let linkedTxId: string | null = null;
-  if (cat === "receipts" && typeof transactionId === "string" && transactionId) {
+  if (
+    (cat === "receipts" || cat === "expenses") &&
+    typeof transactionId === "string" &&
+    transactionId
+  ) {
     const tx = await Transaction.findOne({ _id: transactionId, beneficiaryId }).select({ _id: 1 }).lean();
     if (tx) linkedTxId = String(tx._id);
   }

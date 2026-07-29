@@ -44,6 +44,27 @@ function levelAccent(level: string): { bar: string; pill: string } {
   };
 }
 
+function triggerLabel(trigger: string): string {
+  switch (trigger) {
+    case "cliff":
+      return "Eligibility cliff";
+    case "reporting":
+      return "Reporting";
+    case "snt":
+      return "SNT payment";
+    case "able":
+      return "ABLE";
+    case "predictive":
+      return "Predictive";
+    case "breach":
+      return "Limit reached";
+    case "trend":
+      return "Trend";
+    default:
+      return trigger;
+  }
+}
+
 export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -137,7 +158,9 @@ export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) 
                   >
                     {a.level}
                   </span>
-                  <span className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">{a.trigger}</span>
+                  <span className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">
+                    {triggerLabel(a.trigger)}
+                  </span>
                   <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
                     {new Date(a.createdAt).toLocaleString()}
                   </span>

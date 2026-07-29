@@ -20,6 +20,7 @@ import {
   fixThresholdQuestion,
   programOverviewQuestion,
 } from "@/lib/benefits/fix-prompts";
+import { SntEstimator } from "@/components/benefits/snt-estimator";
 
 type Row = {
   _id: string;
@@ -358,6 +359,19 @@ export function BenefitDetailView({
           </p>
         </div>
       )}
+
+      {code === "SSI" ? (
+        <div className="mt-6 border-t border-[var(--color-cs-border)] pt-4">
+          <h2 className="mb-1 text-[15px] font-medium text-[var(--color-cs-text)]">
+            Effect of payments coming from an SNT
+          </h2>
+          <p className="mb-2 max-w-2xl text-[12px] text-[var(--color-cs-text-secondary)]">
+            How a Special Needs Trust pays out — cash, shelter to a vendor, or food/excluded items —
+            changes the SSI check differently. Use the estimator below before a distribution.
+          </p>
+          <SntEstimator compact />
+        </div>
+      ) : null}
     </>
   );
 }

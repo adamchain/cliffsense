@@ -1,4 +1,7 @@
 import { SntEstimator } from "@/components/benefits/snt-estimator";
+import { MedicaidWorkRequirements } from "@/components/benefits/medicaid-work-requirements";
+import { SalarySntScenarios } from "@/components/benefits/salary-snt-scenarios";
+import { EligibilityLossCatalog } from "@/components/benefits/eligibility-loss-catalog";
 
 type Row = { label: string; value: string; note?: string };
 
@@ -127,7 +130,7 @@ export default function ResourcesPage() {
           {
             label: "Food / non-shelter paid to a vendor",
             value: "$0 impact",
-            note: "Groceries, internet, phone, clothing, tuition. Fully excluded — SSA removed food from In-Kind Support & Maintenance effective Sept 30, 2024.",
+            note: "Groceries, internet, phone, cable, tuition, clothing. Fully excluded — SSA removed food from In-Kind Support & Maintenance effective Sept 30, 2024 (89 FR 21246).",
           },
         ]}
       />
@@ -145,6 +148,12 @@ export default function ResourcesPage() {
         Note: SNT (Special Needs Trust) and ABLE account balances are excluded from countable <em>assets</em> across these
         programs — separate from the <em>income</em> rules above, which govern how trust <em>payments</em> affect the monthly SSI check.
       </p>
+
+      <MedicaidWorkRequirements />
+
+      <SalarySntScenarios />
+
+      <EligibilityLossCatalog />
 
       <section className="mt-8">
         <h2 className="text-base font-medium text-[var(--color-cs-text)]">Official program links</h2>

@@ -41,14 +41,28 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
     }
     const frequency = String(user?.notificationPrefs?.frequency ?? "daily");
     const level = String(a.level ?? "info");
+    const trigger = String(a.trigger ?? "");
     if (frequency !== "realtime" && level !== "breach") {
       // Batched into the user's daily/weekly digest instead.
       continue;
     }
 
-    const subject = `MyBenefitsPA: ${level === "breach" ? "Important" : "Heads up"} — threshold activity`;
+    const subject = `MyBenefitsPA: ${
+      level === "breach" ? "Important" : trigger === "cliff" || trigger === "snt" || trigger === "able"
+        ? "Eligibility warning"
+        : trigger === "reporting"
+          ? "Reporting reminder"
+          : "Heads up"
+    } — threshold activity`;
     const { html, text } = renderEmail({
-      heading: level === "breach" ? "A benefit threshold needs attention" : "Heads up on a benefit threshold",
+      heading:
+        level === "breach"
+          ? "A benefit threshold needs attention"
+          : trigger === "reporting"
+            ? "A reporting deadline may apply"
+            : trigger === "cliff" || trigger === "snt" || trigger === "able"
+              ? "An eligibility cliff needs a look"
+              : "Heads up on a benefit threshold",
       preheader: String(a.message ?? "").slice(0, 110),
       tone: level === "breach" ? "danger" : level === "warning" ? "warning" : "info",
       paragraphs: [String(a.message ?? "")],

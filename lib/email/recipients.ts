@@ -5,12 +5,20 @@
  * always copied on top.
  */
 export type NotificationPrefsLike = {
-  alertTypes?: { predictive?: boolean; breach?: boolean; trend?: boolean } | null;
+  alertTypes?: {
+    predictive?: boolean;
+    breach?: boolean;
+    trend?: boolean;
+    cliff?: boolean;
+    reporting?: boolean;
+    snt?: boolean;
+    able?: boolean;
+  } | null;
   email?: string | null;
   additionalEmails?: string[] | null;
 } | null | undefined;
 
-export type AlertTrigger = "predictive" | "breach" | "trend";
+export type AlertTrigger = "predictive" | "breach" | "trend" | "cliff" | "reporting" | "snt" | "able";
 
 /** All addresses that should receive a notification, de-duplicated. */
 export function resolveRecipients(
@@ -30,6 +38,12 @@ export function wantsAlertType(prefs: NotificationPrefsLike, trigger: string): b
   const types = prefs?.alertTypes;
   if (!types) return true;
   const key = trigger as AlertTrigger;
-  if (key !== "predictive" && key !== "breach" && key !== "trend") return true;
+  if (!(key in types) && key !== "predictive" && key !== "breach" && key !== "trend") {
+    // New scenario triggers default on when the field is absent on older prefs.
+    return true;
+  }
+  if (key !== "predictive" && key !== "breach" && key !== "trend" && key !== "cliff" && key !== "reporting" && key !== "snt" && key !== "able") {
+    return true;
+  }
   return types[key] !== false;
 }

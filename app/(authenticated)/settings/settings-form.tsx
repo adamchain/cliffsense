@@ -5,12 +5,24 @@ import { useRouter } from "next/navigation";
 import { US_STATES } from "@/lib/constants/us-states";
 
 type Frequency = "realtime" | "daily" | "weekly";
-type AlertTypes = { predictive: boolean; breach: boolean; trend: boolean };
+type AlertTypes = {
+  predictive: boolean;
+  breach: boolean;
+  trend: boolean;
+  cliff: boolean;
+  reporting: boolean;
+  snt: boolean;
+  able: boolean;
+};
 
 const ALERT_TYPE_LABELS: { key: keyof AlertTypes; label: string; desc: string }[] = [
   { key: "breach", label: "Limit reached", desc: "A threshold has been crossed." },
   { key: "predictive", label: "Approaching a limit", desc: "On pace to cross a threshold soon." },
   { key: "trend", label: "Trend changes", desc: "Notable shifts in income or balances." },
+  { key: "cliff", label: "Eligibility cliffs", desc: "SGA, SSI FBR, waiver twilight, MAWD paths, and similar loss risks." },
+  { key: "reporting", label: "Reporting deadlines", desc: "Wage changes and 10-day / 10th-of-month filing reminders." },
+  { key: "snt", label: "SNT payment effects", desc: "Cash vs shelter ISM vs excluded vendor payments." },
+  { key: "able", label: "ABLE suspension risk", desc: "ABLE balances near the $100k SSI cash-suspension line." },
 ];
 
 export function SettingsForm({

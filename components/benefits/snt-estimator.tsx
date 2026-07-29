@@ -18,7 +18,7 @@ import { formatPlainUsdFromCents } from "@/lib/format/money";
 const PAYMENT_OPTIONS: { value: SntPaymentType; label: string; hint: string }[] = [
   { value: "cash", label: "Cash to the beneficiary", hint: "Counts dollar-for-dollar" },
   { value: "shelter", label: "Shelter paid to a vendor", hint: "Rent, mortgage, taxes, utilities" },
-  { value: "food_nonshelter", label: "Food / other paid to a vendor", hint: "Groceries, phone, clothing…" },
+  { value: "food_nonshelter", label: "Food / other paid to a vendor", hint: "Groceries, internet, phone, cable, tuition…" },
 ];
 
 function dollarsToCents(v: string): number {
@@ -26,7 +26,7 @@ function dollarsToCents(v: string): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
 }
 
-export function SntEstimator() {
+export function SntEstimator({ compact }: { compact?: boolean } = {}) {
   const [paymentType, setPaymentType] = useState<SntPaymentType>("shelter");
   const [amount, setAmount] = useState("1500");
   const [otherUnearned, setOtherUnearned] = useState("");
@@ -46,14 +46,18 @@ export function SntEstimator() {
   );
 
   return (
-    <section className="mt-8">
-      <h2 className="text-base font-medium text-[var(--color-cs-text)]">
-        Special Needs Trust payment estimator — {SSI_FBR_YEAR}
-      </h2>
-      <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        Estimate how a single trust distribution affects the monthly SSI check. Informational only — real cases
-        also turn on living arrangement, deeming, and any state supplement.
-      </p>
+    <section className={compact ? "mt-2" : "mt-8"}>
+      {!compact ? (
+        <>
+          <h2 className="text-base font-medium text-[var(--color-cs-text)]">
+            Effect of payments coming from an SNT — {SSI_FBR_YEAR}
+          </h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Estimate how a single trust distribution affects the monthly SSI check. Informational only — real cases
+            also turn on living arrangement, deeming, and any state supplement.
+          </p>
+        </>
+      ) : null}
 
       <div className="mt-3 grid gap-4 rounded border border-[var(--color-cs-border)] bg-white p-4 sm:grid-cols-2">
         {/* Inputs */}

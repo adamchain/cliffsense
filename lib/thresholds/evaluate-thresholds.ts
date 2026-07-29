@@ -6,6 +6,7 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
+import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import {
   endOfUtcMonth,
@@ -309,6 +310,32 @@ export async function evaluateThresholdsForBeneficiary(input: {
       });
     }
   }
+
+  // Scenario-specific cliffs (SGA, ISM education via wage jumps, waiver twilight, …)
+  const priorMonthDate = new Date(Date.UTC(y, m - 2, 15));
+  const priorPrefix = utcMonthPrefix(priorMonthDate).prefix;
+  const txMapped = txRows.map((t) => ({
+    date: t.date,
+    amountCents: t.amountCents,
+    userCategory: t.userCategory,
+    pending: Boolean(t.pending),
+    excludedFromThresholds: Boolean(t.excludedFromThresholds),
+  }));
+  const priorEarnedNet = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
+  const scenarioResult = await evaluateScenarioAlerts({
+    beneficiaryId: input.beneficiaryId,
+    ownerUserId: beneficiary.ownerUserId,
+    actorUserId: input.actorUserId,
+    programs,
+    earnedGrossCents: breakdown.earnedGrossCents,
+    priorEarnedGrossCents: grossUpEarnedCents(priorEarnedNet),
+    ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
+    maxAssetCents: maxAsset,
+    grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
+    monthPrefix: prefix,
+  });
+  alertsCreated += scenarioResult.alertsCreated;
+  alertIdsCreated.push(...scenarioResult.alertIdsCreated);
 
   return { alertsCreated, skippedNoPrograms: false, alertIdsCreated };
 }

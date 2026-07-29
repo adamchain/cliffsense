@@ -7,13 +7,22 @@ const documentSchema = new Schema(
     category: {
       type: String,
       enum: [
+        // Current organization
+        "medical_records",
+        "disability_proof",
+        "job_income",
+        "expenses",
+        "work_activity",
+        "able_snt",
+        "title_deed",
+        "correspondence",
+        "other",
+        // Legacy (kept so older uploads still validate)
         "receipts",
         "award_letter",
         "income_verification",
         "renewal",
         "asset_statement",
-        "correspondence",
-        "other",
       ],
       default: "other",
     },

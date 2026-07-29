@@ -47,6 +47,10 @@ export default async function SettingsPage() {
               predictive: user.notificationPrefs?.alertTypes?.predictive ?? true,
               breach: user.notificationPrefs?.alertTypes?.breach ?? true,
               trend: user.notificationPrefs?.alertTypes?.trend ?? true,
+              cliff: user.notificationPrefs?.alertTypes?.cliff ?? true,
+              reporting: user.notificationPrefs?.alertTypes?.reporting ?? true,
+              snt: user.notificationPrefs?.alertTypes?.snt ?? true,
+              able: user.notificationPrefs?.alertTypes?.able ?? true,
             }}
             initialAdditionalEmails={user.notificationPrefs?.additionalEmails ?? []}
             initialState={ownerBen?.state ?? ""}

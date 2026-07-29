@@ -6,7 +6,7 @@ const alertSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     thresholdId: { type: Schema.Types.ObjectId, ref: "Threshold", default: null, index: true },
     level: { type: String, enum: ["info", "warning", "breach"], required: true },
-    trigger: { type: String, enum: ["predictive", "breach", "trend"], required: true },
+    trigger: { type: String, enum: ["predictive", "breach", "trend", "cliff", "reporting", "snt", "able"], required: true },
     message: { type: String, required: true },
     dataSnapshot: { type: Schema.Types.Mixed, default: {} },
     status: {

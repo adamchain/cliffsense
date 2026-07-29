@@ -11,6 +11,10 @@ const notificationPrefsSchema = new Schema(
       predictive: { type: Boolean, default: true },
       breach: { type: Boolean, default: true },
       trend: { type: Boolean, default: true },
+      cliff: { type: Boolean, default: true },
+      reporting: { type: Boolean, default: true },
+      snt: { type: Boolean, default: true },
+      able: { type: Boolean, default: true },
     },
     email: { type: String, default: "" },
     // Extra recipients copied on every alert/digest, in addition to the primary address.

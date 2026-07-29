@@ -109,7 +109,7 @@ export function estimateSsiWithSntPayment(input: SsiSntEstimateInput): SsiSntEst
     case "food_nonshelter":
       countedValueCents = 0;
       note =
-        "Food and non-shelter items paid directly to a vendor are excluded from countable income (SSA removed food from ISM effective Sept 30, 2024) and do not reduce the SSI check.";
+        "Food and non-shelter items paid directly to a vendor (groceries, internet, phone, cable, tuition, clothing) are excluded from countable income — SSA removed food from ISM effective Sept 30, 2024 (89 FR 21246) — and do not reduce the SSI check.";
       break;
   }
 

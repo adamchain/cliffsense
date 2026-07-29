@@ -4,18 +4,13 @@ import Link from "next/link";
 import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
+import {
+  MONITORING_SOURCES,
+  VAULT_CATEGORIES,
+  vaultSectionId,
+} from "@/lib/vault/categories";
 import { VaultUpload } from "./vault-upload";
 import { VaultDocumentRow } from "./document-row";
-
-const CATEGORIES = [
-  { id: "receipts", label: "Receipts" },
-  { id: "award_letter", label: "Award letters" },
-  { id: "income_verification", label: "Income verification" },
-  { id: "renewal", label: "Renewal & recert paperwork" },
-  { id: "asset_statement", label: "Asset statements" },
-  { id: "correspondence", label: "Agency correspondence" },
-  { id: "other", label: "Other" },
-];
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -31,7 +26,7 @@ export default async function VaultPage() {
   const primary = await getPrimaryBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
 
-  let docsByCategory = new Map<
+  let docsBySection = new Map<
     string,
     { id: string; filename: string; sizeBytes: number; createdAt: Date; mimeType: string }[]
   >();
@@ -42,9 +37,10 @@ export default async function VaultPage() {
       .select("filename mimeType sizeBytes category createdAt")
       .sort({ createdAt: -1 })
       .lean();
-    docsByCategory = new Map();
+    docsBySection = new Map();
     for (const r of rows) {
-      const list = docsByCategory.get(r.category) ?? [];
+      const section = vaultSectionId(r.category);
+      const list = docsBySection.get(section) ?? [];
       list.push({
         id: r._id.toString(),
         filename: r.filename,
@@ -52,17 +48,23 @@ export default async function VaultPage() {
         createdAt: r.createdAt,
         mimeType: r.mimeType,
       });
-      docsByCategory.set(r.category, list);
+      docsBySection.set(section, list);
     }
   }
+
+  const coveredSources = new Set(
+    MONITORING_SOURCES.filter((s) => (docsBySection.get(s.categoryId) ?? []).length > 0).map(
+      (s) => s.id,
+    ),
+  );
 
   return (
     <>
       <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Vault</div>
       <h1 className="mb-2 text-xl font-medium text-[var(--color-cs-text)]">File vault</h1>
       <p className="mb-4 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Encrypted document storage for award letters, recert paperwork, and agency correspondence.
-        Max 10 MB per file.
+        Organized storage for medical records, disability proof, income, expenses, and work paperwork —
+        beyond checking-account activity alone. Max 10 MB per file.
       </p>
 
       {!beneficiaryId ? (
@@ -75,15 +77,49 @@ export default async function VaultPage() {
         </p>
       ) : (
         <>
-          <VaultUpload beneficiaryId={beneficiaryId} categories={CATEGORIES} />
+          <section className="mb-4 rounded border border-[var(--color-cs-border)] bg-white p-4">
+            <h2 className="text-[14px] font-medium text-[var(--color-cs-text)]">
+              Records to track beyond bank accounts
+            </h2>
+            <p className="mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">
+              Linked accounts catch deposits — these five sources fill the gaps agencies actually ask about.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {MONITORING_SOURCES.map((s) => {
+                const done = coveredSources.has(s.id);
+                return (
+                  <li key={s.id} className="flex items-start gap-2 text-[13px]">
+                    <span
+                      className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border text-[10px] font-bold ${
+                        done
+                          ? "border-[#107c10] bg-[#dff6dd] text-[#107c10]"
+                          : "border-[var(--color-cs-border)] text-[var(--color-cs-text-muted)]"
+                      }`}
+                      aria-hidden
+                    >
+                      {done ? "✓" : ""}
+                    </span>
+                    <span>
+                      <span className="font-medium text-[var(--color-cs-text)]">{s.label}</span>
+                      <span className="block text-[12px] text-[var(--color-cs-text-secondary)]">
+                        {s.detail}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <VaultUpload beneficiaryId={beneficiaryId} categories={VAULT_CATEGORIES} />
 
           <section className="mt-5 rounded border border-[var(--color-cs-border)] bg-white">
             <header className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-4 py-2 text-[11px] font-medium uppercase text-[var(--color-cs-text-secondary)]">
               Documents
             </header>
             <div className="grid grid-cols-1 gap-px bg-[var(--color-cs-border)] md:grid-cols-2">
-              {CATEGORIES.map((c) => {
-                const docs = docsByCategory.get(c.id) ?? [];
+              {VAULT_CATEGORIES.map((c) => {
+                const docs = docsBySection.get(c.id) ?? [];
                 return (
                   <div key={c.id} className="bg-white p-4">
                     <div className="mb-1.5 flex items-baseline justify-between gap-2">
@@ -92,6 +128,9 @@ export default async function VaultPage() {
                         {docs.length} file{docs.length === 1 ? "" : "s"}
                       </span>
                     </div>
+                    <p className="mb-2 text-[11px] leading-snug text-[var(--color-cs-text-muted)]">
+                      {c.hint}
+                    </p>
                     {docs.length === 0 ? (
                       <p className="text-[12px] text-[var(--color-cs-text-secondary)]">
                         No documents yet.

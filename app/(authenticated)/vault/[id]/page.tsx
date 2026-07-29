@@ -5,15 +5,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { IconDownload } from "@tabler/icons-react";
-
-const CATEGORY_LABEL: Record<string, string> = {
-  award_letter: "Award letter",
-  income_verification: "Income verification",
-  renewal: "Renewal / recert",
-  asset_statement: "Asset statement",
-  correspondence: "Agency correspondence",
-  other: "Other",
-};
+import { vaultCategoryLabel } from "@/lib/vault/categories";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -103,7 +95,7 @@ export default async function VaultDetailPage({
             <div className="flex justify-between gap-3">
               <dt className="text-[var(--color-cs-text-secondary)]">Category</dt>
               <dd className="text-[var(--color-cs-text)]">
-                {CATEGORY_LABEL[doc.category] ?? doc.category}
+                {vaultCategoryLabel(doc.category)}
               </dd>
             </div>
             <div className="flex justify-between gap-3">
