@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { IconCheck, IconClock, IconAlertTriangle, IconUpload, IconRefresh } from "@tabler/icons-react";
@@ -14,6 +14,9 @@ const DOC_REVIEW_STYLE: Record<string, string> = {
   pending: "text-[var(--color-cs-text-muted)]",
 };
 
+/** Prevents hard-nav ↔ middleware bounce from reloading /application forever. */
+const LEAVE_ATTEMPT_KEY = "mbpa:application-leave-attempted";
+
 export function ApplicationClient({ initial }: { initial: SerializedApplication }) {
   const { update } = useSession();
   const [app, setApp] = useState(initial);
@@ -23,36 +26,67 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const leaveStarted = useRef(false);
 
   const refreshAndLeave = useCallback(async () => {
-    // Pull the fresh applicationStatus into the JWT, then hard-navigate so
-    // middleware reads the updated cookie. Soft router.replace("/") races the
-    // Set-Cookie and bounces approved users back to /application forever.
-    setBusy(true);
-    setError(null);
-    try {
-      const next = await update({ action: "refreshApplication" });
-      const status = (next?.user as { applicationStatus?: string } | undefined)?.applicationStatus;
-      if (status && status !== "approved") {
+      // Pull the fresh applicationStatus into the JWT, then hard-navigate so
+      // middleware reads the updated cookie. Soft router.replace("/") races the
+      // Set-Cookie and bounces approved users back to /application forever.
+      setBusy(true);
+      setError(null);
+      try {
+        const next = await update({ action: "refreshApplication" });
+        const status = (next?.user as { applicationStatus?: string } | undefined)?.applicationStatus;
+        // Strict equality — navigating when status is missing caused a reload loop
+        // (middleware still saw pending_review and sent us back here).
+        if (status !== "approved") {
+          setBusy(false);
+          try {
+            sessionStorage.setItem(LEAVE_ATTEMPT_KEY, "1");
+          } catch {
+            /* ignore */
+          }
+          setError(
+            "Your application is approved, but your session hasn't updated yet. Click Continue to setup, or sign out and sign back in.",
+          );
+          return;
+        }
+        // Set before navigate so a middleware bounce back here cannot auto-retry.
+        try {
+          sessionStorage.setItem(LEAVE_ATTEMPT_KEY, "1");
+        } catch {
+          /* ignore */
+        }
+        window.location.assign("/");
+      } catch {
         setBusy(false);
+        try {
+          sessionStorage.setItem(LEAVE_ATTEMPT_KEY, "1");
+        } catch {
+          /* ignore */
+        }
         setError(
-          "Your application is approved, but your session hasn't updated yet. Try Continue again, or sign out and sign back in.",
+          "Couldn't continue to setup. Click Continue again, or sign out and sign back in.",
         );
-        return;
       }
-      window.location.assign("/");
-    } catch {
-      setBusy(false);
-      setError(
-        "Couldn't continue to setup. Try Continue again, or sign out and sign back in.",
-      );
-    }
   }, [update]);
 
   useEffect(() => {
-    if (initial.status === "approved") void refreshAndLeave();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (initial.status !== "approved") return;
+    if (leaveStarted.current) return;
+    leaveStarted.current = true;
+    try {
+      if (sessionStorage.getItem(LEAVE_ATTEMPT_KEY) === "1") {
+        setError(
+          "Your application is approved, but setup didn't open automatically. Click Continue to setup, or sign out and sign back in.",
+        );
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    void refreshAndLeave();
+  }, [initial.status, refreshAndLeave]);
 
   async function reload(): Promise<SerializedApplication | null> {
     const res = await fetch("/api/applications", { cache: "no-store" });
@@ -69,6 +103,12 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
     const fresh = await reload();
     setBusy(false);
     if (fresh?.status === "approved") {
+      try {
+        sessionStorage.removeItem(LEAVE_ATTEMPT_KEY);
+      } catch {
+        /* ignore */
+      }
+      leaveStarted.current = false;
       void refreshAndLeave();
     } else {
       setNotice("Status is still under review. We'll email you when there's a decision.");
@@ -138,7 +178,9 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
         </div>
         <p className="mt-2 text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
           {app.status === "approved"
-            ? "You're approved — taking you to setup…"
+            ? busy
+              ? "You're approved — taking you to setup…"
+              : "You're approved. Continue to finish setup."
             : rejected
               ? "We couldn't approve your application yet. See the note below — you can upload a different document and we'll take another look."
               : "Because you're helping manage benefits for someone else, our team reviews your application before granting access. Tell us who you're helping and upload one authorization document."}
@@ -148,7 +190,15 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
           <div className="mt-4">
             <button
               type="button"
-              onClick={() => void refreshAndLeave()}
+              onClick={() => {
+                try {
+                  sessionStorage.removeItem(LEAVE_ATTEMPT_KEY);
+                } catch {
+                  /* ignore */
+                }
+                leaveStarted.current = false;
+                void refreshAndLeave();
+              }}
               disabled={busy}
               className="cs-btn cs-btn-primary"
             >
