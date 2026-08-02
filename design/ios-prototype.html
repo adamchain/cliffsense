@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CliffSense — iOS Prototype</title>
+<style>
+  :root{
+    --bg:#f2f2f7; --card:#ffffff;
+    --label:#000000; --label2:rgba(60,60,67,.6); --label3:rgba(60,60,67,.3);
+    --sep:rgba(60,60,67,.17);
+    --green:#34c759; --greenText:#248a3d;
+    --orange:#ff9500; --orangeText:#9a5b00;
+    --red:#ff3b30; --redText:#c11e15; --blue:#007aff; --purple:#5856d6; --teal:#30b0c7; --pink:#ff2d55;
+    --fill:rgba(118,118,128,.12); --brand:#2b5797;
+    --pa-navy:#17294d; --pa-red:#cc2031;
+  }
+  .phone.dark{
+    --bg:#000000; --card:#1c1c1e;
+    --label:#ffffff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3);
+    --sep:rgba(84,84,88,.45); --fill:rgba(118,118,128,.24);
+    --greenText:#30d158; --orangeText:#ff9f0a; --redText:#ff453a;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+  body{ background:#666666;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; color:var(--label);
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:28px 16px; }
+  .phone{ position:relative; width:392px; height:846px; background:var(--bg); border-radius:52px; overflow:hidden;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.25); isolation:isolate; transition:background .3s; }
+
+  .island{ position:absolute; top:12px; left:50%; transform:translateX(-50%); width:120px; height:33px; background:#000; border-radius:20px; z-index:60; }
+  .island::after{ content:""; position:absolute; right:11px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#22303c,#000 70%); }
+  .statusbar{ position:absolute; top:0; left:0; right:0; height:52px; z-index:55; display:flex; align-items:flex-end; justify-content:space-between; padding:0 30px 8px; font-weight:600; pointer-events:none; color:var(--label); }
+  .sb-time{ font-size:15.5px; letter-spacing:.2px; }
+  .sb-right{ display:flex; align-items:center; gap:7px; }
+  .home-ind{ position:absolute; bottom:9px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:var(--label); opacity:.85; z-index:60; }
+
+  .viewport{ position:absolute; inset:0; overflow:hidden; }
+  .view{ position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; background:var(--bg); }
+  .view::-webkit-scrollbar{ display:none; }
+  .tabview{ display:none; }
+  .tabview.active{ display:block; }
+  #advisor.active{ display:flex; flex-direction:column; padding-bottom:84px; }
+
+  #detail{ position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; background:var(--bg);
+    transform:translateX(100%); transition:transform .42s cubic-bezier(.32,.72,0,1); z-index:50; box-shadow:-14px 0 34px -10px rgba(0,0,0,.28); }
+  #detail::-webkit-scrollbar{ display:none; }
+  body.detail-open #detail{ transform:translateX(0); }
+  @media (prefers-reduced-motion:reduce){ #detail,.sheet,.scrim,.toast{ transition:none; } }
+
+  .pad{ padding:60px 20px 108px; }
+  .head-row{ display:flex; align-items:center; justify-content:space-between; margin:0 2px; }
+  .eyebrow{ font-size:12.5px; font-weight:600; letter-spacing:.5px; color:var(--label2); text-transform:uppercase; margin:0 2px 3px; }
+  .big-title{ font-size:34px; font-weight:700; letter-spacing:-.6px; margin:0; }
+  .title-btn{ display:flex; align-items:center; gap:7px; background:none; border:none; padding:0; cursor:pointer; color:var(--label); font:inherit; }
+  .circbtn{ width:34px; height:34px; border-radius:50%; background:var(--fill); display:flex; align-items:center; justify-content:center; border:none; color:var(--blue); cursor:pointer; }
+  .link{ font-size:15px; color:var(--blue); text-decoration:none; background:none; border:none; cursor:pointer; padding:0; font:inherit; }
+
+  .banner{ display:flex; align-items:center; gap:9px; margin:16px 0 4px; padding:12px 14px; border-radius:15px; font-size:13.5px; font-weight:500; }
+  .banner.warn{ background:rgba(255,149,0,.14); color:var(--orangeText); }
+  .banner.crit{ background:rgba(255,59,48,.14); color:var(--redText); }
+  .banner.ok{ background:rgba(52,199,89,.15); color:var(--greenText); }
+
+  .grp-h{ display:flex; align-items:center; gap:8px; margin:24px 2px 12px; }
+  .grp-h h2{ margin:0; font-size:22px; font-weight:700; letter-spacing:-.35px; }
+  .grp-h .count{ font-size:13px; font-weight:600; color:var(--label2); background:var(--fill); padding:2px 9px; border-radius:20px; }
+  .grp-h .link{ margin-left:auto; }
+
+  /* wallet cards */
+  .group{ display:flex; flex-direction:column; gap:14px; }
+  .group:empty{ display:none; }
+  .wcard{ position:relative; width:100%; text-align:left; border:none; cursor:pointer; font:inherit; color:#fff; border-radius:20px; overflow:hidden; padding:0; min-height:150px; box-shadow:0 12px 24px -14px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.16); transition:transform .12s ease; }
+  .wcard:active{ transform:scale(.985); }
+  .wcard.fed{ background:linear-gradient(160deg,#22539a,#0e2c5c); }
+  .wcard.fed::after{ content:""; position:absolute; inset:0; background:radial-gradient(120% 90% at 88% 50%, rgba(255,255,255,.10), transparent 55%); pointer-events:none; }
+  .seal{ position:absolute; z-index:0; color:#fff; }
+  .wcard.fed .seal{ right:-26px; top:50%; transform:translateY(-50%); width:158px; height:158px; opacity:.17; }
+  .seal svg{ width:100%; height:100%; }
+  .fed-flag{ width:19px; height:12.5px; border-radius:2px; box-shadow:0 0 0 .5px rgba(255,255,255,.35); flex:0 0 auto; }
+  .wcard.state{ background:linear-gradient(160deg,#e9eff8,#c9d7ea); color:var(--pa-navy); box-shadow:0 12px 26px -16px rgba(23,41,77,.5), 0 0 0 1px rgba(23,41,77,.08); }
+  .wcard.state::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(85% 80% at 90% 58%, rgba(204,32,49,.09), transparent 60%); }
+  .wcard.state::after{ content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(152deg, rgba(255,255,255,.7), rgba(255,255,255,0) 40%); }
+  .wcard.state .seal{ right:-20px; top:50%; transform:translateY(-50%) rotate(-4deg); width:172px; height:172px; opacity:.52; }
+  .wcard.state .seal svg{ filter:drop-shadow(0 1px 1px rgba(23,41,77,.18)); }
+  .wcard.state .w-label{ opacity:.6; }
+  .wcard.state .w-bar{ background:rgba(23,41,77,.15); }
+  .wcard.state .w-num span{ opacity:.6; }
+  .wc-in{ position:relative; z-index:2; padding:15px 17px; min-height:150px; display:flex; flex-direction:column; }
+  .w-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .w-label{ font-size:9.5px; font-weight:700; letter-spacing:.8px; opacity:.82; display:inline-flex; align-items:center; gap:6px; min-width:0; }
+  .w-label span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .w-pill{ font-size:11.5px; font-weight:700; color:#fff; padding:4px 11px; border-radius:20px; white-space:nowrap; }
+  .w-name{ display:flex; align-items:center; gap:9px; font-size:23px; font-weight:700; letter-spacing:-.3px; margin-top:13px; }
+  .w-name svg{ width:22px; height:22px; }
+  .w-bot{ margin-top:auto; padding-top:14px; }
+  .w-num{ font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .w-num span{ font-size:13px; font-weight:500; opacity:.72; margin-left:8px; }
+  .w-bar{ height:6px; border-radius:6px; background:rgba(255,255,255,.24); margin-top:11px; overflow:hidden; }
+  .w-fill{ height:100%; border-radius:6px; }
+
+  .sec-h{ display:flex; align-items:baseline; justify-content:space-between; margin:26px 2px 12px; }
+  .sec-h h2{ margin:0; font-size:22px; font-weight:700; letter-spacing:-.35px; }
+  .sec-lbl{ font-size:13px; font-weight:600; color:var(--label2); letter-spacing:.2px; margin:24px 2px 8px; text-transform:uppercase; }
+  .list{ background:var(--card); border-radius:18px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .lrow{ display:flex; align-items:center; gap:13px; padding:12px 15px; cursor:pointer; background:none; border:none; width:100%; text-align:left; font:inherit; color:inherit; }
+  .lrow + .lrow{ border-top:1px solid var(--sep); }
+  .datechip{ flex:0 0 auto; width:46px; height:46px; border-radius:11px; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .datechip .m{ font-size:10.5px; font-weight:700; color:var(--red); letter-spacing:.4px; }
+  .datechip .d{ font-size:20px; font-weight:600; line-height:1; margin-top:1px; }
+  .licon{ flex:0 0 auto; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; }
+  .licon svg{ width:18px; height:18px; }
+  .lmeta{ flex:1 1 auto; min-width:0; }
+  .ltitle{ font-size:16px; font-weight:500; }
+  .lsub{ font-size:12.5px; color:var(--label2); margin-top:2px; }
+  .lrel{ font-size:13.5px; color:var(--label2); white-space:nowrap; }
+  .lval{ font-size:15px; color:var(--label2); white-space:nowrap; }
+  .chev{ color:var(--label3); flex:0 0 auto; }
+  .spill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .s-ok{ color:var(--greenText); background:rgba(52,199,89,.15); }
+  .s-warn{ color:var(--orangeText); background:rgba(255,149,0,.16); }
+  .s-crit{ color:var(--redText); background:rgba(255,59,48,.14); }
+  .s-info{ color:var(--blue); background:rgba(0,122,255,.12); }
+  .s-mut{ color:var(--label2); background:var(--fill); }
+
+  .tabbar{ position:absolute; left:0; right:0; bottom:0; height:84px; padding:9px 6px 0; z-index:45;
+    background:rgba(248,248,250,.82); backdrop-filter:saturate(180%) blur(22px); -webkit-backdrop-filter:saturate(180%) blur(22px); border-top:.5px solid rgba(0,0,0,.12); display:flex; justify-content:space-around; transition:background .3s; }
+  .phone.dark .tabbar{ background:rgba(22,22,24,.82); border-top-color:rgba(255,255,255,.1); }
+  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; color:#9a9aa0; position:relative; background:none; border:none; cursor:pointer; }
+  .tab.active{ color:var(--blue); }
+  .tab span{ font-size:10px; font-weight:500; }
+  .tbadge{ position:absolute; top:-3px; left:calc(50% + 5px); min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:var(--red); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .tbadge.hidden{ display:none; }
+
+  /* DETAIL */
+  .dnav{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:58px 16px 10px; }
+  .navbtn{ width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; color:#1c1c1e; background:rgba(255,255,255,.75); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  .dbody{ padding:2px 20px 60px; }
+  .hero{ position:relative; border-radius:22px; overflow:hidden; padding:20px; color:#fff; min-height:200px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 14px 32px -14px rgba(0,0,0,.5); background:linear-gradient(165deg,#1b1b1e,#050506); }
+  .hero.hero-fed{ background:linear-gradient(160deg,#22539a,#0e2c5c); }
+  .hero.hero-fed::after{ content:""; position:absolute; inset:0; background:radial-gradient(120% 90% at 88% 45%, rgba(255,255,255,.10), transparent 55%); }
+  .hero.hero-fed .seal{ right:-26px; top:50%; transform:translateY(-50%); width:210px; height:210px; opacity:.16; }
+  .hero.hero-state{ background:linear-gradient(160deg,#e9eff8,#cdd9ec); color:var(--pa-navy); box-shadow:0 14px 32px -16px rgba(23,41,77,.45), 0 0 0 1px rgba(23,41,77,.07); }
+  .hero.hero-state::before{ content:""; position:absolute; inset:0; background:radial-gradient(80% 75% at 88% 55%, rgba(204,32,49,.09), transparent 60%); }
+  .hero.hero-state::after{ content:""; position:absolute; inset:0; background:linear-gradient(152deg, rgba(255,255,255,.7), rgba(255,255,255,0) 40%); }
+  .hero.hero-state .seal{ right:-18px; top:50%; transform:translateY(-50%) rotate(-4deg); width:216px; height:216px; opacity:.46; }
+  .hero.hero-state .seal svg{ filter:drop-shadow(0 1px 2px rgba(23,41,77,.18)); }
+  .hero-top,.hero-bottom{ position:relative; z-index:2; }
+  .hero-top{ display:flex; align-items:flex-start; justify-content:space-between; }
+  .hero-name{ display:flex; align-items:center; gap:8px; font-size:22px; font-weight:700; letter-spacing:-.2px; }
+  .hero-name svg{ width:23px; height:23px; }
+  .hero-tag{ font-size:9.5px; font-weight:700; letter-spacing:.8px; opacity:.82; margin-top:6px; display:inline-flex; align-items:center; gap:6px; }
+  .hero-big{ font-size:30px; font-weight:700; letter-spacing:-.5px; font-variant-numeric:tabular-nums; }
+  .hero-label{ font-size:14px; font-weight:600; opacity:.92; }
+  .hero-limit{ font-size:13px; opacity:.64; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .card{ background:var(--card); border-radius:18px; padding:15px 16px; margin-top:14px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .co-row{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .co-label{ font-size:14px; color:var(--label2); font-weight:500; }
+  .co-amt{ font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .ok{ color:var(--greenText); } .warn{ color:var(--orangeText); } .crit{ color:var(--redText); }
+  .co-bar{ height:8px; border-radius:8px; background:rgba(120,120,128,.18); margin:12px 0 10px; overflow:hidden; position:relative; }
+  .co-fill{ height:100%; border-radius:8px; transition:width .18s ease, background .18s ease; }
+  .f-ok{ background:var(--green); } .f-warn{ background:var(--orange); } .f-crit{ background:var(--red); }
+  .co-note{ font-size:13px; color:var(--label2); line-height:1.4; }
+  .sim-lead{ font-size:13px; color:var(--label2); margin-top:4px; line-height:1.4; }
+  .slider{ -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px; background:var(--fill); outline:none; margin:16px 0 6px; }
+  .slider::-webkit-slider-thumb{ -webkit-appearance:none; width:28px; height:28px; border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.35); cursor:pointer; }
+  .slider::-moz-range-thumb{ width:28px; height:28px; border-radius:50%; background:#fff; border:none; box-shadow:0 1px 4px rgba(0,0,0,.35); cursor:pointer; }
+  .sim-delta{ text-align:center; font-size:13.5px; font-weight:600; color:var(--label); font-variant-numeric:tabular-nums; margin-bottom:10px; }
+  .sim-divider{ height:1px; background:var(--sep); margin:12px 0; }
+  .stats{ display:flex; background:var(--card); border-radius:18px; margin-top:13px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .stat{ flex:1; padding:13px 8px; text-align:center; }
+  .stat + .stat{ border-left:1px solid var(--sep); }
+  .stat .sv{ font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .stat .sl{ font-size:11.5px; color:var(--label2); margin-top:3px; }
+  .tlist{ background:var(--card); border-radius:18px; overflow:hidden; margin-top:12px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .trow{ display:flex; align-items:center; gap:12px; padding:11px 15px; }
+  .trow + .trow{ border-top:1px solid var(--sep); }
+  .ticon{ flex:0 0 auto; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .ticon svg{ width:20px; height:20px; }
+  .tmeta{ flex:1 1 auto; min-width:0; }
+  .tt{ font-size:15.5px; font-weight:600; }
+  .ts{ font-size:12.5px; color:var(--label2); margin-top:2px; }
+  .tamt{ font-size:15.5px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .tamt.pos{ color:var(--greenText); }
+  .drow{ display:flex; align-items:center; gap:8px; }
+  .disclose{ color:var(--label3); }
+  .foot-note{ font-size:12.5px; color:var(--label2); text-align:center; margin:22px 8px 0; line-height:1.45; }
+
+  /* CALENDAR */
+  #calpage{ position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; background:var(--bg); transform:translateX(100%); transition:transform .42s cubic-bezier(.32,.72,0,1); z-index:48; box-shadow:-14px 0 34px -10px rgba(0,0,0,.28); }
+  #calpage::-webkit-scrollbar{ display:none; }
+  body.cal-open #calpage{ transform:translateX(0); }
+  .cal-month{ font-size:26px; font-weight:700; letter-spacing:-.4px; margin:2px 2px 14px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); row-gap:3px; }
+  .cal-wd{ font-size:11px; font-weight:600; color:var(--label2); text-align:center; padding-bottom:8px; }
+  .cal-day{ aspect-ratio:1/1.05; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:2px; font-size:15px; color:var(--label); position:relative; }
+  .cal-day .num{ width:31px; height:31px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+  .cal-day.today .num{ background:var(--red); color:#fff; font-weight:600; }
+  .cal-day .dot{ width:5px; height:5px; border-radius:50%; margin-top:3px; }
+  .cal-day.ev{ cursor:pointer; }
+  .cal-rule{ height:1px; background:var(--sep); margin:18px 0 4px; }
+
+  /* EVENT DETAIL */
+  .ev-hero{ position:relative; min-height:230px; padding:56px 20px 18px; display:flex; flex-direction:column; justify-content:flex-end; color:#fff; overflow:hidden; }
+  .ev-hero::after{ content:""; position:absolute; inset:0; background:radial-gradient(120% 80% at 30% 0%, rgba(255,255,255,.18), transparent 55%); }
+  .ev-navwrap{ position:absolute; top:0; left:0; right:0; padding:56px 16px 0; display:flex; align-items:center; justify-content:space-between; z-index:3; }
+  .ev-eyebrow{ position:relative; z-index:2; font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; opacity:.82; text-align:right; }
+  .ev-title{ position:relative; z-index:2; font-size:30px; font-weight:700; letter-spacing:-.5px; text-align:right; margin-top:4px; text-wrap:balance; }
+  .ev-tiles{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:-2px; }
+  .ev-tile{ background:var(--card); border-radius:16px; padding:15px; box-shadow:0 1px 2px rgba(0,0,0,.05); border:none; text-align:left; font:inherit; color:inherit; cursor:pointer; }
+  .ev-ic{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; margin-bottom:12px; }
+  .ev-ic svg{ width:20px; height:20px; }
+  .ev-tt{ font-size:15px; font-weight:600; line-height:1.2; }
+  .ev-ts{ font-size:13px; color:var(--label2); margin-top:2px; }
+  .ev-details .ev-row{ padding:12px 15px; }
+  .ev-details .ev-row + .ev-row{ border-top:1px solid var(--sep); }
+  .ev-l{ font-size:16px; font-weight:500; }
+  .ev-v{ font-size:13.5px; color:var(--label2); margin-top:2px; }
+  .ev-datetime{ display:flex; background:var(--card); border-radius:16px; overflow:hidden; margin-top:13px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .ev-dt{ flex:1; padding:15px 18px; }
+  .ev-dt + .ev-dt{ border-left:1px solid var(--sep); }
+  .ev-dl{ font-size:12px; color:var(--label2); }
+  .ev-dv{ font-size:19px; font-weight:600; margin-top:4px; letter-spacing:-.2px; }
+  .ev-cta{ width:100%; margin-top:16px; padding:15px; border:none; border-radius:14px; background:var(--blue); color:#fff; font:inherit; font-size:16px; font-weight:600; cursor:pointer; }
+
+  /* ALERTS */
+  .acard{ display:flex; gap:12px; padding:14px; background:var(--card); border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.05); cursor:pointer; border:none; width:100%; text-align:left; font:inherit; color:inherit; transition:opacity .3s; }
+  .acard.read{ opacity:.5; }
+  .aic{ flex:0 0 auto; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; }
+  .aic svg{ width:21px; height:21px; }
+  .amain{ flex:1 1 auto; min-width:0; }
+  .atop{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .atitle{ font-size:15.5px; font-weight:600; }
+  .atime{ font-size:12px; color:var(--label2); white-space:nowrap; }
+  .amsg{ font-size:13.5px; color:var(--label2); margin-top:3px; line-height:1.35; }
+  .atag{ display:inline-block; margin-top:8px; font-size:11px; font-weight:600; color:var(--label2); background:var(--fill); padding:3px 8px; border-radius:6px; }
+
+  /* ADVISOR */
+  .chat-nav{ padding:56px 20px 12px; text-align:center; border-bottom:.5px solid var(--sep); background:rgba(248,248,250,.9); backdrop-filter:blur(12px); }
+  .phone.dark .chat-nav{ background:rgba(22,22,24,.9); }
+  .chat-nav .t{ font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .chat-nav .s{ font-size:12px; color:var(--label2); margin-top:2px; }
+  .chat{ flex:1 1 auto; overflow-y:auto; scrollbar-width:none; padding:16px 16px 8px; display:flex; flex-direction:column; gap:9px; }
+  .chat::-webkit-scrollbar{ display:none; }
+  .bub{ max-width:80%; padding:10px 14px; font-size:15px; line-height:1.35; border-radius:20px; }
+  .bub.a{ align-self:flex-start; background:#e9e9eb; color:#000; border-bottom-left-radius:6px; }
+  .phone.dark .bub.a{ background:#2c2c2e; color:#fff; }
+  .bub.u{ align-self:flex-end; background:var(--blue); color:#fff; border-bottom-right-radius:6px; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; padding:2px 2px 6px; }
+  .chip{ font-size:13.5px; color:var(--blue); background:rgba(0,122,255,.1); border:none; padding:8px 13px; border-radius:18px; cursor:pointer; font:inherit; font-weight:500; }
+  .composer{ display:flex; align-items:center; gap:9px; padding:9px 14px 12px; border-top:.5px solid var(--sep); background:rgba(248,248,250,.92); backdrop-filter:blur(12px); }
+  .phone.dark .composer{ background:rgba(22,22,24,.92); }
+  .composer input{ flex:1; border:1px solid var(--sep); background:var(--card); color:var(--label); border-radius:20px; padding:9px 14px; font:inherit; font-size:15px; outline:none; }
+  .send{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:var(--blue); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+
+  /* SETTINGS */
+  .profile{ display:flex; align-items:center; gap:14px; padding:16px; background:var(--card); border-radius:18px; box-shadow:0 1px 2px rgba(0,0,0,.05); cursor:pointer; }
+  .pavatar{ width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#3f6fc4,var(--brand)); color:#fff; font-size:22px; font-weight:600; display:flex; align-items:center; justify-content:center; }
+  .pinfo{ flex:1; }
+  .pname{ font-size:20px; font-weight:600; }
+  .pmail{ font-size:13.5px; color:var(--label2); margin-top:2px; }
+  .signout{ width:100%; text-align:center; background:var(--card); border:none; border-radius:16px; padding:15px; margin-top:22px; color:var(--red); font:inherit; font-size:16px; font-weight:500; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .version{ text-align:center; color:var(--label3); font-size:12px; margin-top:14px; }
+  .switch{ position:relative; width:51px; height:31px; flex:0 0 auto; }
+  .switch input{ opacity:0; width:100%; height:100%; margin:0; cursor:pointer; position:relative; z-index:2; }
+  .switch .track{ position:absolute; inset:0; border-radius:16px; background:var(--fill); transition:background .2s; pointer-events:none; }
+  .switch .knob{ position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .2s; pointer-events:none; }
+  .switch input:checked ~ .track{ background:var(--green); }
+  .switch input:checked ~ .knob{ transform:translateX(20px); }
+
+  /* SHEETS + TOAST */
+  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .3s; z-index:70; }
+  .scrim.show{ opacity:1; pointer-events:auto; }
+  .sheet{ position:absolute; left:0; right:0; bottom:0; background:var(--bg); border-radius:22px 22px 0 0; transform:translateY(101%); transition:transform .36s cubic-bezier(.32,.72,0,1); z-index:75; max-height:84%; overflow-y:auto; scrollbar-width:none; padding-bottom:34px; }
+  .sheet::-webkit-scrollbar{ display:none; }
+  .sheet.show{ transform:translateY(0); }
+  .sheet-handle{ width:38px; height:5px; border-radius:3px; background:var(--label3); margin:9px auto 6px; }
+  .sheet-title{ font-size:22px; font-weight:700; padding:8px 20px 2px; letter-spacing:-.3px; }
+  .sheet-sub{ font-size:13.5px; color:var(--label2); padding:0 20px 14px; line-height:1.4; }
+  .sheet .list{ margin:0 16px; }
+  .sheet-actions{ padding:6px 16px 0; display:flex; flex-direction:column; gap:10px; }
+  .act{ display:flex; align-items:center; gap:14px; padding:15px 16px; background:var(--card); border:none; border-radius:14px; width:100%; text-align:left; font:inherit; font-size:17px; color:var(--label); cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .act.cancel{ justify-content:center; font-weight:600; color:var(--blue); }
+  .act .ai{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; flex:0 0 auto; }
+  .act .ai svg{ width:19px; height:19px; }
+  .bene-row{ display:flex; align-items:center; gap:13px; padding:13px 16px; background:var(--card); border:none; width:100%; text-align:left; font:inherit; color:inherit; cursor:pointer; }
+  .bene-row + .bene-row{ border-top:1px solid var(--sep); }
+  .bene-av{ width:44px; height:44px; border-radius:50%; color:#fff; font-weight:600; font-size:16px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .spinner{ width:34px; height:34px; border-radius:50%; border:3px solid var(--fill); border-top-color:var(--blue); animation:spin .8s linear infinite; margin:8px auto; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .toast{ position:absolute; left:50%; bottom:104px; transform:translate(-50%,18px); background:rgba(40,40,42,.97); color:#fff; padding:12px 18px; border-radius:14px; font-size:14px; font-weight:500; z-index:85; opacity:0; transition:opacity .28s, transform .28s; pointer-events:none; max-width:82%; text-align:center; box-shadow:0 8px 26px rgba(0,0,0,.4); }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="island"></div>
+  <div class="statusbar">
+    <div class="sb-time">9:41</div>
+    <div class="sb-right">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 2.2c2.6 0 5 1 6.8 2.6.3.3.8.3 1 0l.4-.4c.3-.3.3-.8 0-1.1C14.6 1.2 11.7 0 8.5 0S2.4 1.2.3 3.3c-.3.3-.3.8 0 1.1l.4.4c.3.3.7.3 1 0C3.5 3.2 5.9 2.2 8.5 2.2z"/><path d="M8.5 6c1.4 0 2.7.5 3.7 1.4.3.3.7.3 1 0l.4-.4c.3-.3.3-.8-.1-1.1C12.2 4.7 10.4 4 8.5 4S4.8 4.7 3.5 5.9c-.4.3-.4.8-.1 1.1l.4.4c.3.3.7.3 1 0C5.8 6.5 7.1 6 8.5 6z"/><path d="M8.5 9.6l1.7-1.7A2.5 2.5 0 0 0 8.5 7.3c-.7 0-1.3.2-1.7.6L8.5 9.6z"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="currentColor"/><rect x="24.5" y="4" width="1.6" height="5" rx=".8" fill="currentColor" fill-opacity=".4"/></svg>
+    </div>
+  </div>
+
+  <div class="viewport">
+    <!-- HOME -->
+    <div class="view tabview active" id="home">
+      <div class="pad">
+        <div class="eyebrow">Benefits · Saturday, August 1</div>
+        <div class="head-row">
+          <button class="title-btn" onclick="openBeneSwitcher()"><h1 class="big-title" id="beneName">Maria Alvarez</h1><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--label3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div style="display:flex;gap:9px">
+            <button class="circbtn" aria-label="Calendar" onclick="openCalendar()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></button>
+            <button class="circbtn" aria-label="Add" onclick="openAddSheet()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
+        <div class="grp-h" style="margin-top:20px"><h2>Federal</h2><span class="count">SSA</span></div>
+        <div class="group" id="grp-federal"></div>
+        <div class="grp-h" id="gh-state"><h2>State</h2><span class="count">Pennsylvania</span></div>
+        <div class="group" id="grp-state"></div>
+        <div class="sec-h"><h2>Upcoming</h2><button class="link" onclick="openCalendar()">Calendar</button></div>
+        <div class="list" id="upcomingList"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="view tabview" id="alerts">
+      <div class="pad">
+        <div class="head-row"><h1 class="big-title">Alerts</h1><button class="link" id="markAll" onclick="markAllRead()">Mark all read</button></div>
+        <div class="sec-lbl">Needs attention</div>
+        <div class="group">
+          <button class="acard" onclick="openProgram('ssi')"><div class="aic" style="background:var(--orange)"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2 1 21h22L12 2zm0 6c.7 0 1.2.6 1.1 1.3l-.4 5a.7.7 0 0 1-1.4 0l-.4-5C10.8 8.6 11.3 8 12 8zm0 9.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg></div><div class="amain"><div class="atop"><div class="atitle">SSI resources at 92%</div><div class="atime">2h ago</div></div><div class="amsg">Countable resources reached $1,840 of the $2,000 limit. You have about $160 of cushion.</div><span class="atag">SSI · Warning</span></div></button>
+        </div>
+        <div class="sec-lbl">Today</div>
+        <div class="group">
+          <button class="acard" onclick="openProgram('ssi')"><div class="aic" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></div><div class="amain"><div class="atop"><div class="atitle">Wage report due Aug 6</div><div class="atime">9h ago</div></div><div class="amsg">Your monthly SSI wage report is due Thursday. Tap to review earnings before you file.</div><span class="atag">SSI · Reminder</span></div></button>
+          <button class="acard" onclick="openProgram('snap')"><div class="aic" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 10l7-7 7 7"/></svg></div><div class="amain"><div class="atop"><div class="atitle">New recurring deposit found</div><div class="atime">11h ago</div></div><div class="amsg">We detected a $780 biweekly deposit from Acme Care Services and counted it as earned income.</div><span class="atag">SNAP · Income</span></div></button>
+        </div>
+        <div class="sec-lbl">Earlier this week</div>
+        <div class="group">
+          <button class="acard" onclick="openProgram('medicaid')"><div class="aic" style="background:var(--teal)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div class="amain"><div class="atop"><div class="atitle">Medicaid renewal opens</div><div class="atime">Wed</div></div><div class="amsg">Your annual Medicaid renewal window is open. Documents are due September 1.</div><span class="atag">Medicaid · Reporting</span></div></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVISOR -->
+    <div class="view tabview" id="advisor">
+      <div class="chat-nav"><div class="t"><svg width="18" height="18" viewBox="0 0 24 24" fill="#5856d6"><path d="M12 2l1.9 4.6L18.5 8l-3.4 3.2.9 4.8L12 13.7 8 16l.9-4.8L5.5 8l4.6-1.4z"/></svg> Advisor</div><div class="s">Powered by Claude · Not legal advice</div></div>
+      <div class="chat" id="chat">
+        <div class="bub a">Hi Maria 👋 I'm your benefits advisor. Ask me anything about your programs, limits, or reporting.</div>
+        <div class="bub u">Can I accept a $500 birthday gift from my mom?</div>
+        <div class="bub a">A $500 cash gift would raise your countable resources. You're already at $1,840 of the $2,000 SSI limit, so $500 would push you $340 over and could pause your SSI for that month.</div>
+        <div class="bub a">Two safer options: have her pay a bill directly, or move the gift into your ABLE account, where it won't count. Want me to show the ABLE steps?</div>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" onclick="ask('Why is SSI near its limit?')">Why is SSI near its limit?</button>
+        <button class="chip" onclick="ask('Can I take a part-time job?')">Can I take a part-time job?</button>
+        <button class="chip" onclick="ask('What counts as a resource?')">What counts as a resource?</button>
+      </div>
+      <div class="composer"><input id="chatInput" placeholder="Ask about your benefits" onkeydown="if(event.key==='Enter')ask()"><button class="send" onclick="ask()" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="view tabview" id="documents">
+      <div class="pad">
+        <div class="head-row"><h1 class="big-title">Documents</h1><button class="circbtn" aria-label="New" onclick="toast('Generating report…')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+        <div class="sec-lbl">Reporting forms</div>
+        <div class="list" id="formsList"></div>
+        <div class="sec-lbl">Vault</div>
+        <div class="list">
+          <button class="lrow" onclick="toast('Opening SSI Award Letter.pdf')"><div class="licon" style="background:#8e8e93"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6zM14 2v4h4"/></svg></div><div class="lmeta"><div class="ltitle">SSI Award Letter.pdf</div><div class="lsub">Uploaded Jul 12 · 240 KB</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+          <button class="lrow" onclick="toast('Opening Pay Stub — Jul 25.pdf')"><div class="licon" style="background:#8e8e93"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6zM14 2v4h4"/></svg></div><div class="lmeta"><div class="ltitle">Pay Stub — Jul 25.pdf</div><div class="lsub">Uploaded Jul 26 · 88 KB</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+          <button class="lrow" onclick="openAddSheet('bank')"><div class="licon" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div><div class="lmeta"><div class="ltitle">Add a document</div><div class="lsub">Upload or import from your bank</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view tabview" id="settings">
+      <div class="pad">
+        <h1 class="big-title" style="margin-bottom:18px">Settings</h1>
+        <div class="profile" onclick="openBeneSwitcher()"><div class="pavatar">MA</div><div class="pinfo"><div class="pname">Maria Alvarez</div><div class="pmail">Family account · managing 2 people</div></div><svg class="chev" width="9" height="15" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></div>
+
+        <div class="sec-lbl">Managing</div>
+        <div class="list">
+          <button class="lrow" onclick="openBeneSwitcher()"><div class="licon" style="background:var(--purple)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 5a3 3 0 0 1 0 6M18 20a6 6 0 0 0-3-5"/></svg></div><div class="lmeta"><div class="ltitle">Beneficiaries</div></div><span class="lval">2</span><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+          <button class="lrow" onclick="openAddSheet('bank')"><div class="licon" style="background:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div><div class="lmeta"><div class="ltitle">Linked banks</div></div><span class="lval" id="bankCount">2 active</span><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+        </div>
+
+        <div class="sec-lbl">Preferences</div>
+        <div class="list">
+          <div class="lrow"><div class="licon" style="background:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><div class="lmeta"><div class="ltitle">Notifications</div></div><label class="switch"><input type="checkbox" checked onchange="toast(this.checked?'Notifications on':'Notifications off')"><span class="track"></span><span class="knob"></span></label></div>
+          <div class="lrow"><div class="licon" style="background:#1c1c1e"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><div class="lmeta"><div class="ltitle">Dark appearance</div></div><label class="switch"><input type="checkbox" id="darkToggle" onchange="setDark(this.checked)"><span class="track"></span><span class="knob"></span></label></div>
+          <button class="lrow" onclick="openProgram('ssi')"><div class="licon" style="background:var(--orange)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></div><div class="lmeta"><div class="ltitle">Alert thresholds</div></div><span class="lval">85%</span><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+        </div>
+
+        <div class="sec-lbl">Privacy &amp; support</div>
+        <div class="list">
+          <button class="lrow" onclick="toast('Privacy &amp; security')"><div class="licon" style="background:#34c759"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5z"/></svg></div><div class="lmeta"><div class="ltitle">Privacy &amp; security</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+          <button class="lrow" onclick="toast('Preparing your export…')"><div class="licon" style="background:var(--teal)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 12l5 4 5-4M5 21h14"/></svg></div><div class="lmeta"><div class="ltitle">Data &amp; exports</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+          <button class="lrow" onclick="showTab('advisor')"><div class="licon" style="background:#8e8e93"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3M12 17h.01"/></svg></div><div class="lmeta"><div class="ltitle">Help &amp; how it works</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>
+        </div>
+        <button class="signout" onclick="toast('Signed out')">Sign Out</button>
+        <div class="version">CliffSense 1.0 · MyBenefitsPA</div>
+      </div>
+    </div>
+
+    <div id="calpage"></div>
+    <div id="detail"></div>
+  </div>
+
+  <div class="tabbar" id="tabbar">
+    <button class="tab active" data-tab="home" onclick="showTab('home')"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5L12 3z"/></svg><span>Home</span></button>
+    <button class="tab" data-tab="alerts" onclick="showTab('alerts')"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Alerts</span><div class="tbadge" id="alertBadge">1</div></button>
+    <button class="tab" data-tab="advisor" onclick="showTab('advisor')"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.5 7.2L3 21l2.3-6.5A8 8 0 1 1 21 11.5z"/></svg><span>Advisor</span></button>
+    <button class="tab" data-tab="documents" onclick="showTab('documents')"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6zM14 2v4h4M9 13h6M9 17h6"/></svg><span>Documents</span></button>
+    <button class="tab" data-tab="settings" onclick="showTab('settings')"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8 6 18M18 6l1.8-1.8"/></svg><span>Settings</span></button>
+  </div>
+
+  <div class="scrim" id="scrim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="toast" id="toast"></div>
+  <div class="home-ind"></div>
+</div>
+
+<script>
+const G = {
+  money:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M8 7h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7"/></svg>',
+  snap:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v9a4 4 0 0 0 8 0V3M10 3v18M18 3c-1.5 0-2.5 2-2.5 5s1 4 2.5 4v9"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.5 2.7 5 6 5c2 0 3.2 1.2 4 2.4C10.8 6.2 12 5 14 5c3.3 0 5 3.5 3.6 6.8C19.5 16.4 12 21 12 21z"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7M5 10v9h14v-9M10 19v-5h4v5"/></svg>',
+  brief:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v13H4zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M4 12h16"/></svg>'
+};
+const FLAG = `<svg class="fed-flag" viewBox="0 0 26 16" xmlns="http://www.w3.org/2000/svg"><rect width="26" height="16" rx="2" fill="#fff"/><g fill="#b22234"><rect y="0" width="26" height="1.23"/><rect y="2.46" width="26" height="1.23"/><rect y="4.92" width="26" height="1.23"/><rect y="7.38" width="26" height="1.23"/><rect y="9.84" width="26" height="1.23"/><rect y="12.3" width="26" height="1.23"/><rect y="14.76" width="26" height="1.23"/></g><rect width="11" height="8.6" fill="#3c3b6e"/><g fill="#fff"><circle cx="2.4" cy="1.9" r=".7"/><circle cx="5.5" cy="1.9" r=".7"/><circle cx="8.6" cy="1.9" r=".7"/><circle cx="3.9" cy="4.3" r=".7"/><circle cx="7" cy="4.3" r=".7"/><circle cx="2.4" cy="6.7" r=".7"/><circle cx="5.5" cy="6.7" r=".7"/><circle cx="8.6" cy="6.7" r=".7"/></g></svg>`;
+const SEAL = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><defs><path id="ssaTop" d="M8 50 A42 42 0 0 1 92 50"/><path id="ssaBot" d="M9 50 A41 41 0 0 0 91 50"/></defs><circle cx="50" cy="50" r="47" stroke-width="2"/><circle cx="50" cy="50" r="37.5" stroke-width="1"/><text font-size="8.4" font-weight="600" letter-spacing="1.3" fill="currentColor" stroke="none"><textPath href="#ssaTop" startOffset="50%" text-anchor="middle">SOCIAL SECURITY</textPath></text><text font-size="7.8" font-weight="600" letter-spacing="1.1" fill="currentColor" stroke="none"><textPath href="#ssaBot" startOffset="50%" text-anchor="middle">ADMINISTRATION</textPath></text><path d="M50 33 L64 38.5 V54 C64 63 57 67 50 70 C43 67 36 63 36 54 V38.5 Z" stroke-width="1.8"/><rect x="36" y="38.5" width="28" height="7.2" stroke-width="1.2"/><text x="50" y="44.4" text-anchor="middle" font-size="6" font-weight="700" fill="currentColor" stroke="none">USA</text><g stroke-width="1.4" stroke-linecap="round"><line x1="41" y1="49" x2="41" y2="63"/><line x1="45.5" y1="49" x2="45.5" y2="64.6"/><line x1="50" y1="49" x2="50" y2="66"/><line x1="54.5" y1="49" x2="54.5" y2="64.6"/><line x1="59" y1="49" x2="59" y2="63"/></g></svg>`;
+const SEALWRAP = `<div class="seal">${SEAL}</div>`;
+const PA_NAVY='#17294d', PA_RED='#cc2031';
+const STATE_MARK = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 33 Q50 25 78 33 L66 83 L34 83 Z" fill="none" stroke="${PA_RED}" stroke-width="5" stroke-linejoin="round"/><text x="50" y="67" text-anchor="middle" font-size="35" font-weight="800" fill="${PA_NAVY}" letter-spacing="-1.5" font-family="-apple-system,Helvetica,Arial,sans-serif">PA</text></svg>`;
+const STATE_MARKWRAP = `<div class="seal">${STATE_MARK}</div>`;
+const STATE_GRAD = ['#3f6a92','#1b3247'];
+const stateGlyph = g => g.replace(/#fff/g, PA_NAVY);
+
+// base program templates (Maria)
+const PROG = {
+  ssi:{ tier:'federal', name:'SSI', tag:'SOCIAL SECURITY ADMINISTRATION', glyph:G.money, okWord:'On track',
+    label:'Countable resources', limitText:'of $2,000 resource limit', unit:'$', curVal:1840, limitVal:2000,
+    simLabel:'Add to resources', simMin:0, simMax:1200, txHead:'Counted resources',
+    tx:[['Checking ····4021','Bank balance · Today','$1,240',G.money,'#007aff',''],['Savings ····8830','Bank balance · Today','$600',G.money,'#30b0c7',''],['ABLE account','Excluded resource · Today','$0',G.home,'#5856d6','']] },
+  ssdi:{ tier:'federal', name:'SSDI', tag:'SOCIAL SECURITY ADMINISTRATION', glyph:G.brief, okWord:'On track',
+    label:'Monthly earnings', limitText:'of $1,550 SGA limit', unit:'$', curVal:980, limitVal:1550,
+    simLabel:'Change monthly earnings', simMin:-600, simMax:1000, txHead:'Earnings this month',
+    tx:[['Acme Care Services','Paycheck · Jul 25','+$520',G.brief,'#30b0c7','pos'],['Acme Care Services','Paycheck · Jul 11','+$460',G.brief,'#30b0c7','pos'],['Impairment expense','Deduction','-$0',G.money,'#8e8e93','']] },
+  snap:{ tier:'state', name:'SNAP', tag:'COMMONWEALTH OF PENNSYLVANIA', glyph:G.snap, grad:STATE_GRAD, okWord:'Eligible',
+    label:'Counted monthly income', limitText:'of $1,632 income limit', unit:'$', curVal:1180, limitVal:1632,
+    simLabel:'Change monthly income', simMin:-600, simMax:1200, txHead:'Counted income',
+    tx:[['Acme Care Services','Earned income · Jul 25','+$780',G.brief,'#34c759','pos'],['Acme Care Services','Earned income · Jul 11','+$400',G.brief,'#34c759','pos'],['State Refund','Excluded · Jul 3','$0',G.money,'#8e8e93','']] },
+  medicaid:{ tier:'state', name:'Medicaid', tag:'COMMONWEALTH OF PENNSYLVANIA', glyph:G.heart, grad:STATE_GRAD, okWord:'Enrolled',
+    label:'Monthly MAGI income', limitText:'of $3,046 income limit', unit:'$', curVal:1860, limitVal:3046,
+    simLabel:'Change monthly income', simMin:-800, simMax:1600, txHead:'Counted income',
+    tx:[['Acme Care Services','Earned income · Jul 25','+$1,180',G.brief,'#ff2d55','pos'],['Disability Support','Other income · Jul 12','+$680',G.heart,'#ff9500','pos'],['Household member','Not counted · Jul 1','$0',G.home,'#8e8e93','']] },
+  section8:{ tier:'state', name:'Section 8', tag:'COMMONWEALTH OF PENNSYLVANIA', glyph:G.home, grad:STATE_GRAD, okWord:'Eligible',
+    label:'Percent of area median income', limitText:'of 50% AMI limit', unit:'%', curVal:48, limitVal:50,
+    simLabel:'Change income (% of AMI)', simMin:-20, simMax:14, txHead:'Household income',
+    tx:[['Acme Care Services','Annual · gross','$28,320',G.brief,'#5856d6',''],['SSDI benefit','Annual · gross','$11,760',G.money,'#30b0c7',''],['Utility allowance','Deduction','-$1,140',G.home,'#8e8e93','']] }
+};
+// beneficiaries + per-program overrides
+const BENES = {
+  maria:{ name:'Maria Alvarez', initials:'MA', relation:'You · self-managed', color:'#2b5797', progs:['ssi','ssdi','snap','medicaid','section8'], over:{} },
+  david:{ name:'David Alvarez', initials:'DA', relation:'Son · age 14', color:'#9a5bd0', progs:['ssi','medicaid','snap'],
+    over:{ ssi:{ curVal:2080, tx:[['Checking ····5567','Bank balance · Today','$1,180',G.money,'#007aff',''],['Savings ····9921','Bank balance · Today','$900',G.money,'#30b0c7',''],['ABLE account','Excluded resource','$0',G.home,'#5856d6','']] },
+           medicaid:{ curVal:1120 },
+           snap:{ curVal:540 } } }
+};
+let cur='maria';
+const PILL={ok:'#1f9d4d',warn:'#cf7a12',crit:'#c0392b'}, BAR={ok:'#34d15f',warn:'#ffab2e',crit:'#ff5a4f'};
+const WARN_AT=85;
+
+const fmt=(unit,v)=> unit==='%' ? Math.round(v)+'%' : '$'+Math.round(v).toLocaleString();
+function statusOf(pct){ return pct>100?'crit':pct>=WARN_AT?'warn':'ok'; }
+function getProg(k){ return Object.assign({}, PROG[k], (BENES[cur].over[k]||{})); }
+function computed(p){
+  const pct=Math.round(p.curVal/p.limitVal*100), sc=statusOf(pct);
+  const word = sc==='crit'?'Over limit': sc==='warn'?'Near limit': p.okWord;
+  const cushion=p.limitVal-p.curVal;
+  return { pct, sc, word, cushion,
+    big:fmt(p.unit,p.curVal), cardSub:'of '+fmt(p.unit,p.limitVal),
+    cushionText: cushion>=0 ? fmt(p.unit,cushion)+(p.unit==='%'?' of AMI left':' left') : fmt(p.unit,-cushion)+' over' };
+}
+
+function walletCard(k){ const p=getProg(k), c=computed(p), fed=p.tier==='federal';
+  return `<button class="wcard ${fed?'fed':'state'}" onclick="openProgram('${k}')">
+    ${fed?SEALWRAP:STATE_MARKWRAP}
+    <div class="wc-in"><div class="w-top"><span class="w-label">${fed?FLAG:''}<span>${p.tag}</span></span><span class="w-pill" style="background:${PILL[c.sc]}">${c.word}</span></div>
+      <div class="w-name">${fed?p.glyph:stateGlyph(p.glyph)} ${p.name}</div>
+      <div class="w-bot"><div class="w-num">${c.big}<span>${c.cardSub}</span></div><div class="w-bar"><div class="w-fill" style="width:${Math.min(c.pct,100)}%;background:${BAR[c.sc]}"></div></div></div></div></button>`; }
+
+function renderHome(){
+  const b=BENES[cur];
+  const fed=b.progs.filter(k=>PROG[k].tier==='federal');
+  const st=b.progs.filter(k=>PROG[k].tier==='state');
+  document.getElementById('grp-federal').innerHTML=fed.map(walletCard).join('');
+  document.getElementById('grp-state').innerHTML=st.map(walletCard).join('');
+  document.getElementById('gh-state').style.display= st.length?'flex':'none';
+  document.getElementById('beneName').textContent=b.name;
+  document.querySelector('.pavatar').textContent=b.initials;
+}
+function icon(sc){ const col=sc==='crit'?'#ff3b30':sc==='warn'?'#ff9500':'#34c759';
+  return sc==='ok'
+   ? `<svg width="17" height="17" viewBox="0 0 24 24" fill="${col}"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10z"/></svg>`
+   : `<svg width="17" height="17" viewBox="0 0 24 24" fill="${col}"><path d="M12 2 1 21h22L12 2zm0 6c.7 0 1.2.6 1.1 1.3l-.4 5a.7.7 0 0 1-1.4 0l-.4-5C10.8 8.6 11.3 8 12 8zm0 9.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>`; }
+
+function tint(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+
+let curProgKey=null;
+function openProgram(k){ closeSheet(); curProgKey=k; const p=getProg(k), c=computed(p), fed=p.tier==='federal';
+  const rows=p.tx.map(t=>`<div class="trow"><div class="ticon" style="background:${tint(t[4],.15)}">${t[3].replace(/#fff/g,t[4])}</div><div class="tmeta"><div class="tt">${t[0]}</div><div class="ts">${t[1]}</div></div><div class="drow"><div class="tamt ${t[5]}">${t[2]}</div><svg class="disclose" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></div></div>`).join('');
+  const stats=`<div class="stat"><div class="sv">${fmt(p.unit,p.limitVal)}</div><div class="sl">Limit</div></div><div class="stat"><div class="sv">${fmt(p.unit,p.curVal)}</div><div class="sl">Current</div></div><div class="stat"><div class="sv ${c.sc}">${c.cushion>=0?fmt(p.unit,c.cushion):'-'+fmt(p.unit,-c.cushion)}</div><div class="sl">${c.cushion>=0?'Cushion':'Over'}</div></div>`;
+  document.getElementById('detail').innerHTML = `
+    <div class="dnav"><button class="navbtn" onclick="closeProgram()" aria-label="Back"><svg width="12" height="19" viewBox="0 0 12 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1 2 9.5l8 8.5"/></svg></button><button class="navbtn" aria-label="More" onclick="openProgMenu()"><svg width="17" height="4" viewBox="0 0 19 5" fill="currentColor"><circle cx="2.5" cy="2.5" r="2.2"/><circle cx="9.5" cy="2.5" r="2.2"/><circle cx="16.5" cy="2.5" r="2.2"/></svg></button></div>
+    <div class="dbody">
+      <div class="hero ${fed?'hero-fed':'hero-state'}">
+        ${fed?SEALWRAP:STATE_MARKWRAP}
+        <div class="hero-top"><div><div class="hero-name">${fed?p.glyph:stateGlyph(p.glyph)} ${p.name}</div><div class="hero-tag">${fed?FLAG:''}${p.tag}</div></div><div class="hero-big">${c.big}</div></div>
+        <div class="hero-bottom"><div class="hero-label">${p.label}</div><div class="hero-limit">${p.limitText}</div></div>
+      </div>
+      <div class="card">
+        <div class="co-row"><div class="co-label" style="font-weight:700;color:var(--label);font-size:16px">What if…</div><button class="link" onclick="resetSim()">Reset</button></div>
+        <div class="sim-lead">Drag to try a change — ${p.simLabel.toLowerCase()} — and see where this limit lands.</div>
+        <input type="range" class="slider" id="sim" min="${p.simMin}" max="${p.simMax}" step="${p.unit==='%'?1:10}" value="0" oninput="simUpdate(+this.value)">
+        <div class="sim-delta" id="simDelta">No change</div>
+        <div class="sim-divider"></div>
+        <div class="co-row"><div class="co-label" id="simCushLabel">Cushion to limit</div><div class="co-amt" id="simAmt"></div></div>
+        <div class="co-bar"><div class="co-fill" id="simBar"></div></div>
+        <div class="co-note" id="simNote"></div>
+      </div>
+      <div class="stats">${stats}</div>
+      <div class="sec-h" style="margin-left:2px"><h2>${p.txHead}</h2><button class="link" onclick="toast('Showing all activity')">All</button></div>
+      <div class="tlist">${rows}</div>
+      <div class="foot-note">CliffSense counts these against the ${p.name} threshold from your linked accounts. Nothing here is shared with any agency.</div>
+    </div>`;
+  document.body.classList.add('detail-open');
+  document.getElementById('detail').scrollTop=0;
+  simUpdate(0);
+}
+function closeProgram(){ document.body.classList.remove('detail-open'); }
+
+function simUpdate(delta){ const p=getProg(curProgKey);
+  const proj=Math.max(0,p.curVal+delta);
+  const pct=Math.round(proj/p.limitVal*100), sc=statusOf(pct);
+  const cushion=p.limitVal-proj;
+  const word=sc==='crit'?'Over limit':sc==='warn'?'Near limit':p.okWord;
+  const dEl=document.getElementById('simDelta');
+  if(delta===0) dEl.textContent='No change · projected '+fmt(p.unit,proj);
+  else dEl.textContent=(delta>0?'+':'−')+fmt(p.unit,Math.abs(delta))+' → '+fmt(p.unit,proj)+' ('+pct+'%)';
+  document.getElementById('simCushLabel').textContent = cushion>=0?'Cushion to limit':'Over the limit';
+  const amt=document.getElementById('simAmt');
+  amt.textContent = cushion>=0? fmt(p.unit,cushion)+' left' : fmt(p.unit,-cushion)+' over';
+  amt.className='co-amt '+sc;
+  const bar=document.getElementById('simBar');
+  bar.style.width=Math.min(pct,100)+'%'; bar.className='co-fill '+(sc==='crit'?'f-crit':sc==='warn'?'f-warn':'f-ok');
+  document.getElementById('simNote').textContent =
+    sc==='crit' ? `This would put ${p.name} over its limit — eligibility could pause. Move funds to ABLE or offset with a deduction.`
+    : sc==='warn' ? `${p.name} would be close to its limit. Report the change promptly and keep documentation.`
+    : `${p.name} stays comfortably eligible with this change.`;
+}
+function resetSim(){ const s=document.getElementById('sim'); if(s){ s.value=0; simUpdate(0); } }
+function openProgMenu(){ const p=getProg(curProgKey);
+  openSheet(`<div class="sheet-title">${p.name}</div><div class="sheet-sub">${p.tag}</div>
+    <div class="sheet-actions">
+      <button class="act" onclick="closeSheet();toast('Report generated')"><span class="ai" style="background:var(--blue)">${G.brief}</span>Generate report</button>
+      <button class="act" onclick="closeSheet();toast('Reminder set')"><span class="ai" style="background:var(--orange)">${G.money}</span>Set a reminder</button>
+      <button class="act" onclick="closeSheet();toast('Limit detached')"><span class="ai" style="background:#8e8e93">${G.home}</span>Stop tracking this limit</button>
+      <button class="act cancel" onclick="closeSheet()">Cancel</button>
+    </div>`); }
+
+/* tabs */
+function showTab(name){
+  document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('active', v.id===name));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  closeProgram(); closeSheet(); closeCalendar();
+}
+
+/* alerts */
+function markAllRead(){ document.querySelectorAll('.acard').forEach(a=>a.classList.add('read'));
+  document.getElementById('alertBadge').classList.add('hidden');
+  document.getElementById('markAll').textContent='All read'; toast('All alerts marked read'); }
+
+/* documents */
+const FORMS=[
+  ['SSA-821 Work Activity','SSI · Generated Aug 1','Ready','s-ok','#007aff','ssi'],
+  ['PA 600 Semi-Annual','SNAP · Due Aug 20','Draft','s-warn','#34c759','snap'],
+  ['Medicaid Renewal Packet','Medicaid · Due Sep 1','Needed','s-mut','#ff2d55','medicaid']
+];
+function renderForms(){ document.getElementById('formsList').innerHTML=FORMS.map((f,i)=>`
+  <button class="lrow" onclick="formTap(${i})"><div class="licon" style="background:${f[4]}"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l4 4v16H6zM14 2v4h4"/></svg></div><div class="lmeta"><div class="ltitle">${f[0]}</div><div class="lsub">${f[1]}</div></div><span class="spill ${f[3]}" id="form-${i}">${f[2]}</span><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px"><path d="M1 1l6 5.5-6 5.5"/></svg></button>`).join(''); }
+function formTap(i){ const f=FORMS[i];
+  if(f[2]==='Ready'){ toast('Opening '+f[0]); }
+  else { openSheet(`<div class="sheet-title">${f[0]}</div><div class="sheet-sub">${f[1]}. CliffSense can fill this from your counted income and resources.</div>
+    <div class="sheet-actions"><button class="act" onclick="genForm(${i})"><span class="ai" style="background:var(--blue)">${G.brief}</span>Generate &amp; fill PDF</button><button class="act cancel" onclick="closeSheet()">Cancel</button></div>`); }
+}
+function genForm(i){ closeSheet(); FORMS[i][2]='Ready'; FORMS[i][3]='s-ok'; const el=document.getElementById('form-'+i); if(el){ el.textContent='Ready'; el.className='spill s-ok'; } toast('Form generated'); }
+
+/* calendar + events */
+const CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8 8 0 0 1-11.5 7.2L3 21l2.3-6.5A8 8 0 1 1 21 11.5z"/></svg>';
+const CHEV='<svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg>';
+const EVENTS=[
+  { id:'ssi-wage', tag:'Social Security Administration', title:'SSI Wage Report', mon:'AUG', day:6, wd:'Thu', rel:'in 5 days',
+    dateFull:'Aug 6, 2026', timeShort:'5:00 PM', c:['#2b7cff','#0a3f8c'], icColor:'#007aff',
+    tiles:[['myWageReport','Report on ssa.gov',G.brief,'#007aff'],['Ask Advisor','Estimate the impact',CHAT,'#5856d6']],
+    details:[['Deadline','Thursday, August 6, 2026'],['Reporting period','July 2026 earnings'],['Estimated wages','$980 · under SGA'],['How to file','Online, phone, or mail'],['Program','SSI · Federal (SSA)']], cta:'Review & file report' },
+  { id:'snap-recert', tag:'PA Dept. of Human Services', title:'SNAP Recertification', mon:'AUG', day:20, wd:'Thu', rel:'in 19 days',
+    dateFull:'Aug 20, 2026', timeShort:'10:30 AM', c:['#37c65e','#1c7d43'], icColor:'#34c759',
+    tiles:[['COMPASS','PA benefits portal',G.brief,'#34c759'],['Upload docs','Pay stubs & ID',G.home,'#30b0c7']],
+    details:[['Interview','Thursday, August 20, 2026 · phone'],['Bring','Last 30 days of pay stubs'],['Household size','1 person'],['Counted income','$1,180 of $1,632 limit'],['Program','SNAP · State-administered']], cta:'Add to calendar' },
+  { id:'medicaid-renew', tag:'PA Medical Assistance', title:'Medicaid Renewal', mon:'SEP', day:1, wd:'Tue', rel:'Sep 1',
+    dateFull:'Sep 1, 2026', timeShort:'11:59 PM', c:['#ff3b6b','#c01e4a'], icColor:'#ff2d55',
+    tiles:[['COMPASS','Renew online',G.brief,'#ff2d55'],['Documents','Income verification',G.home,'#ff9500']],
+    details:[['Renewal due','Tuesday, September 1, 2026'],['Documents needed','Proof of income'],['Coverage','MAGI household'],['Counted income','$1,860 of $3,046 limit'],['Program','Medicaid · State-administered']], cta:'Start renewal' }
+];
+const cap=m=>m[0]+m.slice(1).toLowerCase();
+function renderUpcoming(){ document.getElementById('upcomingList').innerHTML=EVENTS.map(e=>`<button class="lrow" onclick="openEvent('${e.id}')"><div class="datechip"><div class="m">${e.mon}</div><div class="d">${e.day}</div></div><div class="lmeta"><div class="ltitle">${e.title}</div><div class="lsub">${e.tag} · ${e.wd}, ${cap(e.mon)} ${e.day}</div></div><div class="lrel">${e.rel}</div>${CHEV}</button>`).join(''); }
+
+function buildMonth(){ const wd=['S','M','T','W','T','F','S']; let h=wd.map(d=>`<div class="cal-wd">${d}</div>`).join('');
+  const first=6, days=31, today=1; const evMap={6:['ssi-wage','#007aff'],20:['snap-recert','#34c759']};
+  for(let i=0;i<first;i++) h+='<div class="cal-day"></div>';
+  for(let d=1;d<=days;d++){ const ev=evMap[d];
+    h+=`<div class="cal-day${d===today?' today':''}${ev?' ev':''}" ${ev?`onclick="openEvent('${ev[0]}')"`:''}><div class="num">${d}</div><div class="dot" style="background:${ev?ev[1]:'transparent'}"></div></div>`; }
+  return h; }
+function openCalendar(){ closeSheet();
+  const agenda=EVENTS.map(e=>`<button class="lrow" onclick="openEvent('${e.id}')"><div class="datechip"><div class="m">${e.mon}</div><div class="d">${e.day}</div></div><div class="lmeta"><div class="ltitle">${e.title}</div><div class="lsub">${e.tag}</div></div><div class="lrel">${e.rel}</div>${CHEV}</button>`).join('');
+  document.getElementById('calpage').innerHTML=`
+    <div class="dnav"><button class="navbtn" onclick="closeCalendar()" aria-label="Back"><svg width="12" height="19" viewBox="0 0 12 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1 2 9.5l8 8.5"/></svg></button><button class="navbtn" aria-label="Add" onclick="toast('New reminder')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <div style="padding:2px 20px 46px">
+      <div class="cal-month">August 2026</div>
+      <div class="cal-grid">${buildMonth()}</div>
+      <div class="cal-rule"></div>
+      <div class="sec-lbl" style="margin-top:10px">Reporting deadlines</div>
+      <div class="list">${agenda}</div>
+    </div>`;
+  document.body.classList.add('cal-open'); document.getElementById('calpage').scrollTop=0; }
+function closeCalendar(){ document.body.classList.remove('cal-open'); }
+
+function openEvent(id){ closeSheet(); const e=EVENTS.find(x=>x.id===id); if(!e) return;
+  const tiles=e.tiles.map((t,i)=>`<button class="ev-tile" onclick="${i===1&&t[0]==='Ask Advisor'?"showTab('advisor')":`toast('${t[1]}')`}"><div class="ev-ic" style="background:${t[3]}">${t[2]}</div><div class="ev-tt">${t[0]}</div><div class="ev-ts">${t[1]}</div></button>`).join('');
+  const rows=e.details.map(d=>`<div class="ev-row"><div class="ev-l">${d[0]}</div><div class="ev-v">${d[1]}</div></div>`).join('');
+  document.getElementById('detail').innerHTML=`
+    <div class="ev-hero" style="background:linear-gradient(160deg,${e.c[0]},${e.c[1]})">
+      <div class="ev-navwrap"><button class="navbtn" onclick="closeProgram()" aria-label="Back"><svg width="12" height="19" viewBox="0 0 12 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1 2 9.5l8 8.5"/></svg></button><button class="navbtn" aria-label="More" onclick="toast('Share, edit, remove')"><svg width="17" height="4" viewBox="0 0 19 5" fill="currentColor"><circle cx="2.5" cy="2.5" r="2.2"/><circle cx="9.5" cy="2.5" r="2.2"/><circle cx="16.5" cy="2.5" r="2.2"/></svg></button></div>
+      <div class="ev-eyebrow">${e.tag}</div>
+      <div class="ev-title">${e.title}</div>
+    </div>
+    <div class="dbody" style="padding-top:16px">
+      <div class="ev-tiles">${tiles}</div>
+      <div class="sec-lbl">Details</div>
+      <div class="list ev-details">${rows}</div>
+      <div class="ev-datetime"><div class="ev-dt"><div class="ev-dl">Date</div><div class="ev-dv">${e.dateFull}</div></div><div class="ev-dt"><div class="ev-dl">Time</div><div class="ev-dv">${e.timeShort}</div></div></div>
+      <button class="ev-cta" onclick="toast('${e.cta}')">${e.cta}</button>
+    </div>`;
+  document.body.classList.add('detail-open'); document.getElementById('detail').scrollTop=0; }
+
+/* advisor */
+const REPLIES={
+  'Why is SSI near its limit?':"Your countable resources are $1,840 — 92% of the $2,000 SSI limit, mostly your $1,240 checking and $600 savings. Moving some into an ABLE account would lower the counted total.",
+  'Can I take a part-time job?':"Yes. SSI drops about $1 for every $2 you earn over $85/month, so part-time work rarely ends benefits — but wages must be reported monthly. Want me to estimate a specific paycheck?",
+  'What counts as a resource?':"Cash, checking, savings, and most investments count toward the $2,000 SSI limit. Your home, one vehicle, and ABLE savings up to $100,000 don't count."
+};
+function ask(preset){ const input=document.getElementById('chatInput'); const text=(preset||input.value).trim(); if(!text) return;
+  const chat=document.getElementById('chat'); const u=document.createElement('div'); u.className='bub u'; u.textContent=text; chat.appendChild(u); input.value='';
+  const a=document.createElement('div'); a.className='bub a'; a.textContent=REPLIES[text]||"Good question. Based on your linked accounts and current thresholds, I'd check this against your SSI resource limit first — tap the SSI card for the exact numbers.";
+  setTimeout(()=>{ chat.appendChild(a); chat.scrollTop=chat.scrollHeight; },400); chat.scrollTop=chat.scrollHeight; }
+
+/* sheets */
+function openSheet(html){ document.getElementById('sheet').innerHTML=`<div class="sheet-handle"></div>`+html;
+  document.getElementById('scrim').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
+function closeSheet(){ document.getElementById('scrim').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
+
+function openBeneSwitcher(){ const rows=Object.keys(BENES).map(id=>{ const b=BENES[id]; const on=id===cur;
+    return `<button class="bene-row" onclick="selectBene('${id}')"><div class="bene-av" style="background:linear-gradient(150deg,#7aa0e0,${b.color})">${b.initials}</div><div class="lmeta"><div class="ltitle">${b.name}</div><div class="lsub">${b.relation}</div></div>${on?`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`:''}</button>`; }).join('');
+  openSheet(`<div class="sheet-title">Switch beneficiary</div><div class="sheet-sub">You manage benefits for these people.</div><div class="list">${rows}</div><div class="sheet-actions" style="margin-top:12px"><button class="act" onclick="closeSheet();toast('Add a beneficiary')"><span class="ai" style="background:var(--purple)">${G.home}</span>Add a beneficiary</button></div>`); }
+function selectBene(id){ cur=id; renderHome(); closeSheet(); showTab('home'); toast('Viewing '+BENES[id].name); }
+
+function openAddSheet(which){
+  if(which==='bank') return connectBank();
+  openSheet(`<div class="sheet-title">Quick actions</div><div class="sheet-actions">
+    <button class="act" onclick="addLimit()"><span class="ai" style="background:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>Add a limit to track</button>
+    <button class="act" onclick="connectBank()"><span class="ai" style="background:var(--green)">${G.money}</span>Connect a bank</button>
+    <button class="act" onclick="closeSheet();toast('Found 12 transactions to import')"><span class="ai" style="background:var(--teal)">${G.brief}</span>Import transactions</button>
+    <button class="act" onclick="closeSheet();toast('Export started — we\\'ll email a PDF')"><span class="ai" style="background:var(--purple)">${G.home}</span>Export data</button>
+    <button class="act cancel" onclick="closeSheet()">Cancel</button></div>`);
+}
+function addLimit(){ const items=['SSI Student Earned Income Exclusion','SNAP standard deduction','TANF payment standard','WIC income guideline'];
+  openSheet(`<div class="sheet-title">Add a limit</div><div class="sheet-sub">Track another threshold against your accounts.</div><div class="list">${items.map(n=>`<button class="lrow" onclick="closeSheet();toast('Now tracking: ${n}')"><div class="lmeta"><div class="ltitle">${n}</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>`).join('')}</div>`); }
+
+let banks=2;
+function connectBank(){ const list=['Chase','Bank of America','Wells Fargo','PNC Bank','Capital One'];
+  openSheet(`<div class="sheet-title">Connect a bank</div><div class="sheet-sub">Securely link an account with read-only access. We never move money.</div><div class="list">${list.map(n=>`<button class="lrow" onclick="doConnect('${n}')"><div class="licon" style="background:var(--brand)">${G.money}</div><div class="lmeta"><div class="ltitle">${n}</div></div><svg class="chev" width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 5.5-6 5.5"/></svg></button>`).join('')}</div>`); }
+function doConnect(name){ document.getElementById('sheet').innerHTML=`<div class="sheet-handle"></div><div class="sheet-title">Connecting…</div><div class="sheet-sub">Securely linking ${name}.</div><div class="spinner"></div><div style="height:20px"></div>`;
+  setTimeout(()=>{ document.getElementById('sheet').innerHTML=`<div class="sheet-handle"></div><div style="text-align:center;padding:14px 20px 8px"><svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg><div class="sheet-title" style="text-align:center">${name} connected</div><div class="sheet-sub" style="text-align:center">We'll sync transactions and watch your limits automatically.</div></div><div class="sheet-actions"><button class="act cancel" onclick="closeSheet()">Done</button></div>`;
+    banks++; const bc=document.getElementById('bankCount'); if(bc) bc.textContent=banks+' active'; }, 1400); }
+
+/* dark mode + toast */
+function setDark(on){ document.getElementById('phone').classList.toggle('dark', on); toast(on?'Dark appearance on':'Light appearance on'); }
+let toastT;
+function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1900); }
+
+renderHome(); renderForms(); renderUpcoming();
+</script>
+</body>
+</html>
