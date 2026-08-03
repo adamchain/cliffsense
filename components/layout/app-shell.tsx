@@ -122,7 +122,7 @@ function VaultCard({ activeHref }: { activeHref: string }) {
       href="/vault"
       className={`flex items-center gap-3 rounded-2xl border p-3 transition-colors ${
         active
-          ? "border-transparent bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(75,99,240,0.85)]"
+          ? "border-transparent bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(0,122,255,0.55)]"
           : "border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
       }`}
     >
@@ -166,23 +166,25 @@ export function AppShell({
 }) {
   const badge = alertCount > 9 ? "9+" : String(alertCount);
 
-  // Mobile surfaces use the flattened leaf destinations.
+  // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
   const leaves = flattenSections(ALL_SECTIONS);
   const drawerNav = [
     ...leaves.filter((n) => n.href !== "/settings"),
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: IconShieldLock }] : []),
   ];
-  const tabPrimary = leaves.filter((n) => PRIMARY_HREFS.includes(n.href));
-  const tabMore = leaves.filter((n) => !PRIMARY_HREFS.includes(n.href) && n.href !== "/settings");
+  // Five prototype tabs; remaining destinations live in the hamburger drawer.
+  const tabPrimary = PRIMARY_HREFS.map((href) => leaves.find((n) => n.href === href)).filter(
+    (n): n is (typeof leaves)[number] => Boolean(n),
+  );
+  const tabMore: typeof leaves = [];
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      {/* ---------- Desktop sidebar (mobile uses the bottom tab bar) ---------- */}
+    <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[15px] text-[var(--color-cs-text)]">
+      {/* ---------- Desktop sidebar ---------- */}
       <nav
-        className="hidden w-60 shrink-0 flex-col gap-1 px-3 py-4 lg:flex lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto"
+        className="hidden w-60 shrink-0 flex-col gap-1 bg-white px-3 py-4 lg:flex lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto"
         aria-label="Main"
       >
-        {/* Brand sits at the top of the sidebar */}
         <Link
           href="/dashboard"
           className="mb-3 flex items-center gap-2.5 rounded-xl px-2 py-1 hover:opacity-90"
@@ -203,7 +205,6 @@ export function AppShell({
           />
         ))}
 
-        {/* Utility group pinned to the bottom: Vault leads as a card. */}
         <div className="mt-auto flex flex-col gap-2 border-t border-[var(--color-cs-border)] pt-3">
           <VaultCard activeHref={activeHref} />
           <div className="flex flex-col gap-0.5">
@@ -228,24 +229,10 @@ export function AppShell({
         </div>
       </nav>
 
-      {/* ---------- Main column (white) ---------- */}
-      <div className="flex min-w-0 flex-1 flex-col bg-white">
-        {/* ---------- Topbar: to the right of the sidebar ---------- */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-[var(--color-cs-border)] bg-white/85 px-4 backdrop-blur sm:gap-3 sm:px-6">
-          {/* Hamburger opens the full nav drawer on mobile (sidebar is hidden there) */}
-          <MobileNavDrawer nav={drawerNav} activeHref={activeHref} alertCount={alertCount} />
-          {/* Brand shows in the topbar only on mobile (sidebar is hidden there) */}
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2.5 rounded-xl py-1 pr-2 hover:opacity-90 lg:hidden"
-          >
-            <BrandMark size="lg" />
-            <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
-              MyBenefitsPA
-            </span>
-          </Link>
-
-          {/* Back/forward + global search, aligned left and spanning the bar */}
+      {/* ---------- Main column ---------- */}
+      <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-cs-surface)]">
+        {/* Desktop / tablet topbar; mobile pages own their headers */}
+        <header className="sticky top-0 z-30 hidden h-16 shrink-0 items-center gap-2 border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)]/90 px-4 backdrop-blur sm:gap-3 sm:px-6 lg:flex">
           <TopbarControls />
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
@@ -256,20 +243,20 @@ export function AppShell({
             >
               <IconBell size={19} stroke={1.7} />
               {alertCount > 0 && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-danger)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-pa-red)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
                   {badge}
                 </span>
               )}
             </Link>
             <Link
               href="/settings"
-              className="hidden h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] sm:flex"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
               aria-label="Settings"
             >
               <IconSettings size={19} stroke={1.7} />
             </Link>
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-[13px] font-bold text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-avatar)] text-[13px] font-bold text-white"
               title={userName}
             >
               {userInitials}
@@ -277,11 +264,17 @@ export function AppShell({
           </div>
         </header>
 
-        {/* Sub-tabs for grouped sections (Money, To-Do, Documents). */}
+        {/* Compact mobile utility row (search + overflow nav) */}
+        <div className="flex items-center gap-2 px-4 pt-3 lg:hidden">
+          <MobileNavDrawer nav={drawerNav} activeHref={activeHref} alertCount={alertCount} />
+          <div className="min-w-0 flex-1">
+            <TopbarControls />
+          </div>
+        </div>
+
         <SectionTabs />
 
-        {/* Bottom padding on mobile clears the fixed tab bar. */}
-        <div className="min-w-0 flex-1 p-4 pb-28 sm:p-6 lg:pb-6">{children}</div>
+        <div className="min-w-0 flex-1 px-4 pb-28 pt-2 sm:px-5 lg:p-6 lg:pb-6">{children}</div>
       </div>
 
       <MobileTabBar

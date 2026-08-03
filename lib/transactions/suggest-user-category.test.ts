@@ -52,7 +52,51 @@ describe("suggestUserCategoryFromPlaid", () => {
     ).toBe("transfer");
   });
 
-  it("returns null without PFC primary", () => {
+  it("maps payroll-like TRANSFER_IN to earned_income", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -85000,
+        pfcPrimary: "TRANSFER_IN",
+        pfcDetailed: "TRANSFER_IN_ACCOUNT_TRANSFER",
+        name: "ADP PAYROLL DIRECT DEP",
+        merchantName: "ADP",
+      }),
+    ).toBe("earned_income");
+  });
+
+  it("maps payroll text without PFC to earned_income", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -40000,
+        pfcPrimary: "",
+        name: "GUSTO PAYROLL",
+      }),
+    ).toBe("earned_income");
+  });
+
+  it("maps CSV paycheck descriptions to earned_income", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -120000,
+        pfcPrimary: "",
+        name: "Paycheck",
+      }),
+    ).toBe("earned_income");
+  });
+
+  it("maps bank category Payroll to earned_income", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -50000,
+        pfcPrimary: "TRANSFER_IN",
+        pfcDetailed: "TRANSFER_IN_ACCOUNT_TRANSFER",
+        name: "ACME CORP",
+        category: "Payroll",
+      }),
+    ).toBe("earned_income");
+  });
+
+  it("returns null without PFC primary when not payroll", () => {
     expect(
       suggestUserCategoryFromPlaid({
         amountCents: -100,

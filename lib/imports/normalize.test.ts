@@ -54,6 +54,7 @@ describe("detectMapping + normalizeRows", () => {
     expect(invalid).toHaveLength(0);
     // Deposit (positive in file) becomes negative (money in) in app convention.
     expect(valid[0].amountCents).toBe(-120000);
+    expect(valid[0].suggestedUserCategory).toBe("earned_income");
     // Debit (negative in file) becomes positive (money out).
     expect(valid[1].amountCents).toBe(450);
   });

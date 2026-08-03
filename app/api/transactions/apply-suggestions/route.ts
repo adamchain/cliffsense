@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import mongoose from "mongoose";
 import { auth } from "@/auth";
 import { assertBeneficiaryWriteAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
-import Transaction from "@/lib/db/models/Transaction";
-import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
-import mongoose from "mongoose";
+import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
 
 const bodySchema = z.object({ beneficiaryId: z.string().min(1) }).strict();
 
-const MAX_PER_REQUEST = 1500;
-
 /**
- * Bulk-apply Plaid personal-finance-category heuristics to rows still marked `unclear`.
+ * Bulk-apply category heuristics to unedited unclear / mis-tagged rows.
  * Does not set `lastUserEditedAt` (user can still override via PATCH).
  */
 export async function POST(req: Request) {
@@ -34,42 +31,9 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
-  const benId = new mongoose.Types.ObjectId(beneficiaryId);
+  const result = await reapplyAutoCategoriesForBeneficiary(
+    new mongoose.Types.ObjectId(beneficiaryId),
+  );
 
-  const candidates = await Transaction.find({
-    beneficiaryId: benId,
-    userCategory: "unclear",
-    pfcPrimary: { $exists: true, $nin: ["", null] },
-  })
-    .select({ _id: 1, amountCents: 1, pfcPrimary: 1, pfcDetailed: 1 })
-    .limit(MAX_PER_REQUEST)
-    .lean();
-
-  const ops: Parameters<typeof Transaction.bulkWrite>[0] = [];
-  for (const t of candidates) {
-    const suggested = suggestUserCategoryFromPlaid({
-      amountCents: t.amountCents,
-      pfcPrimary: t.pfcPrimary,
-      pfcDetailed: t.pfcDetailed,
-    });
-    if (suggested) {
-      ops.push({
-        updateOne: {
-          filter: { _id: t._id },
-          update: { $set: { userCategory: suggested } },
-        },
-      });
-    }
-  }
-
-  let modified = 0;
-  if (ops.length > 0) {
-    const res = await Transaction.bulkWrite(ops, { ordered: false });
-    modified = res.modifiedCount ?? 0;
-  }
-
-  return NextResponse.json({
-    scanned: candidates.length,
-    updated: modified,
-  });
+  return NextResponse.json(result);
 }

@@ -8,6 +8,7 @@ import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
+import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
 import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
@@ -114,6 +115,9 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const { prefix, y, m } = utcMonthPrefix(now);
   const monthEnd = endOfUtcMonth(y, m);
   const benState = (beneficiary.state as string) ?? "";
+
+  // Re-tag payroll/benefits stuck as transfer/unclear before metrics run.
+  await reapplyAutoCategoriesForBeneficiary(input.beneficiaryId);
 
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({ beneficiaryId: input.beneficiaryId })

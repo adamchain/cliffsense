@@ -31,6 +31,8 @@ export async function GET(req: Request) {
     program: (r.program as string | null) ?? null,
     dueDate: (r.dueDate as Date).toISOString().slice(0, 10),
     track: r.track as string,
+    kind: ((r as { kind?: string }).kind as string) ?? "deadline",
+    sourceKey: ((r as { sourceKey?: string | null }).sourceKey as string | null) ?? null,
     title: r.title as string,
     note: (r.note as string) ?? "",
     completedAt: r.completedAt ? (r.completedAt as Date).toISOString() : null,
@@ -43,6 +45,7 @@ const postSchema = z.object({
   program: z.string().max(20).optional().nullable(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD"),
   track: z.enum(["scheduled", "event"]).optional(),
+  kind: z.enum(["renewal", "deadline", "sar", "appointment", "other"]).optional(),
   title: z.string().min(1).max(200),
   note: z.string().max(1000).optional(),
 });
@@ -69,6 +72,7 @@ export async function POST(req: Request) {
     program: parsed.data.program ?? null,
     dueDate: new Date(`${parsed.data.dueDate}T00:00:00.000Z`),
     track: parsed.data.track ?? "scheduled",
+    kind: parsed.data.kind ?? "deadline",
     title: parsed.data.title,
     note: parsed.data.note ?? "",
   });

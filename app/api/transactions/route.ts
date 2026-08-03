@@ -90,6 +90,9 @@ export async function GET(req: Request) {
       amountCents: t.amountCents,
       pfcPrimary: t.pfcPrimary,
       pfcDetailed: t.pfcDetailed,
+      name: t.name,
+      merchantName: t.merchantName,
+      category: t.category,
     });
     return { ...t, suggestedUserCategory };
   });

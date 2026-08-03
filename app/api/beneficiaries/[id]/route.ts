@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/activity/log-activity";
 import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
+import { syncRenewalDeadlines } from "@/lib/reporting/sync-renewal-deadlines";
 
 const programEnum = z.enum([
   "SSI",
@@ -24,15 +25,30 @@ const programEnum = z.enum([
   "ABLE",
 ]);
 
-const patchSchema = z.object({
-  benefitsEnrolled: z.array(
-    z.object({
-      program: programEnum,
-      enrolledSince: z.coerce.date().optional(),
-      contextData: z.record(z.string(), z.unknown()).optional(),
-    }),
-  ),
+const enrollmentSchema = z.object({
+  program: programEnum,
+  enrolledSince: z.coerce.date().optional().nullable(),
+  nextRenewalDate: z
+    .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.coerce.date(), z.null()])
+    .optional()
+    .nullable(),
+  contextData: z.record(z.string(), z.unknown()).optional(),
 });
+
+const patchSchema = z.object({
+  benefitsEnrolled: z.array(enrollmentSchema).optional(),
+});
+
+function toRenewalDate(
+  value: string | Date | null | undefined,
+): Date | null {
+  if (value == null || value === "") return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  const d = new Date(`${String(value).slice(0, 10)}T00:00:00.000Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -54,15 +70,35 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  await Beneficiary.findByIdAndUpdate(id, {
-    $set: {
-      benefitsEnrolled: parsed.data.benefitsEnrolled.map((b) => ({
+
+  if (parsed.data.benefitsEnrolled) {
+    const priorByProgram = new Map(
+      (existing.benefitsEnrolled ?? []).map((b) => [String(b.program), b]),
+    );
+    const nextEnrolled = parsed.data.benefitsEnrolled.map((b) => {
+      const prior = priorByProgram.get(b.program);
+      const renewalProvided = Object.prototype.hasOwnProperty.call(b, "nextRenewalDate");
+      return {
         program: b.program,
-        enrolledSince: b.enrolledSince ?? new Date(),
-        contextData: b.contextData ?? {},
-      })),
-    },
-  });
+        enrolledSince: b.enrolledSince ?? prior?.enrolledSince ?? new Date(),
+        nextRenewalDate: renewalProvided
+          ? toRenewalDate(b.nextRenewalDate)
+          : (prior?.nextRenewalDate as Date | null | undefined) ?? null,
+        contextData: b.contextData ?? prior?.contextData ?? {},
+      };
+    });
+
+    await Beneficiary.findByIdAndUpdate(id, {
+      $set: { benefitsEnrolled: nextEnrolled },
+    });
+
+    await syncRenewalDeadlines({
+      beneficiaryId: id,
+      userId: session.user.id,
+      enrollments: nextEnrolled,
+    });
+  }
+
   const updated = await Beneficiary.findById(id);
   if (!updated) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -72,7 +108,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     beneficiaryId: updated._id,
     category: "beneficiary",
     action: "beneficiary.updated",
-    details: { benefits: parsed.data.benefitsEnrolled.map((b) => b.program) },
+    details: {
+      benefits: (updated.benefitsEnrolled ?? []).map((b) => b.program),
+    },
   });
 
   try {

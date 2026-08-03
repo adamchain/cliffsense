@@ -10,7 +10,7 @@ import {
   vaultSectionId,
 } from "@/lib/vault/categories";
 import { VaultUpload } from "./vault-upload";
-import { VaultDocumentRow } from "./document-row";
+import { VaultBrowser } from "./vault-browser";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -58,13 +58,28 @@ export default async function VaultPage() {
     ),
   );
 
+  const folders = VAULT_CATEGORIES.map((c) => {
+    const docs = docsBySection.get(c.id) ?? [];
+    return {
+      id: c.id,
+      label: c.label,
+      hint: c.hint,
+      docs: docs.map((d) => ({
+        id: d.id,
+        filename: d.filename,
+        sizeLabel: formatSize(d.sizeBytes),
+        uploadedLabel: new Date(d.createdAt).toLocaleDateString(),
+      })),
+    };
+  });
+
   return (
     <>
       <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Vault</div>
-      <h1 className="mb-2 text-xl font-medium text-[var(--color-cs-text)]">File vault</h1>
-      <p className="mb-4 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Organized storage for medical records, disability proof, income, expenses, and work paperwork —
-        beyond checking-account activity alone. Max 10 MB per file.
+      <h1 className="cs-big-title mb-2">Vault</h1>
+      <p className="mb-4 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Organized folders for medical records, disability proof, income, expenses, and work paperwork.
+        Max 10 MB per file.
       </p>
 
       {!beneficiaryId ? (
@@ -77,12 +92,12 @@ export default async function VaultPage() {
         </p>
       ) : (
         <>
-          <section className="mb-4 rounded border border-[var(--color-cs-border)] bg-white p-4">
-            <h2 className="text-[14px] font-medium text-[var(--color-cs-text)]">
+          <section className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">
               Records to track beyond bank accounts
             </h2>
-            <p className="mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">
-              Linked accounts catch deposits — these five sources fill the gaps agencies actually ask about.
+            <p className="mt-1 text-[12.5px] text-[var(--color-cs-text-secondary)]">
+              Linked accounts catch deposits — these five sources fill the gaps agencies ask about.
             </p>
             <ul className="mt-3 space-y-2">
               {MONITORING_SOURCES.map((s) => {
@@ -90,10 +105,10 @@ export default async function VaultPage() {
                 return (
                   <li key={s.id} className="flex items-start gap-2 text-[13px]">
                     <span
-                      className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border text-[10px] font-bold ${
+                      className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
                         done
-                          ? "border-[#107c10] bg-[#dff6dd] text-[#107c10]"
-                          : "border-[var(--color-cs-border)] text-[var(--color-cs-text-muted)]"
+                          ? "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]"
+                          : "bg-[var(--color-cs-surface)] text-[var(--color-cs-text-muted)]"
                       }`}
                       aria-hidden
                     >
@@ -113,46 +128,7 @@ export default async function VaultPage() {
 
           <VaultUpload beneficiaryId={beneficiaryId} categories={VAULT_CATEGORIES} />
 
-          <section className="mt-5 rounded border border-[var(--color-cs-border)] bg-white">
-            <header className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-4 py-2 text-[11px] font-medium uppercase text-[var(--color-cs-text-secondary)]">
-              Documents
-            </header>
-            <div className="grid grid-cols-1 gap-px bg-[var(--color-cs-border)] md:grid-cols-2">
-              {VAULT_CATEGORIES.map((c) => {
-                const docs = docsBySection.get(c.id) ?? [];
-                return (
-                  <div key={c.id} className="bg-white p-4">
-                    <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                      <h3 className="text-[13px] font-medium text-[var(--color-cs-text)]">{c.label}</h3>
-                      <span className="text-[11px] text-[var(--color-cs-text-muted)]">
-                        {docs.length} file{docs.length === 1 ? "" : "s"}
-                      </span>
-                    </div>
-                    <p className="mb-2 text-[11px] leading-snug text-[var(--color-cs-text-muted)]">
-                      {c.hint}
-                    </p>
-                    {docs.length === 0 ? (
-                      <p className="text-[12px] text-[var(--color-cs-text-secondary)]">
-                        No documents yet.
-                      </p>
-                    ) : (
-                      <ul className="space-y-1.5">
-                        {docs.map((d) => (
-                          <VaultDocumentRow
-                            key={d.id}
-                            id={d.id}
-                            filename={d.filename}
-                            sizeLabel={formatSize(d.sizeBytes)}
-                            uploadedLabel={new Date(d.createdAt).toLocaleDateString()}
-                          />
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <VaultBrowser folders={folders} />
 
           <p className="mt-3 text-[11px] text-[var(--color-cs-text-muted)]">
             Files are owner-scoped and only downloadable via authenticated session — no public URLs.

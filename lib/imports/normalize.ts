@@ -207,10 +207,17 @@ export function normalizeRows(
     const category = cell(row, mapping.categoryColumn);
     const postedDate = parseDateToIso(cell(row, mapping.postedDateColumn)) || date;
 
-    // Reuse the Plaid category heuristic where we can; imported files rarely
-    // carry Plaid taxonomy, so this mostly leaves rows "unclear" for review.
+    // CSV files rarely carry Plaid PFC — use description / merchant / bank
+    // category text so payroll deposits become earned_income on commit.
     const suggestedUserCategory =
-      suggestUserCategoryFromPlaid({ amountCents, pfcPrimary: "", pfcDetailed: "" }) ?? "unclear";
+      suggestUserCategoryFromPlaid({
+        amountCents,
+        pfcPrimary: "",
+        pfcDetailed: "",
+        name: name || merchantName,
+        merchantName,
+        category,
+      }) ?? "unclear";
 
     valid.push({
       date,

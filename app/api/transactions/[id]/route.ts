@@ -104,6 +104,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     amountCents: plain.amountCents,
     pfcPrimary: plain.pfcPrimary,
     pfcDetailed: plain.pfcDetailed,
+    name: plain.name,
+    merchantName: plain.merchantName,
+    category: plain.category,
   });
   return NextResponse.json({ transaction: { ...plain, suggestedUserCategory } });
 }

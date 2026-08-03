@@ -4,20 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } f
 import {
   IconBriefcase,
   IconBuildingBank,
-  IconCalendar,
   IconChevronLeft,
   IconChevronRight,
   IconDownload,
-  IconFilter,
   IconHelpCircle,
   IconPaperclip,
   IconReceipt,
   IconRefresh,
   IconShieldCheck,
   IconTag,
+  IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
 import { AccountsPanel, type AccountConnection } from "@/components/transactions/accounts-panel";
 import { ImportModal } from "@/components/imports/import-modal";
@@ -46,6 +44,13 @@ type TxRow = {
   receiptDocumentId?: string | null;
 };
 
+type ApplyAllPrompt = {
+  sourceId: string;
+  userCategory: UserCategory;
+  label: string;
+  count: number;
+};
+
 const FILTER_CHIPS: { id: string; label: string }[] = [
   { id: "all", label: "All" },
   { id: "inflow", label: "Income" },
@@ -70,11 +75,11 @@ function badgeClass(cat: UserCategory): string {
     case "benefit_deposit":
       return "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-info)]";
     case "unclear":
-      return "bg-[#fff4ce] text-[#797673]";
+      return "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]";
     case "expense":
-      return "bg-[#fafafa] text-[var(--color-cs-text-secondary)]";
+      return "bg-[var(--color-cs-fill)] text-[var(--color-cs-text-secondary)]";
     default:
-      return "bg-[var(--color-cs-nav-hover)] text-[var(--color-cs-text-secondary)]";
+      return "bg-[var(--color-cs-fill)] text-[var(--color-cs-text-secondary)]";
   }
 }
 
@@ -85,8 +90,6 @@ function CategoryIcon({ cat }: { cat: UserCategory }) {
   return null;
 }
 
-/** Per-row receipt control: a chip linking to the attached receipt, or an
- *  "Add receipt" button that opens the shared file picker for this row. */
 function RowReceipt({
   docId,
   onAdd,
@@ -100,7 +103,7 @@ function RowReceipt({
     return (
       <a
         href={`/vault/${docId}`}
-        className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-success-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-cs-success)] hover:underline"
+        className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-success-bg)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-cs-success)]"
       >
         <IconReceipt size={12} stroke={1.8} aria-hidden /> Receipt
       </a>
@@ -111,7 +114,7 @@ function RowReceipt({
       type="button"
       onClick={onAdd}
       disabled={disabled}
-      className="inline-flex items-center gap-1 rounded-full border border-dashed border-[var(--color-cs-border)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-cs-text-secondary)] hover:border-[var(--color-cs-brand)] hover:text-[var(--color-cs-brand)] disabled:opacity-50"
+      className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-fill)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-cs-text-secondary)] disabled:opacity-50"
     >
       <IconPaperclip size={12} stroke={1.8} aria-hidden /> Add receipt
     </button>
@@ -136,12 +139,11 @@ export function TransactionsView({
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [applyingPlaid, setApplyingPlaid] = useState(false);
+  const [applyingBulk, setApplyingBulk] = useState(false);
+  const [applyPrompt, setApplyPrompt] = useState<ApplyAllPrompt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const limit = 50;
 
-  // Receipts: a single hidden file input shared by the toolbar quick-add and the
-  // per-row "attach" buttons. receiptTargetRef holds the transaction to pair to
-  // (null = unpaired, lands in Vault › Receipts) across the async file dialog.
   const receiptInputRef = useRef<HTMLInputElement | null>(null);
   const receiptTargetRef = useRef<string | null>(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
@@ -155,7 +157,7 @@ export function TransactionsView({
 
   async function onReceiptFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-selecting the same file later
+    e.target.value = "";
     if (!file || !beneficiaryId) return;
     const targetId = receiptTargetRef.current;
     setUploadingReceipt(true);
@@ -212,21 +214,44 @@ export function TransactionsView({
     void load();
   }, [load]);
 
+  const refreshUnclear = useCallback(async () => {
+    if (!beneficiaryId) return;
+    const params = new URLSearchParams({
+      beneficiaryId,
+      filter: "unclear",
+      page: "1",
+      limit: "1",
+    });
+    const res = await fetch(`/api/transactions?${params}`);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) setUnclearTotal((data as { total: number }).total ?? 0);
+  }, [beneficiaryId]);
+
+  useEffect(() => {
+    void refreshUnclear();
+  }, [refreshUnclear]);
+
+  // One-shot: upgrade payroll stuck as unclear/transfer from prior imports.
   useEffect(() => {
     if (!beneficiaryId) return;
+    let cancelled = false;
     (async () => {
-      const params = new URLSearchParams({
-        beneficiaryId,
-        filter: "unclear",
-        page: "1",
-        limit: "1",
-      });
-      const res = await fetch(`/api/transactions?${params}`);
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setUnclearTotal((data as { total: number }).total ?? 0);
+      const res = await fetch("/api/transactions/apply-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ beneficiaryId }),
+      }).catch(() => null);
+      if (cancelled || !res?.ok) return;
+      const data = (await res.json().catch(() => ({}))) as { updated?: number };
+      if ((data.updated ?? 0) > 0) {
+        await load();
+        await refreshUnclear();
       }
     })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per beneficiary
   }, [beneficiaryId]);
 
   async function applyPlaidSuggestions() {
@@ -246,21 +271,32 @@ export function TransactionsView({
     }
     setPage(1);
     await load();
-    if (!beneficiaryId) return;
-    const params = new URLSearchParams({
-      beneficiaryId,
-      filter: "unclear",
-      page: "1",
-      limit: "1",
-    });
-    const u = await fetch(`/api/transactions?${params}`);
-    const udata = await u.json().catch(() => ({}));
-    if (u.ok) {
-      setUnclearTotal((udata as { total: number }).total ?? 0);
+    await refreshUnclear();
+  }
+
+  async function checkSimilar(id: string, userCategory: UserCategory) {
+    const res = await fetch(
+      `/api/transactions/${id}/similar?userCategory=${encodeURIComponent(userCategory)}`,
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return;
+    const count = (data as { count?: number }).count ?? 0;
+    const label = (data as { match?: { label?: string } | null }).match?.label;
+    if (count > 0 && label) {
+      setApplyPrompt({ sourceId: id, userCategory, label, count });
+    } else {
+      setApplyPrompt(null);
     }
   }
 
+  useEffect(() => {
+    if (!applyPrompt) return;
+    const el = document.getElementById(`tx-apply-${applyPrompt.sourceId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [applyPrompt]);
+
   async function patchCategory(id: string, userCategory: UserCategory) {
+    const prev = rows.find((r) => r._id === id)?.userCategory;
     const res = await fetch(`/api/transactions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -268,7 +304,35 @@ export function TransactionsView({
     });
     if (!res.ok) return;
     const data = (await res.json()) as { transaction: TxRow };
-    setRows((prev) => prev.map((r) => (r._id === id ? { ...r, ...data.transaction } : r)));
+    setRows((prevRows) => prevRows.map((r) => (r._id === id ? { ...r, ...data.transaction } : r)));
+    void refreshUnclear();
+    if (prev !== userCategory && userCategory !== "unclear") {
+      void checkSimilar(id, userCategory);
+    } else {
+      setApplyPrompt(null);
+    }
+  }
+
+  async function applyToSimilar() {
+    if (!applyPrompt) return;
+    setApplyingBulk(true);
+    const res = await fetch("/api/transactions/bulk-category", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sourceTransactionId: applyPrompt.sourceId,
+        userCategory: applyPrompt.userCategory,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setApplyingBulk(false);
+    if (!res.ok) {
+      setError((data as { error?: string }).error ?? "Could not update similar transactions");
+      return;
+    }
+    setApplyPrompt(null);
+    await load();
+    await refreshUnclear();
   }
 
   async function patchExcluded(id: string, excludedFromThresholds: boolean) {
@@ -317,18 +381,52 @@ export function TransactionsView({
   if (!beneficiaryId) {
     return (
       <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
-        Add a beneficiary profile (onboarding) to see transactions.{" "}
+        Add a beneficiary profile first.{" "}
         <Link href="/onboarding/profile" className="text-[var(--color-cs-brand)] hover:underline">
-          Complete profile
+          Continue onboarding
         </Link>
       </p>
     );
   }
 
   return (
-    <>
-      <div className="mb-1 text-xs font-medium text-[var(--color-cs-text-secondary)]">Home › Money</div>
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-[var(--color-cs-text)]">Money</h1>
+    <div className="mx-auto max-w-3xl">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="cs-big-title">Money</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="cs-circbtn !h-9 !w-9"
+            aria-label={syncing ? "Syncing" : "Sync banks"}
+            onClick={() => void runSync()}
+            disabled={syncing}
+          >
+            <IconRefresh size={17} stroke={2} className={syncing ? "animate-spin" : ""} />
+          </button>
+          <button
+            type="button"
+            className="cs-circbtn !h-9 !w-9"
+            aria-label="Add receipt"
+            onClick={() => pickReceipt(null)}
+            disabled={uploadingReceipt}
+          >
+            <IconReceipt size={17} stroke={2} />
+          </button>
+          <ImportModal
+            beneficiaryId={beneficiaryId}
+            variant="toolbar"
+            label="Import"
+            onImported={() => void load()}
+          />
+          <Link href="/reports" className="cs-circbtn !h-9 !w-9" aria-label="Export">
+            <IconDownload size={17} stroke={2} />
+          </Link>
+        </div>
+      </div>
+      <p className="mb-4 text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Categorize deposits so limits stay accurate. Mark earned income and we&apos;ll offer to apply
+        it to matching payors from the same bank.
+      </p>
 
       <input
         ref={receiptInputRef}
@@ -339,48 +437,39 @@ export function TransactionsView({
         aria-hidden
       />
 
-      <AppToolbar>
-        <ToolbarButton primary onClick={runSync}>
-          <IconRefresh size={16} stroke={1.5} aria-hidden className={syncing ? "animate-spin" : ""} />
-          {syncing ? "Syncing…" : "Sync"}
-        </ToolbarButton>
-        <ToolbarButton primary onClick={() => pickReceipt(null)} disabled={uploadingReceipt}>
-          <IconReceipt size={16} stroke={1.5} aria-hidden />
-          {uploadingReceipt ? "Uploading…" : "Add receipt"}
-        </ToolbarButton>
-        <ImportModal beneficiaryId={beneficiaryId} variant="toolbar" label="Import CSV" onImported={() => void load()} />
-        <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
-        <ToolbarButton href="/reports">
-          <IconFilter size={16} stroke={1.5} aria-hidden />
-          Filter
-        </ToolbarButton>
-        <ToolbarButton href="#">
-          <IconCalendar size={16} stroke={1.5} aria-hidden />
-          Date range
-        </ToolbarButton>
-        <ToolbarButton
-          primary={showAccounts}
+      <div className="mb-3 flex flex-wrap gap-2">
+        <button
+          type="button"
           onClick={() => setShowAccounts((v) => !v)}
+          className={`inline-flex items-center gap-1.5 rounded-[14px] px-3 py-1.5 text-[13px] font-semibold ${
+            showAccounts
+              ? "bg-[var(--color-cs-brand)] text-white"
+              : "bg-[var(--color-cs-card)] text-[var(--color-cs-text)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+          }`}
         >
-          <IconBuildingBank size={16} stroke={1.5} aria-hidden />
-          {showAccounts ? "Hide accounts" : `Accounts${connections.length ? ` (${connections.length})` : ""}`}
-        </ToolbarButton>
-        <span className="mx-1 hidden h-5 w-px bg-[var(--color-cs-border)] sm:inline-block" aria-hidden />
-        <ToolbarButton onClick={() => void applyPlaidSuggestions()} disabled={applyingPlaid}>
-          <IconTag size={16} stroke={1.5} aria-hidden />
+          <IconBuildingBank size={15} stroke={1.8} />
+          Accounts{connections.length ? ` (${connections.length})` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => void applyPlaidSuggestions()}
+          disabled={applyingPlaid}
+          className="inline-flex items-center gap-1.5 rounded-[14px] bg-[var(--color-cs-card)] px-3 py-1.5 text-[13px] font-semibold text-[var(--color-cs-text)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] disabled:opacity-50"
+        >
+          <IconTag size={15} stroke={1.8} />
           {applyingPlaid ? "Applying…" : "Apply Plaid categories"}
-        </ToolbarButton>
-        <ToolbarButton href="/reports">
-          <IconDownload size={16} stroke={1.5} aria-hidden />
-          Export
-        </ToolbarButton>
-      </AppToolbar>
+        </button>
+      </div>
 
       {showAccounts && (
         <AccountsPanel beneficiaryId={beneficiaryId} connections={connections} />
       )}
 
-      <div className="mb-3 flex flex-wrap gap-1.5">
+      <div
+        className="mb-3 inline-flex flex-wrap rounded-[10px] bg-[rgba(118,118,128,0.12)] p-0.5"
+        role="group"
+        aria-label="Transaction filter"
+      >
         {chips.map((c) => (
           <button
             key={c.id}
@@ -389,11 +478,12 @@ export function TransactionsView({
               setFilter(c.id);
               setPage(1);
             }}
-            className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs ${
+            className={`rounded-[8px] px-3 py-1.5 text-[13px] font-semibold transition ${
               filter === c.id
-                ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]"
-                : "border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
+                ? "bg-white text-[var(--color-cs-text)] shadow-sm"
+                : "text-[var(--color-cs-text-secondary)]"
             }`}
+            aria-pressed={filter === c.id}
           >
             {c.label}
           </button>
@@ -403,13 +493,13 @@ export function TransactionsView({
       <div className="mb-3">
         <input
           type="search"
-          placeholder="Search description, merchant, or Plaid category"
+          placeholder="Search description, merchant, or category"
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
             setPage(1);
           }}
-          className="h-8 w-full max-w-md rounded-sm border border-[var(--color-cs-input-border)] border-b border-b-[var(--color-cs-input-bottom)] bg-white px-2.5 text-[13px] outline-none focus:border-[var(--color-cs-brand)] focus:border-b-2"
+          className="cs-input max-w-md"
         />
       </div>
 
@@ -420,259 +510,201 @@ export function TransactionsView({
       )}
 
       {receiptMsg && (
-        <p className="mb-3 flex items-center gap-1.5 text-xs text-[var(--color-cs-success)]">
+        <p className="mb-3 flex items-center gap-1.5 text-[13px] text-[var(--color-cs-success)]">
           <IconReceipt size={14} stroke={1.8} aria-hidden />
           {receiptMsg}
         </p>
       )}
 
-      <section className="overflow-hidden rounded border border-[var(--color-cs-border)] bg-white">
-        <div className="hidden overflow-x-auto sm:block">
-          <table className="w-full min-w-[640px] border-collapse text-[13px] table-fixed">
-            <colgroup>
-              <col className="w-[92px]" />
-              <col />
-              <col className="w-[200px]" />
-              <col className="w-[120px]" />
-              <col className="w-[104px]" />
-            </colgroup>
-            <thead>
-              <tr className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-left text-[11px] font-medium text-[var(--color-cs-text-secondary)]">
-                <th className="px-3 py-2">Date</th>
-                <th className="px-3 py-2">Description</th>
-                <th className="px-3 py-2">Your category</th>
-                <th className="px-3 py-2">Limits</th>
-                <th className="px-3 py-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && rows.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">
-                    Loading…
-                  </td>
-                </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">
-                    No transactions yet. Connect a bank and run <strong>Sync</strong>, or widen your filters.
-                  </td>
-                </tr>
-              ) : (
-                rows.map((r) => {
-                  const inflow = isInflowCents(r.amountCents);
-                  const highlightUnclear = r.userCategory === "unclear";
-                  const excluded = Boolean(r.excludedFromThresholds);
-                  const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
-                  return (
-                    <tr
-                      key={r._id}
-                      className={`border-b border-[var(--color-cs-border)] last:border-b-0 hover:bg-[var(--color-cs-surface)] ${
-                        highlightUnclear ? "bg-[#fffbf4]" : ""
-                      } ${excluded && countsTowardEarned ? "opacity-80" : ""}`}
-                    >
-                      <td className="px-3 py-2.5 align-top text-[var(--color-cs-text)]">
-                        {formatShortDate(r.date)}
-                        {r.pending && (
-                          <span className="mt-0.5 block text-[10px] text-[var(--color-cs-text-muted)]">Pending</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 align-top">
-                        <div className="font-medium text-[var(--color-cs-text)]">{r.name || "—"}</div>
-                        <div className="mt-0.5 text-[11px] text-[var(--color-cs-text-secondary)]">
-                          {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
-                        </div>
-                        {r.pfcPrimary ? (
-                          <div className="mt-1 text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
-                            Plaid: {[r.pfcPrimary, r.pfcDetailed].filter(Boolean).join(" › ")}
-                          </div>
-                        ) : null}
-                        <div className="mt-1.5">
-                          <RowReceipt
-                            docId={r.receiptDocumentId}
-                            onAdd={() => pickReceipt(r._id)}
-                            disabled={uploadingReceipt}
-                          />
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 align-top">
-                        <div className="flex flex-col gap-1.5">
-                          <span
-                            className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${badgeClass(r.userCategory)}`}
-                          >
-                            <CategoryIcon cat={r.userCategory} />
-                            {CATEGORY_LABEL[r.userCategory]}
-                          </span>
-                          {r.suggestedUserCategory &&
-                          r.suggestedUserCategory !== r.userCategory &&
-                          r.suggestedUserCategory !== "unclear" ? (
-                            <p className="text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
-                              Suggested for limits:{" "}
-                              <span className="font-medium text-[var(--color-cs-text-secondary)]">
-                                {CATEGORY_LABEL[r.suggestedUserCategory]}
-                              </span>
-                            </p>
-                          ) : null}
-                          <select
-                            aria-label="Change category"
-                            className="h-7 max-w-[180px] rounded-sm border border-[var(--color-cs-border)] bg-white px-1.5 text-[11px] text-[var(--color-cs-text)]"
-                            value={r.userCategory}
-                            onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
-                          >
-                            {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
-                              <option key={k} value={k}>
-                                {CATEGORY_LABEL[k]}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2.5 align-top">
-                        {countsTowardEarned ? (
-                          <label className="flex cursor-pointer items-start gap-2 text-[11px] text-[var(--color-cs-text-secondary)]">
-                            <input
-                              type="checkbox"
-                              className="mt-0.5"
-                              checked={!excluded}
-                              onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
-                              aria-label="Count this transaction toward earned-income limits"
-                            />
-                            <span>Count toward limits</span>
-                          </label>
-                        ) : (
-                          <span className="text-[11px] text-[var(--color-cs-text-muted)]">—</span>
-                        )}
-                      </td>
-                      <td
-                        className={`px-3 py-2.5 text-right align-top font-medium tabular-nums ${
-                          inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
-                        }`}
-                      >
-                        {formatSignedUsd(r.amountCents)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="mb-2 flex items-baseline justify-between px-0.5">
+        <h2 className="text-[22px] font-bold tracking-tight">Transactions</h2>
+        <span className="text-[13px] text-[var(--color-cs-text-secondary)]">
+          {showingFrom}–{showingTo} of {total}
+        </span>
+      </div>
 
-        {/* ---------- Mobile card list ---------- */}
-        <div className="divide-y divide-[var(--color-cs-border)] sm:hidden">
-          {loading && rows.length === 0 ? (
-            <div className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">Loading…</div>
-          ) : rows.length === 0 ? (
-            <div className="px-3 py-8 text-center text-[var(--color-cs-text-secondary)]">
-              No transactions yet. Connect a bank and run <strong>Sync</strong>, or widen your filters.
-            </div>
-          ) : (
-            rows.map((r) => {
-              const inflow = isInflowCents(r.amountCents);
-              const highlightUnclear = r.userCategory === "unclear";
-              const excluded = Boolean(r.excludedFromThresholds);
-              const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
-              return (
-                <div key={r._id} className={`px-3 py-3 ${highlightUnclear ? "bg-[#fffbf4]" : ""}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium text-[var(--color-cs-text)]">{r.name || "—"}</div>
-                      <div className="mt-0.5 truncate text-[11px] text-[var(--color-cs-text-secondary)]">
-                        {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
-                      </div>
-                    </div>
-                    <div
-                      className={`shrink-0 text-right font-medium tabular-nums ${
-                        inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
-                      }`}
-                    >
-                      {formatSignedUsd(r.amountCents)}
-                    </div>
-                  </div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[var(--color-cs-text-muted)]">
-                    <span>{formatShortDate(r.date)}</span>
-                    {r.pending && <span>· Pending</span>}
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${badgeClass(r.userCategory)}`}
-                    >
-                      <CategoryIcon cat={r.userCategory} />
-                      {CATEGORY_LABEL[r.userCategory]}
-                    </span>
-                    <select
-                      aria-label="Change category"
-                      className="h-7 rounded-sm border border-[var(--color-cs-border)] bg-white px-1.5 text-[11px] text-[var(--color-cs-text)]"
-                      value={r.userCategory}
-                      onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
-                    >
-                      {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
-                        <option key={k} value={k}>
-                          {CATEGORY_LABEL[k]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {r.suggestedUserCategory &&
-                  r.suggestedUserCategory !== r.userCategory &&
-                  r.suggestedUserCategory !== "unclear" ? (
-                    <p className="mt-1.5 text-[10px] leading-snug text-[var(--color-cs-text-muted)]">
-                      Suggested for limits:{" "}
-                      <span className="font-medium text-[var(--color-cs-text-secondary)]">
-                        {CATEGORY_LABEL[r.suggestedUserCategory]}
-                      </span>
-                    </p>
-                  ) : null}
-                  <div className="mt-2">
-                    <RowReceipt
-                      docId={r.receiptDocumentId}
-                      onAdd={() => pickReceipt(r._id)}
-                      disabled={uploadingReceipt}
-                    />
-                  </div>
-                  {countsTowardEarned && (
-                    <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] text-[var(--color-cs-text-secondary)]">
-                      <input
-                        type="checkbox"
-                        checked={!excluded}
-                        onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
-                        aria-label="Count this transaction toward earned-income limits"
-                      />
-                      <span>Count toward limits</span>
-                    </label>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <div className="flex items-center justify-between border-t border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-3.5 py-2.5 text-xs text-[var(--color-cs-text-secondary)]">
-          <span>
-            Showing {showingFrom}–{showingTo} of {total} transactions
-          </span>
-          <div className="flex gap-1">
-            <button
-              type="button"
-              disabled={page <= 1}
-              className="rounded p-1 hover:bg-[var(--color-cs-border)] disabled:opacity-40"
-              aria-label="Previous page"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <IconChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              disabled={page >= totalPages}
-              className="rounded p-1 hover:bg-[var(--color-cs-border)] disabled:opacity-40"
-              aria-label="Next page"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <IconChevronRight size={18} />
-            </button>
+      <div className="space-y-2.5">
+        {loading && rows.length === 0 && (
+          <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-8 text-center text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            Loading…
           </div>
+        )}
+        {!loading && rows.length === 0 && (
+          <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-8 text-center text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            No transactions yet. Connect a bank and tap sync, or widen your filters.
+          </div>
+        )}
+        {rows.map((r) => {
+          const inflow = isInflowCents(r.amountCents);
+          const highlightUnclear = r.userCategory === "unclear";
+          const excluded = Boolean(r.excludedFromThresholds);
+          const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
+          const showApply = applyPrompt?.sourceId === r._id;
+          return (
+            <div key={r._id} className="space-y-2">
+            <article
+              className={`rounded-[18px] bg-[var(--color-cs-card)] p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)] ${
+                highlightUnclear ? "ring-1 ring-[var(--color-cs-warning)]/35" : ""
+              } ${excluded && countsTowardEarned ? "opacity-80" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
+                    {r.name || "—"}
+                  </div>
+                  <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">
+                    {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
+                  </div>
+                  <div className="mt-1 text-[12px] text-[var(--color-cs-text-muted)]">
+                    {formatShortDate(r.date)}
+                    {r.pending ? " · Pending" : ""}
+                  </div>
+                </div>
+                <div
+                  className={`shrink-0 text-right text-[16px] font-semibold tabular-nums ${
+                    inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
+                  }`}
+                >
+                  {formatSignedUsd(r.amountCents)}
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeClass(r.userCategory)}`}
+                >
+                  <CategoryIcon cat={r.userCategory} />
+                  {CATEGORY_LABEL[r.userCategory]}
+                </span>
+                <select
+                  aria-label="Change category"
+                  className="cs-input !h-8 !w-auto !min-w-[9.5rem] !py-0 text-[12px]"
+                  value={r.userCategory}
+                  onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
+                >
+                  {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
+                    <option key={k} value={k}>
+                      {CATEGORY_LABEL[k]}
+                    </option>
+                  ))}
+                </select>
+                <RowReceipt
+                  docId={r.receiptDocumentId}
+                  onAdd={() => pickReceipt(r._id)}
+                  disabled={uploadingReceipt}
+                />
+              </div>
+
+              {r.suggestedUserCategory &&
+              r.suggestedUserCategory !== r.userCategory &&
+              r.suggestedUserCategory !== "unclear" ? (
+                <p className="mt-2 text-[11.5px] text-[var(--color-cs-text-muted)]">
+                  Suggested:{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-[var(--color-cs-brand)]"
+                    onClick={() => void patchCategory(r._id, r.suggestedUserCategory!)}
+                  >
+                    {CATEGORY_LABEL[r.suggestedUserCategory]}
+                  </button>
+                </p>
+              ) : null}
+
+              {countsTowardEarned && (
+                <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12.5px] text-[var(--color-cs-text-secondary)]">
+                  <input
+                    type="checkbox"
+                    checked={!excluded}
+                    onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
+                    aria-label="Count this transaction toward earned-income limits"
+                  />
+                  <span>Count toward limits</span>
+                </label>
+              )}
+            </article>
+
+            {showApply && applyPrompt && (
+              <div
+                id={`tx-apply-${r._id}`}
+                className="flex items-start gap-3 rounded-[18px] bg-[var(--color-cs-brand-soft)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-[15px] font-bold text-[var(--color-cs-text)]">
+                    Apply to similar transactions?
+                  </div>
+                  <p className="mt-1 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
+                    We found{" "}
+                    <span className="font-semibold text-[var(--color-cs-text)]">
+                      {applyPrompt.count}
+                    </span>{" "}
+                    other {applyPrompt.count === 1 ? "transaction" : "transactions"} from{" "}
+                    <span className="font-semibold text-[var(--color-cs-text)]">
+                      {applyPrompt.label}
+                    </span>{" "}
+                    at this bank that aren&apos;t marked{" "}
+                    <span className="font-semibold text-[var(--color-cs-text)]">
+                      {CATEGORY_LABEL[applyPrompt.userCategory]}
+                    </span>
+                    .
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={applyingBulk}
+                      onClick={() => void applyToSimilar()}
+                      className="cs-btn cs-btn-primary disabled:opacity-50"
+                    >
+                      {applyingBulk ? "Applying…" : `Apply to all ${applyPrompt.count}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setApplyPrompt(null)}
+                      className="cs-btn cs-btn-secondary"
+                    >
+                      Just this one
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="cs-circbtn !h-8 !w-8"
+                  aria-label="Dismiss"
+                  onClick={() => setApplyPrompt(null)}
+                >
+                  <IconX size={16} stroke={2} />
+                </button>
+              </div>
+            )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between px-0.5 text-[13px] text-[var(--color-cs-text-secondary)]">
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            disabled={page <= 1}
+            className="cs-circbtn !h-9 !w-9 disabled:opacity-40"
+            aria-label="Previous page"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            <IconChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            disabled={page >= totalPages}
+            className="cs-circbtn !h-9 !w-9 disabled:opacity-40"
+            aria-label="Next page"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            <IconChevronRight size={18} />
+          </button>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }

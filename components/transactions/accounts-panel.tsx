@@ -27,15 +27,15 @@ export function AccountsPanel({
   connections: AccountConnection[];
 }) {
   return (
-    <section className="mb-4 rounded-2xl border border-[var(--color-cs-border)] bg-white p-4 sm:p-5">
+    <section className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-[15px] font-bold text-[var(--color-cs-text)]">
+          <h2 className="flex items-center gap-2 text-[16px] font-bold text-[var(--color-cs-text)]">
             <IconBuildingBank size={18} stroke={1.8} aria-hidden />
             Connected accounts
           </h2>
-          <p className="mt-1 max-w-xl text-[12px] text-[var(--color-cs-text-secondary)]">
-            Banks linked through Plaid. Add another or disconnect anytime — we keep read-only access only.
+          <p className="mt-1 max-w-xl text-[12.5px] text-[var(--color-cs-text-secondary)]">
+            Banks linked through Plaid. Add another or disconnect anytime — read-only access only.
           </p>
         </div>
         {beneficiaryId && (
@@ -58,20 +58,20 @@ export function AccountsPanel({
       )}
 
       {beneficiaryId && connections.length === 0 && (
-        <div className="mt-3 rounded-xl border border-dashed border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
+        <div className="mt-3 rounded-[14px] bg-[var(--color-cs-surface)] px-4 py-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
           No bank connections yet. Use <strong>Connect a bank</strong> above to get started.
         </div>
       )}
 
       {connections.length > 0 && (
-        <ul className="mt-3 flex flex-col gap-3">
+        <ul className="mt-3 flex flex-col gap-2.5">
           {connections.map((c) => (
             <li
               key={c.id}
-              className="rounded-xl border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-4 text-[13px]"
+              className="rounded-[14px] bg-[var(--color-cs-surface)] p-3.5 text-[13px]"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-medium text-[var(--color-cs-text)]">{c.institutionName}</span>
+                <span className="font-semibold text-[var(--color-cs-text)]">{c.institutionName}</span>
                 <span className="text-[11px] uppercase text-[var(--color-cs-text-muted)]">
                   {c.status}
                   {c.lastSyncAt && (
@@ -82,7 +82,7 @@ export function AccountsPanel({
                   )}
                 </span>
               </div>
-              <ul className="mt-2 space-y-2 border-t border-[var(--color-cs-border)] pt-2">
+              <ul className="mt-2 space-y-2 border-t border-[var(--color-cs-sep)] pt-2">
                 {c.accounts.map((a) => (
                   <li key={a.mask + a.name} className="flex justify-between gap-3">
                     <span className="min-w-0 truncate text-[var(--color-cs-text-secondary)]">

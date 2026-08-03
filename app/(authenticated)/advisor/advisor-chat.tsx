@@ -141,36 +141,44 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
   }
 
   return (
-    <section className="flex h-[calc(100vh-260px)] min-h-[420px] flex-col overflow-hidden rounded-2xl border border-[var(--color-cs-border)] bg-white">
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 text-[13px]">
+    <section className="mx-auto flex h-[calc(100dvh-140px)] min-h-[420px] w-full max-w-3xl flex-col overflow-hidden lg:h-[calc(100vh-180px)]">
+      <div className="border-b border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.9)] px-5 pb-3 pt-2 text-center backdrop-blur">
+        <div className="text-[17px] font-semibold text-[var(--color-cs-text)]">Advisor</div>
+        <div className="text-[12px] text-[var(--color-cs-text-secondary)]">
+          Powered by Claude · Not legal advice
+        </div>
+      </div>
+      <div ref={scrollRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-4 text-[15px]">
         {messages.length === 0 && (
           <div>
-            <p className="text-[var(--color-cs-text-secondary)]">Try one of these to get started:</p>
-            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
-              {SUGGESTIONS.map((s) => (
-                <li key={s}>
-                  <button
-                    type="button"
-                    onClick={() => void send(s)}
-                    className="w-full rounded-xl border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-3 py-2 text-left text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-                  >
-                    {s}
-                  </button>
-                </li>
+            <div className="mb-3 max-w-[80%] self-start rounded-[20px] rounded-bl-md bg-[#e9e9eb] px-3.5 py-2.5 text-[15px] leading-snug text-black">
+              Hi — I&apos;m your benefits advisor. Ask me anything about your programs, limits, or
+              reporting.
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTIONS.slice(0, 3).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => void send(s)}
+                  className="rounded-[18px] bg-[var(--color-cs-brand-soft)] px-3.5 py-2 text-left text-[13.5px] font-medium text-[var(--color-cs-brand)]"
+                >
+                  {s.length > 42 ? `${s.slice(0, 40)}…` : s}
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
         )}
         {messages.map((m) => (
           <article
             key={m.id}
-            className={`flex max-w-[85%] flex-col ${m.role === "user" ? "ml-auto items-end" : "items-start"}`}
+            className={`flex max-w-[80%] flex-col ${m.role === "user" ? "ml-auto items-end" : "items-start"}`}
           >
             <div
-              className={`rounded-2xl px-3.5 py-2 leading-relaxed ${
+              className={`rounded-[20px] px-3.5 py-2.5 leading-snug ${
                 m.role === "user"
-                  ? "rounded-br-sm bg-[var(--color-cs-brand)] text-white"
-                  : "rounded-bl-sm border border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)]"
+                  ? "rounded-br-md bg-[var(--color-cs-brand)] text-white"
+                  : "rounded-bl-md bg-[#e9e9eb] text-black"
               }`}
             >
               {m.role === "assistant" ? (
@@ -187,15 +195,11 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
                 <span className="whitespace-pre-wrap">{m.content}</span>
               )}
             </div>
-            <span className="mt-0.5 text-[10px] text-[var(--color-cs-text-muted)]">
-              {new Date(m.createdAt).toLocaleTimeString()}
-            </span>
           </article>
         ))}
-        {/* Bouncing dots only before the first streamed token arrives. */}
         {sending && !streamingId && (
           <div className="flex max-w-[80%] items-start">
-            <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-[var(--color-cs-border)] bg-white px-3.5 py-2.5">
+            <div className="flex items-center gap-1 rounded-[20px] rounded-bl-md bg-[#e9e9eb] px-3.5 py-2.5">
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)] [animation-delay:-0.3s]" />
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)] [animation-delay:-0.15s]" />
               <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-cs-text-muted)]" />
@@ -209,22 +213,22 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
           e.preventDefault();
           void send(input);
         }}
-        className="flex items-center gap-2 border-t border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-3 py-2"
+        className="flex items-center gap-2 border-t border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.92)] px-3.5 py-2.5 backdrop-blur"
       >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about thresholds, alerts, or programs"
+          placeholder="Ask about your benefits"
           disabled={sending}
-          className="h-9 flex-1 rounded-xl border border-[var(--color-cs-border)] bg-white px-3 text-[13px]"
+          className="h-10 flex-1 rounded-[20px] border border-[var(--color-cs-sep)] bg-[var(--color-cs-card)] px-3.5 text-[15px] outline-none"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--color-cs-brand)] px-3 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
+          className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-white disabled:opacity-50"
+          aria-label="Send"
         >
-          <IconSend size={14} stroke={1.5} aria-hidden />
-          Send
+          <IconSend size={16} stroke={2} aria-hidden />
         </button>
       </form>
     </section>

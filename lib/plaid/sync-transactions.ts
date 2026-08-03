@@ -69,6 +69,9 @@ export async function syncTransactionsForConnection(
           amountCents: doc.amountCents as number,
           pfcPrimary: doc.pfcPrimary as string,
           pfcDetailed: doc.pfcDetailed as string,
+          name: doc.name as string,
+          merchantName: doc.merchantName as string,
+          category: doc.category as string,
         });
         const initialCategory = suggested ?? "unclear";
         const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
@@ -96,6 +99,44 @@ export async function syncTransactionsForConnection(
       });
       const bulk = await Transaction.bulkWrite(ops, { ordered: false });
       upserted += (bulk.upsertedCount ?? 0) + (bulk.modifiedCount ?? 0);
+
+      // Upgrade auto-tagged rows the user hasn't edited — e.g. payroll that
+      // Plaid first labeled TRANSFER_IN, or late PFC data after insert.
+      const upgrades = plaidTxs
+        .map((t) => {
+          const doc = mapPlaidTransaction(t, beneficiaryId, bankConnectionId);
+          const suggested = suggestUserCategoryFromPlaid({
+            amountCents: doc.amountCents as number,
+            pfcPrimary: doc.pfcPrimary as string,
+            pfcDetailed: doc.pfcDetailed as string,
+            name: doc.name as string,
+            merchantName: doc.merchantName as string,
+            category: doc.category as string,
+          });
+          if (
+            !suggested ||
+            (suggested !== "earned_income" &&
+              suggested !== "benefit_deposit" &&
+              suggested !== "other_income")
+          ) {
+            return null;
+          }
+          return {
+            updateOne: {
+              filter: {
+                beneficiaryId,
+                plaidTransactionId: doc.plaidTransactionId as string,
+                lastUserEditedAt: null,
+                userCategory: { $in: ["unclear", "transfer", "other_income"] },
+              },
+              update: { $set: { userCategory: suggested } },
+            },
+          };
+        })
+        .filter((op): op is NonNullable<typeof op> => Boolean(op));
+      if (upgrades.length > 0) {
+        await Transaction.bulkWrite(upgrades, { ordered: false });
+      }
     }
 
     const removed = data.removed ?? [];

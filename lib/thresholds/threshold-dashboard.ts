@@ -5,6 +5,7 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
+import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
 import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
@@ -75,21 +76,31 @@ export type ThresholdDashboardRow = {
 export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectId): Promise<{
   programsEnrolled: string[];
   monthPrefix: string;
+  priorMonthPrefix: string;
   metrics: {
     currentEarnedIncomeCents: number;
     projectedEarnedIncomeCents: number;
+    priorMonthEarnedIncomeCents: number;
     maxDepositoryBalanceCents: number;
   };
   rows: ThresholdDashboardRow[];
 }> {
   await ensureSystemThresholdsSeeded();
 
+  const emptyMetrics = {
+    currentEarnedIncomeCents: 0,
+    projectedEarnedIncomeCents: 0,
+    priorMonthEarnedIncomeCents: 0,
+    maxDepositoryBalanceCents: 0,
+  };
+
   const beneficiary = await Beneficiary.findById(beneficiaryId).lean();
   if (!beneficiary) {
     return {
       programsEnrolled: [],
       monthPrefix: "",
-      metrics: { currentEarnedIncomeCents: 0, projectedEarnedIncomeCents: 0, maxDepositoryBalanceCents: 0 },
+      priorMonthPrefix: "",
+      metrics: emptyMetrics,
       rows: [],
     };
   }
@@ -99,6 +110,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   const programKeys = programs.map((p) => String(p).toUpperCase());
   const now = new Date();
   const { prefix, y, m } = utcMonthPrefix(now);
+  const priorPrefix = utcMonthPrefix(new Date(Date.UTC(y, m - 2, 15))).prefix;
   const monthEnd = endOfUtcMonth(y, m);
   const benState = (beneficiary.state as string) ?? "";
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
@@ -110,15 +122,19 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     return {
       programsEnrolled: [],
       monthPrefix: prefix,
-      metrics: { currentEarnedIncomeCents: 0, projectedEarnedIncomeCents: 0, maxDepositoryBalanceCents: 0 },
+      priorMonthPrefix: priorPrefix,
+      metrics: emptyMetrics,
       rows: [],
     };
   }
 
+  // Re-tag payroll stuck as unclear/transfer (imports + Plaid TRANSFER_IN).
+  await reapplyAutoCategoriesForBeneficiary(beneficiaryId);
+
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({
       beneficiaryId,
-      date: { $gte: `${prefix}-01`, $lte: `${prefix}-31` },
+      date: { $gte: `${priorPrefix}-01`, $lte: `${prefix}-31` },
     })
       .select({ date: 1, amountCents: 1, userCategory: 1, pending: 1, excludedFromThresholds: 1 })
       .lean(),
@@ -145,16 +161,15 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     }).lean(),
   ]);
 
-  const txSum = sumEarnedInflowTransactionsCents(
-    txRows.map((t) => ({
-      date: t.date,
-      amountCents: t.amountCents,
-      userCategory: t.userCategory,
-      pending: Boolean(t.pending),
-      excludedFromThresholds: Boolean(t.excludedFromThresholds),
-    })),
-    prefix,
-  );
+  const txMapped = txRows.map((t) => ({
+    date: t.date,
+    amountCents: t.amountCents,
+    userCategory: t.userCategory,
+    pending: Boolean(t.pending),
+    excludedFromThresholds: Boolean(t.excludedFromThresholds),
+  }));
+  const txSum = sumEarnedInflowTransactionsCents(txMapped, prefix);
+  const priorMonthEarned = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
   const recurringExtra = projectRecurringEarnedRestOfMonthCents(
     recurringRows.map((r) => ({
       type: r.type,
@@ -174,16 +189,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   // Full income breakdown (earned / benefit / other) from the user's categorized
   // deposits, plus a projected view where earned income includes the rest-of-month
   // recurring payroll. Drives the gross- and countable-income limit valuations.
-  const breakdown = monthlyIncomeBreakdownCents(
-    txRows.map((t) => ({
-      date: t.date,
-      amountCents: t.amountCents,
-      userCategory: t.userCategory,
-      pending: Boolean(t.pending),
-      excludedFromThresholds: Boolean(t.excludedFromThresholds),
-    })),
-    prefix,
-  );
+  const breakdown = monthlyIncomeBreakdownCents(txMapped, prefix);
   const projectedBreakdown = {
     ...breakdown,
     earnedNetCents: projectedEarned,
@@ -285,9 +291,11 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   return {
     programsEnrolled: programs as string[],
     monthPrefix: prefix,
+    priorMonthPrefix: priorPrefix,
     metrics: {
       currentEarnedIncomeCents: currentEarned,
       projectedEarnedIncomeCents: projectedEarned,
+      priorMonthEarnedIncomeCents: priorMonthEarned,
       maxDepositoryBalanceCents: maxAsset,
     },
     rows,

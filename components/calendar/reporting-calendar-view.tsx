@@ -3,47 +3,48 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  IconAlertTriangle,
-  IconCalendarEvent,
   IconCheck,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconExternalLink,
   IconPlus,
-  IconRefresh,
-  IconShieldCheck,
-  IconSparkles,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { programLabel, programMetaFor } from "@/lib/benefits/program-meta";
-import { advisorAskHref } from "@/lib/benefits/fix-prompts";
 import {
-  CHANGE_TYPES,
   fixedScheduleEventsForPrograms,
   REPORTING_SCHEDULES,
   scheduleFor,
   type ReportTrack,
-  type ReportVerdict,
 } from "@/lib/benefits/reporting-schedules";
+import { calendarEventHref } from "@/lib/calendar/event-id";
 
 type UserDeadline = {
   _id: string;
   program: string | null;
   dueDate: string;
   track: ReportTrack;
+  kind?: string;
+  sourceKey?: string | null;
   title: string;
   note: string;
   completedAt: string | null;
 };
+
+function isRenewalDeadline(d: Pick<UserDeadline, "kind" | "sourceKey" | "title">): boolean {
+  if (d.kind === "renewal") return true;
+  if (d.sourceKey?.startsWith("renewal:")) return true;
+  return /\brenewal\b/i.test(d.title ?? "");
+}
 
 type AgendaItem = {
   id: string;
   date: string;
   program: string | null;
   track: ReportTrack;
+  kind: string;
   title: string;
   detail: string;
   channelLabel?: string;
@@ -52,35 +53,9 @@ type AgendaItem = {
   completed: boolean;
 };
 
-const TRACK_META: Record<
-  ReportTrack,
-  { label: string; tone: string; bar: string; icon: typeof IconShieldCheck }
-> = {
-  scheduled: {
-    label: "Scheduled — benefits may stop if missed",
-    tone: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
-    bar: "border-l-[var(--color-cs-danger)]",
-    icon: IconAlertTriangle,
-  },
-  event: {
-    label: "Report a change — avoids an overpayment",
-    tone: "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]",
-    bar: "border-l-[var(--color-cs-brand)]",
-    icon: IconShieldCheck,
-  },
-};
-
-const VERDICT_META: Record<ReportVerdict, { label: string; className: string }> = {
-  yes: { label: "Report it", className: "bg-[#fde7e9] text-[#a4262c]" },
-  maybe: { label: "Maybe", className: "bg-[#fed9cc] text-[#ca5010]" },
-  no: { label: "No need", className: "bg-[#dff6dd] text-[#107c10]" },
-};
-
 function todayIso(): string {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function daysUntil(dateIso: string): number {
@@ -89,26 +64,30 @@ function daysUntil(dateIso: string): number {
   return Math.round((target.getTime() - today.getTime()) / 86400000);
 }
 
-function monthLabel(dateIso: string): string {
-  return new Date(`${dateIso}T00:00:00`).toLocaleDateString(undefined, {
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function dayLabel(dateIso: string): string {
-  return new Date(`${dateIso}T00:00:00`).toLocaleDateString(undefined, {
-    weekday: "short",
+function relLabel(dateIso: string): string {
+  const days = daysUntil(dateIso);
+  if (days < 0) return `${Math.abs(days)}d overdue`;
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  if (days < 21) return `in ${days} days`;
+  return new Date(`${dateIso}T12:00:00`).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
 }
 
-function countdownText(days: number): string {
-  if (days < 0) return `${Math.abs(days)}d overdue`;
-  if (days === 0) return "Today";
-  if (days === 1) return "Tomorrow";
-  return `in ${days}d`;
+function dayParts(dateIso: string) {
+  const d = new Date(`${dateIso}T12:00:00`);
+  return {
+    mon: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+    day: String(d.getDate()),
+    wd: d.toLocaleDateString("en-US", { weekday: "short" }),
+    full: d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    }),
+  };
 }
 
 export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string | null }) {
@@ -116,14 +95,11 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const [deadlines, setDeadlines] = useState<UserDeadline[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  const [changeKey, setChangeKey] = useState<string>(CHANGE_TYPES[0].key);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [openProgram, setOpenProgram] = useState<string | null>(null);
   const initialMonth = new Date();
   const [viewYear, setViewYear] = useState(initialMonth.getFullYear());
-  const [viewMonth, setViewMonth] = useState(initialMonth.getMonth()); // 0-11
+  const [viewMonth, setViewMonth] = useState(initialMonth.getMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [form, setForm] = useState({
     program: "",
@@ -156,17 +132,13 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     void load();
   }, [load]);
 
-  const enrolledCodes = useMemo(
-    () => programs.map((p) => p.toUpperCase()).filter((c) => REPORTING_SCHEDULES[c]),
-    [programs],
-  );
-
   const agenda: AgendaItem[] = useMemo(() => {
     const generated = fixedScheduleEventsForPrograms(programs, new Date()).map<AgendaItem>((g) => ({
       id: `gen-${g.program}-${g.title}-${g.date}`,
       date: g.date,
       program: g.program,
       track: g.track,
+      kind: "deadline",
       title: g.title,
       detail: g.detail,
       channelLabel: g.channelLabel,
@@ -181,6 +153,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         date: d.dueDate,
         program: d.program,
         track: d.track,
+        kind: isRenewalDeadline(d) ? "renewal" : (d.kind ?? "deadline"),
         title: d.title,
         detail: d.note,
         channelLabel: ch?.label,
@@ -193,6 +166,13 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   }, [programs, deadlines]);
 
   const upcoming = agenda.filter((a) => !a.completed);
+  const renewals = upcoming
+    .filter((a) => a.kind === "renewal")
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const otherDeadlines = upcoming
+    .filter((a) => a.kind !== "renewal")
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   const itemsByDate = useMemo(() => {
     const map = new Map<string, AgendaItem[]>();
     for (const item of upcoming) {
@@ -202,27 +182,17 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     }
     return map;
   }, [upcoming]);
-  const visibleAgenda = selectedDate
-    ? upcoming.filter((a) => a.date === selectedDate)
-    : upcoming;
-  const months = useMemo(() => {
-    const map = new Map<string, AgendaItem[]>();
-    for (const item of visibleAgenda) {
-      const key = monthLabel(item.date);
-      const arr = map.get(key) ?? [];
-      arr.push(item);
-      map.set(key, arr);
-    }
-    return [...map.entries()];
-  }, [visibleAgenda]);
 
-  const change = CHANGE_TYPES.find((c) => c.key === changeKey) ?? CHANGE_TYPES[0];
-  const referenceCodes = showAll ? Object.keys(REPORTING_SCHEDULES) : enrolledCodes;
+  const visibleRenewals = selectedDate
+    ? renewals.filter((a) => a.date === selectedDate)
+    : renewals;
+  const visibleOthers = selectedDate
+    ? otherDeadlines.filter((a) => a.date === selectedDate)
+    : otherDeadlines;
 
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!beneficiaryId) return;
-    if (!form.title.trim() || !form.dueDate) return;
+    if (!beneficiaryId || !form.title.trim() || !form.dueDate) return;
     setSaving(true);
     setError(null);
     const res = await fetch("/api/reporting-deadlines", {
@@ -233,6 +203,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         program: form.program || null,
         dueDate: form.dueDate,
         track: form.track,
+        kind: "deadline",
         title: form.title.trim(),
         note: form.note.trim() || undefined,
       }),
@@ -274,59 +245,59 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     );
   }
 
-  return (
-    <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Calendar</div>
-      <h1 className="mb-2 text-xl font-medium text-[var(--color-cs-text)]">Reporting calendar</h1>
-      <p className="mb-3 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Every program&apos;s reporting clock in one place. Two tracks, two reasons:{" "}
-        <span className="font-medium text-[var(--color-cs-danger)]">scheduled paperwork</span> you
-        must file on time (missing it can suspend a benefit), and{" "}
-        <span className="font-medium text-[var(--color-cs-brand)]">change reports</span> filed when
-        life changes (filing keeps your benefit accurate and avoids an overpayment). Always confirm
-        exact dates with the agency — several rules are mid-change in 2026.
-      </p>
+  const monthTitle = new Date(viewYear, viewMonth, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
-      <AppToolbar>
-        <ToolbarButton onClick={() => void load()} primary>
-          <IconRefresh size={16} stroke={1.5} aria-hidden />
-          Refresh
-        </ToolbarButton>
-        <ToolbarButton onClick={() => setShowAdd((s) => !s)}>
-          <IconPlus size={16} stroke={1.5} aria-hidden />
-          Add a deadline
-        </ToolbarButton>
-      </AppToolbar>
+  // Current month + next two for the left rail
+  const monthOffsets = [0, 1, 2];
+
+  return (
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h1 className="cs-big-title">Calendar</h1>
+        <button
+          type="button"
+          className="cs-circbtn"
+          aria-label="Add deadline"
+          onClick={() => setShowAdd((s) => !s)}
+        >
+          <IconPlus size={20} stroke={2.2} />
+        </button>
+      </div>
+      <p className="mb-4 text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Renewals from{" "}
+        <Link href="/settings" className="text-[var(--color-cs-brand)]">
+          Settings
+        </Link>{" "}
+        stay at the top. Confirm every date with the agency.
+      </p>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
-      {/* Add-deadline form */}
       {showAdd && (
         <form
           onSubmit={submitAdd}
-          className="mb-3 rounded-lg border border-[var(--color-cs-border)] bg-white p-3 text-[13px]"
+          className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
         >
-          <div className="mb-2 font-medium text-[var(--color-cs-text)]">
-            Add a dated deadline (SAR, renewal, recert, appointment)
-          </div>
+          <div className="mb-2 text-[16px] font-bold">Add a deadline</div>
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Title</span>
               <input
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
+                className="cs-input"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="e.g. SNAP semi-annual report due"
+                placeholder="e.g. SNAP semi-annual report"
                 required
               />
             </label>
             <label className="block">
-              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
-                Due date
-              </span>
+              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Due date</span>
               <input
                 type="date"
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
+                className="cs-input"
                 value={form.dueDate}
                 min={todayIso()}
                 onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
@@ -336,7 +307,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Program</span>
               <select
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
+                className="cs-input"
                 value={form.program}
                 onChange={(e) => setForm((f) => ({ ...f, program: e.target.value }))}
               >
@@ -351,444 +322,363 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Track</span>
               <select
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
+                className="cs-input"
                 value={form.track}
                 onChange={(e) => setForm((f) => ({ ...f, track: e.target.value as ReportTrack }))}
               >
-                <option value="scheduled">Scheduled paperwork (deadline)</option>
+                <option value="scheduled">Scheduled paperwork</option>
                 <option value="event">Change report</option>
               </select>
             </label>
-            <label className="block sm:col-span-2">
-              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
-                Note (optional)
-              </span>
-              <input
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
-                value={form.note}
-                onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-                placeholder="e.g. date printed on the pink envelope"
-              />
-            </label>
           </div>
-          <div className="mt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              className="rounded-sm px-3 py-1.5 text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-nav-hover)]"
-              onClick={() => setShowAdd(false)}
-            >
+          <div className="mt-3 flex justify-end gap-2">
+            <button type="button" className="text-[var(--color-cs-brand)]" onClick={() => setShowAdd(false)}>
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-sm bg-[var(--color-cs-brand)] px-3 py-1.5 text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Add deadline"}
+            <button type="submit" disabled={saving} className="cs-btn cs-btn-primary disabled:opacity-50">
+              {saving ? "Saving…" : "Add"}
             </button>
           </div>
         </form>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        {/* ---------------- Agenda ---------------- */}
-        <section>
-          <MonthGrid
-            year={viewYear}
-            month={viewMonth}
-            itemsByDate={itemsByDate}
-            selectedDate={selectedDate}
-            onSelect={(d) => setSelectedDate((cur) => (cur === d ? null : d))}
-            onPrev={() => {
-              const m = viewMonth - 1;
-              if (m < 0) {
-                setViewMonth(11);
-                setViewYear((y) => y - 1);
-              } else setViewMonth(m);
-            }}
-            onNext={() => {
-              const m = viewMonth + 1;
-              if (m > 11) {
-                setViewMonth(0);
-                setViewYear((y) => y + 1);
-              } else setViewMonth(m);
-            }}
-            onToday={() => {
-              const t = new Date();
-              setViewYear(t.getFullYear());
-              setViewMonth(t.getMonth());
-              setSelectedDate(null);
-            }}
-          />
-
-          <div className="mb-2 mt-4 flex items-center justify-between gap-2">
-            <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">
-              {selectedDate ? dayLabel(selectedDate) : "Upcoming"}
-            </h2>
-            {selectedDate && (
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,17.5rem)_1fr] lg:items-start">
+        {/* Left: compact multi-month */}
+        <div className="max-w-[17.5rem]">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-[17px] font-bold tracking-tight">{monthTitle}</div>
+            <div className="flex gap-1">
               <button
                 type="button"
-                onClick={() => setSelectedDate(null)}
-                className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+                className="cs-circbtn !h-8 !w-8"
+                aria-label="Previous month"
+                onClick={() => {
+                  const m = viewMonth - 1;
+                  if (m < 0) {
+                    setViewMonth(11);
+                    setViewYear((y) => y - 1);
+                  } else setViewMonth(m);
+                }}
               >
-                <IconX size={12} stroke={2} aria-hidden />
-                Clear day filter
+                <IconChevronLeft size={16} stroke={2.2} />
               </button>
+              <button
+                type="button"
+                className="cs-circbtn !h-8 !w-8"
+                aria-label="Next month"
+                onClick={() => {
+                  const m = viewMonth + 1;
+                  if (m > 11) {
+                    setViewMonth(0);
+                    setViewYear((y) => y + 1);
+                  } else setViewMonth(m);
+                }}
+              >
+                <IconChevronRight size={16} stroke={2.2} />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {monthOffsets.map((offset) => {
+              let y = viewYear;
+              let m = viewMonth + offset;
+              while (m > 11) {
+                m -= 12;
+                y += 1;
+              }
+              const title = new Date(y, m, 1).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              });
+              return (
+                <MonthGrid
+                  key={`${y}-${m}`}
+                  year={y}
+                  month={m}
+                  title={offset === 0 ? undefined : title}
+                  compact
+                  itemsByDate={itemsByDate}
+                  selectedDate={selectedDate}
+                  onSelect={(d) => setSelectedDate((cur) => (cur === d ? null : d))}
+                />
+              );
+            })}
+          </div>
+
+          {selectedDate && (
+            <button
+              type="button"
+              onClick={() => setSelectedDate(null)}
+              className="mt-3 inline-flex items-center gap-1 text-[13px] text-[var(--color-cs-brand)]"
+            >
+              <IconX size={14} /> Clear day filter
+            </button>
+          )}
+
+          {/* Mobile agenda under months */}
+          <div className="mt-5 lg:hidden">
+            {loading ? (
+              <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
+            ) : (
+              <>
+                <AgendaBlock
+                  label="Renewals"
+                  hint="Vital · from Settings"
+                  items={visibleRenewals}
+                  empty={
+                    selectedDate
+                      ? "No renewals on this day."
+                      : "No renewal dates yet — set them in Settings."
+                  }
+                  onDone={(id) => void setCompleted(id, true)}
+                  onRemove={(id) => void remove(id)}
+                />
+                <AgendaBlock
+                  label="Reporting deadlines"
+                  items={visibleOthers}
+                  empty={
+                    selectedDate
+                      ? "No reporting items on this day."
+                      : "No other deadlines yet. Tap + to add one."
+                  }
+                  onDone={(id) => void setCompleted(id, true)}
+                  onRemove={(id) => void remove(id)}
+                />
+                <TipsCard />
+              </>
             )}
           </div>
-          {loading && <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>}
-          {!loading && selectedDate && visibleAgenda.length === 0 && (
-            <p className="rounded-lg border border-[var(--color-cs-border)] bg-white p-3 text-[13px] text-[var(--color-cs-text-secondary)]">
-              No reporting items on this day.
-            </p>
-          )}
-          {!loading && !selectedDate && upcoming.length === 0 && (
-            <div className="rounded-lg border border-[var(--color-cs-border)] bg-white p-4 text-[13px] text-[var(--color-cs-text-secondary)]">
-              No upcoming reporting dates yet. Use{" "}
-              <button
-                type="button"
-                className="text-[var(--color-cs-brand)] hover:underline"
-                onClick={() => setShowAdd(true)}
-              >
-                Add a deadline
-              </button>{" "}
-              to enter the date printed on a SAR, renewal, or recert form. Fixed seasonal windows
-              (SSI monthly wages, LIHEAP, Pennie) appear automatically for your enrolled programs.
-            </div>
-          )}
-          {months.map(([month, items]) => (
-            <div key={month} className="mb-3">
-              <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-                {month}
-              </div>
-              <div className="space-y-2">
-                {items.map((item) => {
-                  const tm = TRACK_META[item.track];
-                  const TIcon = tm.icon;
-                  const days = daysUntil(item.date);
-                  const meta = item.program ? programMetaFor(item.program) : null;
-                  return (
-                    <article
-                      key={item.id}
-                      className={`rounded-lg border border-[var(--color-cs-border)] border-l-4 ${tm.bar} bg-white p-3 text-[13px]`}
-                    >
-                      <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-semibold text-[var(--color-cs-text)]">
-                          {dayLabel(item.date)}
-                        </span>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                            days < 0
-                              ? "bg-[var(--color-cs-danger)] text-white"
-                              : days <= 7
-                                ? "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]"
-                                : "bg-[var(--color-cs-surface)] text-[var(--color-cs-text-secondary)]"
-                          }`}
-                        >
-                          {countdownText(days)}
-                        </span>
-                        {meta && (
-                          <Link
-                            href={`/thresholds/${item.program}`}
-                            className="rounded bg-[var(--color-cs-surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
-                          >
-                            {meta.label}
-                          </Link>
-                        )}
-                      </div>
-                      <div className="font-medium text-[var(--color-cs-text)]">{item.title}</div>
-                      {item.detail && (
-                        <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-                          {item.detail}
-                        </p>
-                      )}
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        <TIcon size={13} stroke={1.7} className={tm.tone.split(" ").pop()} aria-hidden />
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${tm.tone}`}
-                        >
-                          {item.track === "scheduled" ? "Don't miss" : "Report to stay accurate"}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        {item.channelUrl && (
-                          <a
-                            href={item.channelUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 rounded-sm bg-[var(--color-cs-brand)] px-2.5 py-1 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-                          >
-                            <IconExternalLink size={13} stroke={1.5} aria-hidden />
-                            File at {item.channelLabel}
-                          </a>
-                        )}
-                        {!item.channelUrl && item.channelLabel && (
-                          <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
-                            File via {item.channelLabel}
-                          </span>
-                        )}
-                        {item.source === "user" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => void setCompleted(item.id.replace(/^usr-/, ""), true)}
-                              className="inline-flex items-center gap-1 rounded-sm border border-[var(--color-cs-border)] px-2 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-                            >
-                              <IconCheck size={13} stroke={1.5} aria-hidden />
-                              Done
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void remove(item.id.replace(/^usr-/, ""))}
-                              title="Remove"
-                              className="inline-flex rounded-sm p-1 text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-danger)]"
-                            >
-                              <IconTrash size={14} stroke={1.5} aria-hidden />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* ---------------- "Do I need to report this?" helper ---------------- */}
-        <section>
-          <h2 className="mb-2 text-[15px] font-bold text-[var(--color-cs-text)]">
-            Do I need to report this?
-          </h2>
-          <div className="rounded-lg border border-[var(--color-cs-border)] bg-white p-3 text-[13px]">
-            <label className="block">
-              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
-                What changed?
-              </span>
-              <select
-                className="w-full rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
-                value={changeKey}
-                onChange={(e) => setChangeKey(e.target.value)}
-              >
-                {CHANGE_TYPES.map((c) => (
-                  <option key={c.key} value={c.key}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="mt-3 space-y-1.5">
-              {(enrolledCodes.length ? enrolledCodes : Object.keys(REPORTING_SCHEDULES)).map(
-                (code) => {
-                  const entry = change.byProgram[code];
-                  if (!entry) return null;
-                  const vm = VERDICT_META[entry.verdict];
-                  return (
-                    <div
-                      key={code}
-                      className="flex items-start gap-2 rounded border border-[var(--color-cs-border)] px-2.5 py-1.5"
-                    >
-                      <span className="min-w-[72px] shrink-0 text-[12px] font-semibold text-[var(--color-cs-text)]">
-                        {programLabel(code)}
-                      </span>
-                      <span
-                        className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold ${vm.className}`}
-                      >
-                        {vm.label}
-                      </span>
-                      <span className="text-[11px] leading-snug text-[var(--color-cs-text-secondary)]">
-                        {entry.note}
-                      </span>
-                    </div>
-                  );
-                },
-              )}
-              {enrolledCodes.length === 0 && (
-                <p className="text-[11px] text-[var(--color-cs-text-muted)]">
-                  Showing all programs — set your enrolled programs in onboarding to narrow this.
-                </p>
-              )}
-            </div>
-
-            <Link
-              href={advisorAskHref(
-                `I "${change.label.toLowerCase()}". For my benefits (${
-                  (enrolledCodes.length ? enrolledCodes : ["SSI", "SNAP", "Medicaid"]).map(programLabel).join(", ")
-                }) in Pennsylvania, which programs do I need to report this to, by when, and through which channel?`,
-              )}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-            >
-              <IconSparkles size={14} stroke={1.5} aria-hidden />
-              Ask AI about reporting this
-            </Link>
-          </div>
-
-          <p className="mt-2 px-1 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Over-reporting is common and harmless to fix, but knowing what you <em>don&apos;t</em>{" "}
-            need to report cuts the anxiety. This is general guidance, not a determination.
-          </p>
-        </section>
-      </div>
-
-      {/* ---------------- Per-program reporting reference ---------------- */}
-      <section className="mt-5">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">
-            Reporting rules by program
-          </h2>
-          <button
-            type="button"
-            onClick={() => setShowAll((s) => !s)}
-            className="text-[12px] font-medium text-[var(--color-cs-brand)] hover:underline"
-          >
-            {showAll ? "Show my programs" : "Show all programs"}
-          </button>
         </div>
-        <div className="space-y-2">
-          {referenceCodes.map((code) => {
-            const sched = scheduleFor(code);
-            if (!sched) return null;
-            const meta = programMetaFor(code);
-            const open = openProgram === code;
+
+        {/* Right: agenda */}
+        <aside className="hidden lg:block lg:sticky lg:top-24">
+          {loading ? (
+            <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
+          ) : (
+            <>
+              <AgendaBlock
+                label="Renewals"
+                hint="Vital · from Settings"
+                items={visibleRenewals}
+                empty={
+                  selectedDate
+                    ? "No renewals on this day."
+                    : "No renewal dates yet — set them in Settings."
+                }
+                onDone={(id) => void setCompleted(id, true)}
+                onRemove={(id) => void remove(id)}
+              />
+              <AgendaBlock
+                label="Reporting deadlines"
+                items={visibleOthers}
+                empty={
+                  selectedDate
+                    ? "No reporting items on this day."
+                    : "No other deadlines yet. Tap + to add one."
+                }
+                onDone={(id) => void setCompleted(id, true)}
+                onRemove={(id) => void remove(id)}
+              />
+              <TipsCard />
+            </>
+          )}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function TipsCard() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-4 overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+        aria-expanded={open}
+      >
+        <span className="text-[15px] font-bold text-[var(--color-cs-text)]">Tips</span>
+        <IconChevronDown
+          size={16}
+          stroke={2}
+          className={`shrink-0 text-[var(--color-cs-text-secondary)] transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-[var(--color-cs-sep)] px-4 py-3 text-[13px]">
+          <p className="font-semibold text-[var(--color-cs-text)]">Missing a renewal?</p>
+          <p className="mt-1 text-[var(--color-cs-text-secondary)]">
+            Enter the date from each agency notice so it appears here and on Home. Confirm every
+            date with the agency.
+          </p>
+          <Link href="/settings" className="mt-2 inline-block font-semibold text-[var(--color-cs-brand)]">
+            Set renewal dates in Settings →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AgendaBlock({
+  label,
+  hint,
+  items,
+  empty,
+  onDone,
+  onRemove,
+}: {
+  label: string;
+  hint?: string;
+  items: AgendaItem[];
+  empty: string;
+  onDone: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <section className="mt-4 first:mt-0">
+      <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
+        <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
+          {label}
+        </h2>
+        {hint && (
+          <span className="text-[12px] font-medium text-[var(--color-cs-warning)]">{hint}</span>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-4 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+          {empty}
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {items.map((item) => {
+            const parts = dayParts(item.date);
+            const meta = item.program ? programMetaFor(item.program) : null;
+            const days = daysUntil(item.date);
+            const href = calendarEventHref(
+              item.source === "user"
+                ? { source: "user", deadlineId: item.id.replace(/^usr-/, "") }
+                : {
+                    source: "generated",
+                    program: item.program ?? "GEN",
+                    date: item.date,
+                    title: item.title,
+                  },
+            );
             return (
-              <div
-                key={code}
-                className="overflow-hidden rounded-lg border border-[var(--color-cs-border)] bg-white"
+              <article
+                key={item.id}
+                className="rounded-[18px] bg-[var(--color-cs-card)] p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
               >
-                <button
-                  type="button"
-                  onClick={() => setOpenProgram(open ? null : code)}
-                  className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-[var(--color-cs-surface)]"
-                >
-                  <span className="flex items-center gap-2">
-                    <IconCalendarEvent size={16} stroke={1.6} className="text-[var(--color-cs-brand)]" aria-hidden />
-                    <span className="text-[13px] font-semibold text-[var(--color-cs-text)]">
-                      {meta?.label ?? code}
-                    </span>
-                  </span>
-                  <IconChevronDown
-                    size={16}
-                    stroke={1.6}
-                    className={`text-[var(--color-cs-text-secondary)] transition-transform ${open ? "rotate-180" : ""}`}
-                    aria-hidden
-                  />
-                </button>
-                {open && (
-                  <div className="border-t border-[var(--color-cs-border)] px-3 py-3 text-[13px]">
-                    {sched.caveat && (
-                      <div className="mb-3 rounded border border-[var(--color-cs-warning)] bg-[var(--color-cs-warning-bg)] px-2.5 py-1.5 text-[12px] text-[var(--color-cs-warning)]">
-                        {sched.caveat}
+                <Link href={href} className="flex gap-3 text-inherit">
+                  <div className="cs-datechip">
+                    <div className="m">{parts.mon}</div>
+                    <div className="d">{parts.day}</div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-[16px] font-semibold">{item.title}</div>
+                        <div className="mt-0.5 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
+                          {meta?.label ?? "General"} · {parts.full}
+                          {item.detail ? ` · ${item.detail}` : ""}
+                        </div>
                       </div>
-                    )}
-                    <ReportColumn
-                      title="Scheduled — file on time"
-                      tone="text-[var(--color-cs-danger)]"
-                      items={sched.scheduled.map((s) => ({
-                        head: s.title,
-                        body: s.detail,
-                        foot: s.deadline,
-                      }))}
-                    />
-                    <ReportColumn
-                      title="Report when it happens"
-                      tone="text-[var(--color-cs-brand)]"
-                      items={sched.eventTriggered.map((s) => ({
-                        head: s.title,
-                        body: s.detail,
-                        foot: s.deadline,
-                      }))}
-                    />
-                    <div className="mt-3">
-                      <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-[#107c10]">
-                        You do NOT need to report
-                      </div>
-                      <ul className="list-disc space-y-0.5 pl-5 text-[12px] text-[var(--color-cs-text-secondary)]">
-                        {sched.doNotReport.map((d, i) => (
-                          <li key={i}>{d}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[var(--color-cs-border)] pt-2 text-[12px]">
-                      <span className="text-[var(--color-cs-text-secondary)]">
-                        File via{" "}
-                        <span className="font-medium text-[var(--color-cs-text)]">
-                          {sched.channel.label}
-                        </span>
-                        {sched.channel.phone ? ` · ${sched.channel.phone}` : ""}
-                      </span>
-                      {sched.channel.url && (
-                        <a
-                          href={sched.channel.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[var(--color-cs-brand)] hover:underline"
-                        >
-                          <IconExternalLink size={13} stroke={1.5} aria-hidden />
-                          Open channel
-                        </a>
-                      )}
-                      <Link
-                        href={`/thresholds/${code}`}
-                        className="text-[var(--color-cs-brand)] hover:underline"
+                      <div
+                        className={`shrink-0 text-[13px] font-medium ${
+                          days <= 7
+                            ? "text-[var(--color-cs-danger)]"
+                            : "text-[var(--color-cs-text-secondary)]"
+                        }`}
                       >
-                        View {meta?.label ?? code} limits
-                      </Link>
+                        {relLabel(item.date)}
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
+                </Link>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-[58px]">
+                  {item.channelUrl && (
+                    <a
+                      href={item.channelUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <IconExternalLink size={12} />
+                      {item.channelLabel ?? "File"}
+                    </a>
+                  )}
+                  <Link
+                    href={href}
+                    className="text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                  >
+                    Details
+                  </Link>
+                  {item.program && (
+                    <Link
+                      href={`/thresholds/${item.program}`}
+                      className="text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                    >
+                      View limits
+                    </Link>
+                  )}
+                  {item.source === "user" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onDone(item.id.replace(/^usr-/, ""))}
+                        className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-success)]"
+                      >
+                        <IconCheck size={13} /> Done
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onRemove(item.id.replace(/^usr-/, ""))}
+                        className="inline-flex text-[var(--color-cs-text-muted)]"
+                        aria-label="Remove"
+                      >
+                        <IconTrash size={14} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
             );
           })}
-          {referenceCodes.length === 0 && (
-            <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
-              No enrolled programs yet.{" "}
-              <button
-                type="button"
-                onClick={() => setShowAll(true)}
-                className="text-[var(--color-cs-brand)] hover:underline"
-              >
-                Show all programs
-              </button>
-              .
-            </p>
-          )}
         </div>
-      </section>
-    </>
+      )}
+    </section>
   );
 }
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
-/** A month grid with a dot on each day that has a reporting item (red =
- *  scheduled/suspension risk, blue = change report). Click a day to filter the
- *  agenda; click again or "Clear" to unfilter. */
 function MonthGrid({
   year,
   month,
+  title,
+  compact = false,
   itemsByDate,
   selectedDate,
   onSelect,
-  onPrev,
-  onNext,
-  onToday,
 }: {
   year: number;
   month: number;
+  title?: string;
+  compact?: boolean;
   itemsByDate: Map<string, AgendaItem[]>;
   selectedDate: string | null;
   onSelect: (date: string) => void;
-  onPrev: () => void;
-  onNext: () => void;
-  onToday: () => void;
 }) {
   const first = new Date(year, month, 1);
   const startWeekday = first.getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = todayIso();
-  const monthName = first.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const pad = (n: number) => String(n).padStart(2, "0");
   const dateOf = (d: number) => `${year}-${pad(month + 1)}-${pad(d)}`;
 
@@ -797,131 +687,63 @@ function MonthGrid({
   for (let d = 1; d <= daysInMonth; d += 1) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
+  const cellSize = compact ? "h-8 w-8 text-[12px]" : "h-9 w-9 text-[13px]";
+
   return (
-    <div className="rounded-lg border border-[var(--color-cs-border)] bg-white p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <div className="text-[14px] font-bold text-[var(--color-cs-text)]">{monthName}</div>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onToday}
-            className="rounded-md px-2 py-1 text-[11px] font-semibold text-[var(--color-cs-brand)] hover:bg-[var(--color-cs-info-bg)]"
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            onClick={onPrev}
-            aria-label="Previous month"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
-          >
-            <IconChevronLeft size={16} stroke={1.8} aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            aria-label="Next month"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
-          >
-            <IconChevronRight size={16} stroke={1.8} aria-hidden />
-          </button>
+    <div>
+      {title ? (
+        <div className="mb-1.5 text-[14px] font-semibold tracking-tight text-[var(--color-cs-text)]">
+          {title}
         </div>
-      </div>
+      ) : null}
 
-      <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
+      <div className="grid grid-cols-7">
         {WEEKDAYS.map((d, i) => (
-          <div key={i}>{d}</div>
+          <div
+            key={i}
+            className="pb-1 text-center text-[10px] font-semibold text-[var(--color-cs-text-secondary)]"
+          >
+            {d}
+          </div>
         ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-1">
         {cells.map((d, i) => {
           if (d == null) return <div key={`b-${i}`} className="aspect-square" />;
           const date = dateOf(d);
           const items = itemsByDate.get(date) ?? [];
-          const hasScheduled = items.some((x) => x.track === "scheduled");
-          const hasEvent = items.some((x) => x.track === "event");
           const isToday = date === today;
           const isSelected = date === selectedDate;
+          const hasEv = items.length > 0;
           return (
             <button
               key={date}
               type="button"
               onClick={() => onSelect(date)}
-              className={`relative flex aspect-square flex-col items-center justify-center rounded-md text-[12px] transition-colors ${
-                isSelected
-                  ? "bg-[var(--color-cs-brand)] font-bold text-white"
-                  : isToday
-                    ? "bg-[var(--color-cs-info-bg)] font-semibold text-[var(--color-cs-brand)] ring-1 ring-[var(--color-cs-brand)]"
-                    : items.length
-                      ? "font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
-                      : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)]"
-              }`}
-              title={items.length ? `${items.length} reporting item${items.length === 1 ? "" : "s"}` : undefined}
+              className="flex aspect-square items-center justify-center"
             >
-              <span>{d}</span>
-              {items.length > 0 && (
-                <span className="mt-0.5 flex gap-0.5">
-                  {hasScheduled && (
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        isSelected ? "bg-white" : "bg-[var(--color-cs-danger)]"
-                      }`}
-                    />
-                  )}
-                  {hasEvent && (
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        isSelected ? "bg-white/70" : "bg-[var(--color-cs-brand)]"
-                      }`}
-                    />
-                  )}
-                </span>
-              )}
+              <span
+                className={`flex ${cellSize} items-center justify-center tabular-nums ${
+                  isSelected
+                    ? "rounded-[11px] bg-[var(--color-cs-surface)] font-semibold text-[var(--color-cs-text)]"
+                    : "rounded-full"
+                } ${
+                  hasEv
+                    ? "box-border border-2 border-[var(--color-cs-pa-red)] font-semibold"
+                    : ""
+                } ${
+                  isToday && !isSelected
+                    ? "font-semibold text-[var(--color-cs-pa-red)]"
+                    : isToday && isSelected
+                      ? "text-[var(--color-cs-pa-red)]"
+                      : !isSelected && !hasEv
+                        ? "text-[var(--color-cs-text)]"
+                        : ""
+                }`}
+              >
+                {d}
+              </span>
             </button>
           );
         })}
-      </div>
-
-      <div className="mt-2 flex items-center gap-3 text-[10px] text-[var(--color-cs-text-secondary)]">
-        <span className="inline-flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cs-danger)]" />
-          Scheduled
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cs-brand)]" />
-          Change report
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ReportColumn({
-  title,
-  tone,
-  items,
-}: {
-  title: string;
-  tone: string;
-  items: { head: string; body: string; foot: string }[];
-}) {
-  if (items.length === 0) return null;
-  return (
-    <div className="mt-3 first:mt-0">
-      <div className={`mb-1 text-[11px] font-bold uppercase tracking-wide ${tone}`}>{title}</div>
-      <div className="space-y-2">
-        {items.map((it, i) => (
-          <div key={i} className="rounded border border-[var(--color-cs-border)] px-2.5 py-1.5">
-            <div className="text-[12px] font-medium text-[var(--color-cs-text)]">{it.head}</div>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              {it.body}
-            </p>
-            <div className="mt-1 text-[11px] font-medium text-[var(--color-cs-text-muted)]">
-              ⏱ {it.foot}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

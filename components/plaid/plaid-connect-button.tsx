@@ -130,7 +130,7 @@ export function PlaidConnectButton({
       if (!ct.includes("application/json")) {
         if (cancelled) return;
         setError(
-          `Expected JSON from /api/plaid/link-token but got “${ct.slice(0, 40)}…”. Check that you are on the same origin as the app (e.g. http://localhost:3000).`,
+          `Expected JSON from /api/plaid/link-token but got “${ct.slice(0, 40)}…”. Check that you are on the same origin as the app (e.g. http://localhost:5173).`,
         );
         return;
       }

@@ -2,11 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { IconExternalLink, IconRefresh, IconSparkles } from "@tabler/icons-react";
-import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
-import { formatPlainUsdFromCents } from "@/lib/format/money";
+import {
+  IconAlertTriangle,
+  IconBell,
+  IconChartLine,
+  IconClipboardList,
+  IconExternalLink,
+  IconRefresh,
+  IconSparkles,
+  IconWallet,
+} from "@tabler/icons-react";
 import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
 import { advisorAskHref, fixThresholdQuestion } from "@/lib/benefits/fix-prompts";
+import { ActionCenter } from "@/components/actions/action-center";
+import type { ReportingAction } from "@/lib/reporting/reporting-actions";
 
 type AlertRow = {
   _id: string;
@@ -22,27 +31,6 @@ type AlertRow = {
     currentValueCents?: number;
   };
 };
-
-/** Color accent (left bar + level pill) keyed to the alert's severity. */
-function levelAccent(level: string): { bar: string; pill: string } {
-  const l = level.toLowerCase();
-  if (l === "breach" || l === "critical" || l === "danger") {
-    return {
-      bar: "border-l-[var(--color-cs-danger)]",
-      pill: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
-    };
-  }
-  if (l === "warning" || l === "warn" || l === "watch") {
-    return {
-      bar: "border-l-[var(--color-cs-warning)]",
-      pill: "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]",
-    };
-  }
-  return {
-    bar: "border-l-[var(--color-cs-brand)]",
-    pill: "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]",
-  };
-}
 
 function triggerLabel(trigger: string): string {
   switch (trigger) {
@@ -65,7 +53,61 @@ function triggerLabel(trigger: string): string {
   }
 }
 
-export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) {
+function relativeStamp(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startThat = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dayDiff = Math.round((startToday.getTime() - startThat.getTime()) / 86400000);
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  if (dayDiff === 0) return time;
+  if (dayDiff === 1) return `Yesterday, ${time}`;
+  if (dayDiff < 7) {
+    return d.toLocaleDateString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
+  }
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function iconFor(trigger: string, level: string) {
+  if (level === "breach" || level === "critical" || trigger === "cliff") {
+    return IconAlertTriangle;
+  }
+  switch (trigger) {
+    case "reporting":
+      return IconClipboardList;
+    case "trend":
+    case "predictive":
+      return IconChartLine;
+    case "snt":
+    case "able":
+      return IconWallet;
+    default:
+      return IconBell;
+  }
+}
+
+function iconBg(level: string): string {
+  if (level === "breach" || level === "critical") return "bg-[#ff3b30]";
+  if (level === "warning") return "bg-[var(--color-cs-accent-orange)]";
+  return "bg-[var(--color-cs-brand)]";
+}
+
+function isTimeSensitive(level: string, trigger: string): boolean {
+  return (
+    level === "breach" ||
+    level === "critical" ||
+    trigger === "cliff" ||
+    trigger === "reporting"
+  );
+}
+
+export function AlertsView({
+  beneficiaryId,
+  reportingActions = [],
+}: {
+  beneficiaryId: string | null;
+  reportingActions?: ReportingAction[];
+}) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,122 +159,168 @@ export function AlertsView({ beneficiaryId }: { beneficiaryId: string | null }) 
     );
   }
 
-  return (
-    <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Alerts</div>
-      <h1 className="mb-2 text-xl font-medium text-[var(--color-cs-text)]">Alerts</h1>
-      <p className="mb-3 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">
-        Informational notices from limit checks. Acknowledge when you&apos;ve reviewed; dismiss if not applicable.
-        Email delivery is configured in notification preferences.
-      </p>
+  async function markAllRead() {
+    const open = rows.filter((r) => r.status === "new");
+    await Promise.all(open.map((r) => patchStatus(r._id, "acknowledged")));
+  }
 
-      <AppToolbar>
-        <ToolbarButton onClick={() => void load()} primary>
-          <IconRefresh size={16} stroke={1.5} aria-hidden />
-          Refresh
-        </ToolbarButton>
-        <ToolbarButton onClick={() => setFilter("new")}>Open only</ToolbarButton>
-        <ToolbarButton onClick={() => setFilter("all")}>All</ToolbarButton>
-      </AppToolbar>
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="cs-big-title">Alerts</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="cs-circbtn !h-9 !w-9"
+            aria-label="Refresh"
+            onClick={() => void load()}
+          >
+            <IconRefresh size={17} stroke={2} />
+          </button>
+          <button
+            type="button"
+            className="text-[15px] font-medium text-[var(--color-cs-brand)] disabled:opacity-40"
+            onClick={() => void markAllRead()}
+            disabled={!rows.some((r) => r.status === "new")}
+          >
+            Mark all read
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="mb-4 mt-3 inline-flex rounded-[10px] bg-[rgba(118,118,128,0.12)] p-0.5"
+        role="group"
+        aria-label="Alert filter"
+      >
+        <button
+          type="button"
+          onClick={() => setFilter("new")}
+          className={`rounded-[8px] px-3 py-1.5 text-[13px] font-semibold transition ${
+            filter === "new"
+              ? "bg-white text-[var(--color-cs-text)] shadow-sm"
+              : "text-[var(--color-cs-text-secondary)]"
+          }`}
+          aria-pressed={filter === "new"}
+        >
+          Needs attention
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={`rounded-[8px] px-3 py-1.5 text-[13px] font-semibold transition ${
+            filter === "all"
+              ? "bg-white text-[var(--color-cs-text)] shadow-sm"
+              : "text-[var(--color-cs-text-secondary)]"
+          }`}
+          aria-pressed={filter === "all"}
+        >
+          All
+        </button>
+      </div>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
-      <div className="space-y-2">
+      {reportingActions.length > 0 && (
+        <div className="mb-5">
+          <ActionCenter actions={reportingActions} />
+        </div>
+      )}
+
+      <div className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
+        Notifications
+      </div>
+
+      <div className="space-y-3">
         {loading && <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>}
         {!loading &&
           rows.map((a) => {
             const snap = a.dataSnapshot;
-            const meta =
-              snap?.currentValueCents != null && snap?.limitCents != null
-                ? `${formatPlainUsdFromCents(snap.currentValueCents)} vs ${formatPlainUsdFromCents(snap.limitCents)}`
-                : null;
-            const accent = levelAccent(a.level);
+            const prog = snap?.program ? programCodeKey(snap.program) : null;
+            const progMeta = prog ? programMetaFor(prog) : null;
+            const Icon = iconFor(a.trigger, a.level);
+            const source = progMeta?.label ?? "MyBenefitsPA";
+            const title = snap?.thresholdLabel ?? triggerLabel(a.trigger);
+            const sensitive = isTimeSensitive(a.level, a.trigger) && a.status === "new";
+
             return (
-              <article
+              <div
                 key={a._id}
-                className={`rounded border border-[var(--color-cs-border)] border-l-4 ${accent.bar} bg-white p-3 text-[13px]`}
+                className={`cs-acard ${a.status !== "new" ? "read" : ""}`}
               >
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${accent.pill}`}
-                  >
-                    {a.level}
-                  </span>
-                  <span className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">
-                    {triggerLabel(a.trigger)}
-                  </span>
-                  <span className="text-[11px] text-[var(--color-cs-text-secondary)]">
-                    {new Date(a.createdAt).toLocaleString()}
-                  </span>
-                  {a.status === "new" && (
-                    <span className="cs-pill bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">New</span>
-                  )}
+                <div className={`cs-acard-icon ${iconBg(a.level)}`} aria-hidden>
+                  <Icon size={20} stroke={1.8} />
                 </div>
-                {snap?.thresholdLabel && (
-                  <div className="mb-1 text-xs font-medium text-[var(--color-cs-text)]">{snap.thresholdLabel}</div>
-                )}
-                <p className="text-[var(--color-cs-text)]">{a.message}</p>
-                {meta && <p className="mt-1 text-[11px] text-[var(--color-cs-text-secondary)]">{meta}</p>}
-                {(() => {
-                  const prog = snap?.program ? programCodeKey(snap.program) : null;
-                  const progMeta = prog ? programMetaFor(prog) : null;
-                  if (!prog || !progMeta || snap?.limitCents == null) return null;
-                  const fixHref = advisorAskHref(
-                    fixThresholdQuestion({
-                      program: prog,
-                      label: snap.thresholdLabel ?? progMeta.label,
-                      currentValueCents: snap.currentValueCents,
-                      limitCents: snap.limitCents,
-                      status: a.level === "breach" ? "concern" : "watch",
-                    }),
-                  );
-                  return (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <Link
-                        href={fixHref}
-                        className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-2.5 py-1 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-                      >
-                        <IconSparkles size={14} stroke={1.5} aria-hidden />
-                        Ask AI how to fix
-                      </Link>
-                      <Link
-                        href={`/thresholds/${prog}`}
-                        className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-                      >
-                        <IconExternalLink size={13} stroke={1.5} aria-hidden />
-                        View {progMeta.label} limits
-                      </Link>
-                    </div>
-                  );
-                })()}
-                {a.status === "new" && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-                      onClick={() => void patchStatus(a._id, "acknowledged")}
-                    >
-                      Acknowledge
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)]"
-                      onClick={() => void patchStatus(a._id, "dismissed")}
-                    >
-                      Dismiss
-                    </button>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="cs-acard-source truncate">{source}</div>
+                    <div className="cs-acard-time">{relativeStamp(a.createdAt)}</div>
                   </div>
-                )}
-              </article>
+                  {sensitive && <div className="cs-acard-badge">Time Sensitive</div>}
+                  <div className="cs-acard-title">{title}</div>
+                  <p className="cs-acard-body">{a.message}</p>
+
+                  <div className="cs-acard-actions">
+                    {(() => {
+                      if (!prog || !progMeta || snap?.limitCents == null) return null;
+                      const fixHref = advisorAskHref(
+                        fixThresholdQuestion({
+                          program: prog,
+                          label: snap.thresholdLabel ?? progMeta.label,
+                          currentValueCents: snap.currentValueCents,
+                          limitCents: snap.limitCents,
+                          status: a.level === "breach" ? "concern" : "watch",
+                        }),
+                      );
+                      return (
+                        <>
+                          <Link href={fixHref} className="cs-acard-btn cs-acard-btn-primary">
+                            <span className="inline-flex items-center gap-1">
+                              <IconSparkles size={13} stroke={1.5} aria-hidden />
+                              Ask AI how to fix
+                            </span>
+                          </Link>
+                          <Link href={`/thresholds/${prog}`} className="cs-acard-btn">
+                            <span className="inline-flex items-center gap-1">
+                              <IconExternalLink size={13} stroke={1.5} aria-hidden />
+                              View {progMeta.label}
+                            </span>
+                          </Link>
+                        </>
+                      );
+                    })()}
+                    {a.status === "new" && (
+                      <>
+                        <button
+                          type="button"
+                          className="cs-acard-btn"
+                          onClick={() => void patchStatus(a._id, "acknowledged")}
+                        >
+                          Acknowledge
+                        </button>
+                        <button
+                          type="button"
+                          className="cs-acard-btn cs-acard-btn-ghost"
+                          onClick={() => void patchStatus(a._id, "dismissed")}
+                        >
+                          Dismiss
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             );
           })}
         {!loading && rows.length === 0 && (
-          <p className="text-sm text-[var(--color-cs-text-secondary)]">
-            No alerts{filter === "new" ? " in your open queue" : ""}. Run a bank sync from Recurring or Transactions to
-            refresh data.
-          </p>
+          <div className="cs-acard justify-center py-8 text-center">
+            <p className="text-[14px] text-[var(--color-cs-text-secondary)]">
+              No alerts{filter === "new" ? " that need attention" : ""}. Sync a bank from Money to
+              refresh.
+            </p>
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

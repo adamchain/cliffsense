@@ -4,11 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   IconArrowLeft,
+  IconBriefcase,
+  IconChevronDown,
+  IconCurrencyDollar,
   IconExternalLink,
+  IconHeart,
+  IconHome,
+  IconLeaf,
   IconRefresh,
   IconSparkles,
 } from "@tabler/icons-react";
-import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
 import {
   programCodeKey,
@@ -21,6 +26,22 @@ import {
   programOverviewQuestion,
 } from "@/lib/benefits/fix-prompts";
 import { SntEstimator } from "@/components/benefits/snt-estimator";
+import {
+  formatUsdCents,
+  programAgencyTag,
+  programTier,
+  statusFromRow,
+} from "@/lib/benefits/program-tier";
+import { PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
+import { fixedScheduleEventsForPrograms } from "@/lib/benefits/reporting-schedules";
+import { calendarEventHref } from "@/lib/calendar/event-id";
+
+type RelatedDate = {
+  id: string;
+  date: string;
+  title: string;
+  kind: string;
+};
 
 type Row = {
   _id: string;
@@ -55,26 +76,182 @@ const TYPE_LABEL: Record<string, string> = {
   custom: "Reference figure",
 };
 
-const STATUS: Record<
-  string,
-  { label: string; pill: string; bar: string }
-> = {
-  ok: {
-    label: "On track",
-    pill: "bg-[#dff6dd] text-[#107c10]",
-    bar: "border-l-[#107c10]",
-  },
-  watch: {
-    label: "Watch",
-    pill: "bg-[#fed9cc] text-[#ca5010]",
-    bar: "border-l-[var(--color-cs-warning)]",
-  },
-  concern: {
-    label: "Review — may be over",
-    pill: "bg-[#fde7e9] text-[#a4262c]",
-    bar: "border-l-[var(--color-cs-danger)]",
-  },
-};
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function relativeDateLabel(isoDate: string): string {
+  const today = new Date(`${todayIso()}T00:00:00`);
+  const target = new Date(`${isoDate}T00:00:00`);
+  const days = Math.round((target.getTime() - today.getTime()) / 86400000);
+  if (days < 0) return `${Math.abs(days)}d overdue`;
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  if (days < 21) return `in ${days} days`;
+  return new Date(`${isoDate}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function dateChipParts(isoDate: string) {
+  const d = new Date(`${isoDate}T12:00:00`);
+  return {
+    mon: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+    day: String(d.getDate()),
+  };
+}
+
+function shortDueLabel(isoDate: string): string {
+  return new Date(`${isoDate}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function ProgramGlyph({ code, federal }: { code: string; federal: boolean }) {
+  const color = federal ? "#fff" : "#e8d9b5";
+  const props = { size: 23, stroke: 2, color, "aria-hidden": true as const };
+  switch (code) {
+    case "SSDI":
+      return <IconBriefcase {...props} />;
+    case "SNAP":
+    case "WIC":
+      return <IconLeaf {...props} />;
+    case "MEDICAID":
+      return <IconHeart {...props} fill={color} />;
+    case "SECTION8":
+    case "ABLE":
+      return <IconHome {...props} />;
+    default:
+      return <IconCurrencyDollar {...props} />;
+  }
+}
+
+function LimitCard({
+  row,
+  programCode,
+}: {
+  row: Row;
+  programCode: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const sc = statusFromRow(row.status);
+  const cur =
+    row.currentValueCents != null ? formatPlainUsdFromCents(row.currentValueCents) : null;
+  const pct =
+    row.currentValueCents != null && row.limitCents > 0
+      ? Math.min(100, Math.round((row.currentValueCents / row.limitCents) * 100))
+      : null;
+  const fixHref = advisorAskHref(
+    fixThresholdQuestion({
+      program: programCode,
+      label: row.label,
+      currentValueCents: row.currentValueCents,
+      limitCents: row.limitCents,
+      status: row.status,
+    }),
+  );
+
+  return (
+    <article className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
+        <div className="font-semibold text-[var(--color-cs-text)]">{row.label}</div>
+        <span
+          className={`inline-block shrink-0 rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold ${
+            sc === "crit"
+              ? "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]"
+              : sc === "warn"
+                ? "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]"
+                : "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]"
+          }`}
+        >
+          {sc === "crit" ? "Over limit" : sc === "warn" ? "Near limit" : "On track"}
+        </span>
+      </div>
+      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-[var(--color-cs-text-secondary)]">
+        <span>{TYPE_LABEL[row.thresholdType] ?? row.thresholdType}</span>
+        <span>
+          Limit{" "}
+          <span className="font-semibold tabular-nums text-[var(--color-cs-text)]">
+            {formatPlainUsdFromCents(row.limitCents)}
+          </span>
+        </span>
+        {cur != null && (
+          <span>
+            Current{" "}
+            <span className="font-semibold tabular-nums text-[var(--color-cs-text)]">
+              {cur}
+            </span>
+            {pct != null ? ` (${pct}%)` : ""}
+          </span>
+        )}
+      </div>
+      {pct != null && (
+        <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-[rgba(120,120,128,0.18)]">
+          <div
+            className={`h-full rounded-full ${
+              sc === "crit"
+                ? "bg-[#ff3b30]"
+                : sc === "warn"
+                  ? "bg-[var(--color-cs-accent-orange)]"
+                  : "bg-[var(--color-cs-accent-green)]"
+            }`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+
+      {row.description && (
+        <div className="mb-2">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex items-center gap-1 text-[13px] font-medium text-[var(--color-cs-brand)]"
+            aria-expanded={open}
+          >
+            {open ? "Hide details" : "Show details"}
+            <IconChevronDown
+              size={14}
+              stroke={2}
+              className={`transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </button>
+          {open && (
+            <p className="mt-2 text-[12.5px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              {row.description}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        {row.status !== "ok" && (
+          <Link
+            href={fixHref}
+            className="inline-flex items-center gap-1.5 rounded-[14px] bg-[var(--color-cs-brand)] px-3 py-1.5 text-[13px] font-semibold text-white"
+          >
+            <IconSparkles size={14} stroke={1.5} aria-hidden />
+            Ask AI how to fix
+          </Link>
+        )}
+        {row.sourceUrl && (
+          <a
+            href={row.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[13px] text-[var(--color-cs-brand)]"
+          >
+            <IconExternalLink size={13} stroke={1.5} aria-hidden />
+            Official source
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
 
 export function BenefitDetailView({
   beneficiaryId,
@@ -85,7 +262,11 @@ export function BenefitDetailView({
 }) {
   const code = programCodeKey(program);
   const meta: ProgramMeta | null = programMetaFor(code);
+  const tier = programTier(code);
+  const fed = tier === "federal";
+  const tag = programAgencyTag(code);
   const [data, setData] = useState<Payload | null>(null);
+  const [relatedDates, setRelatedDates] = useState<RelatedDate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,15 +274,64 @@ export function BenefitDetailView({
     if (!beneficiaryId) return;
     setLoading(true);
     setError(null);
-    const res = await fetch(`/api/thresholds?beneficiaryId=${encodeURIComponent(beneficiaryId)}`);
-    const json = await res.json().catch(() => ({}));
+    const [tRes, dRes] = await Promise.all([
+      fetch(`/api/thresholds?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
+      fetch(`/api/reporting-deadlines?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
+    ]);
+    const tJson = await tRes.json().catch(() => ({}));
+    const dJson = await dRes.json().catch(() => ({}));
     setLoading(false);
-    if (!res.ok) {
-      setError((json as { error?: string }).error ?? "Failed to load");
+    if (!tRes.ok) {
+      setError((tJson as { error?: string }).error ?? "Failed to load");
       return;
     }
-    setData(json as Payload);
-  }, [beneficiaryId]);
+    const payload = tJson as Payload;
+    setData(payload);
+
+    const today = todayIso();
+    const enrolled = payload.programsEnrolled ?? [];
+    const generated = fixedScheduleEventsForPrograms(enrolled, new Date())
+      .filter((g) => programCodeKey(g.program) === code && g.date >= today)
+      .map<RelatedDate>((g) => ({
+        id: `gen-${g.program}-${g.title}-${g.date}`,
+        date: g.date,
+        title: g.title,
+        kind: "deadline",
+      }));
+
+    type Dl = {
+      _id: string;
+      program: string | null;
+      dueDate: string;
+      title: string;
+      kind?: string;
+      completedAt?: string | null;
+      sourceKey?: string | null;
+    };
+    const userDates = ((dJson as { deadlines?: Dl[] }).deadlines ?? [])
+      .filter((d) => {
+        if (d.completedAt) return false;
+        if (!d.program || programCodeKey(d.program) !== code) return false;
+        return d.dueDate >= today;
+      })
+      .map<RelatedDate>((d) => {
+        const isRenewal =
+          d.kind === "renewal" ||
+          d.sourceKey?.startsWith("renewal:") ||
+          /\brenewal\b/i.test(d.title ?? "");
+        return {
+          id: `usr-${d._id}`,
+          date: d.dueDate,
+          title: d.title,
+          kind: isRenewal ? "renewal" : (d.kind ?? "deadline"),
+        };
+      });
+
+    const merged = [...generated, ...userDates]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 6);
+    setRelatedDates(merged);
+  }, [beneficiaryId, code]);
 
   useEffect(() => {
     void load();
@@ -114,6 +344,11 @@ export function BenefitDetailView({
       ),
     [data, code],
   );
+
+  const primary = useMemo(() => {
+    const sorted = rows.slice().sort((a, b) => rank(b.status) - rank(a.status));
+    return sorted.find((r) => r.currentValueCents != null) ?? sorted[0] ?? null;
+  }, [rows]);
 
   const counts = useMemo(() => {
     let concern = 0;
@@ -130,6 +365,8 @@ export function BenefitDetailView({
     : true;
 
   const title = meta?.label ?? program;
+  const curCents = primary?.currentValueCents ?? null;
+  const limitCents = primary?.limitCents ?? null;
 
   if (!beneficiaryId) {
     return (
@@ -143,236 +380,279 @@ export function BenefitDetailView({
   }
 
   return (
-    <>
-      <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">
-        <Link href="/thresholds" className="hover:underline">
-          Limits
-        </Link>{" "}
-        › {title}
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Link
+          href="/thresholds"
+          className="cs-circbtn !bg-white/75 shadow-sm"
+          aria-label="Back to limits"
+        >
+          <IconArrowLeft size={18} stroke={2.2} />
+        </Link>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="cs-circbtn !bg-white/75 shadow-sm"
+            onClick={() => void load()}
+            aria-label="Refresh"
+          >
+            <IconRefresh size={17} stroke={2} />
+          </button>
+          <Link
+            href={advisorAskHref(programOverviewQuestion(code))}
+            className="cs-circbtn !bg-white/75 shadow-sm"
+            aria-label={`Ask AI about ${title}`}
+          >
+            <IconSparkles size={17} stroke={2} />
+          </Link>
+        </div>
       </div>
-      <h1 className="mb-1 text-xl font-medium text-[var(--color-cs-text)]">
-        {meta?.fullName ?? title}
-      </h1>
-      {meta && (
-        <p className="mb-3 max-w-2xl text-[13px] text-[var(--color-cs-text-secondary)]">{meta.blurb}</p>
-      )}
-
-      <AppToolbar>
-        <ToolbarButton href="/thresholds" primary>
-          <IconArrowLeft size={16} stroke={1.5} aria-hidden />
-          All limits
-        </ToolbarButton>
-        <ToolbarButton onClick={() => void load()}>
-          <IconRefresh size={16} stroke={1.5} aria-hidden />
-          Refresh
-        </ToolbarButton>
-        <ToolbarButton href={advisorAskHref(programOverviewQuestion(code))}>
-          <IconSparkles size={16} stroke={1.5} aria-hidden />
-          Ask AI about {title}
-        </ToolbarButton>
-      </AppToolbar>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
-      {!enrolled && (
-        <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
-          You haven&apos;t marked {title} as an enrolled program.{" "}
-          <Link href="/onboarding/benefits" className="text-[var(--color-cs-brand)] hover:underline">
-            Update your programs
-          </Link>{" "}
-          to track these limits live.
+      {/* Related dates — relative labels, same card style as Limits / Home upcoming */}
+      <div className="mb-5">
+        <div className="mb-2 flex items-baseline justify-between px-0.5">
+          <h2 className="text-[22px] font-bold tracking-tight">Dates</h2>
+          <Link href="/calendar" className="text-[15px] text-[var(--color-cs-brand)]">
+            Calendar
+          </Link>
         </div>
-      )}
-
-      {/* Status summary banner */}
-      {!loading && data && (
-        <div
-          className={`mb-3 rounded-lg border p-3 text-[13px] ${
-            counts.concern > 0
-              ? "border-[var(--color-cs-danger)] bg-[#fde7e9]"
-              : counts.watch > 0
-                ? "border-[var(--color-cs-warning)] bg-[#fff4ce]"
-                : "border-[#107c10] bg-[#dff6dd]"
-          }`}
-        >
-          {counts.total === 0 ? (
-            <span className="text-[var(--color-cs-text)]">
-              No reference limits are attached for {title} yet.
-            </span>
-          ) : counts.concern > 0 ? (
-            <span className="font-medium text-[#a4262c]">
-              You may be over {counts.concern} of {counts.total} {title} limit
-              {counts.concern === 1 ? "" : "s"}
-              {counts.watch > 0 ? `, and approaching ${counts.watch} more` : ""}. Review the
-              flagged items below and use “Ask AI how to fix” for next steps.
-            </span>
-          ) : counts.watch > 0 ? (
-            <span className="font-medium text-[#8a5400]">
-              You&apos;re approaching {counts.watch} of {counts.total} {title} limit
-              {counts.watch === 1 ? "" : "s"}. Nothing is over the line yet.
-            </span>
-          ) : (
-            <span className="font-medium text-[#107c10]">
-              All {counts.total} {title} limit{counts.total === 1 ? "" : "s"} look on track for{" "}
-              {data.monthPrefix}.
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Limit cards */}
-      <div className="space-y-2">
-        {loading && (
-          <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
-        )}
-        {!loading &&
-          rows
-            // Sort most-urgent first.
-            .slice()
-            .sort((a, b) => rank(b.status) - rank(a.status))
-            .map((r) => {
-              const st = STATUS[r.status] ?? STATUS.ok;
-              const cur =
-                r.currentValueCents != null ? formatPlainUsdFromCents(r.currentValueCents) : null;
-              const pct =
-                r.currentValueCents != null && r.limitCents > 0
-                  ? Math.min(100, Math.round((r.currentValueCents / r.limitCents) * 100))
-                  : null;
-              const fixHref = advisorAskHref(
-                fixThresholdQuestion({
-                  program: code,
-                  label: r.label,
-                  currentValueCents: r.currentValueCents,
-                  limitCents: r.limitCents,
-                  status: r.status,
-                }),
-              );
-              const showFix = r.status !== "ok";
+        {relatedDates.length === 0 ? (
+          <div className="rounded-[18px] bg-white px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            No upcoming dates for {title}. Set renewals in{" "}
+            <Link href="/settings" className="text-[var(--color-cs-brand)]">
+              Settings
+            </Link>
+            .
+          </div>
+        ) : (
+          <div className="cs-ios-list">
+            {relatedDates.map((d) => {
+              const chip = dateChipParts(d.date);
+              const rel = relativeDateLabel(d.date);
+              const days = (() => {
+                const today = new Date(`${todayIso()}T00:00:00`);
+                const target = new Date(`${d.date}T00:00:00`);
+                return Math.round((target.getTime() - today.getTime()) / 86400000);
+              })();
+              const eventHref = d.id.startsWith("usr-")
+                ? calendarEventHref({
+                    source: "user",
+                    deadlineId: d.id.replace(/^usr-/, ""),
+                  })
+                : calendarEventHref({
+                    source: "generated",
+                    program: code,
+                    date: d.date,
+                    title: d.title,
+                  });
+              const subtitle =
+                d.kind === "renewal"
+                  ? `Renewal · ${shortDueLabel(d.date)}`
+                  : `Due · ${shortDueLabel(d.date)}`;
               return (
-                <article
-                  key={r._id}
-                  className={`rounded-lg border border-[var(--color-cs-border)] border-l-4 ${st.bar} bg-white p-3 text-[13px]`}
-                >
-                  <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                    <div className="font-medium text-[var(--color-cs-text)]">{r.label}</div>
-                    <span
-                      className={`inline-block shrink-0 rounded px-2 py-0.5 text-[11px] font-medium ${st.pill}`}
-                    >
-                      {st.label}
-                    </span>
+                <Link key={d.id} href={eventHref} className="cs-ios-row">
+                  <div className="cs-datechip">
+                    <div className="m">{chip.mon}</div>
+                    <div className="d">{chip.day}</div>
                   </div>
-
-                  <div className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[12px] text-[var(--color-cs-text-secondary)]">
-                    <span>{TYPE_LABEL[r.thresholdType] ?? r.thresholdType}</span>
-                    <span>
-                      Reference limit:{" "}
-                      <span className="font-medium tabular-nums text-[var(--color-cs-text)]">
-                        {formatPlainUsdFromCents(r.limitCents)}
-                      </span>
-                    </span>
-                    {cur != null && (
-                      <span>
-                        Your estimate:{" "}
-                        <span className="font-medium tabular-nums text-[var(--color-cs-text)]">
-                          {cur}
-                        </span>
-                        {pct != null ? ` (${pct}%)` : ""}
-                      </span>
-                    )}
-                  </div>
-
-                  {pct != null && (
-                    <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-cs-surface)]">
-                      <div
-                        className={`h-full rounded-full ${
-                          r.status === "concern"
-                            ? "bg-[var(--color-cs-danger)]"
-                            : r.status === "watch"
-                              ? "bg-[var(--color-cs-warning)]"
-                              : "bg-[#107c10]"
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
+                      {d.title}
                     </div>
-                  )}
-
-                  {r.description && (
-                    <p className="mb-2 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-                      {r.description}
-                    </p>
-                  )}
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {showFix && (
-                      <Link
-                        href={fixHref}
-                        className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-2.5 py-1 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-                      >
-                        <IconSparkles size={14} stroke={1.5} aria-hidden />
-                        Ask AI how to fix
-                      </Link>
-                    )}
-                    {r.sourceUrl && (
-                      <a
-                        href={r.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[12px] text-[var(--color-cs-brand)] hover:underline"
-                      >
-                        <IconExternalLink size={13} stroke={1.5} aria-hidden />
-                        Official source
-                      </a>
-                    )}
+                    <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">
+                      {subtitle}
+                    </div>
                   </div>
-                </article>
+                  <div
+                    className={`shrink-0 text-[13px] font-medium ${
+                      days <= 7
+                        ? "text-[var(--color-cs-danger)]"
+                        : "text-[var(--color-cs-text-secondary)]"
+                    }`}
+                  >
+                    {rel}
+                  </div>
+                  <span
+                    className="text-[18px] font-light leading-none text-[var(--color-cs-text-muted)]"
+                    aria-hidden
+                  >
+                    ›
+                  </span>
+                </Link>
               );
             })}
-        {!loading && data && rows.length === 0 && enrolled && (
-          <p className="text-sm text-[var(--color-cs-text-secondary)]">
-            No reference limits are attached for {title}. Visit{" "}
-            <Link href="/thresholds" className="text-[var(--color-cs-brand)] hover:underline">
-              Limits
-            </Link>{" "}
-            to attach the ones that apply to you.
-          </p>
+          </div>
         )}
       </div>
 
-      {meta && (
-        <div className="mt-4 rounded-lg border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-3 text-[12px] text-[var(--color-cs-text-secondary)]">
-          <div className="mb-1 font-medium text-[var(--color-cs-text)]">Reporting</div>
-          <p className="mb-2 leading-relaxed">{meta.reporting}</p>
-          <div>
-            Administered by {meta.agency}.{" "}
-            <a
-              href={meta.officialUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--color-cs-brand)] hover:underline"
-            >
-              Official program page
-            </a>
+      <div className="grid gap-5 lg:grid-cols-[1.05fr_1fr] lg:items-start">
+        {/* Left: hero + program description */}
+        <div>
+          <div className={`cs-hero ${fed ? "cs-hero--fed" : "cs-hero--state"}`}>
+            <div className="cs-wcard-seal" aria-hidden>
+              {fed ? <SsaSeal /> : <PaKeystoneMark />}
+            </div>
+            <div className="cs-hero-top">
+              <div>
+                <div className="cs-hero-name">
+                  <ProgramGlyph code={code} federal={fed} />
+                  {title}
+                </div>
+                <div className="cs-hero-tag">
+                  {fed ? <UsFlagMark className="cs-fed-flag" /> : null}
+                  {tag}
+                </div>
+              </div>
+              <div className="cs-hero-big">
+                {curCents != null ? formatUsdCents(curCents) : "—"}
+              </div>
+            </div>
+            <div className="cs-hero-bottom">
+              <div className="cs-hero-label">
+                {primary ? TYPE_LABEL[primary.thresholdType] ?? primary.label : "Program status"}
+              </div>
+              <div className="cs-hero-limit">
+                {limitCents != null
+                  ? `of ${formatUsdCents(limitCents)} limit`
+                  : meta?.fullName ?? title}
+              </div>
+            </div>
           </div>
-          <p className="mt-2 text-[11px] text-[var(--color-cs-text-muted)]">
-            Figures are informational estimates from your linked accounts — MyBenefitsPA does not
-            determine eligibility. Always confirm with {meta.agency} or a benefits counselor.
-          </p>
-        </div>
-      )}
 
-      {code === "SSI" ? (
-        <div className="mt-6 border-t border-[var(--color-cs-border)] pt-4">
-          <h2 className="mb-1 text-[15px] font-medium text-[var(--color-cs-text)]">
-            Effect of payments coming from an SNT
-          </h2>
-          <p className="mb-2 max-w-2xl text-[12px] text-[var(--color-cs-text-secondary)]">
-            How a Special Needs Trust pays out — cash, shelter to a vendor, or food/excluded items —
-            changes the SSI check differently. Use the estimator below before a distribution.
+          {!loading && data && (
+            <div className="mt-3.5 flex overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <div className="flex-1 px-2 py-3 text-center">
+                <div className="text-[17px] font-bold tabular-nums">
+                  {limitCents != null ? formatUsdCents(limitCents) : "—"}
+                </div>
+                <div className="mt-0.5 text-[11.5px] text-[var(--color-cs-text-secondary)]">Limit</div>
+              </div>
+              <div className="flex-1 border-l border-[var(--color-cs-sep)] px-2 py-3 text-center">
+                <div className="text-[17px] font-bold tabular-nums">
+                  {curCents != null ? formatUsdCents(curCents) : "—"}
+                </div>
+                <div className="mt-0.5 text-[11.5px] text-[var(--color-cs-text-secondary)]">Current</div>
+              </div>
+              <div className="flex-1 border-l border-[var(--color-cs-sep)] px-2 py-3 text-center">
+                <div
+                  className={`text-[17px] font-bold tabular-nums ${
+                    counts.concern > 0
+                      ? "text-[var(--color-cs-danger)]"
+                      : counts.watch > 0
+                        ? "text-[var(--color-cs-warning)]"
+                        : "text-[var(--color-cs-success)]"
+                  }`}
+                >
+                  {curCents != null && limitCents != null
+                    ? formatUsdCents(Math.abs(limitCents - curCents))
+                    : "—"}
+                </div>
+                <div className="mt-0.5 text-[11.5px] text-[var(--color-cs-text-secondary)]">
+                  {curCents != null && limitCents != null && curCents > limitCents
+                    ? "Over"
+                    : "Cushion"}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!enrolled && (
+            <div className="mt-3 rounded-[16px] bg-[var(--color-cs-card)] px-4 py-3 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              You haven&apos;t marked {title} as an enrolled program.{" "}
+              <Link href="/onboarding/benefits" className="text-[var(--color-cs-brand)]">
+                Update your programs
+              </Link>
+              .
+            </div>
+          )}
+
+          {meta && (
+            <div className="mt-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <h2 className="text-[17px] font-bold text-[var(--color-cs-text)]">
+                {meta.fullName}
+              </h2>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+                {meta.blurb}
+              </p>
+              <div className="mt-4">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
+                  Reporting
+                </div>
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-cs-text)]">
+                  {meta.reporting}
+                </p>
+              </div>
+              <div className="mt-4 text-[13px] text-[var(--color-cs-text-secondary)]">
+                Administered by {meta.agency}.
+              </div>
+              <a
+                href={meta.officialUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-semibold text-[var(--color-cs-brand)]"
+              >
+                <IconExternalLink size={14} />
+                Official program page
+              </a>
+            </div>
+          )}
+
+          <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
+            MyBenefitsPA counts these against the {title} threshold from your linked accounts.
+            Nothing here is shared with any agency. Figures are informational — not an eligibility
+            determination.
           </p>
-          <SntEstimator compact />
+
+          {code === "SSI" ? (
+            <div className="mt-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <h2 className="mb-1 text-[17px] font-semibold text-[var(--color-cs-text)]">
+                Effect of payments coming from an SNT
+              </h2>
+              <p className="mb-2 text-[12.5px] text-[var(--color-cs-text-secondary)]">
+                How a Special Needs Trust pays out changes the SSI check differently. Use the
+                estimator before a distribution.
+              </p>
+              <SntEstimator compact />
+            </div>
+          ) : null}
         </div>
-      ) : null}
-    </>
+
+        {/* Right: limits — same card stack pattern as Dates above */}
+        <aside className="lg:sticky lg:top-24">
+          <div className="mb-2 flex items-baseline justify-between px-0.5">
+            <h2 className="text-[22px] font-bold tracking-tight">Limits</h2>
+            <Link
+              href={advisorAskHref(programOverviewQuestion(code))}
+              className="text-[15px] text-[var(--color-cs-brand)]"
+            >
+              Ask Advisor
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {loading && (
+              <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
+            )}
+            {!loading &&
+              rows
+                .slice()
+                .sort((a, b) => rank(b.status) - rank(a.status))
+                .map((r) => <LimitCard key={r._id} row={r} programCode={code} />)}
+            {!loading && data && rows.length === 0 && enrolled && (
+              <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                No reference limits are attached for {title}. Visit{" "}
+                <Link href="/thresholds" className="text-[var(--color-cs-brand)]">
+                  Limits
+                </Link>{" "}
+                to attach the ones that apply to you.
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
 

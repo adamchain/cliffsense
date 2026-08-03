@@ -20,6 +20,8 @@ const benefitEnrollmentSchema = new Schema(
       required: true,
     },
     enrolledSince: { type: Date, default: null },
+    /** Next agency renewal / recert / redetermination date (vital). */
+    nextRenewalDate: { type: Date, default: null },
     contextData: { type: Schema.Types.Mixed, default: {} },
   },
   { _id: false },
@@ -46,7 +48,14 @@ export type BeneficiaryDoc = InferSchemaType<typeof beneficiarySchema> & {
   _id: mongoose.Types.ObjectId;
 };
 
-const Beneficiary: Model<BeneficiaryDoc> =
-  mongoose.models?.Beneficiary ?? mongoose.model<BeneficiaryDoc>("Beneficiary", beneficiarySchema);
+const MODEL_NAME = "Beneficiary";
+if (mongoose.models[MODEL_NAME]) {
+  mongoose.deleteModel(MODEL_NAME);
+}
+
+const Beneficiary: Model<BeneficiaryDoc> = mongoose.model<BeneficiaryDoc>(
+  MODEL_NAME,
+  beneficiarySchema,
+);
 
 export default Beneficiary;

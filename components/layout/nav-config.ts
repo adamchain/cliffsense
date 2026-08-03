@@ -28,27 +28,17 @@ export type NavItem = { href: string; label: string; icon: IconCmp };
 export type NavSection = { label: string; icon: IconCmp; href: string; children?: NavItem[] };
 
 /* ---------------------------------------------------------------------------
- * Folded navigation. Money is a single page (income + expenses, with accounts
- * embedded). To-Do keeps Alerts/Calendar tabs. Paperwork (reports & docs) is a
- * top destination. The utility group at the bottom leads with the Vault (shown
- * as a card) and then Exports, Help, Settings.
+ * Sidebar order: Home → Calendar → Alerts, then the rest.
  * ------------------------------------------------------------------------- */
 
 export const PRIMARY_SECTIONS: NavSection[] = [
   { label: "Home", icon: IconHome, href: "/dashboard" },
+  { label: "Calendar", icon: IconCalendarEvent, href: "/calendar" },
+  { label: "Alerts", icon: IconBell, href: "/alerts" },
+  { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
+  { label: "Forms", icon: IconFileText, href: "/documents" },
   { label: "Money", icon: IconWallet, href: "/transactions" },
   { label: "Limits", icon: IconTarget, href: "/thresholds" },
-  {
-    label: "To-Do",
-    icon: IconBell,
-    href: "/alerts",
-    children: [
-      { href: "/alerts", label: "Alerts", icon: IconBell },
-      { href: "/calendar", label: "Calendar", icon: IconCalendarEvent },
-    ],
-  },
-  { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
-  { label: "Paperwork", icon: IconFileText, href: "/documents" },
 ];
 
 /** Bottom utility group. Vault leads (rendered as a card in the sidebar). */
@@ -62,8 +52,14 @@ export const UTILITY_SECTIONS: NavSection[] = [
 
 export const ALL_SECTIONS: NavSection[] = [...PRIMARY_SECTIONS, ...UTILITY_SECTIONS];
 
-/** The four destinations that get their own slot in the mobile tab bar. */
-export const PRIMARY_HREFS = ["/dashboard", "/transactions", "/thresholds", "/alerts"];
+/** Primary destinations for the mobile tab bar. */
+export const PRIMARY_HREFS = [
+  "/dashboard",
+  "/calendar",
+  "/alerts",
+  "/documents",
+  "/settings",
+];
 
 export function isHrefActive(activeHref: string, href: string): boolean {
   return activeHref === href || activeHref.startsWith(href + "/");
