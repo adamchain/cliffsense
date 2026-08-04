@@ -160,13 +160,13 @@ export default function HelpPage() {
         {/* QUICK START */}
         <Section id="quick-start" icon={<IconRocket size={18} stroke={1.8} />} title="Quick start">
           <p>Five steps take you from sign-up to a live dashboard, usually under ten minutes.</p>
-          <div className="rounded-[16px] border border-[var(--color-cs-brand)]/20 bg-[var(--color-cs-info-bg)] px-4 py-3.5">
-            <p className="text-[14px] font-semibold text-[var(--color-cs-text)]">
+          <div className="rounded-[18px] bg-[var(--color-cs-surface)] px-4 py-3.5">
+            <p className="text-[15px] font-semibold tracking-tight text-[var(--color-cs-text)]">
               Prefer a guided tour?
             </p>
             <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              Walk through Home, Money, Limits, Calendar, Alerts, and Settings with clickable
-              highlights — the same path as the steps below. You can restart it anytime from here.
+              A short walkthrough highlights Home, Money, Limits, Calendar, Alerts, and Settings.
+              You can run it again anytime.
             </p>
             <div className="mt-3">
               <StartWalkthroughButton />
