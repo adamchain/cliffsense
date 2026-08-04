@@ -153,6 +153,7 @@ export function HomeDashboard({
       <div className="mt-1 flex items-center justify-between gap-3">
         <Link
           href="/beneficiaries"
+          data-tour="home-beneficiary"
           className="group flex min-w-0 items-center gap-1.5 text-[var(--color-cs-text)]"
         >
           <h1 className="cs-big-title truncate">{beneficiaryName}</h1>
@@ -179,7 +180,10 @@ export function HomeDashboard({
       </div>
 
       {federal.length === 0 && state.length === 0 ? (
-        <div className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <div
+          className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+          data-tour="home-programs"
+        >
           <h2 className="text-[17px] font-semibold text-[var(--color-cs-text)]">
             No programs yet
           </h2>
@@ -206,101 +210,104 @@ export function HomeDashboard({
       ) : (
         <div className="mt-2 grid gap-2 lg:grid-cols-2 lg:items-start lg:gap-8">
           <div>
-            <WalletCardGroup title="Federal" countLabel="SSA" cards={federal} />
-            <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
+            <div data-tour="home-programs">
+              <WalletCardGroup title="Federal" countLabel="SSA" cards={federal} />
+              <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
+            </div>
             <div className="cs-pulse-stack">
               <HealthSummary cards={allCards} nextRenewalDays={pulse.nextRenewalDays} />
               <WhatsChanged cards={allCards} pulse={pulse} />
             </div>
           </div>
           <div className="lg:sticky lg:top-24">
-            <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5 lg:mt-6">
-              <h2 className="text-[22px] font-bold tracking-tight text-[var(--color-cs-text)]">
-                Upcoming
-              </h2>
-              <Link
-                href="/calendar"
-                className="text-[15px] font-normal text-[var(--color-cs-brand)]"
-              >
-                Calendar
-              </Link>
-            </div>
-            {(() => {
-              const renewals = upcoming.filter((e) => e.kind === "renewal");
-              const appointments = upcoming.filter((e) => e.kind === "appointment");
-              const deadlines = upcoming.filter(
-                (e) => e.kind !== "renewal" && e.kind !== "appointment",
-              );
-              const sections: { label: string; items: UpcomingItem[] }[] = [
-                { label: "Renewals", items: renewals },
-                { label: "Appointments", items: appointments },
-                { label: "Deadlines", items: deadlines },
-              ].filter((s) => s.items.length > 0);
+            <div data-tour="home-upcoming">
+              <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5 lg:mt-6">
+                <h2 className="text-[22px] font-bold tracking-tight text-[var(--color-cs-text)]">
+                  Upcoming
+                </h2>
+                <Link
+                  href="/calendar"
+                  className="text-[15px] font-normal text-[var(--color-cs-brand)]"
+                >
+                  Calendar
+                </Link>
+              </div>
+              {(() => {
+                const renewals = upcoming.filter((e) => e.kind === "renewal");
+                const appointments = upcoming.filter((e) => e.kind === "appointment");
+                const deadlines = upcoming.filter(
+                  (e) => e.kind !== "renewal" && e.kind !== "appointment",
+                );
+                const sections: { label: string; items: UpcomingItem[] }[] = [
+                  { label: "Renewals", items: renewals },
+                  { label: "Appointments", items: appointments },
+                  { label: "Deadlines", items: deadlines },
+                ].filter((s) => s.items.length > 0);
 
-              const renderList = (items: UpcomingItem[]) => (
-                <div className="cs-ios-list">
-                  {items.map((e) => (
-                    <Link key={e.id} href={e.href} className="cs-ios-row">
-                      <div className="cs-datechip">
-                        <div className="m">{e.mon}</div>
-                        <div className="d">{e.day}</div>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
-                          {e.title}
+                const renderList = (items: UpcomingItem[]) => (
+                  <div className="cs-ios-list">
+                    {items.map((e) => (
+                      <Link key={e.id} href={e.href} className="cs-ios-row">
+                        <div className="cs-datechip">
+                          <div className="m">{e.mon}</div>
+                          <div className="d">{e.day}</div>
                         </div>
-                        <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">
-                          {e.subtitle}
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
+                            {e.title}
+                          </div>
+                          <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">
+                            {e.subtitle}
+                          </div>
                         </div>
-                      </div>
-                      <div className="shrink-0 text-[13px] font-medium text-[var(--color-cs-text-secondary)]">
-                        {e.rel}
-                      </div>
-                      <span
-                        className="text-[18px] font-light leading-none text-[var(--color-cs-text-muted)]"
-                        aria-hidden
-                      >
-                        ›
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              );
-
-              if (upcoming.length === 0) {
-                return (
-                  <div className="rounded-[18px] bg-white px-4 py-5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                    No renewals or deadlines yet. Set them in{" "}
-                    <Link href="/settings" className="text-[var(--color-cs-brand)]">
-                      Settings
-                    </Link>{" "}
-                    or{" "}
-                    <Link href="/calendar" className="text-[var(--color-cs-brand)]">
-                      Calendar
-                    </Link>
-                    .
+                        <div className="shrink-0 text-[13px] font-medium text-[var(--color-cs-text-secondary)]">
+                          {e.rel}
+                        </div>
+                        <span
+                          className="text-[18px] font-light leading-none text-[var(--color-cs-text-muted)]"
+                          aria-hidden
+                        >
+                          ›
+                        </span>
+                      </Link>
+                    ))}
                   </div>
                 );
-              }
 
-              // Single section → no subsection headers; just the cards.
-              if (sections.length === 1) {
-                return renderList(sections[0].items);
-              }
-
-              return (
-                <div className="space-y-4">
-                  {sections.map((s) => (
-                    <div key={s.label}>
-                      <div className="mb-2 px-0.5 text-[15px] font-semibold tracking-tight text-[var(--color-cs-text)]">
-                        {s.label}
-                      </div>
-                      {renderList(s.items)}
+                if (upcoming.length === 0) {
+                  return (
+                    <div className="rounded-[18px] bg-white px-4 py-5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                      No renewals or deadlines yet. Set them in{" "}
+                      <Link href="/settings" className="text-[var(--color-cs-brand)]">
+                        Settings
+                      </Link>{" "}
+                      or{" "}
+                      <Link href="/calendar" className="text-[var(--color-cs-brand)]">
+                        Calendar
+                      </Link>
+                      .
                     </div>
-                  ))}
-                </div>
-              );
-            })()}
+                  );
+                }
+
+                if (sections.length === 1) {
+                  return renderList(sections[0].items);
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {sections.map((s) => (
+                      <div key={s.label}>
+                        <div className="mb-2 px-0.5 text-[15px] font-semibold tracking-tight text-[var(--color-cs-text)]">
+                          {s.label}
+                        </div>
+                        {renderList(s.items)}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
 
             <div className="mt-4 hidden rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)] lg:block">
               <div className="text-[13px] text-[var(--color-cs-text-secondary)]">Linked banks</div>

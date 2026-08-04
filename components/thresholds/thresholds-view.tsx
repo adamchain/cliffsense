@@ -175,9 +175,9 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
 
   return (
     <>
-      <div data-tour="limits-page">
+      <div data-tour="limits-page" className="mb-3">
       <h1 className="cs-big-title mb-2">Limits</h1>
-      <p className="mb-3 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+      <p className="max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
         Wallet cards for each enrolled program, plus the full limit table below. Figures are
         informational — always confirm with a benefits counselor or agency.
       </p>

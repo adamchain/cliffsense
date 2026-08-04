@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { useWalkthrough } from "./walkthrough-provider";
 
 type Rect = { top: number; left: number; width: number; height: number };
 
-const PAD = 4;
+const PAD = 5;
+/** Keep spotlights compact so tall columns don’t feel “zoomed”. */
+const MAX_H = 280;
 
 function measureTarget(id: string | null): Rect | null {
   if (!id || typeof document === "undefined") return null;
@@ -18,14 +21,13 @@ function measureTarget(id: string | null): Rect | null {
     top: Math.max(4, r.top - PAD),
     left: Math.max(4, r.left - PAD),
     width: Math.min(window.innerWidth - 8, r.width + PAD * 2),
-    height: Math.min(window.innerHeight - 8, r.height + PAD * 2),
+    height: Math.min(MAX_H, window.innerHeight - 16, r.height + PAD * 2),
   };
 }
 
-/** Soft dim panels — target stays at natural size, no scroll/zoom. */
 function DimAround({ rect, onDismiss }: { rect: Rect; onDismiss: () => void }) {
   const { top, left, width, height } = rect;
-  const dim = "absolute bg-black/25";
+  const dim = "pointer-events-auto absolute bg-black/30";
   return (
     <>
       <div className={dim} style={{ top: 0, left: 0, right: 0, height: top }} onClick={onDismiss} />
@@ -40,7 +42,6 @@ function DimAround({ rect, onDismiss }: { rect: Rect; onDismiss: () => void }) {
         style={{ top, left: left + width, right: 0, height }}
         onClick={onDismiss}
       />
-      {/* Hairline frame only — no thick ring / scale that reads as zoom */}
       <div
         className="pointer-events-none absolute rounded-[14px]"
         style={{
@@ -48,15 +49,56 @@ function DimAround({ rect, onDismiss }: { rect: Rect; onDismiss: () => void }) {
           left,
           width,
           height,
-          boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.95)",
+          boxShadow: "0 0 0 2px var(--color-cs-brand)",
         }}
       />
     </>
   );
 }
 
+/** Place tip near the spotlight without covering it — light frosted sheet (iOS tip). */
+function tipStyle(rect: Rect | null): React.CSSProperties {
+  const width = "min(360px, calc(100vw - 2rem))";
+  if (!rect) {
+    return {
+      position: "fixed",
+      left: "50%",
+      bottom: "max(1.25rem, env(safe-area-inset-bottom))",
+      transform: "translateX(-50%)",
+      width,
+    };
+  }
+
+  const tipH = 168;
+  const gap = 12;
+  const spaceBelow = window.innerHeight - (rect.top + rect.height);
+  const spaceAbove = rect.top;
+  const preferBelow = spaceBelow >= tipH + gap || spaceBelow >= spaceAbove;
+
+  let left = Math.min(
+    Math.max(16, rect.left),
+    window.innerWidth - Math.min(360, window.innerWidth - 32) - 16,
+  );
+
+  if (preferBelow) {
+    return {
+      position: "fixed",
+      left,
+      top: Math.min(rect.top + rect.height + gap, window.innerHeight - tipH - 16),
+      width,
+    };
+  }
+  return {
+    position: "fixed",
+    left,
+    top: Math.max(16, rect.top - tipH - gap),
+    width,
+  };
+}
+
 export function WalkthroughOverlay() {
   const { step, stepIndex, total, next, back, skip } = useWalkthrough();
+  const pathname = usePathname() ?? "";
   const [rect, setRect] = useState<Rect | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -72,23 +114,34 @@ export function WalkthroughOverlay() {
       if (cancelled) return;
       const measured = measureTarget(step.target);
       setRect(measured);
-      if (!measured && step.target && tries < 25) {
+      if (step.target && !measured && tries < 40) {
         tries += 1;
-        timer = window.setTimeout(tick, 100);
+        timer = window.setTimeout(tick, 75);
       }
     };
 
+    setRect(null);
     tick();
+
     const onResize = () => setRect(measureTarget(step.target));
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onResize, true);
+
+    const observer = new MutationObserver(() => {
+      if (cancelled || !step.target) return;
+      const measured = measureTarget(step.target);
+      if (measured) setRect(measured);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize, true);
+      observer.disconnect();
     };
-  }, [step]);
+  }, [step, pathname]);
 
   useEffect(() => {
     if (!step) return;
@@ -108,13 +161,15 @@ export function WalkthroughOverlay() {
     return () => window.removeEventListener("keydown", onKey);
   }, [step, next, back, skip]);
 
+  const style = useMemo(() => tipStyle(rect), [rect]);
+
   if (!mounted || !step) return null;
 
   const isLast = stepIndex >= total - 1;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200]"
+      className="pointer-events-none fixed inset-0 z-[200]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="walkthrough-title"
@@ -122,37 +177,35 @@ export function WalkthroughOverlay() {
       {rect ? (
         <DimAround rect={rect} onDismiss={skip} />
       ) : (
-        <div className="absolute inset-0 bg-black/25" onClick={skip} aria-hidden />
+        <div
+          className="pointer-events-auto absolute inset-0 bg-black/30"
+          onClick={skip}
+          aria-hidden
+        />
       )}
 
-      {/* Dark glass tip — contrasts with light app surfaces being highlighted */}
+      {/* Light frosted tip — distinct from the blue-framed spotlight cutout */}
       <div
-        className="cs-safe-bottom pointer-events-auto fixed inset-x-0 bottom-0 z-[1] flex justify-center px-4 pb-4 pt-2 sm:pb-6"
+        className="pointer-events-auto z-[210]"
+        style={style}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="w-full max-w-[400px] rounded-[22px] border border-white/12 px-4 py-3.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
+          className="rounded-[18px] border border-black/8 px-4 py-3.5 shadow-[0_10px_40px_rgba(0,0,0,0.18)]"
           style={{
-            background: "rgba(28, 28, 30, 0.92)",
-            backdropFilter: "saturate(180%) blur(28px)",
-            WebkitBackdropFilter: "saturate(180%) blur(28px)",
+            background: "rgba(242, 242, 247, 0.92)",
+            backdropFilter: "saturate(180%) blur(24px)",
+            WebkitBackdropFilter: "saturate(180%) blur(24px)",
           }}
         >
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5" aria-hidden>
-              {Array.from({ length: total }, (_, i) => (
-                <span
-                  key={i}
-                  className={`h-1 rounded-full transition-all ${
-                    i === stepIndex ? "w-3.5 bg-white" : "w-1 bg-white/30"
-                  }`}
-                />
-              ))}
-            </div>
+            <p className="text-[12px] font-semibold text-[var(--color-cs-brand)]">
+              {stepIndex + 1} of {total}
+            </p>
             <button
               type="button"
               onClick={skip}
-              className="text-[13px] font-medium text-white/55 hover:text-white/85"
+              className="text-[13px] font-medium text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-text)]"
             >
               Skip
             </button>
@@ -160,18 +213,20 @@ export function WalkthroughOverlay() {
 
           <h2
             id="walkthrough-title"
-            className="mt-3 text-[17px] font-semibold tracking-[-0.2px] text-white"
+            className="mt-1.5 text-[17px] font-semibold tracking-[-0.2px] text-[var(--color-cs-text)]"
           >
             {step.title}
           </h2>
-          <p className="mt-1 text-[14px] leading-[1.35] text-white/65">{step.body}</p>
+          <p className="mt-1 text-[14px] leading-[1.35] text-[var(--color-cs-text-secondary)]">
+            {step.body}
+          </p>
 
-          <div className="mt-3.5 flex items-center justify-end gap-2">
+          <div className="mt-3 flex items-center justify-end gap-2">
             {stepIndex > 0 ? (
               <button
                 type="button"
                 onClick={back}
-                className="rounded-full bg-white/12 px-3.5 py-1.5 text-[13px] font-semibold text-white/90 hover:bg-white/18"
+                className="rounded-full bg-black/6 px-3.5 py-1.5 text-[13px] font-semibold text-[var(--color-cs-text)] hover:bg-black/10"
               >
                 Back
               </button>

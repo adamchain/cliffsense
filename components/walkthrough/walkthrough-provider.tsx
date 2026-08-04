@@ -47,13 +47,17 @@ async function persistCompleted(done: boolean) {
       body: JSON.stringify({ walkthroughCompleted: done }),
     });
   } catch {
-    /* non-blocking — local UX still works */
+    /* non-blocking */
   }
+}
+
+function needsNav(pathname: string, href: string | null) {
+  if (!href) return false;
+  return pathname !== href && !pathname.startsWith(`${href}/`);
 }
 
 export function WalkthroughProvider({
   children,
-  /** True when the user has never finished/skipped the tour. */
   shouldAutoStart,
 }: {
   children: ReactNode;
@@ -74,67 +78,62 @@ export function WalkthroughProvider({
     await persistCompleted(true);
   }, []);
 
+  const goToStep = useCallback(
+    (idx: number) => {
+      const s = WALKTHROUGH_STEPS[idx];
+      if (!s) return;
+      setStepIndex(idx);
+      if (needsNav(pathname, s.href)) {
+        router.push(s.href!);
+      }
+    },
+    [pathname, router],
+  );
+
   const start = useCallback(() => {
-    setStepIndex(0);
     setActive(true);
     void persistCompleted(false);
-    const first = WALKTHROUGH_STEPS[0];
-    if (first?.href && pathname !== first.href) {
-      router.push(first.href);
-    }
-  }, [pathname, router]);
+    goToStep(0);
+  }, [goToStep]);
 
   const next = useCallback(() => {
     if (stepIndex >= total - 1) {
       void finish();
       return;
     }
-    const nextIdx = stepIndex + 1;
-    const nextStep = WALKTHROUGH_STEPS[nextIdx];
-    setStepIndex(nextIdx);
-    if (nextStep?.href && !pathname.startsWith(nextStep.href)) {
-      router.push(nextStep.href);
-    }
-  }, [finish, pathname, router, stepIndex, total]);
+    goToStep(stepIndex + 1);
+  }, [finish, goToStep, stepIndex, total]);
 
   const back = useCallback(() => {
     if (stepIndex <= 0) return;
-    const prevIdx = stepIndex - 1;
-    const prevStep = WALKTHROUGH_STEPS[prevIdx];
-    setStepIndex(prevIdx);
-    if (prevStep?.href && !pathname.startsWith(prevStep.href)) {
-      router.push(prevStep.href);
-    }
-  }, [pathname, router, stepIndex]);
+    goToStep(stepIndex - 1);
+  }, [goToStep, stepIndex]);
 
   const skip = useCallback(() => {
     void finish();
   }, [finish]);
 
-  // Auto-start once for users who finished onboarding but never did the tour.
-  // Skip admin surfaces and wait a beat so the shell paints first.
   useEffect(() => {
     if (autoTried || !shouldAutoStart || active) return;
     if (pathname.startsWith("/admin") || pathname.startsWith("/application")) return;
     setAutoTried(true);
     const t = window.setTimeout(() => {
-      setStepIndex(0);
       setActive(true);
       const first = WALKTHROUGH_STEPS[0];
-      if (first?.href && pathname !== first.href) {
+      if (first?.href && needsNav(pathname, first.href)) {
         router.push(first.href);
       }
     }, 700);
     return () => window.clearTimeout(t);
   }, [active, autoTried, pathname, router, shouldAutoStart]);
 
-  // Keep navigation in sync when the user lands on a step's route late.
+  // If the active step requires a route we aren't on yet (e.g. refresh mid-tour), navigate.
   useEffect(() => {
     if (!active || !step?.href) return;
-    if (!pathname.startsWith(step.href) && step.href !== pathname) {
-      // Allow a short window for router.push from next/back to settle.
+    if (needsNav(pathname, step.href)) {
+      router.push(step.href);
     }
-  }, [active, pathname, step]);
+  }, [active, pathname, router, step]);
 
   const value = useMemo(
     () => ({ active, stepIndex, step, total, start, next, back, skip }),

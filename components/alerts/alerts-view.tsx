@@ -165,7 +165,8 @@ export function AlertsView({
   }
 
   return (
-    <div className="mx-auto max-w-2xl" data-tour="alerts-page">
+    <div className="mx-auto max-w-2xl">
+      <div data-tour="alerts-page">
       <div className="flex items-center justify-between gap-3">
         <h1 className="cs-big-title">Alerts</h1>
         <div className="flex items-center gap-3">
@@ -217,6 +218,7 @@ export function AlertsView({
         >
           All
         </button>
+      </div>
       </div>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
