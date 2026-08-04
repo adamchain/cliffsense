@@ -336,13 +336,11 @@ body {
     background: radial-gradient(120% 90% at 88% 50%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-wcard--state {
-    color: #f4f1e8;
-    background:
-      radial-gradient(120% 90% at 100% 0%, rgba(212, 175, 105, 0.22), transparent 45%),
-      linear-gradient(155deg, #243a58 0%, #152338 52%, #0f1a2c 100%);
+    color: var(--color-cs-pa-navy);
+    background: linear-gradient(160deg, #e9eff8, #c9d7ea);
     box-shadow:
-      0 14px 28px -14px rgba(15, 26, 44, 0.65),
-      0 2px 6px rgba(15, 26, 44, 0.25);
+      0 12px 26px -16px rgba(23, 41, 77, 0.5),
+      0 0 0 1px rgba(23, 41, 77, 0.08);
   }
   .cs-wcard--state::before {
     content: "";
@@ -350,9 +348,7 @@ body {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background:
-      linear-gradient(115deg, transparent 58%, rgba(212, 175, 105, 0.08) 58.5%, transparent 72%),
-      radial-gradient(70% 60% at 12% 88%, rgba(244, 241, 232, 0.06), transparent 55%);
+    background: radial-gradient(85% 80% at 90% 58%, rgba(204, 32, 49, 0.09), transparent 60%);
   }
   .cs-wcard--state::after {
     content: "";
@@ -360,8 +356,7 @@ body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), transparent 42%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    background: linear-gradient(152deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 40%);
   }
   .cs-wcard-seal {
     position: absolute;
@@ -376,19 +371,19 @@ body {
     pointer-events: none;
   }
   .cs-wcard--state .cs-wcard-seal {
-    right: -18px;
-    width: 168px;
-    height: 168px;
-    opacity: 0.28;
-    transform: translateY(-50%) rotate(-6deg);
-    color: #d4af69;
+    right: -20px;
+    width: 172px;
+    height: 172px;
+    opacity: 0.52;
+    transform: translateY(-50%) rotate(-4deg);
+    color: var(--color-cs-pa-red);
   }
   .cs-wcard-seal svg {
     width: 100%;
     height: 100%;
   }
   .cs-wcard--state .cs-wcard-seal svg {
-    filter: none;
+    filter: drop-shadow(0 1px 1px rgba(23, 41, 77, 0.18));
   }
   .cs-wcard-in {
     position: relative;
@@ -415,14 +410,14 @@ body {
     opacity: 0.82;
   }
   .cs-wcard--state .cs-wcard-label {
-    opacity: 0.78;
-    color: #e8d9b5;
+    opacity: 0.6;
+    color: var(--color-cs-pa-navy);
   }
   .cs-pa-chip {
     width: 14px;
     height: 12px;
     flex: 0 0 auto;
-    color: #d4af69;
+    color: var(--color-cs-pa-red);
   }
   .cs-wcard-label span {
     overflow: hidden;
@@ -469,8 +464,8 @@ body {
     opacity: 0.72;
   }
   .cs-wcard--state .cs-wcard-num span {
-    opacity: 0.65;
-    color: #e8d9b5;
+    opacity: 0.6;
+    color: var(--color-cs-pa-navy);
   }
   .cs-wcard-bar {
     height: 6px;
@@ -480,7 +475,7 @@ body {
     background: rgba(255, 255, 255, 0.24);
   }
   .cs-wcard--state .cs-wcard-bar {
-    background: rgba(232, 217, 181, 0.18);
+    background: rgba(23, 41, 77, 0.15);
   }
   .cs-wcard-fill {
     height: 100%;
@@ -510,26 +505,23 @@ body {
     background: radial-gradient(120% 90% at 88% 45%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-hero--state {
-    color: #f4f1e8;
-    background:
-      radial-gradient(120% 90% at 100% 0%, rgba(212, 175, 105, 0.2), transparent 45%),
-      linear-gradient(155deg, #243a58 0%, #152338 52%, #0f1a2c 100%);
-    box-shadow: 0 14px 32px -14px rgba(15, 26, 44, 0.55);
+    color: var(--color-cs-pa-navy);
+    background: linear-gradient(160deg, #e9eff8, #cdd9ec);
+    box-shadow:
+      0 14px 32px -16px rgba(23, 41, 77, 0.45),
+      0 0 0 1px rgba(23, 41, 77, 0.07);
   }
   .cs-hero--state::before {
     content: "";
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(115deg, transparent 58%, rgba(212, 175, 105, 0.08) 58.5%, transparent 72%),
-      radial-gradient(70% 60% at 12% 88%, rgba(244, 241, 232, 0.06), transparent 55%);
+    background: radial-gradient(80% 75% at 88% 55%, rgba(204, 32, 49, 0.09), transparent 60%);
   }
   .cs-hero--state::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), transparent 42%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    background: linear-gradient(152deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 40%);
   }
   .cs-hero .cs-wcard-seal {
     width: 210px;
@@ -537,10 +529,15 @@ body {
     opacity: 0.16;
   }
   .cs-hero--state .cs-wcard-seal {
+    right: -18px;
     width: 216px;
     height: 216px;
-    opacity: 0.3;
-    color: #d4af69;
+    opacity: 0.46;
+    transform: translateY(-50%) rotate(-4deg);
+    color: var(--color-cs-pa-red);
+  }
+  .cs-hero--state .cs-wcard-seal svg {
+    filter: drop-shadow(0 1px 2px rgba(23, 41, 77, 0.18));
   }
   .cs-hero-top,
   .cs-hero-bottom {
@@ -572,13 +569,16 @@ body {
     opacity: 0.82;
   }
   .cs-hero--state .cs-hero-tag {
-    color: #e8d9b5;
+    color: var(--color-cs-pa-navy);
+    opacity: 0.6;
   }
   .cs-hero--state .cs-hero-label {
-    color: rgba(232, 217, 181, 0.75);
+    color: var(--color-cs-pa-navy);
+    opacity: 0.72;
   }
   .cs-hero--state .cs-hero-limit {
-    color: rgba(244, 241, 232, 0.9);
+    color: var(--color-cs-pa-navy);
+    opacity: 0.9;
   }
   .cs-hero-big {
     font-size: 1.875rem;

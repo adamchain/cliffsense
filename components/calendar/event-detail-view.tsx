@@ -259,7 +259,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
               >
                 <div
                   className={`text-[11px] font-bold tracking-wide ${
-                    fed ? "text-[#ffb4b4]" : "text-[#d4af69]"
+                    fed ? "text-[#ffb4b4]" : "text-[var(--color-cs-pa-red)]"
                   }`}
                 >
                   {chip.mon}
@@ -288,7 +288,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                   days <= 7 && days >= 0
                     ? fed
                       ? "text-[#ffd0d0]"
-                      : "text-[#d4af69]"
+                      : "text-[var(--color-cs-pa-red)]"
                     : ""
                 }`}
               >

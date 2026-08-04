@@ -22,7 +22,7 @@ const BAR: Record<ProgramCardModel["status"], string> = {
 };
 
 function ProgramGlyph({ code, federal }: { code: string; federal: boolean }) {
-  const color = federal ? "#fff" : "#e8d9b5";
+  const color = federal ? "#fff" : "#17294d";
   const props = { size: 22, stroke: 2, color, "aria-hidden": true as const };
   switch (code) {
     case "SSDI":
