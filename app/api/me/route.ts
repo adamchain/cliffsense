@@ -40,6 +40,8 @@ const patchSchema = z.object({
       householdSize: z.coerce.number().min(1),
     })
     .optional(),
+  /** true = mark walkthrough done; false = reset so it can run again. */
+  walkthroughCompleted: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -57,10 +59,15 @@ export async function PATCH(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const { name, state, householdSize, onboardingStep, notificationPrefs, ownerProfile } =
+  const { name, state, householdSize, onboardingStep, notificationPrefs, ownerProfile, walkthroughCompleted } =
     parsed.data;
   if (name !== undefined) user.name = name;
   if (onboardingStep !== undefined) user.onboardingStep = onboardingStep;
+  if (walkthroughCompleted === true) {
+    user.walkthroughCompletedAt = new Date();
+  } else if (walkthroughCompleted === false) {
+    user.walkthroughCompletedAt = null;
+  }
   if (notificationPrefs?.frequency) {
     user.notificationPrefs = user.notificationPrefs ?? {};
     user.notificationPrefs.frequency = notificationPrefs.frequency;
@@ -153,12 +160,12 @@ export async function PATCH(req: Request) {
     }
   }
 
-  if (name !== undefined || onboardingStep !== undefined) {
+  if (name !== undefined || onboardingStep !== undefined || walkthroughCompleted !== undefined) {
     await logActivity({
       userId: session.user.id,
       category: "account",
       action: "profile.updated",
-      details: { name, onboardingStep },
+      details: { name, onboardingStep, walkthroughCompleted },
     });
   }
 
@@ -169,6 +176,7 @@ export async function PATCH(req: Request) {
       email: user.email,
       accountType: user.accountType,
       onboardingStep: user.onboardingStep,
+      walkthroughCompletedAt: user.walkthroughCompletedAt ?? null,
       notificationPrefs: user.notificationPrefs,
     },
   });

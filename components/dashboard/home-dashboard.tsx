@@ -55,6 +55,7 @@ export function HomeDashboard({
       <div className="mt-1 flex items-center justify-between gap-3">
         <Link
           href="/beneficiaries"
+          data-tour="home-beneficiary"
           className="group flex min-w-0 items-center gap-1.5 text-[var(--color-cs-text)]"
         >
           <h1 className="cs-big-title truncate">{beneficiaryName}</h1>
@@ -81,7 +82,7 @@ export function HomeDashboard({
       </div>
 
       {federal.length === 0 && state.length === 0 ? (
-        <div className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <div className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]" data-tour="home-programs">
           <h2 className="text-[17px] font-semibold text-[var(--color-cs-text)]">
             No programs yet
           </h2>
@@ -107,11 +108,11 @@ export function HomeDashboard({
         </div>
       ) : (
         <div className="mt-2 grid gap-2 lg:grid-cols-2 lg:items-start lg:gap-8">
-          <div>
+          <div data-tour="home-programs">
             <WalletCardGroup title="Federal" countLabel="SSA" cards={federal} />
             <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
           </div>
-          <div className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-24" data-tour="home-upcoming">
             <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5 lg:mt-6">
               <h2 className="text-[22px] font-bold tracking-tight text-[var(--color-cs-text)]">
                 Upcoming

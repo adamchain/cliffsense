@@ -106,7 +106,7 @@ export default async function SettingsPage() {
           </section>
         )}
 
-        <section>
+        <section data-tour="settings-notifications">
           <h2 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
             Notifications
           </h2>

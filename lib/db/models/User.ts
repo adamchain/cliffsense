@@ -60,6 +60,8 @@ const userSchema = new Schema(
       enum: ["none", "profile", "beneficiary", "plaid", "benefits", "notifications", "complete"],
       default: "none",
     },
+    /** Set when the in-app product walkthrough finishes or is skipped. Null = not done yet. */
+    walkthroughCompletedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

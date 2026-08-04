@@ -2,7 +2,10 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AuthenticatedShell } from "@/components/layout/authenticated-shell";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
+import { WalkthroughProvider } from "@/components/walkthrough/walkthrough-provider";
 import { countUnreadAlertsForUser } from "@/lib/alerts/unread-count";
+import { connectDB } from "@/lib/db/mongodb";
+import User from "@/lib/db/models/User";
 
 function initials(name: string, email: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -25,20 +28,36 @@ export default async function AuthenticatedGroupLayout({
     redirect("/auth/signin");
   }
   const display = session.user.name?.trim() || session.user.email || "User";
-  const alertCount = await countUnreadAlertsForUser(session.user.id).catch(() => 0);
+  const [alertCount, walkthroughRow] = await Promise.all([
+    countUnreadAlertsForUser(session.user.id).catch(() => 0),
+    (async () => {
+      await connectDB();
+      return User.findById(session.user.id)
+        .select("walkthroughCompletedAt onboardingStep")
+        .lean();
+    })().catch(() => null),
+  ]);
+
+  const onboardingDone =
+    (walkthroughRow?.onboardingStep ?? session.user.onboardingStep) === "complete";
+  const shouldAutoStart =
+    onboardingDone && !walkthroughRow?.walkthroughCompletedAt && !session.user.impersonatorId;
+
   return (
     <>
       {session.user.impersonatorId && (
         <ImpersonationBanner email={session.user.email ?? undefined} />
       )}
-      <AuthenticatedShell
-        userName={display}
-        userInitials={initials(display, session.user.email ?? "")}
-        alertCount={alertCount}
-        isAdmin={Boolean(session.user.isAdmin) && !session.user.impersonatorId}
-      >
-        {children}
-      </AuthenticatedShell>
+      <WalkthroughProvider shouldAutoStart={shouldAutoStart}>
+        <AuthenticatedShell
+          userName={display}
+          userInitials={initials(display, session.user.email ?? "")}
+          alertCount={alertCount}
+          isAdmin={Boolean(session.user.isAdmin) && !session.user.impersonatorId}
+        >
+          {children}
+        </AuthenticatedShell>
+      </WalkthroughProvider>
     </>
   );
 }

@@ -390,7 +390,7 @@ export function TransactionsView({
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl" data-tour="money-page">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h1 className="cs-big-title">Money</h1>
         <div className="flex flex-wrap items-center gap-2">

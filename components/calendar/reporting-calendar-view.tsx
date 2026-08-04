@@ -254,7 +254,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const monthOffsets = [0, 1, 2];
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl" data-tour="calendar-page">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h1 className="cs-big-title">Calendar</h1>
         <button

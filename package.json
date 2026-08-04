@@ -11,7 +11,8 @@
     "test": "vitest run",
     "plaid:ping": "node scripts/plaid-ping.cjs",
     "plaid:seed-users": "node scripts/plaid-seed-users.cjs",
-    "admin:seed": "node scripts/seed-admins.cjs"
+    "admin:seed": "node scripts/seed-admins.cjs",
+    "demo:seed": "node scripts/seed-demo-user.cjs"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.26.0",
