@@ -208,14 +208,13 @@ export function HomeDashboard({
           <div>
             <WalletCardGroup title="Federal" countLabel="SSA" cards={federal} />
             <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
-          </div>
-          <div className="lg:sticky lg:top-24">
-            <div className="mt-6 space-y-3 lg:mt-6">
+            <div className="cs-pulse-stack">
               <HealthSummary cards={allCards} nextRenewalDays={pulse.nextRenewalDays} />
               <WhatsChanged cards={allCards} pulse={pulse} />
             </div>
-
-            <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5">
+          </div>
+          <div className="lg:sticky lg:top-24">
+            <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5 lg:mt-6">
               <h2 className="text-[22px] font-bold tracking-tight text-[var(--color-cs-text)]">
                 Upcoming
               </h2>
