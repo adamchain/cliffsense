@@ -78,7 +78,7 @@ export function PaKeystoneMark({ className }: { className?: string }) {
       <path
         d="M20 30 C36 22 64 22 80 30 L70 82 C58 86 42 86 30 82 Z"
         fill="currentColor"
-        opacity="0.22"
+        opacity="0.55"
       />
       <path
         d="M26 34 C40 28 60 28 74 34 L66 78 C56 81 44 81 34 78 Z"
@@ -86,7 +86,7 @@ export function PaKeystoneMark({ className }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinejoin="round"
-        opacity="0.55"
+        opacity="0.7"
       />
       <text
         x="50"
@@ -97,7 +97,7 @@ export function PaKeystoneMark({ className }: { className?: string }) {
         fill="currentColor"
         letterSpacing="-1"
         fontFamily="var(--font-sans), system-ui, sans-serif"
-        opacity="0.9"
+        opacity="0.85"
       >
         PA
       </text>

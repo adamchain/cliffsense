@@ -23,6 +23,101 @@ type UpcomingItem = {
   kind?: string;
 };
 
+type DashboardPulse = {
+  lastSyncAt: string | null;
+  newDepositCount: number;
+  nextRenewalDays: number | null;
+};
+
+function formatSyncTime(iso: string | null): string {
+  if (!iso) return "Not synced yet";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function HealthSummary({
+  cards,
+  nextRenewalDays,
+}: {
+  cards: ProgramCardModel[];
+  nextRenewalDays: number | null;
+}) {
+  const issues = cards.filter((c) => c.status !== "ok").length;
+  const crit = cards.filter((c) => c.status === "crit").length;
+  const ok = issues === 0;
+
+  return (
+    <div className="cs-pulse-card">
+      <div className="cs-pulse-eyebrow">Overall benefit health</div>
+      <div className={`cs-pulse-headline ${ok ? "is-ok" : crit > 0 ? "is-crit" : "is-warn"}`}>
+        {ok ? "✓ Everything looks good" : crit > 0 ? "✕ Needs attention" : "! Review recommended"}
+      </div>
+      <ul className="cs-pulse-list">
+        <li>
+          {cards.length} monitored benefit{cards.length === 1 ? "" : "s"}
+        </li>
+        <li>
+          {ok
+            ? "No issues detected"
+            : `${issues} benefit${issues === 1 ? "" : "s"} need${issues === 1 ? "s" : ""} a closer look`}
+        </li>
+        {nextRenewalDays != null && (
+          <li>
+            {nextRenewalDays === 0
+              ? "Renewal due today"
+              : nextRenewalDays === 1
+                ? "Next renewal tomorrow"
+                : `Next renewal in ${nextRenewalDays} days`}
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function WhatsChanged({
+  cards,
+  pulse,
+}: {
+  cards: ProgramCardModel[];
+  pulse: DashboardPulse;
+}) {
+  const issues = cards.filter((c) => c.status !== "ok").length;
+  const deposits = pulse.newDepositCount;
+
+  return (
+    <div className="cs-pulse-card">
+      <div className="cs-pulse-eyebrow">Since yesterday</div>
+      <ul className="cs-pulse-checks">
+        <li>
+          <span aria-hidden>{deposits === 0 ? "✓" : "•"}</span>
+          {deposits === 0
+            ? "No new deposits"
+            : `${deposits} new deposit${deposits === 1 ? "" : "s"}`}
+        </li>
+        <li>
+          <span aria-hidden>{issues === 0 ? "✓" : "!"}</span>
+          {issues === 0
+            ? "No new eligibility issues"
+            : `${issues} eligibility item${issues === 1 ? "" : "s"} to review`}
+        </li>
+        <li>
+          <span aria-hidden>✓</span>
+          {pulse.nextRenewalDays != null && pulse.nextRenewalDays <= 14
+            ? pulse.nextRenewalDays <= 3
+              ? "Renewal coming up soon"
+              : "Renewal unchanged"
+            : "Renewal unchanged"}
+        </li>
+      </ul>
+      <div className="cs-pulse-meta">
+        Last bank sync
+        <strong>{formatSyncTime(pulse.lastSyncAt)}</strong>
+      </div>
+    </div>
+  );
+}
+
 export function HomeDashboard({
   beneficiaryName,
   beneficiaryId,
@@ -30,6 +125,7 @@ export function HomeDashboard({
   federal,
   state,
   upcoming,
+  pulse,
 }: {
   beneficiaryName: string;
   beneficiaryId: string | null;
@@ -37,6 +133,7 @@ export function HomeDashboard({
   federal: ProgramCardModel[];
   state: ProgramCardModel[];
   upcoming: UpcomingItem[];
+  pulse: DashboardPulse;
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const todayLabel = useMemo(
@@ -48,6 +145,7 @@ export function HomeDashboard({
       }),
     [],
   );
+  const allCards = useMemo(() => [...federal, ...state], [federal, state]);
 
   return (
     <div className="mx-auto w-full max-w-3xl lg:max-w-5xl">
@@ -55,7 +153,6 @@ export function HomeDashboard({
       <div className="mt-1 flex items-center justify-between gap-3">
         <Link
           href="/beneficiaries"
-          data-tour="home-beneficiary"
           className="group flex min-w-0 items-center gap-1.5 text-[var(--color-cs-text)]"
         >
           <h1 className="cs-big-title truncate">{beneficiaryName}</h1>
@@ -82,7 +179,7 @@ export function HomeDashboard({
       </div>
 
       {federal.length === 0 && state.length === 0 ? (
-        <div className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]" data-tour="home-programs">
+        <div className="mt-6 rounded-[18px] bg-[var(--color-cs-card)] p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <h2 className="text-[17px] font-semibold text-[var(--color-cs-text)]">
             No programs yet
           </h2>
@@ -108,12 +205,17 @@ export function HomeDashboard({
         </div>
       ) : (
         <div className="mt-2 grid gap-2 lg:grid-cols-2 lg:items-start lg:gap-8">
-          <div data-tour="home-programs">
+          <div>
             <WalletCardGroup title="Federal" countLabel="SSA" cards={federal} />
             <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
           </div>
-          <div className="lg:sticky lg:top-24" data-tour="home-upcoming">
-            <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5 lg:mt-6">
+          <div className="lg:sticky lg:top-24">
+            <div className="mt-6 space-y-3 lg:mt-6">
+              <HealthSummary cards={allCards} nextRenewalDays={pulse.nextRenewalDays} />
+              <WhatsChanged cards={allCards} pulse={pulse} />
+            </div>
+
+            <div className="mb-3 mt-6 flex items-baseline justify-between px-0.5">
               <h2 className="text-[22px] font-bold tracking-tight text-[var(--color-cs-text)]">
                 Upcoming
               </h2>
@@ -126,7 +228,16 @@ export function HomeDashboard({
             </div>
             {(() => {
               const renewals = upcoming.filter((e) => e.kind === "renewal");
-              const rest = upcoming.filter((e) => e.kind !== "renewal");
+              const appointments = upcoming.filter((e) => e.kind === "appointment");
+              const deadlines = upcoming.filter(
+                (e) => e.kind !== "renewal" && e.kind !== "appointment",
+              );
+              const sections: { label: string; items: UpcomingItem[] }[] = [
+                { label: "Renewals", items: renewals },
+                { label: "Appointments", items: appointments },
+                { label: "Deadlines", items: deadlines },
+              ].filter((s) => s.items.length > 0);
+
               const renderList = (items: UpcomingItem[]) => (
                 <div className="cs-ios-list">
                   {items.map((e) => (
@@ -156,6 +267,7 @@ export function HomeDashboard({
                   ))}
                 </div>
               );
+
               if (upcoming.length === 0) {
                 return (
                   <div className="rounded-[18px] bg-white px-4 py-5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
@@ -171,26 +283,22 @@ export function HomeDashboard({
                   </div>
                 );
               }
+
+              // Single section → no subsection headers; just the cards.
+              if (sections.length === 1) {
+                return renderList(sections[0].items);
+              }
+
               return (
                 <div className="space-y-4">
-                  {renewals.length > 0 && (
-                    <div>
-                      <div className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-warning)]">
-                        Renewals
+                  {sections.map((s) => (
+                    <div key={s.label}>
+                      <div className="mb-2 px-0.5 text-[15px] font-semibold tracking-tight text-[var(--color-cs-text)]">
+                        {s.label}
                       </div>
-                      {renderList(renewals)}
+                      {renderList(s.items)}
                     </div>
-                  )}
-                  {rest.length > 0 && (
-                    <div>
-                      {renewals.length > 0 && (
-                        <div className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-                          Reporting deadlines
-                        </div>
-                      )}
-                      {renderList(rest)}
-                    </div>
-                  )}
+                  ))}
                 </div>
               );
             })()}

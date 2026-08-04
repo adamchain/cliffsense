@@ -7,18 +7,19 @@ import {
   IconLeaf,
 } from "@tabler/icons-react";
 import type { ProgramCardModel } from "@/lib/benefits/program-tier";
-import { formatUsdCents } from "@/lib/benefits/program-tier";
+import { formatUsdCents, statusReassurance } from "@/lib/benefits/program-tier";
 import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "./wallet-seals";
 
-const PILL: Record<ProgramCardModel["status"], string> = {
-  ok: "#1f9d4d",
-  warn: "#cf7a12",
-  crit: "#c0392b",
-};
 const BAR: Record<ProgramCardModel["status"], string> = {
   ok: "#34d15f",
   warn: "#ffab2e",
   crit: "#ff5a4f",
+};
+
+const REASSURE: Record<ProgramCardModel["status"], string> = {
+  ok: "#34d15f",
+  warn: "#ffab2e",
+  crit: "#ff8a80",
 };
 
 function ProgramGlyph({ code, federal }: { code: string; federal: boolean }) {
@@ -45,8 +46,15 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
   const big =
     card.currentCents != null ? formatUsdCents(card.currentCents) : "—";
   const sub =
-    card.limitCents != null ? `of ${formatUsdCents(card.limitCents)}` : `${card.total} limit${card.total === 1 ? "" : "s"}`;
+    card.limitCents != null
+      ? `of ${formatUsdCents(card.limitCents)}`
+      : `${card.total} limit${card.total === 1 ? "" : "s"}`;
   const pct = card.pct != null ? Math.min(card.pct, 100) : 0;
+  const reassurance = statusReassurance(card.status, {
+    hasLimit: card.limitCents != null,
+    code: card.code,
+  });
+  const mark = card.status === "ok" ? "✓" : card.status === "warn" ? "!" : "✕";
 
   return (
     <Link
@@ -66,25 +74,41 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
             )}
             <span>{card.tag}</span>
           </span>
-          <span className="cs-wcard-pill" style={{ background: PILL[card.status] }}>
-            {card.word}
+          <span className="cs-wcard-chevron" aria-hidden>
+            ›
           </span>
         </div>
         <div className="cs-wcard-name">
           <ProgramGlyph code={card.code} federal={fed} />
           {card.label}
         </div>
+        <p
+          className="cs-wcard-reassure"
+          style={{ color: fed ? REASSURE[card.status] : undefined }}
+          data-status={card.status}
+        >
+          <span aria-hidden>{mark}</span> {reassurance}
+        </p>
         <div className="cs-wcard-bot">
           <div className="cs-wcard-num">
             {big}
             <span>{sub}</span>
           </div>
-          <div className="cs-wcard-bar">
+          {card.pct != null && (
             <div
-              className="cs-wcard-fill"
-              style={{ width: `${pct}%`, background: BAR[card.status] }}
-            />
-          </div>
+              className="cs-wcard-bar"
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`${card.label} usage ${pct}%`}
+            >
+              <div
+                className="cs-wcard-fill"
+                style={{ width: `${pct}%`, background: BAR[card.status] }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </Link>

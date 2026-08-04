@@ -34,6 +34,33 @@ export function statusWord(sc: LimitStatus, okWord = "On track"): string {
   return okWord;
 }
 
+/** Plain-language reassurance — answers "Am I okay?" before the numbers. */
+export function statusReassurance(
+  status: LimitStatus,
+  opts?: { hasLimit?: boolean; code?: string },
+): string {
+  const hasLimit = opts?.hasLimit ?? true;
+  if (status === "crit") {
+    return hasLimit
+      ? "You're over the monthly limit — review needed"
+      : "This benefit needs attention";
+  }
+  if (status === "warn") {
+    return hasLimit
+      ? "You're approaching the monthly limit"
+      : "Something needs a closer look soon";
+  }
+  const code = opts?.code;
+  if (code === "SSDI" || code === "SSI" || code === "VA") {
+    return "You're safely below the monthly earnings limit";
+  }
+  if (code === "SNAP" || code === "TANF" || code === "WIC") {
+    return "You're safely within your benefit limits";
+  }
+  if (hasLimit) return "You're safely below the monthly limit";
+  return "Everything looks good for this benefit";
+}
+
 export function formatUsdCents(cents: number): string {
   return (cents / 100).toLocaleString("en-US", {
     style: "currency",
