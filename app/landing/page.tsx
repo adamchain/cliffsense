@@ -15,7 +15,6 @@ import {
   IconShieldLock,
   IconSparkles,
   IconTarget,
-  IconWallet,
 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
@@ -59,93 +58,64 @@ function Shot({
   );
 }
 
-/** One "module" card — tall panel with Apple system accent colors. */
-function ModuleCard({
-  icon: Icon,
-  label,
-  gradient,
-  pills,
-  featured = false,
+/** One phone screenshot card — a framed mobile shot with a caption below. */
+function PhoneCard({
+  src,
+  alt,
+  title,
+  body,
 }: {
-  icon: Icon;
-  label: string;
-  gradient: string;
-  pills: string[];
-  featured?: boolean;
+  src: string;
+  alt: string;
+  title: string;
+  body: string;
 }) {
   return (
-    <div
-      className={`relative flex h-[340px] w-[260px] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-[22px] p-5 text-white ${gradient} ${
-        featured ? "ring-2 ring-[var(--color-cs-brand)] ring-offset-2 ring-offset-[var(--color-cs-surface)]" : ""
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-[15px] font-bold tracking-tight">{label}</span>
-        <Icon size={22} stroke={1.8} className="opacity-90" />
+    <div className="flex w-[240px] shrink-0 snap-start flex-col sm:w-[260px]">
+      <div className="overflow-hidden rounded-[26px] border border-[var(--color-cs-border)] bg-white p-1.5 shadow-[var(--shadow-cs-float)]">
+        <Image
+          src={src}
+          alt={alt}
+          width={644}
+          height={1402}
+          sizes="260px"
+          className="block h-auto w-full rounded-[20px]"
+        />
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {pills.map((p) => (
-          <span
-            key={p}
-            className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm"
-          >
-            {p}
-          </span>
-        ))}
-      </div>
+      <h3 className="mt-4 text-[16px] font-bold tracking-tight text-[var(--color-cs-text)]">
+        {title}
+      </h3>
+      <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+        {body}
+      </p>
     </div>
   );
 }
 
-const MODULES: {
-  icon: Icon;
-  label: string;
-  gradient: string;
-  pills: string[];
-  featured?: boolean;
-}[] = [
+const PHONES: { src: string; alt: string; title: string; body: string }[] = [
   {
-    icon: IconWallet,
-    label: "Money",
-    gradient: "bg-gradient-to-br from-[#007aff] to-[#0055cc]",
-    pills: ["Accounts", "Income", "Expenses"],
+    src: "/screenshots/home-mobile.png",
+    alt: "The MyBenefitsPA home screen on a phone: SSDI and SNAP benefit cards with limit status and upcoming renewals",
+    title: "Home",
+    body: "Every balance against its limit — color-coded — with upcoming renewals right below.",
   },
   {
-    icon: IconTarget,
-    label: "Limits",
-    gradient: "bg-gradient-to-br from-[#1c1c1e] to-[#3a3a3c]",
-    pills: ["SSI", "SNAP", "Medicaid", "ABLE"],
-    featured: true,
+    src: "/screenshots/forms-mobile.png",
+    alt: "The Forms screen on a phone: SSDI reporting and recertification forms",
+    title: "Forms",
+    body: "Reporting and recertification forms for each enrolled program, ready to fill and submit.",
   },
   {
-    icon: IconBell,
-    label: "Alerts",
-    gradient: "bg-gradient-to-br from-[#ff9500] to-[#ffb340]",
-    pills: ["Predictive", "Breach", "Email"],
+    src: "/screenshots/guided-mobile.png",
+    alt: "A guided form on a phone: the Work Activity Report filled in by answering plain questions",
+    title: "Guided fill",
+    body: "Answer a few plain-language questions and the official form fills itself in.",
   },
   {
-    icon: IconCalendarEvent,
-    label: "Calendar",
-    gradient: "bg-gradient-to-br from-[#34c759] to-[#30d158]",
-    pills: ["Deadlines", "SAR", "Renewals"],
-  },
-  {
-    icon: IconFileText,
-    label: "Paperwork",
-    gradient: "bg-gradient-to-br from-[#5856d6] to-[#7a78e0]",
-    pills: ["SSA-821", "Guided", "Auto-fill"],
-  },
-  {
-    icon: IconMessageCircle,
-    label: "Advisor",
-    gradient: "bg-gradient-to-br from-[#007aff] to-[#0f1b33]",
-    pills: ["Your numbers", "How to fix"],
-  },
-  {
-    icon: IconFolder,
-    label: "Vault",
-    gradient: "bg-gradient-to-br from-[#8e8e93] to-[#aeaeb2]",
-    pills: ["Receipts", "Letters", "Exports"],
+    src: "/screenshots/advisor-card-mobile.png",
+    alt: "The Advisor screen on a phone: a plain-language breakdown of income exclusions",
+    title: "Advisor",
+    body: "Ask about your real numbers and see exactly how each income exclusion applies.",
   },
 ];
 
@@ -333,8 +303,8 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-5xl">
           <div className="rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
             <Shot
-              src="/screenshots/dashboard.png"
-              alt="The MyBenefitsPA dashboard: each balance shown against its limit, with a what-if income slider"
+              src="/screenshots/home-desktop.png"
+              alt="The MyBenefitsPA home screen: each benefit shown against its limit, with upcoming renewals alongside"
               priority
             />
           </div>
@@ -356,6 +326,31 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ---------- Calendar highlight ---------- */}
+      <section id="calendar" className="px-5 pt-16 sm:px-6 sm:pt-20">
+        <div className="mx-auto max-w-5xl text-center">
+          <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
+            <IconCalendarEvent size={15} stroke={2} /> Never miss a renewal
+          </p>
+          <h2 className="mx-auto mt-3 max-w-3xl text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+            Every deadline in one calendar
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Renewals, reporting periods, and recertification dates for every program you&apos;re
+            enrolled in — with the most urgent pinned to the top and links straight to the forms and
+            limits behind each one.
+          </p>
+        </div>
+        <div className="relative mx-auto mt-10 max-w-5xl">
+          <div className="rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
+            <Shot
+              src="/screenshots/calendar-desktop.png"
+              alt="The MyBenefitsPA calendar: monthly grid on the left and upcoming renewals with due dates on the right"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ---------- Module showcase ---------- */}
       <section id="modules" className="py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
@@ -364,8 +359,8 @@ export default function LandingPage() {
             Why SSI, SNAP, Medicaid &amp; ABLE recipients use MyBenefitsPA
           </h2>
           <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            So tailored it feels built just for you. Turn on only the parts your situation needs —
-            every one clicks into the same connected place.
+            The whole suite fits in your pocket. Check where you stand, file a report, or ask the
+            advisor — every screen clicks into the same connected place.
           </p>
           <Link href="/auth/signup" className="cs-btn cs-btn-primary mt-6 !px-5 !py-2.5 !text-[14px]">
             Explore the suite
@@ -373,9 +368,9 @@ export default function LandingPage() {
         </div>
 
         <div className="mx-auto mt-10 max-w-6xl">
-          <div className="flex snap-x gap-4 overflow-x-auto px-5 pb-4 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {MODULES.map((m) => (
-              <ModuleCard key={m.label} {...m} />
+          <div className="flex snap-x gap-5 overflow-x-auto px-5 pb-4 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {PHONES.map((p) => (
+              <PhoneCard key={p.title} {...p} />
             ))}
           </div>
         </div>
@@ -405,6 +400,34 @@ export default function LandingPage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ---------- Vault highlight ---------- */}
+      <section id="vault" className="mx-auto max-w-6xl px-5 pb-16 sm:px-6 sm:pb-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+          <div>
+            <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
+              <IconFolder size={15} stroke={2} /> Secure document vault
+            </p>
+            <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+              Every document, organized and ready
+            </h2>
+            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              Medical records, proof of disability, income, expenses, work activity, and agency
+              letters — filed into labeled folders and exportable as an audit trail for
+              applications, reviews, and appeals.
+            </p>
+            <Link href="/auth/signup" className="cs-btn cs-btn-primary mt-6 !px-5 !py-2.5 !text-[14px]">
+              Open your vault
+            </Link>
+          </div>
+          <div className="rounded-[24px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)]">
+            <Shot
+              src="/screenshots/vault-desktop.png"
+              alt="The MyBenefitsPA vault: labeled folders for medical records, proof of disability, income, and more"
+            />
+          </div>
         </div>
       </section>
 

@@ -35,7 +35,7 @@ export default async function SettingsPage() {
     .join("") || "?";
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div>
       <h1 className="cs-big-title mb-4">Settings</h1>
 
       <Link

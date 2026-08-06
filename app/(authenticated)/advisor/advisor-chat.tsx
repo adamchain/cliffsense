@@ -141,8 +141,8 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
   }
 
   return (
-    <section className="mx-auto flex h-[calc(100dvh-140px)] min-h-[420px] w-full max-w-3xl flex-col overflow-hidden lg:h-[calc(100vh-180px)]">
-      <div className="border-b border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.9)] px-5 pb-3 pt-2 text-center backdrop-blur">
+    <section className="flex h-[calc(100dvh-140px)] min-h-[420px] w-full flex-col overflow-hidden lg:h-[calc(100vh-180px)]">
+      <div className="border-b border-[var(--color-cs-sep)] px-5 pb-3 pt-2 text-center">
         <div className="text-[17px] font-semibold text-[var(--color-cs-text)]">Advisor</div>
         <div className="text-[12px] text-[var(--color-cs-text-secondary)]">
           Powered by Claude · Not legal advice

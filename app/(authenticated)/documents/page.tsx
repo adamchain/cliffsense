@@ -35,7 +35,7 @@ export default async function DocumentsPage() {
     .filter((g) => g.forms.length > 0);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div>
       <div className="mb-1 flex items-center justify-between gap-3">
         <h1 className="cs-big-title">Forms</h1>
         <Link

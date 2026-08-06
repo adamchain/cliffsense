@@ -4,11 +4,7 @@ import Link from "next/link";
 import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
-import {
-  MONITORING_SOURCES,
-  VAULT_CATEGORIES,
-  vaultSectionId,
-} from "@/lib/vault/categories";
+import { VAULT_CATEGORIES, vaultSectionId } from "@/lib/vault/categories";
 import { VaultUpload } from "./vault-upload";
 import { VaultBrowser } from "./vault-browser";
 
@@ -52,12 +48,6 @@ export default async function VaultPage() {
     }
   }
 
-  const coveredSources = new Set(
-    MONITORING_SOURCES.filter((s) => (docsBySection.get(s.categoryId) ?? []).length > 0).map(
-      (s) => s.id,
-    ),
-  );
-
   const folders = VAULT_CATEGORIES.map((c) => {
     const docs = docsBySection.get(c.id) ?? [];
     return {
@@ -92,40 +82,6 @@ export default async function VaultPage() {
         </p>
       ) : (
         <>
-          <section className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-            <h2 className="text-[15px] font-bold text-[var(--color-cs-text)]">
-              Records to track beyond bank accounts
-            </h2>
-            <p className="mt-1 text-[12.5px] text-[var(--color-cs-text-secondary)]">
-              Linked accounts catch deposits — these five sources fill the gaps agencies ask about.
-            </p>
-            <ul className="mt-3 space-y-2">
-              {MONITORING_SOURCES.map((s) => {
-                const done = coveredSources.has(s.id);
-                return (
-                  <li key={s.id} className="flex items-start gap-2 text-[13px]">
-                    <span
-                      className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
-                        done
-                          ? "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]"
-                          : "bg-[var(--color-cs-surface)] text-[var(--color-cs-text-muted)]"
-                      }`}
-                      aria-hidden
-                    >
-                      {done ? "✓" : ""}
-                    </span>
-                    <span>
-                      <span className="font-medium text-[var(--color-cs-text)]">{s.label}</span>
-                      <span className="block text-[12px] text-[var(--color-cs-text-secondary)]">
-                        {s.detail}
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
           <VaultUpload beneficiaryId={beneficiaryId} categories={VAULT_CATEGORIES} />
 
           <VaultBrowser folders={folders} />

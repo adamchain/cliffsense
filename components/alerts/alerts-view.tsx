@@ -165,7 +165,7 @@ export function AlertsView({
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <div data-tour="alerts-page">
       <div className="flex items-center justify-between gap-3">
         <h1 className="cs-big-title">Alerts</h1>

@@ -254,7 +254,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const monthOffsets = [0, 1, 2];
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <div className="mb-3 flex items-center justify-between gap-3" data-tour="calendar-page">
         <h1 className="cs-big-title">Calendar</h1>
         <button
@@ -415,44 +415,10 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
               <IconX size={14} /> Clear day filter
             </button>
           )}
-
-          {/* Mobile agenda under months */}
-          <div className="mt-5 lg:hidden">
-            {loading ? (
-              <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
-            ) : (
-              <>
-                <AgendaBlock
-                  label="Renewals"
-                  hint="Vital · from Settings"
-                  items={visibleRenewals}
-                  empty={
-                    selectedDate
-                      ? "No renewals on this day."
-                      : "No renewal dates yet — set them in Settings."
-                  }
-                  onDone={(id) => void setCompleted(id, true)}
-                  onRemove={(id) => void remove(id)}
-                />
-                <AgendaBlock
-                  label="Reporting deadlines"
-                  items={visibleOthers}
-                  empty={
-                    selectedDate
-                      ? "No reporting items on this day."
-                      : "No other deadlines yet. Tap + to add one."
-                  }
-                  onDone={(id) => void setCompleted(id, true)}
-                  onRemove={(id) => void remove(id)}
-                />
-                <TipsCard />
-              </>
-            )}
-          </div>
         </div>
 
-        {/* Right: agenda */}
-        <aside className="hidden lg:block lg:sticky lg:top-24">
+        {/* Agenda: below the months on mobile, sticky right column on desktop */}
+        <div className="mt-5 lg:mt-0 lg:sticky lg:top-24">
           {loading ? (
             <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
           ) : (
@@ -483,7 +449,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
               <TipsCard />
             </>
           )}
-        </aside>
+        </div>
       </div>
     </div>
   );

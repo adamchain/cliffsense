@@ -77,7 +77,7 @@ function Tip({ children }: { children: ReactNode }) {
 
 export default function HowItWorksPage() {
   return (
-    <div className="mx-auto max-w-3xl pb-10">
+    <div className="pb-10">
       {/* Hero */}
       <div className="mb-1 text-xs font-medium text-[var(--color-cs-text-secondary)]">
         Help › How it works

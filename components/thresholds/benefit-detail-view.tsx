@@ -380,7 +380,7 @@ export function BenefitDetailView({
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <div className="mb-3 flex items-center justify-between gap-2">
         <Link
           href="/thresholds"

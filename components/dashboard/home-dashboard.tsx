@@ -148,7 +148,7 @@ export function HomeDashboard({
   const allCards = useMemo(() => [...federal, ...state], [federal, state]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl lg:max-w-5xl">
+    <div className="w-full">
       <div className="cs-eyebrow">Benefits · {todayLabel}</div>
       <div className="mt-1 flex items-center justify-between gap-3">
         <Link

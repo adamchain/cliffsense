@@ -208,7 +208,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
         : "Deadline";
 
   return (
-    <div className="mx-auto max-w-5xl pb-8">
+    <div className="pb-8">
       <div className="mb-3 flex items-center justify-between gap-2">
         <Link
           href="/calendar"
