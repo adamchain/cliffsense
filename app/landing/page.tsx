@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { ComponentType } from "react";
 import type { Metadata } from "next";
 import {
-  IconArrowRight,
   IconBell,
   IconBuildingBank,
   IconCalendarEvent,
@@ -13,9 +12,9 @@ import {
   IconMessageCircle,
   IconShieldCheck,
   IconShieldLock,
-  IconSparkles,
   IconTarget,
 } from "@tabler/icons-react";
+import { HeroVideo } from "@/components/landing/hero-video";
 
 export const metadata: Metadata = {
   title: "MyBenefitsPA — Pennsylvania's Benefits Continuity and Renewal Compliance Platform",
@@ -256,7 +255,7 @@ export default function LandingPage() {
             <a href="#modules" className="hover:text-[var(--color-cs-text)]">Suite</a>
             <a href="#features" className="hover:text-[var(--color-cs-text)]">Features</a>
             <a href="#about" className="hover:text-[var(--color-cs-text)]">About</a>
-            <a href="#automation" className="hover:text-[var(--color-cs-text)]">Advisor</a>
+            <a href="#vault" className="hover:text-[var(--color-cs-text)]">Vault</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
@@ -272,47 +271,89 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ---------- Hero ---------- */}
-      <section className="relative mx-auto max-w-5xl px-5 pt-14 text-center sm:px-6 sm:pt-20">
-        <p className="cs-eyebrow text-[var(--color-cs-brand)]">
-          Pennsylvania&apos;s Benefits Continuity &amp; Renewal Compliance Platform
-        </p>
-        <h1 className="mx-auto mt-3 max-w-4xl text-[40px] font-bold leading-[1.05] tracking-[-0.6px] text-[var(--color-cs-text)] sm:text-[56px] md:text-[64px]">
-          Keep Benefits in Place.<br />Stay Ready for Every Renewal.
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)] sm:text-lg">
-          MyBenefitsPA helps individuals, families, and caregivers organize the documents,
-          deadlines, income, assets, work activity, and reporting requirements needed to maintain
-          Medicaid and other public benefits. It works alongside Pennsylvania&apos;s existing
-          eligibility systems — improving renewal compliance, preventing avoidable coverage loss,
-          and supporting better administrative outcomes without replacing the Commonwealth&apos;s
-          benefits portals or infrastructure.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/auth/signup" className="cs-btn cs-btn-primary !px-7 !py-3.5 !text-[16px]">
-            Start free
-          </Link>
-          <Link href="/resources" className="cs-btn cs-btn-secondary !px-7 !py-3.5 !text-[16px]">
-            See a tour
-          </Link>
+      {/* ---------- Hero (video background, left-aligned copy) ---------- */}
+      <section className="relative overflow-hidden border-b border-[var(--color-cs-border)]">
+        <HeroVideo />
+        <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 lg:py-36">
+          <div className="max-w-2xl">
+            <p className="cs-eyebrow text-[var(--color-cs-brand)]">
+              Pennsylvania&apos;s Benefits Continuity &amp; Renewal Compliance Platform
+            </p>
+            <h1 className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.6px] text-[var(--color-cs-text)] sm:text-[56px] md:text-[64px]">
+              Keep Benefits in Place.<br />Stay Ready for Every Renewal.
+            </h1>
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)] sm:text-lg">
+              MyBenefitsPA helps individuals, families, and caregivers organize the documents,
+              deadlines, income, assets, work activity, and reporting requirements needed to maintain
+              Medicaid and other public benefits — working alongside Pennsylvania&apos;s existing
+              eligibility systems to improve renewal compliance and prevent avoidable coverage loss.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/auth/signup" className="cs-btn cs-btn-primary !px-7 !py-3.5 !text-[16px]">
+                Start free
+              </Link>
+              <Link href="/resources" className="cs-btn cs-btn-secondary !px-7 !py-3.5 !text-[16px]">
+                See a tour
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Hero product shot */}
-      <section className="relative px-5 pb-8 pt-12 sm:px-6">
-        <div className="relative mx-auto max-w-5xl">
-          <div className="rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
-            <Shot
-              src="/screenshots/home-desktop.png"
-              alt="The MyBenefitsPA home screen: each benefit shown against its limit, with upcoming renewals alongside"
-              priority
-            />
+      {/* ---------- Product shots: dashboard + calendar ---------- */}
+      <section
+        id="calendar"
+        className="bg-gradient-to-b from-[#e7f0ff] to-[var(--color-cs-surface)] px-5 py-16 sm:px-6 sm:py-24"
+      >
+        <div className="mx-auto max-w-5xl space-y-16">
+          <div>
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
+                <IconTarget size={15} stroke={2} /> Your whole picture
+              </p>
+              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+                Every benefit against its limit
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+                Home shows each program&apos;s balance against its warning line and hard limit —
+                color-coded — with upcoming renewals right beside it.
+              </p>
+            </div>
+            <div className="mt-8 rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
+              <Shot
+                src="/screenshots/home-desktop.png"
+                alt="The MyBenefitsPA home screen: each benefit shown against its limit, with upcoming renewals alongside"
+                priority
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
+                <IconCalendarEvent size={15} stroke={2} /> Never miss a renewal
+              </p>
+              <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+                Every deadline in one calendar
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+                Renewals, reporting periods, and recertification dates for every program you&apos;re
+                enrolled in — with the most urgent pinned to the top and links straight to the forms
+                and limits behind each one.
+              </p>
+            </div>
+            <div className="mt-8 rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
+              <Shot
+                src="/screenshots/calendar-desktop.png"
+                alt="The MyBenefitsPA calendar: monthly grid on the left and upcoming renewals with due dates on the right"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Trust row */}
-      <section className="pb-2 pt-2">
+      <section className="py-8">
         <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-4 px-6 text-[13px] font-medium text-[var(--color-cs-text-secondary)] sm:flex-row sm:gap-8">
           <span className="inline-flex items-center gap-2">
             <IconLock size={17} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Read-only bank access
@@ -326,33 +367,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ---------- Calendar highlight ---------- */}
-      <section id="calendar" className="px-5 pt-16 sm:px-6 sm:pt-20">
-        <div className="mx-auto max-w-5xl text-center">
-          <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
-            <IconCalendarEvent size={15} stroke={2} /> Never miss a renewal
-          </p>
-          <h2 className="mx-auto mt-3 max-w-3xl text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
-            Every deadline in one calendar
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Renewals, reporting periods, and recertification dates for every program you&apos;re
-            enrolled in — with the most urgent pinned to the top and links straight to the forms and
-            limits behind each one.
-          </p>
-        </div>
-        <div className="relative mx-auto mt-10 max-w-5xl">
-          <div className="rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
-            <Shot
-              src="/screenshots/calendar-desktop.png"
-              alt="The MyBenefitsPA calendar: monthly grid on the left and upcoming renewals with due dates on the right"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* ---------- Module showcase ---------- */}
-      <section id="modules" className="py-16 sm:py-20">
+      <section id="modules" className="border-y border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
           <p className="cs-eyebrow">The suite</p>
           <h2 className="mt-2 max-w-3xl text-[28px] font-bold leading-tight tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
@@ -377,35 +393,43 @@ export default function LandingPage() {
       </section>
 
       {/* ---------- Feature grid ---------- */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
-        <div className="max-w-2xl">
-          <p className="cs-eyebrow text-[var(--color-cs-brand)]">One connected suite</p>
-          <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
-            Everything that keeps you eligible, in one place
-          </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Staying under the limits takes a dozen little jobs. MyBenefitsPA brings them together so
-            nothing slips through.
-          </p>
-        </div>
-        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="cs-card p-5 sm:p-6">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">
-                <f.icon size={20} stroke={1.8} />
-              </span>
-              <h3 className="mt-3.5 text-[16px] font-semibold text-[var(--color-cs-text)]">{f.title}</h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-                {f.body}
-              </p>
-            </div>
-          ))}
+      <section
+        id="features"
+        className="bg-gradient-to-b from-[#e8faef] to-[var(--color-cs-surface)] py-16 sm:py-20"
+      >
+        <div className="mx-auto max-w-6xl px-5 sm:px-6">
+          <div className="max-w-2xl">
+            <p className="cs-eyebrow text-[var(--color-cs-brand)]">One connected suite</p>
+            <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+              Everything that keeps you eligible, in one place
+            </h2>
+            <p className="mt-3 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              Staying under the limits takes a dozen little jobs. MyBenefitsPA brings them together
+              so nothing slips through.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="cs-card p-5 sm:p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]">
+                  <f.icon size={20} stroke={1.8} />
+                </span>
+                <h3 className="mt-3.5 text-[16px] font-semibold text-[var(--color-cs-text)]">{f.title}</h3>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+                  {f.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ---------- Vault highlight ---------- */}
-      <section id="vault" className="mx-auto max-w-6xl px-5 pb-16 sm:px-6 sm:pb-20">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+      <section
+        id="vault"
+        className="bg-gradient-to-b from-[#fff4e6] to-[var(--color-cs-surface)] py-16 sm:py-20"
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 sm:px-6 lg:grid-cols-2 lg:gap-14">
           <div>
             <p className="cs-eyebrow inline-flex items-center gap-2 text-[var(--color-cs-brand)]">
               <IconFolder size={15} stroke={2} /> Secure document vault
@@ -523,83 +547,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ---------- Dark automation / advisor section ---------- */}
-      <section id="automation" className="bg-[var(--color-cs-navy)] py-16 text-white sm:py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-6 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <p className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.5px] text-[#64b5ff]">
-              <IconSparkles size={15} stroke={2} /> Your advisor
-            </p>
-            <h2 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.4px] sm:text-[34px]">
-              Ask about your own numbers
-            </h2>
-            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-white/65">
-              The advisor can see your real picture — this month&apos;s income (earned vs unearned,
-              with exclusions applied), balances, and limit status — so it answers from your actual
-              figures and tells you, concretely, how to stay eligible.
-            </p>
-            <Link
-              href="/auth/signup"
-              className="cs-btn mt-7 !bg-white !px-6 !py-3 !text-[15px] !text-[var(--color-cs-navy)] hover:!bg-white/90"
-            >
-              Try the advisor
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
-              <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.5px] text-[#64b5ff]">
-                <IconSparkles size={14} stroke={2} /> Ask the advisor
-              </p>
-              <div className="mt-4 flex justify-end">
-                <div className="max-w-[80%] rounded-[18px] rounded-br-sm bg-[var(--color-cs-brand)] px-3.5 py-2 text-[13px]">
-                  Am I close to any of my limits this month?
-                </div>
-              </div>
-              <div className="mt-3 max-w-[88%] rounded-[18px] rounded-bl-sm border border-white/10 bg-white/[0.06] px-3.5 py-2.5 text-[13px] leading-relaxed text-white/85">
-                You&apos;re at <strong className="text-white">$1,840</strong> of the{" "}
-                <strong className="text-white">$1,910</strong> SSI earned-income line — about 96%. To
-                stay under, you could log an Impairment-Related Work Expense or move savings into your
-                ABLE account.
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="rounded-full bg-[var(--color-cs-warning-bg)] px-2 py-0.5 text-[10px] font-bold text-[#ffd60a]">
-                    SSI · 96%
-                  </span>
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/80">
-                    ABLE shelter
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[22px] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.5px] text-[#64b5ff]">
-                  <IconBell size={14} stroke={2} /> Alert
-                </p>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--color-cs-accent-green)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-cs-accent-green)]" /> Watching
-                </span>
-              </div>
-              <div className="mt-3 space-y-2 text-[13px]">
-                {[
-                  "Earned income crosses 90% of the SGA line",
-                  "Email + push, with time to act before month-end",
-                  "Open the program page for how to fix it",
-                ].map((step, i) => (
-                  <div key={step} className="flex items-center gap-3 rounded-[12px] bg-white/[0.05] px-3 py-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold text-white/70">
-                      {i + 1}
-                    </span>
-                    <span className="text-white/85">{step}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ---------- Connected section ---------- */}
       <section id="connected" className="bg-[#0b1426] py-16 text-white sm:py-24">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-6 lg:grid-cols-2 lg:gap-16">
@@ -649,33 +596,6 @@ export default function LandingPage() {
                 />
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Closing CTA ---------- */}
-      <section className="bg-[var(--color-cs-brand)] py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-[28px] font-bold tracking-[-0.4px] text-white sm:text-[34px]">
-            Your benefits, protected. Start today.
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-white/85">
-            Free to set up. Link your bank, see where you stand, and stay on top of what to report.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              href="/auth/signup"
-              className="cs-btn inline-flex items-center gap-2 !bg-white !px-7 !py-3.5 !text-base !text-[var(--color-cs-brand)] hover:!bg-[var(--color-cs-surface)]"
-            >
-              Create an account
-              <IconArrowRight size={20} stroke={2.2} />
-            </Link>
-            <Link
-              href="/resources"
-              className="cs-btn inline-flex items-center gap-2 !border !border-white/70 !bg-transparent !px-7 !py-3.5 !text-base !text-white hover:!bg-white/10"
-            >
-              Browse resources
-            </Link>
           </div>
         </div>
       </section>
