@@ -75,7 +75,7 @@ function tipStyle(rect: Rect | null): React.CSSProperties {
   const spaceAbove = rect.top;
   const preferBelow = spaceBelow >= tipH + gap || spaceBelow >= spaceAbove;
 
-  let left = Math.min(
+  const left = Math.min(
     Math.max(16, rect.left),
     window.innerWidth - Math.min(360, window.innerWidth - 32) - 16,
   );
