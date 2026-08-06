@@ -19,9 +19,9 @@ import {
 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-  title: "MyBenefitsPA — Your benefits, all in one place",
+  title: "MyBenefitsPA — Pennsylvania's Benefits Continuity and Renewal Compliance Platform",
   description:
-    "One place for your money, your limits, your reporting deadlines, and your benefit paperwork — instead of spreadsheets, sticky notes, and guesswork.",
+    "MyBenefitsPA helps individuals, families, and caregivers organize the documents, deadlines, income, assets, work activity, and reporting requirements needed to maintain Medicaid and other public benefits. It works alongside Pennsylvania's existing eligibility systems to improve renewal compliance and prevent avoidable coverage loss.",
 };
 
 /* ----------------------------------------------------------------------------
@@ -304,14 +304,19 @@ export default function LandingPage() {
 
       {/* ---------- Hero ---------- */}
       <section className="relative mx-auto max-w-5xl px-5 pt-14 text-center sm:px-6 sm:pt-20">
-        <p className="cs-eyebrow text-[var(--color-cs-brand)]">MyBenefitsPA</p>
+        <p className="cs-eyebrow text-[var(--color-cs-brand)]">
+          Pennsylvania&apos;s Benefits Continuity &amp; Renewal Compliance Platform
+        </p>
         <h1 className="mx-auto mt-3 max-w-4xl text-[40px] font-bold leading-[1.05] tracking-[-0.6px] text-[var(--color-cs-text)] sm:text-[56px] md:text-[64px]">
-          Built around the benefits you keep
+          Keep Benefits in Place.<br />Stay Ready for Every Renewal.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)] sm:text-lg">
-          One place for your money, your limits, your reporting deadlines, and your benefit
-          paperwork — so adaptable it feels built just for your programs. See why SSI, SNAP,
-          Medicaid, and ABLE recipients run their benefits on MyBenefitsPA.
+          MyBenefitsPA helps individuals, families, and caregivers organize the documents,
+          deadlines, income, assets, work activity, and reporting requirements needed to maintain
+          Medicaid and other public benefits. It works alongside Pennsylvania&apos;s existing
+          eligibility systems — improving renewal compliance, preventing avoidable coverage loss,
+          and supporting better administrative outcomes without replacing the Commonwealth&apos;s
+          benefits portals or infrastructure.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link href="/auth/signup" className="cs-btn cs-btn-primary !px-7 !py-3.5 !text-[16px]">
