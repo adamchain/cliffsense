@@ -300,14 +300,6 @@ export default function SignInPage() {
           )}
         </div>
 
-        {/* ---------- Create-account prompt ---------- */}
-        <p className="mt-6 text-center text-sm text-[var(--color-cs-text-secondary)]">
-          New to MyBenefitsPA?{" "}
-          <Link href="/auth/signup" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
-            Create an account
-          </Link>
-        </p>
-
         {/* ---------- Trust badges ---------- */}
         <div className="mt-5 flex justify-center gap-5 text-[11px] text-[var(--color-cs-text-secondary)]">
           <span className="flex items-center gap-1.5">

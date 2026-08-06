@@ -96,12 +96,6 @@ export function InlineLoginForm() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="mt-5 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
-        New to MyBenefitsPA?{" "}
-        <Link href="/auth/signup" className="font-medium text-[var(--color-cs-brand)] hover:underline">
-          Create an account
-        </Link>
-      </p>
     </div>
   );
 }
