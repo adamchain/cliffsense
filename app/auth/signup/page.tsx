@@ -76,7 +76,7 @@ function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold tabular-nums ${
                     done || active
-                      ? "bg-[var(--color-cs-brand)] text-white shadow-[0_1px_0_rgba(0,0,0,0.12)]"
+                      ? "bg-[var(--color-cs-brand)] text-white"
                       : "border border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text-muted)]"
                   }`}
                   aria-current={active ? "step" : undefined}

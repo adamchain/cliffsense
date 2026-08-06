@@ -22,8 +22,8 @@ const REASSURE: Record<ProgramCardModel["status"], string> = {
   crit: "#ff8a80",
 };
 
-function ProgramGlyph({ code, federal }: { code: string; federal: boolean }) {
-  const color = federal ? "#fff" : "#17294d";
+function ProgramGlyph({ code }: { code: string }) {
+  const color = "#fff";
   const props = { size: 22, stroke: 2, color, "aria-hidden": true as const };
   switch (code) {
     case "SSDI":
@@ -79,12 +79,12 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
           </span>
         </div>
         <div className="cs-wcard-name">
-          <ProgramGlyph code={card.code} federal={fed} />
+          <ProgramGlyph code={card.code} />
           {card.label}
         </div>
         <p
           className="cs-wcard-reassure"
-          style={{ color: fed ? REASSURE[card.status] : undefined }}
+          style={{ color: REASSURE[card.status] }}
           data-status={card.status}
         >
           <span aria-hidden>{mark}</span> {reassurance}

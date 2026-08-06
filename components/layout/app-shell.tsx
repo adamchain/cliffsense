@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IconBell, IconFolder, IconSettings, IconShieldLock } from "@tabler/icons-react";
+import { IconBell, IconSettings, IconShieldLock } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
@@ -17,133 +17,61 @@ import {
   type NavSection,
 } from "./nav-config";
 
-function AlertBadge({ count, onBrand = false }: { count: number; onBrand?: boolean }) {
-  if (count <= 0) return null;
-  return (
-    <span
-      className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold leading-none ${
-        onBrand ? "bg-white/25 text-white" : "bg-[var(--color-cs-danger)] text-white"
-      }`}
-    >
-      {count > 9 ? "9+" : count}
-    </span>
-  );
-}
-
-/** One sidebar group: a parent link, and — when the group is active — its child
- *  destinations revealed beneath it. Leaf groups (no children) render as a
- *  single link. Server-safe (no hooks). */
+/** macOS-style sidebar row — compact 13px with blue selection pill when active. */
 function SidebarGroup({
   section,
   activeHref,
   alertCount,
-  variant,
 }: {
   section: NavSection;
   activeHref: string;
   alertCount: number;
-  variant: "primary" | "utility";
 }) {
   const active = sectionIsActive(activeHref, section);
   const hasChildren = !!section.children?.length;
   const Icon = section.icon;
-  const containsAlerts = section.href === "/alerts" || (section.children ?? []).some((c) => c.href === "/alerts");
-
-  const sizing =
-    variant === "utility"
-      ? "rounded-xl px-4 py-2 text-[13px] font-medium"
-      : "rounded-2xl px-4 py-3 text-[14px] font-semibold";
-  const idle =
-    variant === "utility"
-      ? "text-[var(--color-cs-text-muted)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
-      : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]";
-
-  // Active leaf tab: brand-purple text + filled brand icon, no background fill.
-  // Group parents (with children) stay subtle when active — the active child
-  // carries the brand treatment.
-  const parentClass = !hasChildren && active
-    ? "text-[var(--color-cs-brand)]"
-    : hasChildren && active
-      ? "bg-[var(--color-cs-nav-hover)] text-[var(--color-cs-text)]"
-      : idle;
+  const parentActive = !hasChildren && active;
+  const containsAlerts =
+    section.href === "/alerts" || (section.children ?? []).some((c) => c.href === "/alerts");
 
   return (
     <div>
       <Link
         href={section.href}
-        className={`flex items-center gap-3 transition-colors ${sizing} ${parentClass}`}
+        className={`cs-macos-sidebar-item ${parentActive ? "cs-macos-sidebar-item--active" : ""}`}
       >
-        <Icon
-          size={variant === "utility" ? 18 : 20}
-          stroke={active ? 2 : 1.7}
-          className={!hasChildren && active ? "fill-current" : undefined}
-          aria-hidden
-        />
-        {section.label}
-        {containsAlerts && !active && <AlertBadge count={alertCount} />}
+        <Icon size={16} stroke={parentActive ? 2 : 1.75} aria-hidden />
+        <span className="min-w-0 flex-1 truncate">{section.label}</span>
+        {containsAlerts && !parentActive && alertCount > 0 && (
+          <span className="cs-macos-sidebar-badge">{alertCount > 9 ? "9+" : alertCount}</span>
+        )}
       </Link>
 
       {hasChildren && active && (
-        <div className="mb-1 mt-0.5 flex flex-col gap-0.5">
+        <div className="mb-0.5 ml-2 flex flex-col gap-0.5 border-l border-black/[0.06] pl-1">
           {section.children!.map(({ href, label, icon: ChildIcon }) => {
             const childActive = isHrefActive(activeHref, href);
             return (
               <Link
                 key={href}
                 href={href}
-                className={`ml-3 flex items-center gap-2.5 rounded-xl py-2 pl-6 pr-3 text-[13px] font-medium transition-colors ${
-                  childActive
-                    ? "text-[var(--color-cs-brand)]"
-                    : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
+                className={`cs-macos-sidebar-item !py-[4px] !text-[12px] ${
+                  childActive ? "cs-macos-sidebar-item--active" : ""
                 }`}
               >
-                <ChildIcon
-                  size={16}
-                  stroke={childActive ? 2 : 1.7}
-                  className={childActive ? "fill-current" : undefined}
-                  aria-hidden
-                />
-                {label}
-                {href === "/alerts" && <AlertBadge count={alertCount} />}
+                <ChildIcon size={14} stroke={childActive ? 2 : 1.75} aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{label}</span>
+                {href === "/alerts" && alertCount > 0 && (
+                  <span className="cs-macos-sidebar-badge">
+                    {alertCount > 9 ? "9+" : alertCount}
+                  </span>
+                )}
               </Link>
             );
           })}
         </div>
       )}
     </div>
-  );
-}
-
-/** Vault gets a distinct card at the top of the utility group. */
-function VaultCard({ activeHref }: { activeHref: string }) {
-  const active = isHrefActive(activeHref, "/vault");
-  return (
-    <Link
-      href="/vault"
-      className={`flex items-center gap-3 rounded-2xl border p-3 transition-colors ${
-        active
-          ? "border-transparent bg-[var(--color-cs-brand)] text-white shadow-[0_10px_22px_-12px_rgba(0,122,255,0.55)]"
-          : "border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
-      }`}
-    >
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-          active ? "bg-white/20 text-white" : "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]"
-        }`}
-      >
-        <IconFolder size={18} stroke={1.8} aria-hidden />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-[13px] font-bold leading-tight">Vault</span>
-        <span
-          className={`block text-[11px] leading-tight ${
-            active ? "text-white/80" : "text-[var(--color-cs-text-secondary)]"
-          }`}
-        >
-          Documents &amp; receipts
-        </span>
-      </span>
-    </Link>
   );
 }
 
@@ -180,52 +108,40 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[15px] text-[var(--color-cs-text)]">
-      {/* ---------- Desktop sidebar ---------- */}
-      <nav
-        className="hidden w-60 shrink-0 flex-col gap-1 bg-white px-3 py-4 lg:flex lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto"
-        aria-label="Main"
-      >
-        <Link
-          href="/dashboard"
-          className="mb-3 flex items-center gap-2.5 rounded-xl px-2 py-1 hover:opacity-90"
-        >
-          <BrandMark size="lg" />
-          <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
-            MyBenefitsPA
-          </span>
+      {/* ---------- Desktop sidebar (macOS style) ---------- */}
+      <nav className="cs-macos-sidebar hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:self-start" aria-label="Main">
+        <Link href="/dashboard" className="cs-macos-sidebar-brand">
+          <BrandMark size="md" />
+          <span>MyBenefitsPA</span>
         </Link>
 
-        {PRIMARY_SECTIONS.map((section) => (
-          <SidebarGroup
-            key={section.label}
-            section={section}
-            activeHref={activeHref}
-            alertCount={alertCount}
-            variant="primary"
-          />
-        ))}
+        <div className="cs-macos-sidebar-scroll">
+          {PRIMARY_SECTIONS.map((section) => (
+            <SidebarGroup
+              key={section.label}
+              section={section}
+              activeHref={activeHref}
+              alertCount={alertCount}
+            />
+          ))}
+        </div>
 
-        <div className="mt-auto flex flex-col gap-2 border-t border-[var(--color-cs-border)] pt-3">
-          <VaultCard activeHref={activeHref} />
-          <div className="flex flex-col gap-0.5">
-            {UTILITY_SECTIONS.filter((s) => s.href !== "/vault").map((section) => (
-              <SidebarGroup
-                key={section.label}
-                section={section}
-                activeHref={activeHref}
-                alertCount={alertCount}
-                variant="utility"
-              />
-            ))}
-            {isAdmin && (
-              <SidebarGroup
-                section={ADMIN_SECTION}
-                activeHref={activeHref}
-                alertCount={alertCount}
-                variant="utility"
-              />
-            )}
-          </div>
+        <div className="cs-macos-sidebar-footer">
+          {UTILITY_SECTIONS.map((section) => (
+            <SidebarGroup
+              key={section.label}
+              section={section}
+              activeHref={activeHref}
+              alertCount={alertCount}
+            />
+          ))}
+          {isAdmin && (
+            <SidebarGroup
+              section={ADMIN_SECTION}
+              activeHref={activeHref}
+              alertCount={alertCount}
+            />
+          )}
         </div>
       </nav>
 

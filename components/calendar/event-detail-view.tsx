@@ -16,7 +16,7 @@ import {
 import { advisorAskHref, programOverviewQuestion } from "@/lib/benefits/fix-prompts";
 import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
 import { programAgencyTag, programTier, formatUsdCents } from "@/lib/benefits/program-tier";
-import { PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
+import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
 import {
   buildEventPrepPackage,
   type EventPrepItem,
@@ -238,34 +238,26 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
             <div className="relative z-[1] flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="cs-hero-tag">
-                  {fed ? <UsFlagMark className="cs-fed-flag" /> : null}
+                  {fed ? (
+                    <UsFlagMark className="cs-fed-flag" />
+                  ) : (
+                    <PaKeystoneChip className="cs-pa-chip" />
+                  )}
                   {agencyTag} · {kindLabel}
                 </div>
                 <h1 className="cs-hero-name mt-2 !text-[26px] !leading-tight">{title}</h1>
                 {reportingPeriod && (
-                  <p
-                    className={`mt-2 text-[13px] ${
-                      fed ? "text-white/75" : "text-[var(--color-cs-text-secondary)]"
-                    }`}
-                  >
+                  <p className="mt-2 text-[13px] text-white/75">
                     Reporting period · {reportingPeriod}
                   </p>
                 )}
               </div>
-              <div
-                className={`flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center rounded-[14px] ${
-                  fed ? "bg-white/15 text-white" : "bg-white text-[var(--color-cs-pa-navy)]"
-                }`}
-              >
-                <div
-                  className={`text-[11px] font-bold tracking-wide ${
-                    fed ? "text-[#ffb4b4]" : "text-[var(--color-cs-pa-red)]"
-                  }`}
-                >
+              <div className="flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center rounded-[14px] bg-white/15 text-white">
+                <div className="text-[11px] font-bold tracking-wide text-[#ffb4b4]">
                   {chip.mon}
                 </div>
                 <div className="text-[28px] font-bold leading-none tracking-tight">{chip.day}</div>
-                <div className={`mt-0.5 text-[10px] font-semibold uppercase opacity-70`}>
+                <div className="mt-0.5 text-[10px] font-semibold uppercase opacity-70">
                   {chip.weekday}
                 </div>
               </div>
@@ -285,11 +277,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
               </div>
               <div
                 className={`text-right text-[22px] font-bold tabular-nums tracking-tight ${
-                  days <= 7 && days >= 0
-                    ? fed
-                      ? "text-[#ffd0d0]"
-                      : "text-[var(--color-cs-pa-red)]"
-                    : ""
+                  days <= 7 && days >= 0 ? "text-[#ffd0d0]" : ""
                 }`}
               >
                 {rel}

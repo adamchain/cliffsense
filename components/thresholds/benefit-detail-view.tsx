@@ -32,7 +32,7 @@ import {
   programTier,
   statusFromRow,
 } from "@/lib/benefits/program-tier";
-import { PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
+import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
 import { fixedScheduleEventsForPrograms } from "@/lib/benefits/reporting-schedules";
 import { calendarEventHref } from "@/lib/calendar/event-id";
 
@@ -111,8 +111,8 @@ function shortDueLabel(isoDate: string): string {
   });
 }
 
-function ProgramGlyph({ code, federal }: { code: string; federal: boolean }) {
-  const color = federal ? "#fff" : "#17294d";
+function ProgramGlyph({ code }: { code: string }) {
+  const color = "#fff";
   const props = { size: 23, stroke: 2, color, "aria-hidden": true as const };
   switch (code) {
     case "SSDI":
@@ -497,11 +497,11 @@ export function BenefitDetailView({
             <div className="cs-hero-top">
               <div>
                 <div className="cs-hero-name">
-                  <ProgramGlyph code={code} federal={fed} />
+                  <ProgramGlyph code={code} />
                   {title}
                 </div>
                 <div className="cs-hero-tag">
-                  {fed ? <UsFlagMark className="cs-fed-flag" /> : null}
+                  {fed ? <UsFlagMark className="cs-fed-flag" /> : <PaKeystoneChip className="cs-pa-chip" />}
                   {tag}
                 </div>
               </div>

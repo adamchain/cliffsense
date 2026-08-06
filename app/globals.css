@@ -86,7 +86,7 @@ body {
   .cs-btn-primary {
     background: var(--color-cs-brand);
     color: #ffffff;
-    box-shadow: 0 10px 22px -12px rgba(0, 122, 255, 0.55);
+    box-shadow: none;
   }
   .cs-btn-primary:hover {
     background: var(--color-cs-brand-hover);
@@ -346,11 +346,8 @@ body {
     background: radial-gradient(120% 90% at 88% 50%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-wcard--state {
-    color: var(--color-cs-pa-navy);
-    background: linear-gradient(160deg, #e9eff8, #c9d7ea);
-    box-shadow:
-      0 12px 26px -16px rgba(23, 41, 77, 0.5),
-      0 0 0 1px rgba(23, 41, 77, 0.08);
+    color: #fff;
+    background: linear-gradient(160deg, #1e3d5c, #132238);
   }
   .cs-wcard--state::before {
     content: "";
@@ -358,7 +355,7 @@ body {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: radial-gradient(85% 80% at 90% 58%, rgba(204, 32, 49, 0.09), transparent 60%);
+    background: radial-gradient(85% 80% at 92% 42%, rgba(204, 32, 49, 0.14), transparent 58%);
   }
   .cs-wcard--state::after {
     content: "";
@@ -366,7 +363,7 @@ body {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background: linear-gradient(152deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 40%);
+    background: radial-gradient(120% 90% at 88% 50%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-wcard-seal {
     position: absolute;
@@ -381,13 +378,12 @@ body {
     pointer-events: none;
   }
   .cs-wcard--state .cs-wcard-seal {
-    right: -20px;
-    width: 172px;
-    height: 172px;
-    /* Soft watermark — ~6% so keystone reads as atmosphere, not illustration */
-    opacity: 0.07;
+    right: -26px;
+    width: 168px;
+    height: 168px;
+    opacity: 0.14;
     transform: translateY(-50%) rotate(-4deg);
-    color: var(--color-cs-pa-red);
+    color: #fff;
   }
   .cs-wcard-seal svg {
     width: 100%;
@@ -418,14 +414,14 @@ body {
     opacity: 0.82;
   }
   .cs-wcard--state .cs-wcard-label {
-    opacity: 0.6;
-    color: var(--color-cs-pa-navy);
+    opacity: 0.82;
+    color: inherit;
   }
   .cs-pa-chip {
     width: 14px;
     height: 12px;
     flex: 0 0 auto;
-    color: var(--color-cs-pa-red);
+    color: #e8c4a0;
   }
   .cs-wcard-label span {
     overflow: hidden;
@@ -448,8 +444,8 @@ body {
     margin-right: -2px;
   }
   .cs-wcard--state .cs-wcard-chevron {
-    color: var(--color-cs-pa-navy);
-    opacity: 0.4;
+    color: #fff;
+    opacity: 0.55;
   }
   .cs-wcard-pill {
     font-size: 11.5px;
@@ -478,13 +474,13 @@ body {
     opacity: 0.95;
   }
   .cs-wcard--state .cs-wcard-reassure[data-status="ok"] {
-    color: #1f9d4d;
+    color: #34d15f;
   }
   .cs-wcard--state .cs-wcard-reassure[data-status="warn"] {
-    color: #cf7a12;
+    color: #ffab2e;
   }
   .cs-wcard--state .cs-wcard-reassure[data-status="crit"] {
-    color: #c0392b;
+    color: #ff8a80;
   }
   .cs-wcard-bot {
     margin-top: auto;
@@ -503,12 +499,12 @@ body {
     opacity: 0.72;
   }
   .cs-wcard--state .cs-wcard-num {
-    color: var(--color-cs-pa-navy);
-    opacity: 0.72;
+    color: inherit;
+    opacity: 0.88;
   }
   .cs-wcard--state .cs-wcard-num span {
-    opacity: 0.55;
-    color: var(--color-cs-pa-navy);
+    opacity: 0.72;
+    color: inherit;
   }
   .cs-wcard-bar {
     height: 10px;
@@ -518,7 +514,7 @@ body {
     background: rgba(255, 255, 255, 0.24);
   }
   .cs-wcard--state .cs-wcard-bar {
-    background: rgba(23, 41, 77, 0.12);
+    background: rgba(255, 255, 255, 0.24);
   }
   .cs-wcard-fill {
     height: 100%;
@@ -548,23 +544,21 @@ body {
     background: radial-gradient(120% 90% at 88% 45%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-hero--state {
-    color: var(--color-cs-pa-navy);
-    background: linear-gradient(160deg, #e9eff8, #cdd9ec);
-    box-shadow:
-      0 14px 32px -16px rgba(23, 41, 77, 0.45),
-      0 0 0 1px rgba(23, 41, 77, 0.07);
+    color: #fff;
+    background: linear-gradient(160deg, #1e3d5c, #132238);
+    box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.5);
   }
   .cs-hero--state::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(80% 75% at 88% 55%, rgba(204, 32, 49, 0.09), transparent 60%);
+    background: radial-gradient(80% 75% at 88% 55%, rgba(204, 32, 49, 0.14), transparent 60%);
   }
   .cs-hero--state::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(152deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 40%);
+    background: radial-gradient(120% 90% at 88% 45%, rgba(255, 255, 255, 0.1), transparent 55%);
   }
   .cs-hero .cs-wcard-seal {
     width: 210px;
@@ -575,9 +569,9 @@ body {
     right: -18px;
     width: 216px;
     height: 216px;
-    opacity: 0.07;
+    opacity: 0.14;
     transform: translateY(-50%) rotate(-4deg);
-    color: var(--color-cs-pa-red);
+    color: #fff;
   }
   .cs-hero-top,
   .cs-hero-bottom {
@@ -609,16 +603,16 @@ body {
     opacity: 0.82;
   }
   .cs-hero--state .cs-hero-tag {
-    color: var(--color-cs-pa-navy);
-    opacity: 0.6;
+    color: inherit;
+    opacity: 0.82;
   }
   .cs-hero--state .cs-hero-label {
-    color: var(--color-cs-pa-navy);
-    opacity: 0.72;
+    color: inherit;
+    opacity: 0.92;
   }
   .cs-hero--state .cs-hero-limit {
-    color: var(--color-cs-pa-navy);
-    opacity: 0.9;
+    color: inherit;
+    opacity: 0.64;
   }
   .cs-hero-big {
     font-size: 1.875rem;
@@ -636,6 +630,93 @@ body {
     font-size: 0.8125rem;
     opacity: 0.64;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* macOS-style desktop sidebar */
+  .cs-macos-sidebar {
+    display: flex;
+    width: 220px;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 8px;
+    background: #ececec;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .cs-macos-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 4px 8px 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .cs-macos-sidebar-brand:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .cs-macos-sidebar-brand span {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: rgba(0, 0, 0, 0.88);
+  }
+  .cs-macos-sidebar-scroll {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 1px;
+    overflow-y: auto;
+  }
+  .cs-macos-sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .cs-macos-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1px 0;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: rgba(0, 0, 0, 0.85);
+    text-decoration: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+  .cs-macos-sidebar-item:hover:not(.cs-macos-sidebar-item--active) {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  .cs-macos-sidebar-item--active {
+    background: var(--color-cs-brand);
+    color: #fff;
+    font-weight: 500;
+  }
+  .cs-macos-sidebar-item--active .cs-macos-sidebar-badge {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+  }
+  .cs-macos-sidebar-badge {
+    margin-left: auto;
+    display: flex;
+    height: 18px;
+    min-width: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    background: var(--color-cs-danger);
+    color: #fff;
   }
 
   /* iOS grouped list */
