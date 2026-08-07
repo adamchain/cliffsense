@@ -506,14 +506,9 @@ export default async function LandingPage() {
             have been submitted. MyBenefitsPA is designed to help households recognize those risks
             while action is still possible.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a href="#how-it-works" className="cs-btn cs-btn-primary !px-6 !py-3 !text-[15px]">
-              Explore MyBenefitsPA
-            </a>
-            <a href="#sign-in" className="cs-btn cs-btn-secondary !px-6 !py-3 !text-[15px]">
-              {signedIn ? "Continue to your account" : "Join the Early Access List"}
-            </a>
-          </div>
+          <p className="mt-8 text-[15px] font-semibold tracking-wide text-[var(--color-cs-text)]">
+            Coming soon
+          </p>
           <p className="mx-auto mt-8 max-w-2xl text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
             Important notice: MyBenefitsPA is not a government agency and does not determine or
             guarantee eligibility, benefit amounts, continued coverage, or the outcome of any agency
