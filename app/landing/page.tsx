@@ -41,13 +41,13 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 lg:py-36">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="max-w-2xl">
-              <p className="cs-eyebrow text-[var(--color-cs-brand)]">
+              <p className="cs-eyebrow text-[#9ecbff]">
                 Pennsylvania&apos;s Benefits Continuity &amp; Renewal Compliance Platform
               </p>
-              <h1 className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.6px] text-[var(--color-cs-text)] sm:text-[56px] md:text-[64px]">
+              <h1 className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.6px] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.45)] sm:text-[56px] md:text-[64px]">
                 Keep Benefits in Place.<br />Stay Ready for Every Renewal.
               </h1>
-              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-[var(--color-cs-text-secondary)] sm:text-lg">
+              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
                 MyBenefitsPA helps individuals, families, and caregivers organize the documents,
                 deadlines, income, assets, work activity, and reporting requirements needed to maintain
                 Medicaid and other public benefits — working alongside Pennsylvania&apos;s existing

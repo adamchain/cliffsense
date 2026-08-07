@@ -35,9 +35,10 @@ export function HeroVideo() {
           }`}
         />
       ))}
-      {/* Legibility overlays: solid-ish on the left, clearer on the right. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-cs-surface)] via-[var(--color-cs-surface)]/85 to-[var(--color-cs-surface)]/25" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-cs-surface)] via-transparent to-[var(--color-cs-surface)]/40" />
+      {/* Dark legibility overlays — kept light enough that the video shows
+          through, with a bit more shade on the left to hold the copy. */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/40 to-black/15" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/25" />
     </div>
   );
 }
