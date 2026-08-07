@@ -149,13 +149,16 @@ export default function SignUpPage() {
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         setError((j as { error?: string }).error ?? "Could not create account");
-        setLoading(false);
         return;
       }
+      const j = (await res.json().catch(() => ({}))) as { emailSent?: boolean };
       setCodeSent(true);
-      setLoading(false);
+      if (j.emailSent === false) {
+        setError("Account created, but we couldn't email your code. Use Resend to try again.");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
@@ -165,11 +168,20 @@ export default function SignUpPage() {
     setError(null);
     setSendingCode(true);
     try {
-      await fetch("/api/auth/login-code", {
+      const res = await fetch("/api/auth/login-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      if (res.status === 429) {
+        setError("Too many code requests. Please wait a few minutes and try again.");
+        return;
+      }
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError((j as { error?: string }).error ?? "Could not resend the code. Please try again.");
+        return;
+      }
     } catch {
       setError("Could not resend the code. Please try again.");
     } finally {
@@ -182,21 +194,30 @@ export default function SignUpPage() {
     setError(null);
     setLoading(true);
     try {
-      const sign = await signIn("email-code", {
-        email,
-        code,
-        redirect: false,
-        callbackUrl: "/onboarding/profile",
-      });
+      const sign = await Promise.race([
+        signIn("email-code", {
+          email,
+          code,
+          redirect: false,
+          callbackUrl: "/onboarding/profile",
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 20_000),
+        ),
+      ]);
       if (sign?.error) {
         setError("That code is invalid or expired. Request a new one.");
-        setLoading(false);
         return;
       }
       router.push("/onboarding/profile");
       router.refresh();
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "timeout"
+          ? "Verification timed out. Please try again."
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
       setLoading(false);
     }
   }

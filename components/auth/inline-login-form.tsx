@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { sameOriginDest } from "@/lib/auth/redirect";
+
+const SIGN_IN_TIMEOUT_MS = 20_000;
 
 export function InlineLoginForm() {
   const [email, setEmail] = useState("");
@@ -22,11 +25,20 @@ export function InlineLoginForm() {
     }
     setSendingCode(true);
     try {
-      await fetch("/api/auth/login-code", {
+      const res = await fetch("/api/auth/login-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
+      if (res.status === 429) {
+        setError("Too many code requests. Please wait a few minutes and try again.");
+        return;
+      }
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError((j as { error?: string }).error ?? "Could not send a code. Please try again.");
+        return;
+      }
       setCodeSent(true);
       setNotice(`If an account exists for ${email.trim()}, a 6-digit code is on its way.`);
     } catch {
@@ -41,20 +53,32 @@ export function InlineLoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const res = await signIn("email-code", {
-        email,
-        code,
-        redirect: false,
-        callbackUrl: "/",
-      });
+      const res = await Promise.race([
+        signIn("email-code", {
+          email,
+          code,
+          redirect: false,
+          callbackUrl: "/",
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), SIGN_IN_TIMEOUT_MS),
+        ),
+      ]);
       if (res?.error) {
         setError("That code is invalid or expired. Request a new one.");
-        setLoading(false);
         return;
       }
-      window.location.href = res?.url ?? "/";
-    } catch {
-      setError("Something went wrong. Please try again.");
+      window.location.assign(sameOriginDest(res?.url, "/"));
+      // If navigation never unloads the page, recover instead of spinning forever.
+      await new Promise((r) => setTimeout(r, 8_000));
+      setError("Sign-in is taking longer than expected. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "timeout"
+          ? "Sign-in timed out. Please try again."
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
       setLoading(false);
     }
   }

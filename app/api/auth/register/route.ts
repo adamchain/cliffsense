@@ -81,6 +81,7 @@ export async function POST(req: Request) {
 
     // Email a 6-digit code; entering it on the sign-up screen confirms the
     // address and signs the new account in. Does not block account creation.
+    let emailSent = false;
     try {
       const code = await issueLoginCode(user._id, LOGIN_CODE_TTL_MS);
       const { html, text } = renderEmail({
@@ -94,12 +95,21 @@ export async function POST(req: Request) {
           "This code expires in 10 minutes. If you didn't create an account, you can safely ignore this email.",
         bodyHtml: `<p style="margin:0;font-size:13px;line-height:1.6;color:#566175;">This code expires in 10 minutes. If you didn't create an account, you can safely ignore this email.</p>`,
       });
-      await sendEmail({ to: user.email, subject: `Your MyBenefitsPA sign-in code: ${code}`, html, text });
+      const sent = await sendEmail({
+        to: user.email,
+        subject: `Your MyBenefitsPA sign-in code: ${code}`,
+        html,
+        text,
+      });
+      emailSent = sent.ok;
+      if (!sent.ok) {
+        console.warn("registration code email failed", sent.error);
+      }
     } catch (e) {
       console.warn("registration code email failed", e);
     }
 
-    return NextResponse.json({ ok: true, userId: user._id.toString() });
+    return NextResponse.json({ ok: true, userId: user._id.toString(), emailSent });
   } catch (e) {
     console.error(e);
     if (isMongoBadAuth(e)) {

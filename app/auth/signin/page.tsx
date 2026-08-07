@@ -6,23 +6,10 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { AuthLoadingOverlay } from "@/components/auth/auth-loading-overlay";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
+import { sameOriginDest } from "@/lib/auth/redirect";
 import { IconLock, IconShieldCheck, IconEye, IconEyeOff } from "@tabler/icons-react";
 
-/**
- * Resolve the post-login destination to a path on the CURRENT origin. NextAuth
- * builds `res.url` from NEXTAUTH_URL; if that env is stale (e.g. an old deploy
- * URL) it would otherwise redirect users off-site. We keep only the path so the
- * redirect always lands on the host the user is actually on.
- */
-function sameOriginDest(url: string | null | undefined, fallback: string): string {
-  if (!url) return fallback;
-  try {
-    const u = new URL(url, window.location.origin);
-    return u.pathname + u.search + u.hash;
-  } catch {
-    return fallback;
-  }
-}
+const SIGN_IN_TIMEOUT_MS = 20_000;
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
@@ -44,20 +31,31 @@ export default function SignInPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl,
-      });
+      const res = await Promise.race([
+        signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+          callbackUrl,
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), SIGN_IN_TIMEOUT_MS),
+        ),
+      ]);
       if (res?.error) {
         setError("Invalid email or password.");
-        setLoading(false);
         return;
       }
-      window.location.href = sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/"));
-    } catch {
-      setError("Something went wrong. Please try again.");
+      window.location.assign(sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/")));
+      await new Promise((r) => setTimeout(r, 8_000));
+      setError("Sign-in is taking longer than expected. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "timeout"
+          ? "Sign-in timed out. Please try again."
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
       setLoading(false);
     }
   }
@@ -72,11 +70,20 @@ export default function SignInPage() {
     }
     setSendingCode(true);
     try {
-      await fetch("/api/auth/login-code", {
+      const res = await fetch("/api/auth/login-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
+      if (res.status === 429) {
+        setError("Too many code requests. Please wait a few minutes and try again.");
+        return;
+      }
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError((j as { error?: string }).error ?? "Could not send a code. Please try again.");
+        return;
+      }
       setCodeSent(true);
       setNotice(`If an account exists for ${email.trim()}, a 6-digit code is on its way.`);
     } catch {
@@ -91,20 +98,31 @@ export default function SignInPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await signIn("email-code", {
-        email,
-        code,
-        redirect: false,
-        callbackUrl,
-      });
+      const res = await Promise.race([
+        signIn("email-code", {
+          email,
+          code,
+          redirect: false,
+          callbackUrl,
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), SIGN_IN_TIMEOUT_MS),
+        ),
+      ]);
       if (res?.error) {
         setError("That code is invalid or expired. Request a new one.");
-        setLoading(false);
         return;
       }
-      window.location.href = sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/"));
-    } catch {
-      setError("Something went wrong. Please try again.");
+      window.location.assign(sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/")));
+      await new Promise((r) => setTimeout(r, 8_000));
+      setError("Sign-in is taking longer than expected. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "timeout"
+          ? "Sign-in timed out. Please try again."
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
       setLoading(false);
     }
   }

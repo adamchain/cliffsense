@@ -45,9 +45,25 @@ export async function POST(req: Request) {
       bodyText: "This code expires in 10 minutes. If you didn't request it, you can ignore this email.",
       bodyHtml: `<p style="margin:0;font-size:13px;line-height:1.6;color:#566175;">This code expires in 10 minutes. If you didn't request it, you can ignore this email.</p>`,
     });
-    await sendEmail({ to: user.email, subject: `Your MyBenefitsPA sign-in code: ${code}`, html, text });
+    const sent = await sendEmail({
+      to: user.email,
+      subject: `Your MyBenefitsPA sign-in code: ${code}`,
+      html,
+      text,
+    });
+    if (!sent.ok) {
+      console.warn("login-code email failed", sent.error);
+      return NextResponse.json(
+        { error: "Could not send the sign-in code. Please try again in a moment." },
+        { status: 502 },
+      );
+    }
   } catch (e) {
     console.warn("login-code email failed", e);
+    return NextResponse.json(
+      { error: "Could not send the sign-in code. Please try again in a moment." },
+      { status: 502 },
+    );
   }
 
   return generic;
