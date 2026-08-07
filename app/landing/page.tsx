@@ -23,7 +23,7 @@ import { continueDestination } from "@/lib/auth/continue-destination";
 export const metadata: Metadata = {
   title: "MyBenefitsPA — Act Before an Avoidable Lapse Becomes a Loss of Care",
   description:
-    "MyBenefitsPA helps beneficiaries and authorized caregivers recognize approaching risks, organize required evidence, track critical deadlines, and preserve a clear record of what was submitted — working alongside Pennsylvania and federal benefit systems.",
+    "MyBenefitsPA gives beneficiaries and authorized caregivers an active system for recognizing approaching benefit risks, organizing required evidence, tracking critical deadlines, and maintaining a clear record of what has been submitted — working alongside Pennsylvania and federal benefit systems.",
 };
 
 type Icon = ComponentType<{ size?: number; stroke?: number; className?: string }>;
@@ -177,14 +177,19 @@ export default async function LandingPage() {
                 Act Before an Avoidable Lapse Becomes a Loss of Care
               </h1>
               <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-                MyBenefitsPA helps beneficiaries and authorized caregivers recognize approaching
-                risks, organize required evidence, track critical deadlines, and preserve a clear
-                record of what was submitted and what follow-up remains.
+                MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
+                recognizing approaching benefit risks, organizing required evidence, tracking
+                critical deadlines, and maintaining a clear record of what has been submitted, what
+                remains outstanding, and what follow-up is required.
               </p>
               <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
                 It works alongside Pennsylvania and federal benefit systems — not in place of them —
-                so households can act accurately and on time when Medicaid, Medicare Savings
-                Programs, SNAP, SSI, SSDI, MAWD, waiver services, or related benefits are at risk.
+                by alerting users in real time to bank-verified changes in income, assets, deposits,
+                and relevant expenses that may create eligibility or reporting risks. By identifying
+                those changes before they result in an avoidable loss or interruption of coverage or
+                assistance, MyBenefitsPA gives households the information and lead time needed to
+                act accurately and on time when Medicaid, Medicare Savings Programs, SNAP, SSI,
+                SSDI, MAWD, waiver services, or related benefits may be affected.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <a
