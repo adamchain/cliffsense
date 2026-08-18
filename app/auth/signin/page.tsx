@@ -15,7 +15,7 @@ export default function SignInPage() {
   const searchParams = useSearchParams();
   /** Default `/` so middleware can send incomplete onboarding to the right step after login. */
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
-  const [mode, setMode] = useState<"password" | "code">("password");
+  const [mode, setMode] = useState<"password" | "code">("code");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -158,17 +158,6 @@ export default function SignInPage() {
           <div className="flex rounded-md border border-[var(--color-cs-border)] p-1 text-[13px] font-medium">
             <button
               type="button"
-              onClick={() => switchMode("password")}
-              className={`flex-1 rounded px-3 py-1.5 transition ${
-                mode === "password"
-                  ? "bg-[var(--color-cs-brand)] text-white"
-                  : "text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
-              }`}
-            >
-              Password
-            </button>
-            <button
-              type="button"
               onClick={() => switchMode("code")}
               className={`flex-1 rounded px-3 py-1.5 transition ${
                 mode === "code"
@@ -177,6 +166,17 @@ export default function SignInPage() {
               }`}
             >
               Email code
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode("password")}
+              className={`flex-1 rounded px-3 py-1.5 transition ${
+                mode === "password"
+                  ? "bg-[var(--color-cs-brand)] text-white"
+                  : "text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+              }`}
+            >
+              Password
             </button>
           </div>
 
