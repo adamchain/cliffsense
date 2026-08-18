@@ -5,7 +5,6 @@ import { onboardingPathForStep } from "@/lib/onboarding/steps";
 
 const publicPrefixes = [
   "/",
-  "/landing",
   "/about",
   "/auth",
   "/resources",
@@ -52,7 +51,6 @@ export async function middleware(req: NextRequest) {
   if (isLoggedIn && (applicationStatus === "pending_review" || applicationStatus === "rejected")) {
     const allowed =
       pathname === "/" ||
-      pathname.startsWith("/landing") ||
       pathname.startsWith("/about") ||
       pathname.startsWith("/resources") ||
       pathname.startsWith("/legal") ||
@@ -64,16 +62,7 @@ export async function middleware(req: NextRequest) {
     if (!allowed) {
       return NextResponse.redirect(new URL("/application", req.url));
     }
-    if (pathname === "/") {
-      return NextResponse.rewrite(new URL("/landing", req.url));
-    }
     return NextResponse.next();
-  }
-
-  // Marketing homepage is always public — signed-in users can browse it and
-  // continue into the app from the hero CTA.
-  if (pathname === "/") {
-    return NextResponse.rewrite(new URL("/landing", req.url));
   }
 
   if (publicPrefixes.some((p) => pathname.startsWith(p))) {
