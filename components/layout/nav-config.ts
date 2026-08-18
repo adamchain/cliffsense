@@ -9,6 +9,7 @@ import {
   IconHelpCircle,
   IconHome,
   IconMessageCircle,
+  IconPresentation,
   IconSettings,
   IconTarget,
   IconWallet,
@@ -48,6 +49,7 @@ export const UTILITY_SECTIONS: NavSection[] = [
   { label: "How it works", icon: IconBrain, href: "/how-it-works" },
   { label: "Help", icon: IconHelpCircle, href: "/help" },
   { label: "Settings", icon: IconSettings, href: "/settings" },
+  { label: "Site preview", icon: IconPresentation, href: "/landing" },
 ];
 
 export const ALL_SECTIONS: NavSection[] = [...PRIMARY_SECTIONS, ...UTILITY_SECTIONS];

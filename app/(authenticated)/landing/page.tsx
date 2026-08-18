@@ -13,12 +13,8 @@ import {
   IconUsers,
   IconArrowsShuffle,
 } from "@tabler/icons-react";
-import { auth } from "@/auth";
 import { HeroVideo } from "@/components/landing/hero-video";
 import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing-chrome";
-import { InlineLoginForm } from "@/components/auth/inline-login-form";
-import { LandingContinueCard } from "@/components/auth/landing-continue-card";
-import { continueDestination } from "@/lib/auth/continue-destination";
 
 export const metadata: Metadata = {
   title: "MyBenefitsPA — Act Before an Avoidable Lapse Becomes a Loss of Care",
@@ -144,79 +140,46 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   },
 ];
 
-export default async function LandingPage() {
-  const session = await auth();
-  const signedIn = Boolean(session?.user);
-  const continueTo = signedIn
-    ? continueDestination({
-        name: session?.user?.name,
-        onboardingStep: session?.user?.onboardingStep,
-        applicationStatus: session?.user?.applicationStatus,
-      })
-    : null;
-
+export default function LandingPage() {
   return (
     <div className="overflow-x-hidden bg-[var(--color-cs-surface)] text-[var(--color-cs-text)]">
-      <MarketingHeader continueHref={continueTo?.href} />
+      <MarketingHeader />
 
       {/* ---------- Hero ---------- */}
-      <section id="sign-in" className="relative overflow-hidden">
+      <section className="relative overflow-hidden">
         <HeroVideo />
         <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 lg:py-36">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div className="max-w-2xl">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-                  Coming soon
-                </span>
-                <p className="cs-eyebrow text-[#9ecbff]">
-                  A Pennsylvania-first benefits continuity &amp; renewal compliance platform
-                </p>
-              </div>
-              <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.6px] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.45)] sm:text-[46px] md:text-[54px]">
-                Act Before an Avoidable Lapse Becomes a Loss of Care
-              </h1>
-              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-                MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
-                recognizing approaching benefit risks, organizing required evidence, tracking
-                critical deadlines, and maintaining a clear record of what has been submitted, what
-                remains outstanding, and what follow-up is required.
+          <div className="max-w-2xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                Coming soon
+              </span>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#9ecbff]">
+                A Pennsylvania-first benefits continuity &amp; renewal compliance platform
               </p>
-              <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
-                It works alongside Pennsylvania and federal benefit systems — not in place of them —
-                by alerting users in real time to bank-verified changes in income, assets, deposits,
-                and relevant expenses that may create eligibility or reporting risks. By identifying
-                those changes before they result in an avoidable loss or interruption of coverage or
-                assistance, MyBenefitsPA gives households the information and lead time needed to
-                act accurately and on time when Medicaid, Medicare Savings Programs, SNAP, SSI,
-                SSDI, MAWD, waiver services, or related benefits may be affected.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center justify-center rounded-sm bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-cs-navy)] hover:bg-white/90"
-                >
-                  See How MyBenefitsPA Works
-                </a>
-                <Link
-                  href="/about#perspective"
-                  className="inline-flex items-center justify-center rounded-sm border border-white/35 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/15"
-                >
-                  Read a Father&apos;s Perspective
-                </Link>
-              </div>
             </div>
-
-            <div className="w-full max-w-[400px] justify-self-center lg:justify-self-end">
-              {continueTo ? (
-                <LandingContinueCard
-                  name={session?.user?.name}
-                  href={continueTo.href}
-                  ctaLabel={continueTo.ctaLabel}
-                />
-              ) : (
-                <InlineLoginForm />
-              )}
+            <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.6px] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.45)] sm:text-[46px] md:text-[54px]">
+              Act Before an Avoidable Lapse Becomes a Loss of Care
+            </h1>
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
+              MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
+              recognizing approaching benefit risks, organizing required evidence, tracking
+              critical deadlines, and maintaining a clear record of what has been submitted, what
+              remains outstanding, and what follow-up is required.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center rounded-sm bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-cs-navy)] hover:bg-white/90"
+              >
+                See How MyBenefitsPA Works
+              </a>
+              <Link
+                href="/about#perspective"
+                className="inline-flex items-center justify-center rounded-sm border border-white/35 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm hover:bg-white/15"
+              >
+                Read a Father&apos;s Perspective
+              </Link>
             </div>
           </div>
         </div>
@@ -422,9 +385,7 @@ export default async function LandingPage() {
             </p>
             <p>
               MyBenefitsPA prepares the household to complete those responsibilities accurately and
-              on time. Direct integration or electronic submission to a government system would occur
-              only where it is authorized, technically available, and permitted by the responsible
-              agency.
+              on time.
             </p>
           </div>
         </div>
@@ -499,7 +460,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Get started CTA */}
-      <section id="get-started" className="bg-gradient-to-b from-[#fff4e6] to-[var(--color-cs-surface)] py-16 sm:py-20">
+      <section className="bg-gradient-to-b from-[#fff4e6] to-[var(--color-cs-surface)] py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-5 text-center sm:px-6">
           <p className="cs-eyebrow text-[var(--color-cs-brand)]">Get started</p>
           <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
@@ -517,8 +478,7 @@ export default async function LandingPage() {
           <p className="mx-auto mt-8 max-w-2xl text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
             Important notice: MyBenefitsPA is not a government agency and does not determine or
             guarantee eligibility, benefit amounts, continued coverage, or the outcome of any agency
-            proceeding. MyBenefitsPA does not replace official agency instructions or individualized
-            legal, tax, financial, medical, or benefits advice.
+            proceeding.
           </p>
         </div>
       </section>

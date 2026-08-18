@@ -1,71 +1,54 @@
 import Image from "next/image";
 import Link from "next/link";
-import { auth } from "@/auth";
-import { InlineLoginForm } from "@/components/auth/inline-login-form";
+import { HeroVideo } from "@/components/landing/hero-video";
+import { StayUpdatedForm } from "@/components/auth/stay-updated-form";
 
-export default async function HomePage() {
-  const session = await auth();
-
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen items-center bg-[var(--color-cs-surface)] px-6 py-12 text-[var(--color-cs-text)]">
-      <div className="mx-auto grid w-full max-w-5xl items-center gap-12 md:grid-cols-2">
-        {/* Left: brand + value proposition */}
-        <section>
-          <Link href="/" className="inline-flex items-center" aria-label="MyBenefitsPA home">
+    <main className="relative min-h-screen overflow-hidden bg-[var(--color-cs-navy)]">
+      <HeroVideo />
+      <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 lg:py-36">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="max-w-2xl">
             <Image
               src="/mybenefitspa-logo.png"
               alt="MyBenefitsPA"
               width={180}
               height={142}
               priority
-              className="h-14 w-auto"
+              className="h-12 w-auto brightness-0 invert"
             />
-          </Link>
-
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[var(--color-cs-text)] sm:text-4xl">
-            Stay under the limits that keep your benefits.
-          </h1>
-
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            MyBenefitsPA connects to your bank through Plaid, shows how deposits and balances compare to common program
-            thresholds, and emails you before you approach a limit — so you can plan with your counselor or trustee.
-          </p>
-
-          <div className="mt-6">
-            <Link
-              href="/resources"
-              className="inline-flex items-center rounded-sm border border-[var(--color-cs-input-border)] bg-white px-5 py-2 text-sm font-medium text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)]"
-            >
-              Resources
-            </Link>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                Coming soon
+              </span>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#9ecbff]">
+                A Pennsylvania-first benefits continuity &amp; renewal compliance platform
+              </p>
+            </div>
+            <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.6px] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.45)] sm:text-[46px] md:text-[54px]">
+              Act Before an Avoidable Lapse Becomes a Loss of Care
+            </h1>
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
+              MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
+              recognizing approaching benefit risks, organizing required evidence, tracking
+              critical deadlines, and maintaining a clear record of what has been submitted.
+            </p>
           </div>
 
-          <p className="mt-10 max-w-xl text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Informational tool only. Not legal, tax, or benefits advice. Thresholds change; always confirm with SSA,
-            your state agency, or a qualified benefits counselor.
-          </p>
-        </section>
-
-        {/* Right: login (or dashboard hand-off when already signed in) */}
-        <section className="w-full max-w-[400px] justify-self-center md:justify-self-end">
-          {session ? (
-            <div className="w-full rounded-lg border border-[var(--color-cs-border)] bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-medium text-[var(--color-cs-text)]">You&apos;re signed in</h2>
-              <p className="mt-1 text-[13px] text-[var(--color-cs-text-secondary)]">
-                Welcome back. Continue to your dashboard to check threshold status and alerts.
-              </p>
-              <Link
-                href="/dashboard"
-                className="mt-5 inline-flex w-full items-center justify-center rounded-sm bg-[var(--color-cs-brand)] py-2.5 text-sm font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
-              >
-                Go to dashboard
-              </Link>
-            </div>
-          ) : (
-            <InlineLoginForm />
-          )}
-        </section>
+          <div className="w-full max-w-[400px] justify-self-center lg:justify-self-end">
+            <StayUpdatedForm />
+          </div>
+        </div>
       </div>
+      <footer className="relative pb-6 text-center">
+        <Link
+          href="/auth/signin"
+          className="text-[12px] text-white/35 hover:text-white/60 transition-colors"
+        >
+          Sign in
+        </Link>
+      </footer>
     </main>
   );
 }
