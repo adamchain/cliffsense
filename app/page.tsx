@@ -34,6 +34,10 @@ export default function HomePage() {
               recognizing approaching benefit risks, organizing required evidence, tracking
               critical deadlines, and maintaining a clear record of what has been submitted.
             </p>
+            <p className="mt-3 max-w-xl text-[13.5px] font-semibold uppercase tracking-[0.08em] text-[#9ecbff] [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
+              Application. Renewal. Appeals. We handle what happens before any of those —
+              prevention, not paperwork after the fact.
+            </p>
           </div>
 
           <div className="w-full max-w-[400px] justify-self-center lg:justify-self-end">

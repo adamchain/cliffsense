@@ -82,6 +82,21 @@ export default async function VaultPage() {
         </p>
       ) : (
         <>
+          <Link
+            href="/vault/work-requirements"
+            className="mb-4 flex items-center justify-between gap-3 rounded-[18px] border border-[var(--color-cs-brand)]/25 bg-[var(--color-cs-brand-soft)] px-4 py-3 transition hover:border-[var(--color-cs-brand)]/50"
+          >
+            <span>
+              <span className="block text-[13.5px] font-bold text-[var(--color-cs-brand)]">
+                2027 Medicaid work / exemption — monthly record
+              </span>
+              <span className="block text-[12px] text-[var(--color-cs-text-secondary)]">
+                Track hours, proof, and DHS notices for the new work requirement — one record per month.
+              </span>
+            </span>
+            <span className="shrink-0 text-[12.5px] font-semibold text-[var(--color-cs-brand)]">Open →</span>
+          </Link>
+
           <VaultUpload beneficiaryId={beneficiaryId} categories={VAULT_CATEGORIES} />
 
           <VaultBrowser folders={folders} />
