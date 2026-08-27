@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongodb";
 import Waitlist from "@/lib/db/models/Waitlist";
+import { sendWaitlistConfirmEmail } from "@/lib/applications/emails";
 
 const schema = z.object({
   name: z.string().min(1).max(120).trim(),
@@ -17,6 +18,9 @@ export async function POST(req: Request) {
 
   await connectDB();
   await Waitlist.create(parsed.data);
+
+  // Best-effort — don't fail the signup if email delivery fails
+  sendWaitlistConfirmEmail({ to: parsed.data.email, name: parsed.data.name }).catch(() => {});
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }

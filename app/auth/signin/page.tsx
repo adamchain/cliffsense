@@ -127,10 +127,29 @@ export default function SignInPage() {
     }
   }
 
+  const [showBetaGate, setShowBetaGate] = useState(false);
+  const [betaCode, setBetaCode] = useState("");
+  const [betaError, setBetaError] = useState<string | null>(null);
+
   function switchMode(next: "password" | "code") {
     setMode(next);
     setError(null);
     setNotice(null);
+  }
+
+  function handleCreateAccount() {
+    setShowBetaGate(true);
+    setBetaCode("");
+    setBetaError(null);
+  }
+
+  function submitBetaCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (betaCode.trim() === "access0108") {
+      window.location.assign("/auth/signup");
+    } else {
+      setBetaError("That access code is incorrect. Check your invite and try again.");
+    }
   }
 
   return (
@@ -329,6 +348,55 @@ export default function SignInPage() {
             Bank credentials never stored
           </span>
         </div>
+
+        {/* ---------- Create account ---------- */}
+        {!showBetaGate ? (
+          <p className="mt-6 text-center text-sm text-[var(--color-cs-text-secondary)]">
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={handleCreateAccount}
+              className="font-semibold text-[var(--color-cs-brand)] hover:underline"
+            >
+              Create account
+            </button>
+          </p>
+        ) : (
+          <div className="mt-6 rounded-lg border border-[var(--color-cs-border)] bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-[var(--color-cs-text)]">Beta access required</p>
+            <p className="mt-1 text-[13px] text-[var(--color-cs-text-secondary)]">
+              MyBenefitsPA is currently in private beta. Enter your access code to create an account.
+            </p>
+            <form className="mt-4 flex flex-col gap-3" onSubmit={submitBetaCode}>
+              <input
+                autoFocus
+                type="text"
+                value={betaCode}
+                onChange={(e) => { setBetaCode(e.target.value); setBetaError(null); }}
+                placeholder="Access code"
+                className="cs-input"
+              />
+              {betaError && (
+                <p className="text-[13px] font-medium text-[var(--color-cs-danger)]">{betaError}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBetaGate(false)}
+                  className="flex-1 rounded-sm border border-[var(--color-cs-border)] py-2 text-sm font-medium text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="cs-btn cs-btn-primary flex-1"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </AuthPageShell>
     </>
   );

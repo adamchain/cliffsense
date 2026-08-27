@@ -83,6 +83,25 @@ export async function sendApplicationRejectedEmail({
   await sendEmail({ to, subject: "Update on your MyBenefitsPA application", html, text });
 }
 
+export async function sendWaitlistConfirmEmail({
+  to,
+  name,
+}: {
+  to: string;
+  name: string;
+}): Promise<void> {
+  const { html, text } = renderEmail({
+    heading: "You're on the list",
+    preheader: "Thanks for your interest in MyBenefitsPA.",
+    tone: "info",
+    paragraphs: [
+      `Hi ${name} — thanks for signing up. We'll reach out as soon as MyBenefitsPA is ready for you.`,
+      "We're building a tool to help caregivers and advocates manage government benefits for the people they support. Stay tuned.",
+    ],
+  });
+  await sendEmail({ to, subject: "You're on the MyBenefitsPA waitlist", html, text });
+}
+
 export async function sendApplicationInfoRequestedEmail({
   to,
   statusToken,
