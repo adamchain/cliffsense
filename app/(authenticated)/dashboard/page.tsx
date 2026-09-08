@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   let bankCount = 0;
   let lastSyncAt: string | null = null;
   let newDepositCount = 0;
-  let beneficiaryName =
+  const beneficiaryName =
     (active && displayNameForBeneficiary(active)) ||
     session.user.name?.trim() ||
     session.user.email?.split("@")[0] ||
@@ -124,7 +124,18 @@ export default async function DashboardPage() {
       .filter((m) => m.kind !== "renewal")
       .sort((a, b) => a.due.localeCompare(b.due));
     if (renewals[0]) nextRenewalDays = daysUntil(renewals[0].due);
-    upcoming = [...renewals, ...others].slice(0, 8).map(({ due: _due, ...rest }) => rest);
+    upcoming = [...renewals, ...others].slice(0, 8).map(
+      ({ id, title, subtitle, mon, day, rel, href, kind }) => ({
+        id,
+        title,
+        subtitle,
+        mon,
+        day,
+        rel,
+        href,
+        kind,
+      }),
+    );
   }
 
   const federal = cards.filter((c) => c.tier === "federal");
