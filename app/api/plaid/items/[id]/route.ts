@@ -77,9 +77,6 @@ export async function DELETE(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
-  if (!isPlaidExchangeConfigured()) {
-    return NextResponse.json({ error: "Plaid not configured" }, { status: 503 });
-  }
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -98,12 +95,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const client = getPlaidClient();
-  const accessToken = decryptPlaidToken(conn.plaidAccessTokenEncrypted);
-  try {
-    await client.itemRemove({ access_token: accessToken });
-  } catch (e) {
-    console.error("itemRemove", e);
+  const isImport = conn.source === "import";
+  if (!isImport) {
+    if (!isPlaidExchangeConfigured()) {
+      return NextResponse.json({ error: "Plaid not configured" }, { status: 503 });
+    }
+    const client = getPlaidClient();
+    const accessToken = decryptPlaidToken(conn.plaidAccessTokenEncrypted);
+    try {
+      await client.itemRemove({ access_token: accessToken });
+    } catch (e) {
+      console.error("itemRemove", e);
+    }
   }
 
   await Transaction.deleteMany({ bankConnectionId: conn._id });

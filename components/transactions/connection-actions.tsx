@@ -10,11 +10,13 @@ export function AccountConnectionActions({
   beneficiaryId,
   institutionName,
   needsReauth = false,
+  isImport = false,
 }: {
   connectionId: string;
   beneficiaryId: string;
   institutionName: string;
   needsReauth?: boolean;
+  isImport?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"sync" | "disconnect" | null>(null);
@@ -56,7 +58,7 @@ export function AccountConnectionActions({
 
   return (
     <div className="mt-3 flex flex-col gap-2 border-t border-[var(--color-cs-border)] pt-3">
-      {needsReauth && (
+      {needsReauth && !isImport && (
         <div className="flex flex-col gap-2 rounded border border-[var(--color-cs-warning-bg)] bg-[var(--color-cs-warning-bg)] p-2 text-[12px] text-[var(--color-cs-warning)]">
           <span>
             Your bank needs to be reconnected. Plaid no longer has live access until you re-authenticate.
@@ -84,15 +86,17 @@ export function AccountConnectionActions({
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={sync}
-          disabled={busy !== null || needsReauth}
-          className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
-        >
-          <IconRefresh size={14} stroke={1.5} aria-hidden className={busy === "sync" ? "animate-spin" : ""} />
-          {busy === "sync" ? "Syncing…" : "Sync"}
-        </button>
+        {!isImport && (
+          <button
+            type="button"
+            onClick={sync}
+            disabled={busy !== null || needsReauth}
+            className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--color-cs-border)] px-2.5 py-1 text-[12px] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
+          >
+            <IconRefresh size={14} stroke={1.5} aria-hidden className={busy === "sync" ? "animate-spin" : ""} />
+            {busy === "sync" ? "Syncing…" : "Sync"}
+          </button>
+        )}
         <button
           type="button"
           onClick={disconnect}

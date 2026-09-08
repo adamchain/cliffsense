@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { IconCalendarEvent, IconPlus, IconX } from "@tabler/icons-react";
 import {
-  IconCalendarEvent,
-  IconChevronDown,
-  IconPlus,
-  IconX,
-} from "@tabler/icons-react";
+  BeneficiarySwitcher,
+  type BeneficiarySwitcherAccount,
+} from "@/components/dashboard/beneficiary-switcher";
 import { WalletCardGroup } from "@/components/benefits/wallet-card";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
 import type { ProgramCardModel } from "@/lib/benefits/program-tier";
@@ -121,6 +120,7 @@ function WhatsChanged({
 export function HomeDashboard({
   beneficiaryName,
   beneficiaryId,
+  accounts,
   bankCount,
   federal,
   state,
@@ -129,6 +129,7 @@ export function HomeDashboard({
 }: {
   beneficiaryName: string;
   beneficiaryId: string | null;
+  accounts: BeneficiarySwitcherAccount[];
   bankCount: number;
   federal: ProgramCardModel[];
   state: ProgramCardModel[];
@@ -151,19 +152,11 @@ export function HomeDashboard({
     <div className="w-full">
       <div className="cs-eyebrow">Benefits · {todayLabel}</div>
       <div className="mt-1 flex items-center justify-between gap-3">
-        <Link
-          href="/beneficiaries"
-          data-tour="home-beneficiary"
-          className="group flex min-w-0 items-center gap-1.5 text-[var(--color-cs-text)]"
-        >
-          <h1 className="cs-big-title truncate">{beneficiaryName}</h1>
-          <IconChevronDown
-            size={17}
-            stroke={3}
-            className="shrink-0 text-[var(--color-cs-text-muted)]"
-            aria-hidden
-          />
-        </Link>
+        <BeneficiarySwitcher
+          currentId={beneficiaryId}
+          currentName={beneficiaryName}
+          accounts={accounts}
+        />
         <div className="flex shrink-0 gap-2">
           <Link href="/calendar" className="cs-circbtn" aria-label="Calendar">
             <IconCalendarEvent size={19} stroke={2} />

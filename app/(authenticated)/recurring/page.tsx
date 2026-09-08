@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { RecurringView } from "@/components/recurring/recurring-view";
 
 export default async function RecurringPage() {
@@ -8,7 +8,7 @@ export default async function RecurringPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
 
   return <RecurringView beneficiaryId={beneficiaryId} />;

@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { logActivity } from "@/lib/activity/log-activity";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { connectDB } from "@/lib/db/mongodb";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { buildAdvisorAccountContext } from "@/lib/advisor/account-context";
 
 export const runtime = "nodejs";
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
   let accountContext: string | null = null;
   try {
     await connectDB();
-    const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+    const primary = await getActiveBeneficiaryForUser(session.user.id);
     if (primary) {
       accountContext = await buildAdvisorAccountContext(primary._id);
     }

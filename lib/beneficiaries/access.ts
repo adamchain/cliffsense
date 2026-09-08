@@ -95,6 +95,61 @@ export async function getPrimaryBeneficiaryForUser(
   return owner?._id ? { _id: owner._id } : null;
 }
 
+export type AccessibleBeneficiary = {
+  _id: Types.ObjectId;
+  firstName: string;
+  lastName: string;
+  isOwner: boolean;
+  roleLabel: string;
+};
+
+export function displayNameForBeneficiary(b: {
+  firstName?: string | null;
+  lastName?: string | null;
+}): string {
+  return `${b.firstName ?? ""} ${b.lastName ?? ""}`.trim();
+}
+
+/** Owned profiles plus people this user was invited to manage or view. */
+export async function listAccessibleBeneficiariesForUser(
+  userId: string,
+): Promise<AccessibleBeneficiary[]> {
+  await connectDB();
+  const accessRows = await BeneficiaryAccess.find({ userId, status: "active" })
+    .select("beneficiaryId role")
+    .lean();
+  const roleByBen = new Map<string, string>(
+    accessRows.map((r) => [String(r.beneficiaryId), String(r.role)]),
+  );
+  const list = await Beneficiary.find({
+    $or: [
+      { ownerUserId: userId },
+      { _id: { $in: accessRows.map((r) => r.beneficiaryId) } },
+    ],
+  })
+    .sort({ isOwner: -1, createdAt: 1 })
+    .select("firstName lastName isOwner ownerUserId")
+    .lean();
+
+  return list.map((b) => {
+    const id = b._id.toString();
+    const isOwned = b.ownerUserId?.toString() === userId;
+    return {
+      _id: b._id,
+      firstName: b.firstName,
+      lastName: b.lastName,
+      isOwner: Boolean(b.isOwner),
+      roleLabel: b.isOwner
+        ? "You"
+        : !isOwned && roleByBen.get(id) === "viewer"
+          ? "Viewer"
+          : !isOwned && roleByBen.get(id) === "co_manager"
+            ? "Co-manager"
+            : "Profile",
+    };
+  });
+}
+
 /** Active role for this user on the beneficiary, or null. Lazily seeds an owner row for legacy data. */
 export async function getBeneficiaryAccessRole(
   userId: string,

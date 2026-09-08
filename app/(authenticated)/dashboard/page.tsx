@@ -1,12 +1,13 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { HomeDashboard } from "@/components/dashboard/home-dashboard";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { displayNameForBeneficiary } from "@/lib/beneficiaries/access";
+import { loadActiveBeneficiaryContext } from "@/lib/beneficiaries/active";
 import BankConnection from "@/lib/db/models/BankConnection";
-import Beneficiary from "@/lib/db/models/Beneficiary";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import Transaction from "@/lib/db/models/Transaction";
 import { connectDB } from "@/lib/db/mongodb";
+import { countVisibleBankConnections } from "@/lib/banks/linked-connections";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 import { buildProgramCards } from "@/lib/benefits/program-tier";
 import { calendarEventHref } from "@/lib/calendar/event-id";
@@ -34,15 +35,18 @@ export default async function DashboardPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
-  const beneficiaryId = primary?._id.toString() ?? null;
-  const oid = primary?._id;
+  const { accounts, active } = await loadActiveBeneficiaryContext(session.user.id);
+  const beneficiaryId = active?._id.toString() ?? null;
+  const oid = active?._id;
 
   let bankCount = 0;
   let lastSyncAt: string | null = null;
   let newDepositCount = 0;
   let beneficiaryName =
-    session.user.name?.trim() || session.user.email?.split("@")[0] || "You";
+    (active && displayNameForBeneficiary(active)) ||
+    session.user.name?.trim() ||
+    session.user.email?.split("@")[0] ||
+    "You";
   let cards = buildProgramCards([]);
   let upcoming: {
     id: string;
@@ -62,9 +66,9 @@ export default async function DashboardPage() {
     const todayIso = now.toISOString().slice(0, 10);
     const yesterday = new Date(now.getTime() - 86400000);
 
-    const [p, banks, latestBank, ben, deadlines, deposits] = await Promise.all([
+    const [p, banks, latestBank, deadlines, deposits] = await Promise.all([
       loadThresholdDashboardPayload(oid),
-      BankConnection.countDocuments({ beneficiaryId: oid, status: "active" }),
+      countVisibleBankConnections(oid),
       BankConnection.findOne({
         beneficiaryId: oid,
         status: "active",
@@ -73,7 +77,6 @@ export default async function DashboardPage() {
         .sort({ lastSyncAt: -1 })
         .select("lastSyncAt")
         .lean(),
-      Beneficiary.findById(oid).select("firstName lastName").lean(),
       ReportingDeadline.find({
         beneficiaryId: oid,
         dueDate: { $gte: new Date(`${todayIso}T00:00:00.000Z`) },
@@ -94,9 +97,6 @@ export default async function DashboardPage() {
     newDepositCount = deposits;
     if (latestBank?.lastSyncAt) {
       lastSyncAt = new Date(latestBank.lastSyncAt as Date).toISOString();
-    }
-    if (ben) {
-      beneficiaryName = `${ben.firstName ?? ""} ${ben.lastName ?? ""}`.trim() || beneficiaryName;
     }
     cards = buildProgramCards(p.rows);
     const mapped = deadlines.map((d) => {
@@ -134,6 +134,11 @@ export default async function DashboardPage() {
     <HomeDashboard
       beneficiaryName={beneficiaryName}
       beneficiaryId={beneficiaryId}
+      accounts={accounts.map((a) => ({
+        id: a._id.toString(),
+        name: displayNameForBeneficiary(a) || "Beneficiary",
+        roleLabel: a.roleLabel,
+      }))}
       bankCount={bankCount}
       federal={federal}
       state={state}

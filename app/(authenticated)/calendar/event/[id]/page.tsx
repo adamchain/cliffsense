@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { connectDB } from "@/lib/db/mongodb";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import {
@@ -29,7 +29,7 @@ export default async function CalendarEventPage({
   const ref = decodeCalendarEventId(rawId);
   if (!ref) notFound();
 
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   if (!primary) {
     redirect("/onboarding/profile");
   }

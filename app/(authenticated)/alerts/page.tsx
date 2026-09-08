@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AlertsView } from "@/components/alerts/alerts-view";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import Transaction from "@/lib/db/models/Transaction";
 import { connectDB } from "@/lib/db/mongodb";
 import { buildReportingActions } from "@/lib/reporting/reporting-actions";
@@ -12,7 +12,7 @@ export default async function AlertsPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
   const oid = primary?._id;
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { PROGRAMS, isMedicaidFamilyProgram, type Program } from "@/lib/programs";
 import { FORMS_CATALOG, PROGRAM_LABELS } from "@/lib/forms/catalog";
 import { FormsBrowser } from "./forms-browser";
@@ -16,9 +17,12 @@ export default async function DocumentsPage() {
   }
 
   await connectDB();
-  const beneficiary = await Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
-    .select({ benefitsEnrolled: 1 })
-    .lean();
+  const active = await getActiveBeneficiaryForUser(session.user.id);
+  const beneficiary = active
+    ? await Beneficiary.findById(active._id).select({ benefitsEnrolled: 1 }).lean()
+    : await Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
+        .select({ benefitsEnrolled: 1 })
+        .lean();
 
   const enrolled = (beneficiary?.benefitsEnrolled ?? [])
     .map((b) => b.program as Program)

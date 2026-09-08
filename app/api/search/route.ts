@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import Transaction from "@/lib/db/models/Transaction";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Alert from "@/lib/db/models/Alert";
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
   if (formItems.length) groups.push({ type: "Forms", items: formItems });
 
   // --- User data ---
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   if (primary?._id) {
     await connectDB();
     const oid = primary._id;

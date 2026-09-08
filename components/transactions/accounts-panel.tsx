@@ -10,6 +10,7 @@ export type AccountConnection = {
   id: string;
   institutionName: string;
   status: string;
+  source?: "plaid" | "import";
   lastSyncAt: string | null;
   accounts: { name: string; mask: string; currentBalanceCents: number }[];
 };
@@ -35,7 +36,8 @@ export function AccountsPanel({
             Connected accounts
           </h2>
           <p className="mt-1 max-w-xl text-[12.5px] text-[var(--color-cs-text-secondary)]">
-            Banks linked through Plaid. Add another or disconnect anytime — read-only access only.
+            Plaid links and imported statements for this person. Add another bank or disconnect
+            anytime — Plaid access is read-only.
           </p>
         </div>
         {beneficiaryId && (
@@ -73,6 +75,7 @@ export function AccountsPanel({
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-semibold text-[var(--color-cs-text)]">{c.institutionName}</span>
                 <span className="text-[11px] uppercase text-[var(--color-cs-text-muted)]">
+                  {c.source === "import" ? "Imported · " : ""}
                   {c.status}
                   {c.lastSyncAt && (
                     <>
@@ -101,6 +104,7 @@ export function AccountsPanel({
                   beneficiaryId={beneficiaryId}
                   institutionName={c.institutionName}
                   needsReauth={c.status === "login_required"}
+                  isImport={c.source === "import"}
                 />
               )}
             </li>

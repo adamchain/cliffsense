@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
 import { VAULT_CATEGORIES, vaultSectionId } from "@/lib/vault/categories";
@@ -19,7 +19,7 @@ export default async function VaultPage() {
   if (!session?.user?.id) {
     redirect("/auth/signin");
   }
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
 
   let docsBySection = new Map<

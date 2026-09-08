@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getPrimaryBeneficiaryForUser } from "@/lib/beneficiaries/access";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { ThresholdsView } from "@/components/thresholds/thresholds-view";
 
 export default async function ThresholdsPage() {
@@ -8,7 +8,7 @@ export default async function ThresholdsPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
-  const primary = await getPrimaryBeneficiaryForUser(session.user.id);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
 
   return <ThresholdsView beneficiaryId={beneficiaryId} />;
