@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { IconCheck, IconChevronDown } from "@tabler/icons-react";
-import { setActiveBeneficiary } from "@/lib/beneficiaries/switch-active";
 
 export type BeneficiarySwitcherAccount = {
   id: string;
@@ -48,8 +47,12 @@ export function BeneficiarySwitcher({
       return;
     }
     startTransition(async () => {
-      const result = await setActiveBeneficiary(id);
-      if ("ok" in result) {
+      const res = await fetch("/api/beneficiaries/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ beneficiaryId: id }),
+      });
+      if (res.ok) {
         setOpen(false);
         router.refresh();
       }

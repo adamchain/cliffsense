@@ -3,10 +3,10 @@ import {
   listAccessibleBeneficiariesForUser,
   type AccessibleBeneficiary,
 } from "@/lib/beneficiaries/access";
+import { ACTIVE_BENEFICIARY_COOKIE } from "@/lib/beneficiaries/active-cookie";
 import { resolveActiveBeneficiaryId } from "@/lib/beneficiaries/resolve-active";
 
-export const ACTIVE_BENEFICIARY_COOKIE = "mbpa_active_beneficiary";
-export { resolveActiveBeneficiaryId };
+export { ACTIVE_BENEFICIARY_COOKIE, resolveActiveBeneficiaryId };
 
 async function readRequestedBeneficiaryId(): Promise<string | null> {
   const store = await cookies();
