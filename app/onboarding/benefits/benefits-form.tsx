@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { ProgramPicker } from "@/components/benefits/program-picker";
+import { expandLegacyMedicaidSelection, type Program } from "@/lib/programs";
 
-export function BenefitsForm({ programs }: { programs: readonly string[] }) {
+export function BenefitsForm(_props: { programs: readonly string[] }) {
   const router = useRouter();
   const { update } = useSession();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -36,7 +38,9 @@ export function BenefitsForm({ programs }: { programs: readonly string[] }) {
       }
       if (cancelled) return;
       setBeneficiaryId(primary._id);
-      const enrolled = new Set(primary.benefitsEnrolled?.map((b) => b.program) ?? []);
+      const enrolled = new Set(
+        expandLegacyMedicaidSelection(primary.benefitsEnrolled?.map((b) => b.program) ?? []),
+      );
       setSelected(enrolled);
       setLoading(false);
     })();
@@ -45,7 +49,7 @@ export function BenefitsForm({ programs }: { programs: readonly string[] }) {
     };
   }, []);
 
-  function toggle(p: string) {
+  function toggle(p: Program) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(p)) next.delete(p);
@@ -88,26 +92,7 @@ export function BenefitsForm({ programs }: { programs: readonly string[] }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="cs-card p-6 md:p-7">
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-          {programs.map((p) => {
-            const on = selected.has(p);
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => toggle(p)}
-                aria-pressed={on}
-                className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
-                  on
-                    ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)] ring-1 ring-[var(--color-cs-brand)]"
-                    : "border-[var(--color-cs-border)] bg-white text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)]"
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
-        </div>
+        <ProgramPicker selected={selected} onToggle={toggle} />
       </div>
       {error && <p className="text-[13px] text-[var(--color-cs-danger)]">{error}</p>}
       <div className="flex justify-end">

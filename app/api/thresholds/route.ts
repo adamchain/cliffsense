@@ -8,6 +8,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import Threshold from "@/lib/db/models/Threshold";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
+import { STORED_PROGRAMS } from "@/lib/programs";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -30,19 +31,7 @@ export async function GET(req: Request) {
   return NextResponse.json(payload);
 }
 
-const programEnum = z.enum([
-  "SSI",
-  "SSDI",
-  "SNAP",
-  "Medicaid",
-  "Section8",
-  "TANF",
-  "WIC",
-  "LIHEAP",
-  "ACA",
-  "VA",
-  "ABLE",
-]);
+const programEnum = z.enum(STORED_PROGRAMS);
 
 const postSchema = z.object({
   beneficiaryId: z.string().min(1),

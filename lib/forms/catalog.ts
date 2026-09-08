@@ -1,4 +1,4 @@
-import type { Program } from "@/lib/programs";
+import { isMedicaidFamilyProgram, type Program } from "@/lib/programs";
 import type { CatalogForm } from "@/lib/forms/types";
 
 /* ---------------------------------------------------------------------------
@@ -140,27 +140,27 @@ export const FORMS_CATALOG: CatalogForm[] = [
 
   // ----------------------------- Medicaid -----------------------------
   {
-    id: "ma-change", program: "Medicaid", category: "reporting",
+    id: "ma-change", program: "MedicaidABD", category: "reporting",
     title: "Report a change (COMPASS / phone)", agency: "PA Department of Human Services",
     purpose: "Report income, household, or address changes for Medical Assistance.",
     frequency: "As needed", officialUrl: "https://www.compass.dhs.pa.gov/", online: true, fillableId: "change-report",
   },
   {
-    id: "ma-pa600hc", program: "Medicaid", category: "reapply", formNumber: "PA 600 HC",
+    id: "ma-pa600hc", program: "MedicaidABD", category: "reapply", formNumber: "PA 600 HC",
     title: "Application for Health Care Coverage", agency: "PA Department of Human Services",
     purpose: "Health-care-only Medical Assistance / CHIP application.",
     frequency: "At application",
     officialUrl: "https://www.pa.gov/content/dam/copapwp-pagov/en/dhs/documents/services/assistance/documents/benefits-applications/PA-600-HC-7-22_Final.pdf",
   },
   {
-    id: "ma-pa600r", program: "Medicaid", category: "reapply", formNumber: "PA 600 R",
+    id: "ma-pa600r", program: "MedicaidABD", category: "reapply", formNumber: "PA 600 R",
     title: "Benefits Review (annual renewal)", agency: "PA Department of Human Services",
     purpose: "Annual MA renewal/redetermination (the pink-envelope packet).",
     frequency: "Annual",
     officialUrl: "https://www.pa.gov/content/dam/copapwp-pagov/en/dhs/documents/services/assistance/documents/benefits-applications/benefits-review-form-pa-600-r-as.pdf",
   },
   {
-    id: "ma-renew-online", program: "Medicaid", category: "reapply",
+    id: "ma-renew-online", program: "MedicaidABD", category: "reapply",
     title: "Renew online (COMPASS)", agency: "PA Department of Human Services",
     purpose: "Renew Medical Assistance online up to 60 days before it's due.",
     frequency: "Annual", officialUrl: "https://www.compass.state.pa.us/compass.web/AFS/RenewYourBenefits", online: true,
@@ -298,7 +298,10 @@ export const FORMS_CATALOG: CatalogForm[] = [
 /** All forms for a program, or for several. */
 export function formsForPrograms(programs: Program[]): CatalogForm[] {
   const set = new Set(programs);
-  return FORMS_CATALOG.filter((f) => set.has(f.program));
+  const includeMedicaidForms = programs.some((p) => isMedicaidFamilyProgram(p));
+  return FORMS_CATALOG.filter(
+    (f) => set.has(f.program) || (includeMedicaidForms && f.program === "MedicaidABD"),
+  );
 }
 
 /** Friendly program labels for headings. */
@@ -306,7 +309,12 @@ export const PROGRAM_LABELS: Record<Program, string> = {
   SSI: "SSI — Supplemental Security Income",
   SSDI: "SSDI — Social Security Disability Insurance",
   SNAP: "SNAP — Food assistance",
-  Medicaid: "Medicaid — Medical Assistance",
+  MedicaidABD: "ABD Medicaid — Healthy Horizons",
+  MedicaidMAGI: "MAGI Medicaid — expansion / families",
+  MedicaidWaiver: "HCBS / CHC Waiver",
+  MAWD: "MAWD — Workers with Disabilities",
+  QMB: "QMB — Medicare Savings Program",
+  ExtraHelp: "Medicare Extra Help (LIS)",
   Section8: "Section 8 — Housing Choice Voucher",
   TANF: "TANF — Cash Assistance",
   WIC: "WIC — Women, Infants & Children",

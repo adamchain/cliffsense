@@ -16,7 +16,7 @@ export default async function OnboardingBenefitsPage() {
       currentStepId="benefits"
       eyebrow="Programs"
       title="Which benefits are enrolled?"
-      subtitle="Choose every program that applies. You can update this anytime in Settings."
+      subtitle="Choose every program and Medicaid category that applies. You can update this anytime in Settings."
     >
       <BenefitsForm programs={[...PROGRAMS]} />
     </OnboardingShell>

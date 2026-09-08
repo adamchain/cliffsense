@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
-import { PROGRAMS, type Program } from "@/lib/programs";
+import { PROGRAMS, isMedicaidFamilyProgram, type Program } from "@/lib/programs";
 import { FORMS_CATALOG, PROGRAM_LABELS } from "@/lib/forms/catalog";
 import { FormsBrowser } from "./forms-browser";
 
@@ -24,7 +24,13 @@ export default async function DocumentsPage() {
     .map((b) => b.program as Program)
     .filter(Boolean);
   const programs: Program[] =
-    enrolled.length > 0 ? [...PROGRAMS].filter((p) => enrolled.includes(p)) : [...PROGRAMS];
+    enrolled.length > 0
+      ? [...PROGRAMS].filter((p) => {
+          if (enrolled.includes(p)) return true;
+          if (p === "MedicaidABD" && enrolled.some((e) => isMedicaidFamilyProgram(e))) return true;
+          return false;
+        })
+      : [...PROGRAMS].filter((p) => !isMedicaidFamilyProgram(p) || p === "MedicaidABD");
 
   const groups = programs
     .map((p) => ({

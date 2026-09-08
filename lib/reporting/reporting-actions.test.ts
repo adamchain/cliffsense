@@ -59,15 +59,15 @@ describe("buildReportingActions", () => {
 
   it("flags being over an attached limit for the right program", () => {
     const actions = buildReportingActions({
-      programs: ["Medicaid"],
+      programs: ["MedicaidABD"],
       rows: [
-        { thresholdType: "asset_balance", label: "PA ABD — asset limit", program: "MEDICAID", status: "concern", attached: true },
+        { thresholdType: "asset_balance", label: "PA ABD — asset limit", program: "MEDICAIDABD", status: "concern", attached: true },
       ],
       transactions: [],
       now: NOW,
     });
-    const a = actions.find((x) => x.id === "over:medicaid");
+    const a = actions.find((x) => x.id === "over:medicaidabd");
     expect(a).toBeTruthy();
-    expect(a!.programs[0].short).toBe("Medicaid");
+    expect(a!.programs[0].short).toBe("ABD Medicaid");
   });
 });

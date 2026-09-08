@@ -1,3 +1,5 @@
+import { enrolledMatchesProgram } from "@/lib/programs";
+
 /**
  * Eligibility-loss warning scenarios derived from Frank Rapoport’s PA benefits
  * guides (Eligibility Guide V3, SummaryEligibilityLimits V3, Graham Guardrail)
@@ -154,17 +156,17 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "abd_income_limit",
     title: "ABD / Healthy Horizons income limit",
-    programs: ["Medicaid"],
+    programs: ["MedicaidABD"],
     trigger: "cliff",
     level: "warning",
-    risk: "Full ABD Medicaid income ceiling is about $1,350/mo (100% FPL + $20) for a single adult — SSI-related counting applies.",
+    risk: "Full ABD Medicaid income ceiling is $1,330/mo for a single adult — SSI-related counting applies.",
     action: "If over ABD but under waiver ($2,982) or MAWD ($3,325), confirm category with CAO/COMPASS.",
     autoDetect: true,
   },
   {
     id: "abd_resources_2k",
     title: "ABD Medicaid resource limit",
-    programs: ["Medicaid"],
+    programs: ["MedicaidABD"],
     trigger: "cliff",
     level: "warning",
     risk: "Standard ABD countable resources are capped near $2,000 ($8,000 if Medicaid entered through a waiver).",
@@ -174,7 +176,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "waiver_income_2982",
     title: "HCBS / CHC Waiver income ceiling",
-    programs: ["Medicaid"],
+    programs: ["MedicaidWaiver"],
     trigger: "cliff",
     level: "breach",
     risk: "2026 waiver income limit is $2,982/mo (300% FBR). Only the applicant’s income counts; DAC is often excluded in PA (1634).",
@@ -184,7 +186,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "ssdi_waiver_twilight",
     title: "SSDI lost, Waiver still safe (twilight zone)",
-    programs: ["SSDI", "Medicaid"],
+    programs: ["SSDI", "MedicaidWaiver"],
     trigger: "cliff",
     level: "warning",
     risk: "Earnings can end SSDI cash (SGA) while still leaving room under the $2,982 waiver income limit.",
@@ -194,7 +196,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "mawd_transition",
     title: "MAWD safety net when working",
-    programs: ["Medicaid"],
+    programs: ["MedicaidABD", "MedicaidWaiver", "MAWD"],
     trigger: "cliff",
     level: "info",
     risk: "MAWD allows higher income (250% FPL ≈ $3,325; up to 600% FPL after 12 months on Job Success) but requires paid work and a premium.",
@@ -206,7 +208,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "magi_work_requirements_2027",
     title: "MAGI Medicaid 80-hour work rule (2027)",
-    programs: ["Medicaid"],
+    programs: ["MedicaidMAGI"],
     trigger: "reporting",
     level: "warning",
     risk: "Starting Jan 1, 2027, expansion adults 19–64 must report 80 hrs/mo (or qualify for an exemption) or risk disenrollment and marketplace subsidy lockout.",
@@ -216,7 +218,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "magi_semiannual_renewal_2027",
     title: "MAGI semi-annual renewal (2027)",
-    programs: ["Medicaid"],
+    programs: ["MedicaidMAGI"],
     trigger: "reporting",
     level: "warning",
     risk: "MAGI expansion adults shift to 6-month renewals in 2027. Missing a renewal ends coverage.",
@@ -272,7 +274,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "reporting_wage_change_10day",
     title: "Wage change — 10-day reporting clock",
-    programs: ["SSI", "SSDI", "DAC", "Medicaid", "SNAP", "QMB"],
+    programs: ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidWaiver", "MAWD", "SNAP", "QMB"],
     trigger: "reporting",
     level: "warning",
     risk: "Most PA/SSA income and work changes must be reported by the 10th of the month after the change month.",
@@ -282,7 +284,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "reporting_lump_sum",
     title: "Lump-sum / inheritance / settlement",
-    programs: ["SSI", "Medicaid"],
+    programs: ["SSI", "MedicaidABD"],
     trigger: "reporting",
     level: "breach",
     risk: "Lump sums can push resources over $2,000 for SSI/ABD in the month received.",
@@ -292,7 +294,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "reporting_household_change",
     title: "Household composition change",
-    programs: ["SNAP", "Medicaid", "SSI"],
+    programs: ["SNAP", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "SSI"],
     trigger: "reporting",
     level: "warning",
     risk: "Someone moving in/out, a child turning 22, or a spouse joining can change SNAP/Medicaid household size and deeming.",
@@ -312,7 +314,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "overpayment_unreported_change",
     title: "Overpayment from late reporting",
-    programs: ["SSI", "SSDI", "Medicaid", "SNAP"],
+    programs: ["SSI", "SSDI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP"],
     trigger: "reporting",
     level: "warning",
     risk: "Late or missing reports commonly create overpayment demands even when the person remains eligible after recalculation.",
@@ -322,7 +324,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "ssi_1619b_medicaid_while_zero",
     title: "1619(b) — Medicaid while SSI cash is $0",
-    programs: ["SSI", "Medicaid"],
+    programs: ["SSI", "MedicaidABD"],
     trigger: "cliff",
     level: "info",
     risk: "When earned income zeros the SSI check, 1619(b) can keep Medicaid if other 1619(b) tests are met — losing SSI cash is not automatically losing medical coverage.",
@@ -332,7 +334,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "medicaid_renewal_packet",
     title: "Medicaid renewal packet due",
-    programs: ["Medicaid"],
+    programs: ["MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "QMB"],
     trigger: "reporting",
     level: "warning",
     risk: "PA DHS mails a reminder ~90 days before renewal; a pink packet arrives closer to the due date. Missing it ends coverage until re-approved.",
@@ -348,8 +350,7 @@ export function scenarioById(id: string): EligibilityLossScenario | undefined {
 }
 
 export function scenariosForPrograms(programs: string[]): EligibilityLossScenario[] {
-  const keys = new Set(programs.map((p) => p.toUpperCase()));
   return ELIGIBILITY_LOSS_SCENARIOS.filter((s) =>
-    s.programs.some((p) => keys.has(p.toUpperCase()) || (p === "ExtraHelp" && keys.has("EXTRAHELP"))),
+    s.programs.some((p) => enrolledMatchesProgram(programs, p)),
   );
 }

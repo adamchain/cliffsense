@@ -60,13 +60,79 @@ const META: Record<string, ProgramMeta> = {
   MEDICAID: {
     code: "MEDICAID",
     label: "Medicaid",
-    fullName: "Pennsylvania Medical Assistance (MA)",
+    fullName: "Pennsylvania Medical Assistance (legacy combined category)",
     agency: "PA Department of Human Services",
     blurb:
-      "Health coverage. MAGI categories have no asset test; non-MAGI (aged/blind/disabled, long-term care) apply an asset test. MAWD lets workers keep Medicaid at higher income.",
+      "Older combined Medicaid enrollment. Prefer the specific category: ABD, MAGI, HCBS Waiver, MAWD, or QMB.",
     reporting:
-      "Report income and household changes; annual renewal / redetermination.",
+      "Report income, resource, household, and work changes to PA DHS within 10 days.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  MEDICAIDABD: {
+    code: "MEDICAIDABD",
+    label: "ABD Medicaid",
+    fullName: "ABD / Healthy Horizons Medicaid (Aged, Blind, or Disabled)",
+    agency: "PA Department of Human Services",
+    blurb:
+      "Full Medical Assistance for aged, blind, or disabled adults. SSI-related counting; 2026 single income limit $1,330/month and $2,000 countable resources ($8,000 if Medicaid was entered through a waiver).",
+    reporting:
+      "Report income, assets, household, work, and disability/care-need changes to COMPASS/CAO within 10 days. Annual renewal packet.",
+    officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  MEDICAIDMAGI: {
+    code: "MEDICAIDMAGI",
+    label: "MAGI Medicaid",
+    fullName: "MAGI Medicaid (expansion adults 19–64 and MAGI families)",
+    agency: "PA Department of Human Services",
+    blurb:
+      "ACA-expansion / MAGI Medical Assistance. Income is tested with MAGI rules (about 138% FPL). No asset test for children, pregnant people, parents, or expansion adults.",
+    reporting:
+      "Report income, household, address, and other-coverage changes within 10 days. MAGI categories do not have an asset test.",
+    officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  MEDICAIDWAIVER: {
+    code: "MEDICAIDWAIVER",
+    label: "HCBS / CHC Waiver",
+    fullName: "Pennsylvania HCBS / Community HealthChoices Waiver",
+    agency: "PA Department of Human Services",
+    blurb:
+      "Home- and community-based waiver (including CHC). 2026 income limit $2,982/month (300% of SSI FBR) and $8,000 assets. SSDI and wages count; DAC is excluded in Pennsylvania (1634). Approval confers full Medicaid (deemed eligible).",
+    reporting:
+      "Report income, asset, employment, household, and care-need changes within 10 days.",
+    officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  MAWD: {
+    code: "MAWD",
+    label: "MAWD",
+    fullName: "Medical Assistance for Workers with Disabilities",
+    agency: "PA Department of Human Services",
+    blurb:
+      "Medicaid for a Pennsylvania worker with a disability (generally age 16–64 with paid employment). Countable-income limit $3,325/month (250% FPL); $10,000 resources. Premium is usually 5% of countable income. Workers with Job Success can extend coverage up to 600% FPL.",
+    reporting:
+      "Report income, resource, and employment changes to PA DHS within 10 days. Paid employment is required.",
+    officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  QMB: {
+    code: "QMB",
+    label: "QMB",
+    fullName: "Qualified Medicare Beneficiary (Healthy Horizons MSP)",
+    agency: "PA Department of Human Services",
+    blurb:
+      "Medicare Savings Program that pays Medicare Part A/B premiums and cost-sharing. Separate from full Medicaid. 2025–2026 single income about $1,350/month (100% FPL + $20) and resources about $9,660.",
+    reporting:
+      "Report income and resource changes within 10 days. Waiver enrollment does not block QMB.",
+    officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
+  },
+  EXTRAHELP: {
+    code: "EXTRAHELP",
+    label: "Extra Help",
+    fullName: "Medicare Part D Extra Help (Low-Income Subsidy)",
+    agency: "Social Security Administration",
+    blurb:
+      "Helps pay Medicare Part D prescription costs. 2026 single limits: $2,015/month income ($24,180/year) and $18,090 resources. SSDI, DAC, and wages all count. Automatic if you have Medicaid, QMB, or SSI.",
+    reporting:
+      "Report income, resource, marital-status, address, and household changes to SSA by the 10th of the month after the change.",
+    officialUrl: "https://www.ssa.gov/medicare/part-d-extra-help",
   },
   SECTION8: {
     code: "SECTION8",

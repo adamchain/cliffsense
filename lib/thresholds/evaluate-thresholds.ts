@@ -7,6 +7,7 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
+import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
 import {
@@ -105,8 +106,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
   }
 
   const programs = (beneficiary.benefitsEnrolled ?? []).map((b) => b.program).filter(Boolean);
-  // System threshold `program` is stored uppercase; match case-insensitively.
-  const programKeys = programs.map((p) => String(p).toUpperCase());
+  const programKeys = expandEnrolledProgramKeys(programs);
   if (programs.length === 0) {
     return { alertsCreated: 0, skippedNoPrograms: true, alertIdsCreated: [] };
   }

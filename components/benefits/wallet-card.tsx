@@ -32,6 +32,11 @@ function ProgramGlyph({ code }: { code: string }) {
     case "WIC":
       return <IconLeaf {...props} />;
     case "MEDICAID":
+    case "MEDICAIDABD":
+    case "MEDICAIDMAGI":
+    case "MEDICAIDWAIVER":
+    case "MAWD":
+    case "QMB":
       return <IconHeart {...props} fill={color} />;
     case "SECTION8":
     case "ABLE":

@@ -3,7 +3,7 @@ import { programCodeKey, programLabel, programMetaFor } from "@/lib/benefits/pro
 /** Federal SSA-style programs vs Commonwealth of Pennsylvania programs. */
 export type ProgramTier = "federal" | "state";
 
-const FEDERAL = new Set(["SSI", "SSDI", "VA", "ABLE"]);
+const FEDERAL = new Set(["SSI", "SSDI", "VA", "ABLE", "EXTRAHELP"]);
 
 export function programTier(program: string): ProgramTier {
   return FEDERAL.has(programCodeKey(program)) ? "federal" : "state";

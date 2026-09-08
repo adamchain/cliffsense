@@ -184,7 +184,7 @@ export default function HelpPage() {
               </>,
               <>
                 <span className="font-semibold text-[var(--color-cs-text)]">Confirm enrolled programs.</span>{" "}
-                Pick the programs in play (SNAP, Medicaid, SSI/SSDI, etc.). This decides which limits appear.
+                Pick the programs in play (SNAP, ABD Medicaid, MAGI, Waiver, MAWD, SSI/SSDI, etc.). This decides which limits appear.
               </>,
               <>
                 <span className="font-semibold text-[var(--color-cs-text)]">Connect a bank.</span>{" "}
@@ -216,7 +216,7 @@ export default function HelpPage() {
               or representative.
             </Term>
             <Term name="Program">
-              A benefit you&apos;re enrolled in (SNAP, Medicaid/Waiver, SSI, SSDI, QMB…). Programs
+              A benefit you&apos;re enrolled in (SNAP, ABD Medicaid, MAGI, Waiver, MAWD, SSI, SSDI, QMB…). Programs
               determine which limits load.
             </Term>
             <Term name="Limit (threshold)">

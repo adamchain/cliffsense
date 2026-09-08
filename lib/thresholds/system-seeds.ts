@@ -101,7 +101,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "SSI — countable resources (individual)",
     description:
-      "Federal countable resource limit for an individual: $2,000 (statutory, unchanged since 1989). Excluded: your home, one vehicle, household goods, burial funds up to $1,500, and up to $100,000 in an ABLE account. Hard cutoff — if countable resources exceed the limit on the first day of a month, you're ineligible for that whole month. Special Needs Trusts and ABLE balances are excluded; verify with SSA." +
+      "Federal countable resource limit for an individual: $2,000 (statutory, unchanged since 1989). Excluded: your home, one vehicle, household goods, burial funds up to $1,500, and up to $100,000 in an ABLE account. Qualifying SNT balances are excluded as resources, but cash the trustee deposits into a personal checking/savings account is generally unearned income in the month received and can become a countable resource the next month. Hard cutoff — if countable resources exceed the limit on the first day of a month, you're ineligible for that whole month." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_RESOURCES,
   },
@@ -216,14 +216,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 2609_00,
+    limitCents: 2610_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 1 (200% FPL)",
     description:
-      "PA Broad-Based Categorical Eligibility (BBCE) raises the SNAP gross-income limit to 200% FPL and removes the asset test for most households. Household of 1: $2,609/month gross. Gross income includes SSDI, DAC, wages, VA benefits, and pensions. The net-income test (100% FPL ≈ $1,330) must still be met after deductions." +
+      "PA Broad-Based Categorical Eligibility (BBCE) raises the SNAP gross-income limit to 200% FPL and removes the asset test for most households. Household of 1: $2,610/month gross. Gross income includes SSDI, DAC, wages, VA benefits, and pensions. The net-income test (100% FPL) must still be met after deductions. A recurring SNT cash distribution available to the household can be SNAP income; a one-time lump sum is classified separately." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -233,14 +233,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 3526_00,
+    limitCents: 3534_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 2 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 2-person household: $3,526. Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 2-person household: $3,534. Includes SSDI, DAC, and earned income." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -250,14 +250,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 4442_00,
+    limitCents: 4458_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 3 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 3-person household: $4,442. Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 3-person household: $4,458. Includes SSDI, DAC, and earned income." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -267,14 +267,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 5359_00,
+    limitCents: 5360_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 4 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 4-person household: $5,359. Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 4-person household: $5,360. Includes SSDI, DAC, and earned income." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -284,14 +284,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 6276_00,
+    limitCents: 6284_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 5 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 5-person household: $6,276 (add ~$917 per additional person). Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 5-person household: $6,284 (add ~$924 per additional person). Includes SSDI, DAC, and earned income." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -301,14 +301,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 7193_00,
+    limitCents: 7208_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 6+ (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 6-or-more-person household: $7,193 (add ~$917 per additional person). Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 6-or-more-person household: $7,208 (add ~$924 per additional person). Includes SSDI, DAC, and earned income." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -318,25 +318,25 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "asset_balance",
-    limitCents: 4500_00,
+    limitCents: 4250_00,
     comparison: "lte",
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — resource limit (elderly/disabled, if gross test failed)",
     description:
-      "Most PA households have NO SNAP asset limit under BBCE. The ~$4,500 federal resource limit applies only to a household with a member 60+ or disabled that is over the 200% FPL gross limit and instead qualifies under federal rules (which waive the gross-income test but apply an asset test)." +
+      "Most PA households have NO SNAP asset limit under BBCE. The $4,250 federal resource limit applies only to a household with a member 60+ or disabled that is over the 200% FPL gross limit and instead qualifies under federal rules (which waive the gross-income test but apply an asset test)." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
   },
 
   // ===========================================================================
-  // 4. Medicaid — PA "Medical Assistance" (MAGI no asset test; non-MAGI asset test)
+  // 4. Medicaid categories — pick the enrolled type; limits are not interchangeable
   // ===========================================================================
   {
     systemKey: "pa_medicaid_magi_adult_2026",
-    program: "Medicaid",
+    program: "MedicaidMAGI",
     state: "PA",
     thresholdType: "monthly_gross_income",
     limitCents: 1836_00,
@@ -344,7 +344,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA Medicaid (MAGI adults 19–64) — monthly income (138% FPL, 2026)",
+    label: "PA MAGI Medicaid (adults 19–64) — monthly income (138% FPL, 2026)",
     description:
       "ACA-expansion adults (19–64): income limit 138% FPL ≈ $1,836/month (single, includes the 5% disregard). MAGI counting — roughly tax AGI plus non-taxable Social Security and tax-exempt interest — and NO asset test for children, pregnant people, parents, or expansion adults. People under 138% FPL go to Medicaid rather than Marketplace subsidies. SSI recipients are automatically eligible." +
       ESTIMATE_NOTE +
@@ -353,7 +353,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
   },
   {
     systemKey: "pa_waiver_income_2026",
-    program: "Medicaid",
+    program: "MedicaidWaiver",
     state: "PA",
     thresholdType: "monthly_unearned_income",
     limitCents: 2982_00,
@@ -363,14 +363,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — monthly income (2026)",
     description:
-      "2026 long-term-care / waiver income limit: $2,982/month (300% of the SSI Federal Benefit Rate). Only the applicant's income counts; SSDI and wages count, but DAC benefits are excluded (PA is a 1634 state). Waiver approval confers full Medicaid (\"deemed eligible\"), so ABD income limits do not apply." +
+      "2026 long-term-care / waiver income limit: $2,982/month (300% of the SSI Federal Benefit Rate). Only the applicant's income counts; SSDI and wages count, but DAC benefits are excluded (PA is a 1634 state). Waiver approval confers full Medicaid (\"deemed eligible\"), so ABD income limits do not apply. Qualifying SNT balances are excluded; cash released to a personal bank account can count as income/resources for the waiver category." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,
   },
   {
     systemKey: "pa_waiver_resources_2026",
-    program: "Medicaid",
+    program: "MedicaidWaiver",
     state: "PA",
     thresholdType: "asset_balance",
     limitCents: 8000_00,
@@ -380,31 +380,31 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — asset limit (2026)",
     description:
-      "2026 long-term-care asset limit: $2,400–$8,000 depending on income tier (this row uses $8,000). A 5-year (60-month) look-back applies to asset transfers; gifts/under-value sales create a penalty period (2026 PA penalty divisor ≈ $421.20/day). Special Needs Trusts and ABLE balances are excluded; a non-applicant spouse may keep a Community Spouse Resource Allowance up to ~$162,660." +
+      "2026 waiver asset limit: $8,000 (higher if married under spousal impoverishment rules). A 5-year (60-month) look-back applies to asset transfers. Special Needs Trusts and ABLE balances are excluded while the funds remain in the trust/ABLE account; cash deposited to a personal account is no longer automatically excluded." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,
   },
   {
     systemKey: "pa_medicaid_abd_income_2026",
-    program: "Medicaid",
+    program: "MedicaidABD",
     state: "PA",
     thresholdType: "monthly_unearned_income",
-    limitCents: 1016_00,
+    limitCents: 1330_00,
     comparison: "lte",
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA Medicaid ABD (Aged/Blind/Disabled) — monthly income (2026)",
+    label: "PA ABD / Healthy Horizons Medicaid — monthly income (2026)",
     description:
-      "2026 non-MAGI 'Regular Medicaid' income limit for the aged, blind & disabled: about $1,016/month (single) / $1,524 (couple), tied to the federal benefit figure. SSDI counts as unearned income (less the $20 exclusion); earned income gets the $65 + ½ exclusions; DAC is excluded. If you're over this, you may spend down to the Medically Needy Income Limit ($425/mo single) on medical bills. Waiver enrollees exceed this but keep Medicaid via deemed eligibility." +
+      "2026 ABD (Aged/Blind/Disabled) Healthy Horizons income limit: $1,330/month for a single disabled adult. SSDI counts as unearned income (less the $20 exclusion); earned income gets the $65 + ½ exclusions; DAC is excluded in Pennsylvania. If you're over this, you may spend down to the Medically Needy Income Limit ($425/mo single) on medical bills. Waiver enrollees can exceed this and still keep Medicaid via deemed eligibility." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
   {
     systemKey: "pa_medicaid_abd_resources_2026",
-    program: "Medicaid",
+    program: "MedicaidABD",
     state: "PA",
     thresholdType: "asset_balance",
     limitCents: 2000_00,
@@ -412,16 +412,16 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA Medicaid ABD — asset limit (2026)",
+    label: "PA ABD Medicaid — asset limit (2026)",
     description:
-      "2026 ABD Medicaid asset limit: $2,000 (individual). Excluded assets: primary home (equity cap ~$730,000–$752,000 if intending to return), one vehicle, household goods, irrevocable burial trusts, small life insurance. Note: $8,000 may apply when Medicaid was entered through a waiver. SNT and ABLE balances are excluded." +
+      "2026 ABD Medicaid asset limit: $2,000 (individual). $8,000 may apply when Medicaid was entered through a waiver. Excluded: primary home, one vehicle, household goods, qualifying SNT and ABLE balances. Cash from an SNT into a personal bank account can count toward this limit if retained past the receipt month." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
   {
     systemKey: "pa_mawd_income_2026",
-    program: "Medicaid",
+    program: "MAWD",
     state: "PA",
     thresholdType: "monthly_unearned_income",
     limitCents: 3325_00,
@@ -429,16 +429,16 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA MAWD (Workers with Disabilities) — monthly income (250% FPL, 2026)",
+    label: "PA MAWD — countable monthly income (250% FPL, 2026)",
     description:
-      "Medical Assistance for Workers with Disabilities income limit: 250% FPL ≈ $3,325/month (single). MAWD lets a working person with a disability keep Medicaid at much higher income, for a monthly premium of ~5% of countable income. It's the main route to stay on Medicaid/Waiver above SSDI's SGA limit." +
+      "Medical Assistance for Workers with Disabilities countable-income limit: 250% FPL = $3,325/month (single). This is a countable-income test, not a gross-wage cap — apply the $20 general exclusion, $65 earned-income exclusion, then only one-half of remaining wages, plus applicable disability/work-expense deductions. Do not compare a gross paycheck to $3,325. Paid employment is required. Standard MAWD charges a monthly premium of about 5% of countable income. You can keep Waiver services on MAWD." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
   {
     systemKey: "pa_mawd_resources_2026",
-    program: "Medicaid",
+    program: "MAWD",
     state: "PA",
     thresholdType: "asset_balance",
     limitCents: 10000_00,
@@ -446,16 +446,33 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA MAWD (Workers with Disabilities) — asset limit (2026)",
+    label: "PA MAWD — asset limit (2026)",
     description:
-      "MAWD asset limit: around $10,000 — higher than regular ABD Medicaid. Retirement accounts and ABLE balances are generally excluded. MAWD pairs well with work earnings that would otherwise exceed SSDI's SGA limit." +
+      "MAWD countable resource limit: $10,000. Uses Medicaid/SSI-related exclusions (principal residence, an allowable vehicle, qualifying SNT and ABLE balances). A direct SNT cash distribution may be unearned income in the receipt month and a resource if kept in a personal account." +
+      ESTIMATE_NOTE +
+      PA_REPORTING_NOTE,
+    sourceUrl: PA_DHS,
+  },
+  {
+    systemKey: "pa_mawd_job_success_income_2026",
+    program: "MAWD",
+    state: "PA",
+    thresholdType: "monthly_unearned_income",
+    limitCents: 7980_00,
+    comparison: "lte",
+    warnAtPercent: 0.9,
+    effectiveFrom: FROM_2026,
+    effectiveTo: null,
+    label: "PA MAWD Workers with Job Success — countable income (600% FPL, 2026)",
+    description:
+      "Pennsylvania's Workers with Job Success pathway can extend MAWD-related coverage above the standard 250% FPL level, up to 600% FPL (about $7,980/month countable for a single person in 2026) if the separate requirements are met. This is a continuation ceiling, not the standard MAWD test." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
   {
     systemKey: "pa_medicaid_mnil_2026",
-    program: "Medicaid",
+    program: "MedicaidABD",
     state: "PA",
     thresholdType: "monthly_unearned_income",
     limitCents: 425_00,
@@ -463,7 +480,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA Medicaid — Medically Needy 'spend-down' limit (single, 2026)",
+    label: "PA ABD Medicaid — Medically Needy 'spend-down' limit (single, 2026)",
     description:
       "Medically Needy Income Limit (MNIL) for spend-down: $425/month (single) / $442 (couple) over a 6-month period. If your income is over the ABD limit, you become eligible by spending the difference ('deductible') on medical bills. This is a reference floor, not a cliff — being above it isn't a loss of coverage, it sets your spend-down amount." +
       ESTIMATE_NOTE +
@@ -472,7 +489,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
   },
   {
     systemKey: "pa_qmb_income_2026",
-    program: "Medicaid",
+    program: "QMB",
     state: "PA",
     thresholdType: "monthly_unearned_income",
     limitCents: 1350_00,
@@ -482,14 +499,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — monthly income (single)",
     description:
-      "QMB income limit: 100% FPL + $20 disregard ≈ $1,350/month (single). QMB pays Medicare Part A/B premiums and cost-sharing and does not block Waiver services. SSDI counts (less $20); earned income gets the $65 + ½ exclusions." +
+      "QMB income limit: 100% FPL + $20 disregard ≈ $1,350/month (single). QMB pays Medicare Part A/B premiums and cost-sharing and does not block Waiver services. SSDI counts (less $20); earned income gets the $65 + ½ exclusions. Cash from an SNT into a personal account must be reviewed under QMB income rules — SSDI's no-asset rule does not carry over." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
   },
   {
     systemKey: "pa_qmb_resources_2026",
-    program: "Medicaid",
+    program: "QMB",
     state: "PA",
     thresholdType: "asset_balance",
     limitCents: 9660_00,
@@ -499,7 +516,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — resource limit (single)",
     description:
-      "QMB resource limit ≈ $9,660 (single). Applies regardless of Waiver enrollment or SSDI status." +
+      "QMB resource limit ≈ $9,660 (single); some PA Healthy Horizons charts list about $9,950 (2× the SSI resource standard). Applies regardless of Waiver enrollment or SSDI status. Qualifying SNT/ABLE balances are excluded; retained personal-account cash counts." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
@@ -627,7 +644,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
   },
   {
     systemKey: "extra_help_lis_income_monthly_2026",
-    program: "ACA",
+    program: "ExtraHelp",
     state: null,
     thresholdType: "monthly_unearned_income",
     limitCents: 2015_00,
@@ -637,13 +654,13 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "Medicare Part D Extra Help (LIS) — monthly income (single, 2026)",
     description:
-      "2026 monthly income limit for a single individual: $2,015 ($24,180/year). Income from SSDI, DAC, and work all count toward this test. (Extra Help is a Medicare Part D subsidy — surfaced here because it's a related health-coverage limit.)" +
+      "2026 monthly income limit for a single individual: $2,015 ($24,180/year). Income from SSDI, DAC, and work all count toward this test (with the standard $20 disregard already built into the published limit). Extra Help is means-tested even though Medicare and SSDI are not. A direct SNT cash distribution can count as income, and cash retained in a personal bank account can increase countable resources." +
       ESTIMATE_NOTE,
     sourceUrl: MEDICARE_EXTRA_HELP,
   },
   {
     systemKey: "extra_help_lis_resources_2026",
-    program: "ACA",
+    program: "ExtraHelp",
     state: null,
     thresholdType: "asset_balance",
     limitCents: 18090_00,

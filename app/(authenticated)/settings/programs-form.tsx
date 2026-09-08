@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { programLabel } from "@/lib/benefits/program-meta";
-import { PROGRAMS, type Program } from "@/lib/programs";
+import { ProgramPicker } from "@/components/benefits/program-picker";
+import { expandLegacyMedicaidSelection, type Program } from "@/lib/programs";
 
 export function ProgramsForm({
   beneficiaryId,
@@ -16,7 +17,9 @@ export function ProgramsForm({
   initialRenewals?: Record<string, string | null>;
 }) {
   const router = useRouter();
-  const [selected, setSelected] = useState<Set<string>>(new Set(initialPrograms));
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(expandLegacyMedicaidSelection(initialPrograms)),
+  );
   const [renewals, setRenewals] = useState<Record<string, string | null>>(initialRenewals);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +31,7 @@ export function ProgramsForm({
     [selected],
   );
 
-  function toggle(p: string) {
+  function toggle(p: Program) {
     setSaved(false);
     setSelected((prev) => {
       const next = new Set(prev);
@@ -76,27 +79,10 @@ export function ProgramsForm({
           Enrolled programs
         </h3>
         <p className="mb-2.5 text-[12px] text-[var(--color-cs-text-secondary)]">
-          Reference limits attach automatically for the programs you select.
+          Reference limits attach automatically for the programs you select. Medicaid is split by
+          category so ABD, MAGI, Waiver, and MAWD limits stay separate.
         </p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {PROGRAMS.map((p) => {
-            const on = selected.has(p);
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => toggle(p)}
-                className={`rounded-xl border px-3 py-2 text-left text-[13px] font-medium transition-colors ${
-                  on
-                    ? "border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)] py-[7px]"
-                    : "border-[var(--color-cs-border)] bg-white hover:border-[var(--color-cs-brand)]"
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
-        </div>
+        <ProgramPicker selected={selected} onToggle={toggle} />
       </div>
 
       <div className="border-t border-[var(--color-cs-sep)] pt-4">

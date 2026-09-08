@@ -4,6 +4,7 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
+import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
 import {
@@ -106,8 +107,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   }
 
   const programs = (beneficiary.benefitsEnrolled ?? []).map((b) => b.program).filter(Boolean);
-  // System threshold `program` is stored uppercase; match case-insensitively.
-  const programKeys = programs.map((p) => String(p).toUpperCase());
+  const programKeys = expandEnrolledProgramKeys(programs);
   const now = new Date();
   const { prefix, y, m } = utcMonthPrefix(now);
   const priorPrefix = utcMonthPrefix(new Date(Date.UTC(y, m - 2, 15))).prefix;

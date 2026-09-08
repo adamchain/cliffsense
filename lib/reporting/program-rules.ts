@@ -32,6 +32,32 @@ const SSA_SSI_REPORT = "https://www.ssa.gov/ssi/text-report-ussi.htm";
 const SSA_PHONE = "1-800-772-1213";
 const PA_DHS_PHONE = "1-877-395-8930";
 
+const COMPASS_HOW_TO = [
+  "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
+  `Or call ${PA_DHS_PHONE}, or your County Assistance Office caseworker.`,
+  "If a Special Needs Trust or ABLE account holds the funds, note that — those resources are excluded while they stay in the trust/ABLE account.",
+];
+
+function compassRule(
+  program: string,
+  short: string,
+  reportsAssetChange: boolean,
+  extraHow?: string[],
+): ProgramRule {
+  return {
+    program,
+    short,
+    agency: "PA County Assistance Office",
+    reportsNewWork: true,
+    reportsIncomeChange: true,
+    reportsAssetChange,
+    reportUrl: COMPASS,
+    phone: PA_DHS_PHONE,
+    deadlineNote: "PA requires reporting income, asset, household, or work changes within 10 days.",
+    howTo: extraHow ? [...COMPASS_HOW_TO, ...extraHow] : COMPASS_HOW_TO,
+  };
+}
+
 export const PROGRAM_RULES: ProgramRule[] = [
   {
     program: "SSDI",
@@ -81,20 +107,25 @@ export const PROGRAM_RULES: ProgramRule[] = [
       "Have recent pay stubs or an offer letter ready.",
     ],
   },
+  compassRule("Medicaid", "Medicaid", true),
+  compassRule("MedicaidABD", "ABD Medicaid", true),
+  compassRule("MedicaidMAGI", "MAGI Medicaid", false),
+  compassRule("MedicaidWaiver", "HCBS Waiver", true),
+  compassRule("MAWD", "MAWD", true, ["Paid employment is required; the premium is usually 5% of countable income."]),
+  compassRule("QMB", "QMB", true),
   {
-    program: "Medicaid",
-    short: "Medicaid",
-    agency: "PA County Assistance Office",
+    program: "ExtraHelp",
+    short: "Extra Help",
+    agency: "Social Security Administration",
     reportsNewWork: true,
     reportsIncomeChange: true,
     reportsAssetChange: true,
-    reportUrl: COMPASS,
-    phone: PA_DHS_PHONE,
-    deadlineNote: "PA requires reporting income, asset, household, or work changes within 10 days.",
+    reportUrl: SSA_REPORT_WORK,
+    phone: SSA_PHONE,
+    deadlineNote: "Report Extra Help changes to SSA by the 10th of the month after the change.",
     howTo: [
-      "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
-      `Or call ${PA_DHS_PHONE}, or your County Assistance Office caseworker.`,
-      "If a Special Needs Trust or ABLE account holds the funds, note that — those resources are excluded.",
+      "Report income, resource, and household changes to SSA.",
+      `Call SSA at ${SSA_PHONE} or use your my Social Security account.`,
     ],
   },
 ];

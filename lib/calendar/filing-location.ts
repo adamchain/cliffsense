@@ -1,4 +1,5 @@
 import { programCodeKey } from "@/lib/benefits/program-meta";
+import { isMedicaidFamilyProgram } from "@/lib/programs";
 
 export type FilingLocation = {
   /** Short place name shown on the card. */
@@ -58,7 +59,12 @@ export function filingLocationForEvent(input: {
     };
   }
 
-  if (code === "SNAP" || code === "MEDICAID" || code === "TANF" || code === "LIHEAP") {
+  if (
+    code === "SNAP" ||
+    code === "TANF" ||
+    code === "LIHEAP" ||
+    isMedicaidFamilyProgram(code)
+  ) {
     const query = "Pennsylvania Department of Human Services, Harrisburg, PA";
     const lat = 40.2732;
     const lng = -76.8867;

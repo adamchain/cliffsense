@@ -1,4 +1,5 @@
 import { programCodeKey } from "@/lib/benefits/program-meta";
+import { isMedicaidFamilyProgram } from "@/lib/programs";
 
 /**
  * Reporting schedules, deadlines, and "what NOT to report" content, derived from
@@ -155,29 +156,126 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
     caveat:
       "A minority of cases are on full 'change reporting' (typically zero-income or all-elderly/disabled households) with broader duties — confirm your case type.",
   },
-  MEDICAID: {
-    code: "MEDICAID",
+  MEDICAIDABD: {
+    code: "MEDICAIDABD",
     scheduled: [
       {
         title: "Annual renewal / redetermination",
         detail:
-          "A date-driven packet is mailed each year. Children get 12-month continuous eligibility. Renewal is the main benefit-loss risk — treat the packet as top priority.",
+          "A date-driven packet is mailed each year. Renewal is the main benefit-loss risk — treat the packet as top priority.",
+        deadline: "By the date on the renewal packet",
+      },
+    ],
+    eventTriggered: [
+      {
+        title: "Income, assets, household & coverage changes",
+        detail:
+          "ABD / Healthy Horizons uses SSI-related counting. Report income, assets near $2,000 ($8,000 if Medicaid was entered through a waiver), household, address, and other coverage. Cash from an SNT into a personal account can count.",
+        deadline: "Within 10 days",
+      },
+    ],
+    doNotReport: ["ABLE and qualifying SNT balances that remain inside those accounts"],
+    channel: COMPASS,
+    caveat: "ABD is not MAGI: there is an asset test. Waiver deemed eligibility can keep full Medicaid above the ABD income line.",
+  },
+  MEDICAIDMAGI: {
+    code: "MEDICAIDMAGI",
+    scheduled: [
+      {
+        title: "Annual renewal / redetermination",
+        detail:
+          "A date-driven packet is mailed each year. Children get 12-month continuous eligibility. MAGI expansion adults shift toward more frequent renewals in 2027.",
         deadline: "By the date on the renewal packet",
       },
     ],
     eventTriggered: [
       {
         title: "Income, household, address & coverage changes",
-        detail:
-          "Report income changes, household-size changes, address changes, and gaining other health coverage. ABD and long-term-care enrollees also report assets (near the $2,000 limit); MAGI categories do not.",
-        deadline: "Generally within ~10 days",
+        detail: "Report income changes, household-size changes, address changes, and gaining other health coverage.",
+        deadline: "Within 10 days",
       },
     ],
-    doNotReport: [
-      "Assets / bank balances for MAGI categories (children, pregnant, parents, expansion adults) — no asset test",
-    ],
+    doNotReport: ["Assets / bank balances — MAGI categories have no asset test"],
     channel: COMPASS,
-    caveat: "Reporting branches on category: MAGI (no asset test) vs. ABD/LTC ($2,000 asset limit).",
+    caveat: "MAGI has no asset test. Work-hour rules for expansion adults begin in 2027.",
+  },
+  MEDICAIDWAIVER: {
+    code: "MEDICAIDWAIVER",
+    scheduled: [
+      {
+        title: "Annual waiver / Medicaid renewal",
+        detail: "Keep waiver approval letters. Renewal packets can end both waiver services and deemed full Medicaid if missed.",
+        deadline: "By the date on the renewal packet",
+      },
+    ],
+    eventTriggered: [
+      {
+        title: "Income, assets, employment, household & care-need changes",
+        detail:
+          "2026 waiver income limit is $2,982/month. SSDI and wages count; DAC is excluded in PA. Report changes that affect disability or care needs.",
+        deadline: "Within 10 days",
+      },
+    ],
+    doNotReport: ["DAC benefits — excluded from the waiver income test in Pennsylvania (1634)"],
+    channel: COMPASS,
+  },
+  MAWD: {
+    code: "MAWD",
+    scheduled: [
+      {
+        title: "Annual MAWD renewal",
+        detail: "Paid employment must continue. Premium is usually 5% of countable income.",
+        deadline: "By the date on the renewal packet",
+      },
+    ],
+    eventTriggered: [
+      {
+        title: "Income, resource, and employment changes",
+        detail:
+          "Do not compare gross wages to the $3,325 countable-income limit. Report job stoppage — unpaid or volunteer work does not qualify.",
+        deadline: "Within 10 days",
+      },
+    ],
+    doNotReport: ["Qualifying SNT/ABLE balances that remain inside those accounts"],
+    channel: COMPASS,
+  },
+  QMB: {
+    code: "QMB",
+    scheduled: [
+      {
+        title: "Annual QMB / Healthy Horizons renewal",
+        detail: "QMB is not full Medicaid. You can have QMB and Waiver at the same time.",
+        deadline: "By the date on the renewal packet",
+      },
+    ],
+    eventTriggered: [
+      {
+        title: "Income and resource changes",
+        detail:
+          "QMB has its own income (~$1,350) and resource (~$9,660) tests. SSDI's no-asset rule does not apply.",
+        deadline: "Within 10 days",
+      },
+    ],
+    doNotReport: ["Waiver services themselves — QMB does not change Waiver"],
+    channel: COMPASS,
+  },
+  EXTRAHELP: {
+    code: "EXTRAHELP",
+    scheduled: [],
+    eventTriggered: [
+      {
+        title: "Income, resources, household & marital-status changes",
+        detail:
+          "2026 single Extra Help limits are $2,015/month income and $18,090 resources. SSDI, DAC, and wages all count.",
+        deadline: "By the 10th of the month after the change",
+      },
+    ],
+    doNotReport: ["Home, car, and personal items (not counted as Extra Help resources)"],
+    channel: {
+      label: "my Social Security / SSA",
+      url: "https://www.ssa.gov/medicare/part-d-extra-help",
+      phone: "800-772-1213",
+    },
   },
   SECTION8: {
     code: "SECTION8",
@@ -341,7 +439,10 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
 };
 
 export function scheduleFor(program: string): ProgramSchedule | null {
-  return REPORTING_SCHEDULES[programCodeKey(program)] ?? null;
+  const key = programCodeKey(program);
+  if (REPORTING_SCHEDULES[key]) return REPORTING_SCHEDULES[key];
+  if (isMedicaidFamilyProgram(program)) return REPORTING_SCHEDULES.MEDICAIDABD ?? null;
+  return null;
 }
 
 // ---------------------------------------------------------------------------

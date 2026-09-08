@@ -6,11 +6,12 @@ import {
 } from "@/lib/alerts/eligibility-loss-scenarios";
 import Alert from "@/lib/db/models/Alert";
 import { SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
+import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
 const TWP_SERVICE_CENTS = 1210_00;
-const ABD_INCOME_CENTS = 1350_00;
+const ABD_INCOME_CENTS = 1330_00;
 const WAIVER_INCOME_CENTS = 2982_00;
 const QMB_INCOME_CENTS = 1350_00;
 const EXTRA_HELP_INCOME_CENTS = 2015_00;
@@ -35,13 +36,7 @@ function hasProgram(programs: string[], code: string): boolean {
 }
 
 function enrolledFor(scenario: EligibilityLossScenario, programSet: string[]): boolean {
-  return scenario.programs.some((p) => {
-    const u = p.toUpperCase();
-    if (u === "EXTRAHELP") {
-      return programSet.some((x) => x.includes("EXTRA") || x === "LIS" || x === "EXTRAHELP");
-    }
-    return programSet.includes(u);
-  });
+  return scenario.programs.some((p) => enrolledMatchesProgram(programSet, p));
 }
 
 function alertMessage(s: EligibilityLossScenario): string {
@@ -94,11 +89,13 @@ export async function evaluateScenarioAlerts(
     if (countable >= Math.floor(SSI_FBR_INDIVIDUAL_CENTS * 0.85)) consider("ssi_countable_income_fbr");
     if (assets > Math.floor(RESOURCE_2K_CENTS * 0.85)) consider("ssi_resources_2k");
   }
-  if (hasProgram(input.programs, "Medicaid") || hasProgram(input.programs, "MAWD")) {
+  if (hasProgram(input.programs, "MedicaidABD") || hasProgram(input.programs, "Medicaid")) {
     if (countable >= Math.floor(ABD_INCOME_CENTS * 0.85) || gross >= Math.floor(ABD_INCOME_CENTS * 0.85)) {
       consider("abd_income_limit");
     }
     if (assets > Math.floor(RESOURCE_2K_CENTS * 0.85)) consider("abd_resources_2k");
+  }
+  if (hasProgram(input.programs, "MedicaidWaiver") || hasProgram(input.programs, "Medicaid")) {
     if (gross >= Math.floor(WAIVER_INCOME_CENTS * 0.85) || countable >= Math.floor(WAIVER_INCOME_CENTS * 0.85)) {
       consider("waiver_income_2982");
     }
@@ -106,8 +103,15 @@ export async function evaluateScenarioAlerts(
       if (hasProgram(input.programs, "SSDI") || hasProgram(input.programs, "DAC")) {
         consider("ssdi_waiver_twilight");
       }
-      consider("mawd_transition");
     }
+  }
+  if (
+    hasProgram(input.programs, "MedicaidABD") ||
+    hasProgram(input.programs, "MedicaidWaiver") ||
+    hasProgram(input.programs, "MAWD") ||
+    hasProgram(input.programs, "Medicaid")
+  ) {
+    if (earned >= SGA_NONBLIND_CENTS) consider("mawd_transition");
   }
   if (
     hasProgram(input.programs, "QMB") &&

@@ -10,20 +10,9 @@ import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thre
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 import { syncRenewalDeadlines } from "@/lib/reporting/sync-renewal-deadlines";
+import { STORED_PROGRAMS } from "@/lib/programs";
 
-const programEnum = z.enum([
-  "SSI",
-  "SSDI",
-  "SNAP",
-  "Medicaid",
-  "Section8",
-  "TANF",
-  "WIC",
-  "LIHEAP",
-  "ACA",
-  "VA",
-  "ABLE",
-]);
+const programEnum = z.enum(STORED_PROGRAMS);
 
 const enrollmentSchema = z.object({
   program: programEnum,
