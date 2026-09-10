@@ -58,7 +58,7 @@ export function InlineLoginForm() {
           email,
           code,
           redirect: false,
-          callbackUrl: "/",
+          callbackUrl: "/dashboard",
         }),
         new Promise<null>((_, reject) =>
           setTimeout(() => reject(new Error("timeout")), SIGN_IN_TIMEOUT_MS),
@@ -68,7 +68,7 @@ export function InlineLoginForm() {
         setError("That code is invalid or expired. Request a new one.");
         return;
       }
-      window.location.assign(sameOriginDest(res?.url, "/"));
+      window.location.assign(sameOriginDest(res?.url, "/dashboard"));
       // If navigation never unloads the page, recover instead of spinning forever.
       await new Promise((r) => setTimeout(r, 8_000));
       setError("Sign-in is taking longer than expected. Please try again.");

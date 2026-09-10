@@ -38,7 +38,6 @@ function ProgramGlyph({ code }: { code: string }) {
     case "MAWD":
     case "QMB":
       return <IconHeart {...props} fill={color} />;
-    case "SECTION8":
     case "ABLE":
       return <IconHome {...props} />;
     default:

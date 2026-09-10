@@ -47,7 +47,6 @@ const PA_DHS_TANF = "https://www.dhs.pa.gov/Services/Assistance/Pages/Cash-Assis
 const PA_DHS_LIHEAP = "https://www.dhs.pa.gov/Services/Assistance/Pages/LIHEAP.aspx";
 const PA_WIC = "https://www.pawic.com/";
 const PENNIE = "https://www.pennie.com/";
-const HUD_HCV = "https://www.hud.gov/program_offices/public_indian_housing/programs/hcv";
 const VA_PENSION = "https://www.va.gov/pension/eligibility/";
 const PA_ABLE = "https://www.paable.gov/";
 const MEDICARE_EXTRA_HELP = "https://www.ssa.gov/medicare/part-d-extra-help";
@@ -57,9 +56,8 @@ const MEDICARE_EXTRA_HELP = "https://www.ssa.gov/medicare/part-d-extra-help";
  *
  * 2026 federal and Pennsylvania eligibility limits were sourced from the
  * "Complete Benefits Breakdown — Pennsylvania, 2026" reference (SSA Red Book /
- * 2026 COLA, USDA FNS FY2026 SNAP, HHS/ASPE 2026 poverty guidelines, HUD FY2026 /
- * HOTMA, VA 2026 rate tables, IRS/CRS 2026 ACA, and PA DHS / PA Dept. of Health
- * program charts). These are informational ceilings only; SSA, PA DHS, HUD, VA,
+ * 2026 COLA, USDA FNS FY2026 SNAP, HHS/ASPE 2026 poverty guidelines, VA 2026 rate tables, IRS/CRS 2026 ACA, and PA DHS / PA Dept. of Health
+ * program charts). These are informational ceilings only; SSA, PA DHS, VA,
  * and county assistance offices make the actual eligibility determinations.
  * Verify annually with official sources at each program's update cycle.
  *
@@ -523,29 +521,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
   },
 
   // ===========================================================================
-  // 5. Section 8 — Housing Choice Voucher (HUD, HOTMA asset rules)
-  //    Income limits are AMI-based (vary by county) so only the asset cap is
-  //    seeded as a live, dollar-fixed limit.
-  // ===========================================================================
-  {
-    systemKey: "section8_net_assets_2026",
-    program: "Section8",
-    state: null,
-    thresholdType: "asset_balance",
-    limitCents: 105574_00,
-    comparison: "lte",
-    warnAtPercent: 0.9,
-    effectiveFrom: FROM_2026,
-    effectiveTo: null,
-    label: "Section 8 (HCV) — net family asset limit (HOTMA, 2026)",
-    description:
-      "2026 HOTMA net family asset limit: $105,574. Over this, you may be ineligible or have income imputed on the excess. Counts bank/investment balances and real property. Income eligibility is separate and based on Area Median Income (≤50% AMI is the basic line; ≥75% of new vouchers go to ≤30% AMI households) — those dollar figures vary widely by county, so check your local Public Housing Authority." +
-      ESTIMATE_NOTE,
-    sourceUrl: HUD_HCV,
-  },
-
-  // ===========================================================================
-  // 6. TANF — cash assistance (PA, Group 2 figures incl. Philadelphia)
+  // 5. TANF — cash assistance (PA, Group 2 figures incl. Philadelphia)
   // ===========================================================================
   {
     systemKey: "pa_tanf_income_g2_2026",

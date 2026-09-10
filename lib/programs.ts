@@ -9,7 +9,6 @@ export const PROGRAMS = [
   "MAWD",
   "QMB",
   "ExtraHelp",
-  "Section8",
   "TANF",
   "WIC",
   "LIHEAP",
@@ -21,7 +20,8 @@ export const PROGRAMS = [
 export type Program = (typeof PROGRAMS)[number];
 
 /** Older enrollment value kept so existing beneficiary records still load. */
-export const LEGACY_PROGRAMS = ["Medicaid"] as const;
+/** Older enrollment values kept so existing beneficiary records still load. */
+export const LEGACY_PROGRAMS = ["Medicaid", "Section8"] as const;
 export type LegacyProgram = (typeof LEGACY_PROGRAMS)[number];
 
 export const STORED_PROGRAMS = [...PROGRAMS, ...LEGACY_PROGRAMS] as const;
@@ -86,7 +86,7 @@ export function expandEnrolledProgramKeys(programs: readonly string[]): string[]
   const keys = new Set<string>();
   for (const p of programs) {
     const k = String(p ?? "").trim().toUpperCase();
-    if (!k) continue;
+    if (!k || k === "SECTION8") continue;
     keys.add(k);
   }
   if (keys.has("MEDICAID")) {
@@ -104,7 +104,7 @@ export function expandLegacyMedicaidSelection(programs: readonly string[]): stri
       hadGeneric = true;
       continue;
     }
-    if (p) next.add(p);
+    if (p && String(p).trim().toUpperCase() !== "SECTION8") next.add(p);
   }
   if (hadGeneric) {
     for (const p of MEDICAID_FAMILY_PROGRAMS) next.add(p);

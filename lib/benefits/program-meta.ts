@@ -1,15 +1,15 @@
 /**
  * Display + guidance metadata for each benefit program, keyed by the UPPERCASE
- * program code stored on Threshold.program (e.g. "SECTION8"). Used by the
+ * program code stored on Threshold.program (e.g. "SNAP"). Used by the
  * per-program benefit detail pages and their "Ask AI how to fix" deep-links.
  *
- * Note: Threshold.program is `uppercase: true`, so the enrolled program
- * "Section8" is stored as "SECTION8". Look up with `programMetaFor()`.
+ * Note: Threshold.program is `uppercase: true`, so enrolled programs like
+ * "SNAP" are stored as "SNAP". Look up with `programMetaFor()`.
  */
 export type ProgramMeta = {
   /** Uppercase code as stored on Threshold.program. */
   code: string;
-  /** Short human label, e.g. "Section 8". */
+  /** Short human label, e.g. "SNAP". */
   label: string;
   /** Full program name. */
   fullName: string;
@@ -133,17 +133,6 @@ const META: Record<string, ProgramMeta> = {
     reporting:
       "Report income, resource, marital-status, address, and household changes to SSA by the 10th of the month after the change.",
     officialUrl: "https://www.ssa.gov/medicare/part-d-extra-help",
-  },
-  SECTION8: {
-    code: "SECTION8",
-    label: "Section 8",
-    fullName: "Housing Choice Voucher (HCV)",
-    agency: "Local Public Housing Authority (HUD)",
-    blurb:
-      "Rental assistance. Income limits are based on Area Median Income (varies by county). HOTMA sets a net family asset limit.",
-    reporting:
-      "Report income and household-composition changes; PHA approval needed to add members. Annual recertification and unit inspection.",
-    officialUrl: "https://www.hud.gov/program_offices/public_indian_housing/programs/hcv",
   },
   TANF: {
     code: "TANF",

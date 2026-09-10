@@ -1,18 +1,15 @@
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isPublicPath } from "@/lib/auth/public-path";
 import { onboardingPathForStep } from "@/lib/onboarding/steps";
 
-const publicPrefixes = [
-  "/",
-  "/about",
-  "/auth",
-  "/resources",
-  "/legal",
-  "/invite",
-  "/status",
-  "/apply",
-];
+function continueIntoApp(onboardingStep: string, req: NextRequest) {
+  if (onboardingStep && onboardingStep !== "complete") {
+    return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
+  }
+  return NextResponse.redirect(new URL("/dashboard", req.url));
+}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -65,14 +62,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (publicPrefixes.some((p) => pathname.startsWith(p))) {
-    if (pathname.startsWith("/auth") && isLoggedIn) {
-      if (onboardingStep && onboardingStep !== "complete") {
-        return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
+  // Route handlers enforce their own auth and return JSON 401s. Still gate
+  // /api/admin here so a missing cookie cannot probe that surface.
+  if (pathname.startsWith("/api/")) {
+    if (pathname.startsWith("/api/admin")) {
+      const isAdmin = token?.isAdmin === true && !token?.impersonatorId;
+      if (!isAdmin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
-      if (onboardingStep === "complete") {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
+    }
+    return NextResponse.next();
+  }
+
+  if (isPublicPath(pathname)) {
+    if (isLoggedIn && (pathname === "/" || pathname.startsWith("/auth"))) {
+      return continueIntoApp(onboardingStep, req);
     }
     return NextResponse.next();
   }
@@ -87,12 +91,9 @@ export async function middleware(req: NextRequest) {
   // real admin who is NOT currently impersonating may reach it — during
   // impersonation the token carries the target's (non-admin) isAdmin plus an
   // impersonatorId, so both conditions must hold.
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+  if (pathname.startsWith("/admin")) {
     const isAdmin = token?.isAdmin === true && !token?.impersonatorId;
     if (!isAdmin) {
-      if (pathname.startsWith("/api/")) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
@@ -100,8 +101,7 @@ export async function middleware(req: NextRequest) {
   if (
     onboardingStep &&
     onboardingStep !== "complete" &&
-    !pathname.startsWith("/onboarding") &&
-    !pathname.startsWith("/api/")
+    !pathname.startsWith("/onboarding")
   ) {
     return NextResponse.redirect(new URL(onboardingPathForStep(onboardingStep), req.url));
   }

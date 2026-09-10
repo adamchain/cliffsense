@@ -115,7 +115,6 @@ const CHANGE_REPORT: FillableFormDef = {
           { value: "dhs", label: "PA DHS (SNAP / Cash / Medicaid)" },
           { value: "ssa", label: "Social Security (SSI / SSDI)" },
           { value: "pennie", label: "Pennie (ACA)" },
-          { value: "housing", label: "Housing authority (Section 8)" },
           { value: "other", label: "Other" },
         ] },
         { name: "reportedDate", label: "Date you are reporting", type: "date", prefill: "today", width: "half" },

@@ -25,8 +25,8 @@ describe("medicaid program families", () => {
     );
   });
 
-  it("recognizes the Medicaid family", () => {
-    expect(isMedicaidFamilyProgram("MAWD")).toBe(true);
-    expect(isMedicaidFamilyProgram("SSI")).toBe(false);
+  it("drops retired Section 8 enrollments from selectable lists", () => {
+    expect(expandEnrolledProgramKeys(["Section8", "SNAP"])).toEqual(["SNAP"]);
+    expect(expandLegacyMedicaidSelection(["Section8", "SSI"]).sort()).toEqual(["SSI"]);
   });
 });

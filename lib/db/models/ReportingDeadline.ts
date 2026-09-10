@@ -9,7 +9,7 @@ const reportingDeadlineSchema = new Schema(
   {
     beneficiaryId: { type: Schema.Types.ObjectId, ref: "Beneficiary", required: true, index: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    /** UPPERCASE program code (e.g. "SNAP", "SECTION8"), or null for general. */
+    /** UPPERCASE program code (e.g. "SNAP"), or null for general. */
     program: { type: String, default: null, trim: true, uppercase: true },
     /** Calendar date the report/renewal is due (UTC midnight). */
     dueDate: { type: Date, required: true },

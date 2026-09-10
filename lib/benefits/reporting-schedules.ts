@@ -12,7 +12,7 @@ import { isMedicaidFamilyProgram } from "@/lib/programs";
  *                   gets clawed back ("report now to stay accurate" framing).
  *
  * Procedural details vary by case type and several rules are mid-transition in
- * 2026 (HOTMA rollout, SNAP ABAWD, Pennie repayment caps) — always confirm with
+ * 2026 (SNAP ABAWD, Pennie repayment caps) — always confirm with
  * the administering agency.
  */
 export type ReportTrack = "scheduled" | "event";
@@ -277,38 +277,6 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       phone: "800-772-1213",
     },
   },
-  SECTION8: {
-    code: "SECTION8",
-    scheduled: [
-      {
-        title: "Annual reexamination + NSPIRE inspection",
-        detail:
-          "Your Public Housing Authority reexamines income/composition once a year and inspects the unit. Dates are PHA-set.",
-        deadline: "On the schedule set by your PHA",
-      },
-    ],
-    eventTriggered: [
-      {
-        title: "Household composition change → always report",
-        detail:
-          "Adding/removing a member, a live-in aide, or a foster child/adult. Under HOTMA, a 0% threshold applies — an interim reexam happens even if rent doesn't move.",
-        deadline: "Per your PHA's interim-reporting rule",
-      },
-      {
-        title: "Income decrease of 10%+ → report to lower your rent",
-        detail:
-          "Report a 10%+ income drop to get a rent reduction, effective the first of the month after the change if reported timely.",
-        deadline: "Report promptly to avoid a back-charge",
-      },
-    ],
-    doNotReport: [
-      "A mid-year raise generally doesn't raise your rent — earned-income increases are excluded from interim reexams and picked up at the next annual",
-      "Income changes under the 10% de minimis don't trigger an interim",
-    ],
-    channel: { label: "Your PHA portal / PHA office" },
-    caveat:
-      "HOTMA is in phased rollout (full multifamily compliance Jan 1, 2027) and PHA policies vary — confirm your PHA's current rules.",
-  },
   TANF: {
     code: "TANF",
     scheduled: [
@@ -471,7 +439,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: Y("Report promptly — work and earnings are the core SSDI report."),
       SNAP: M("Only if total gross income rises above 130% FPL for your size."),
       MEDICAID: Y("Report income changes within ~10 days."),
-      SECTION8: M("A raise waits for the annual; report an income drop ≥10% to lower rent."),
       TANF: Y("Report budget-affecting changes within ~10 days."),
       WIC: N("Routine income changes wait for your next certification."),
       LIHEAP: N("No ongoing reporting after you're awarded for the season."),
@@ -487,7 +454,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: Y("Report the earnings change promptly."),
       SNAP: N("Waits for the SAR as long as you stay under 130% FPL."),
       MEDICAID: Y("Report income changes within ~10 days."),
-      SECTION8: N("Earned-income increases are excluded until your annual reexam."),
       TANF: M("Report if it affects your cash budget; the 50% disregard may absorb it."),
       WIC: N("Routine fluctuation waits for the next cert."),
       LIHEAP: N("No reporting after award."),
@@ -503,7 +469,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: N("No asset test for SSDI — nothing to report."),
       SNAP: N("PA has no SNAP asset test for most households."),
       MEDICAID: M("MAGI: no. ABD/LTC: yes, near the $2,000 limit."),
-      SECTION8: M("Report if net assets exceed $105,574 (HOTMA)."),
       TANF: Y("Report as assets approach the $1,000 resource limit."),
       WIC: N("No asset test."),
       LIHEAP: N("No asset test."),
@@ -519,7 +484,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: M("Report if it affects family/auxiliary benefits."),
       SNAP: N("A member moving in waits for the SAR (simplified reporting)."),
       MEDICAID: Y("Household-size changes affect eligibility — report within ~10 days."),
-      SECTION8: Y("Always report composition changes (HOTMA 0% threshold)."),
       TANF: Y("Report household changes within ~10 days."),
       WIC: N("Not an ongoing WIC report."),
       LIHEAP: N("No reporting after award."),
@@ -535,7 +499,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: Y("Report the address change."),
       SNAP: Y("Report the address (no benefit change mid-cycle, but they need it)."),
       MEDICAID: Y("Report the address change within ~10 days."),
-      SECTION8: Y("A move affects your voucher — coordinate with your PHA."),
       TANF: Y("Report the address change."),
       WIC: Y("Update your contact info with the clinic."),
       LIHEAP: N("No reporting after award; update next application."),
@@ -551,7 +514,6 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSDI: N("No asset test and passive income doesn't affect SSDI."),
       SNAP: Y("Counts as income for SNAP."),
       MEDICAID: Y("Counts as income — report within ~10 days."),
-      SECTION8: Y("Counts toward your rent calculation."),
       TANF: Y("Counts as income — report it."),
       WIC: M("Counts toward the income test, re-checked at cert."),
       LIHEAP: N("No reporting after award."),

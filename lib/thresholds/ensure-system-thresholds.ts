@@ -8,7 +8,12 @@ import { SYSTEM_THRESHOLD_SEEDS, thresholdSeedToDoc } from "@/lib/thresholds/sys
  * matches non-overridden rows, and a duplicate-key error (the overridden row
  * already exists under this `systemKey`) is swallowed rather than clobbering it.
  */
+const RETIRED_SYSTEM_KEYS = ["section8_net_assets_2026"];
+
 export async function ensureSystemThresholdsSeeded(): Promise<void> {
+  if (RETIRED_SYSTEM_KEYS.length) {
+    await Threshold.deleteMany({ systemKey: { $in: RETIRED_SYSTEM_KEYS } });
+  }
   for (const seed of SYSTEM_THRESHOLD_SEEDS) {
     try {
       await Threshold.updateOne(

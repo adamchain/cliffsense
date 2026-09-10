@@ -4,7 +4,7 @@ import type { CatalogForm } from "@/lib/forms/types";
 /* ---------------------------------------------------------------------------
  * Catalog of official reporting and reapply/recertification forms by program.
  * PA-administered programs (SNAP, Medicaid, TANF, WIC, LIHEAP, ACA→Pennie)
- * use Pennsylvania forms/portals; federal programs (SSI, SSDI, Section 8, VA,
+ * use Pennsylvania forms/portals; federal programs (SSI, SSDI, VA,
  * ABLE) use the federal agency form. Links point to official sources only.
  *
  * NOTE: links were located via search of the official domains; this app's
@@ -166,26 +166,6 @@ export const FORMS_CATALOG: CatalogForm[] = [
     frequency: "Annual", officialUrl: "https://www.compass.state.pa.us/compass.web/AFS/RenewYourBenefits", online: true,
   },
 
-  // ----------------------------- Section 8 -----------------------------
-  {
-    id: "s8-hud9886", program: "Section8", category: "reporting", formNumber: "HUD-9886",
-    title: "Authorization for the Release of Information", agency: "U.S. HUD",
-    purpose: "Authorize the housing authority to verify your income and eligibility.",
-    frequency: "At each recert", officialUrl: "https://www.hud.gov/sites/dfiles/OCHCO/documents/9886.pdf",
-  },
-  {
-    id: "s8-interim", program: "Section8", category: "reporting",
-    title: "Interim recertification (report a change)", agency: "Local Public Housing Authority",
-    purpose: "Report income/household changes between annual reviews — packet issued by your PHA.",
-    frequency: "As needed", officialUrl: "https://www.hud.gov/helping-americans/public-indian-housing-systems-pic-50058-resources", online: true,
-  },
-  {
-    id: "s8-hud50058", program: "Section8", category: "reapply", formNumber: "HUD-50058",
-    title: "Family Report", agency: "U.S. HUD",
-    purpose: "The household/income/rent record the PHA submits at annual recertification.",
-    frequency: "Annual", officialUrl: "https://www.hud.gov/sites/dfiles/OCHCO/documents/50058.PDF",
-  },
-
   // ----------------------------- TANF -----------------------------
   {
     id: "tanf-pa564", program: "TANF", category: "reporting", formNumber: "PA 564 (SAR)",
@@ -315,7 +295,6 @@ export const PROGRAM_LABELS: Record<Program, string> = {
   MAWD: "MAWD — Workers with Disabilities",
   QMB: "QMB — Medicare Savings Program",
   ExtraHelp: "Medicare Extra Help (LIS)",
-  Section8: "Section 8 — Housing Choice Voucher",
   TANF: "TANF — Cash Assistance",
   WIC: "WIC — Women, Infants & Children",
   LIHEAP: "LIHEAP — Home energy assistance",

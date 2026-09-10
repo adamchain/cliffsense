@@ -82,24 +82,6 @@ export function filingLocationForEvent(input: {
     };
   }
 
-  if (code === "SECTION8") {
-    const query = "Housing Authority of the City of Pittsburgh, Pittsburgh, PA";
-    const lat = 40.4406;
-    const lng = -79.9959;
-    const urls = mapsUrls(query, lat, lng);
-    return {
-      name: channel ?? "Local housing authority",
-      role: "HUD · Housing Choice Voucher",
-      line1: "Your Public Housing Authority",
-      line2: "Confirm the office on your voucher packet",
-      onlineFirst: false,
-      mapQuery: query,
-      lat,
-      lng,
-      ...urls,
-    };
-  }
-
   const query = "Pennsylvania Capitol Complex, Harrisburg, PA";
   const lat = 40.264;
   const lng = -76.8839;

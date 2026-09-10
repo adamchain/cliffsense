@@ -6,14 +6,15 @@ import { useSearchParams } from "next/navigation";
 import { AuthLoadingOverlay } from "@/components/auth/auth-loading-overlay";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
 import { sameOriginDest } from "@/lib/auth/redirect";
+import { appPathAfterLogin } from "@/lib/auth/public-path";
 import { IconLock, IconShieldCheck } from "@tabler/icons-react";
 
 const SIGN_IN_TIMEOUT_MS = 20_000;
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
-  /** Default `/` so middleware can send incomplete onboarding to the right step after login. */
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  /** Incomplete onboarding is sent to the right step by middleware after login. */
+  const callbackUrl = appPathAfterLogin(searchParams.get("callbackUrl"));
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -75,7 +76,7 @@ export default function SignInPage() {
         setError("That code is invalid or expired. Request a new one.");
         return;
       }
-      window.location.assign(sameOriginDest(res?.url, sameOriginDest(callbackUrl, "/")));
+      window.location.assign(appPathAfterLogin(sameOriginDest(res?.url, callbackUrl)));
       await new Promise((r) => setTimeout(r, 8_000));
       setError("Sign-in is taking longer than expected. Please try again.");
     } catch (err) {
