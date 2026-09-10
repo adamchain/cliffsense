@@ -37,7 +37,7 @@ export async function sendAlertPushForNewAlerts(alertIds: string[]): Promise<num
           ? "MyBenefitsPA: threshold reached"
           : "MyBenefitsPA: heads up",
       body: String(a.message ?? ""),
-      url: `${appUrl()}/alerts`,
+      url: `${appUrl()}/settings#alerts`,
       tag: String(a._id),
     });
     if (res.skipped) {

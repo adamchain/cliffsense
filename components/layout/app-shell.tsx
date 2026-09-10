@@ -32,8 +32,7 @@ function SidebarGroup({
   const hasChildren = !!section.children?.length;
   const Icon = section.icon;
   const parentActive = !hasChildren && active;
-  const containsAlerts =
-    section.href === "/alerts" || (section.children ?? []).some((c) => c.href === "/alerts");
+  const containsAlerts = section.href === "/settings";
 
   return (
     <div>
@@ -62,7 +61,7 @@ function SidebarGroup({
               >
                 <ChildIcon size={14} stroke={childActive ? 2 : 1.75} aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{label}</span>
-                {href === "/alerts" && alertCount > 0 && (
+                {href === "/settings" && alertCount > 0 && (
                   <span className="cs-macos-sidebar-badge">
                     {alertCount > 9 ? "9+" : alertCount}
                   </span>
@@ -98,7 +97,7 @@ export function AppShell({
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
   const leaves = flattenSections(ALL_SECTIONS);
   const drawerNav = [
-    ...leaves.filter((n) => n.href !== "/settings"),
+    ...leaves,
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: IconShieldLock }] : []),
   ];
   // Five prototype tabs; remaining destinations live in the hamburger drawer.
@@ -154,7 +153,7 @@ export function AppShell({
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
-              href="/alerts"
+              href="/settings#alerts"
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
               aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
             >

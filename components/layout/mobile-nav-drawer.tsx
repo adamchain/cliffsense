@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { IconMenu2, IconSettings, IconX } from "@tabler/icons-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import type { NavItem } from "./mobile-tab-bar";
 
 /**
@@ -58,7 +58,7 @@ export function MobileNavDrawer({
             <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-6" aria-label="Main">
               {nav.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
-                const showCount = href === "/alerts" && alertCount > 0;
+                const showCount = href === "/settings" && alertCount > 0;
                 return (
                   <Link
                     key={href}
@@ -85,23 +85,6 @@ export function MobileNavDrawer({
                   </Link>
                 );
               })}
-              <Link
-                href="/settings"
-                onClick={() => setOpen(false)}
-                className={`mt-1 flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
-                  isActive("/settings")
-                    ? "text-[var(--color-cs-brand)]"
-                    : "text-[var(--color-cs-text-secondary)] hover:bg-[var(--color-cs-nav-hover)] hover:text-[var(--color-cs-text)]"
-                }`}
-              >
-                <IconSettings
-                  size={20}
-                  stroke={1.7}
-                  className={isActive("/settings") ? "fill-current" : undefined}
-                  aria-hidden
-                />
-                Settings
-              </Link>
             </nav>
           </div>
     </div>

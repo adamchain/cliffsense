@@ -42,7 +42,13 @@ const STATUS: Record<string, { label: string; className: string }> = {
   concern: { label: "Review", className: "bg-[#fde7e9] text-[#a4262c]" },
 };
 
-export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null }) {
+export function ThresholdsView({
+  beneficiaryId,
+  embedded = false,
+}: {
+  beneficiaryId: string | null;
+  embedded?: boolean;
+}) {
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +182,11 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
   return (
     <>
       <div data-tour="limits-page" className="mb-3">
-      <h1 className="cs-big-title mb-2">Limits</h1>
+      {embedded ? (
+        <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">Limits</h2>
+      ) : (
+        <h1 className="cs-big-title mb-2">Limits</h1>
+      )}
       <p className="max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
         Wallet cards for each enrolled program, plus the full limit table below. Figures are
         informational — always confirm with a benefits counselor or agency.
@@ -196,8 +206,8 @@ export function ThresholdsView({ beneficiaryId }: { beneficiaryId: string | null
       {data && data.programsEnrolled.length === 0 && (
         <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
           Select enrolled programs in{" "}
-          <Link href="/onboarding/benefits" className="text-[var(--color-cs-brand)] hover:underline">
-            onboarding
+          <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
+            Programs
           </Link>{" "}
           to attach system reference limits.
         </div>

@@ -19,7 +19,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     href: "/dashboard",
     target: null,
     title: "Quick start tour",
-    body: "Five minutes to learn the app. We'll walk through your home screen, programs, money, limits, calendar, and alerts — the same path as Help → Quick start.",
+    body: "Five minutes to learn the app. We'll walk through your home screen, programs, money, limits, calendar, and alerts.",
   },
   {
     id: "home",
@@ -51,10 +51,10 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
   },
   {
     id: "limits",
-    href: "/thresholds",
+    href: "/settings",
     target: "limits-page",
     title: "Limits",
-    body: "Every reference limit for your programs lives here. Attach or detach system limits, add custom ones, and watch warning lines before a hard cap.",
+    body: "Every reference limit for your programs lives here, on the same page as alerts, programs, and notifications. Attach or detach system limits, add custom ones, and watch warning lines before a hard cap.",
   },
   {
     id: "calendar",
@@ -65,10 +65,10 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
   },
   {
     id: "alerts",
-    href: "/alerts",
+    href: "/settings",
     target: "alerts-page",
     title: "Early alerts",
-    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here — plus optional email and push from Settings.",
+    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here — plus optional email and push further down this page.",
   },
   {
     id: "settings",

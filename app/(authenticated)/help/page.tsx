@@ -200,7 +200,7 @@ export default function HelpPage() {
           <Tip>
             Already set up but the dashboard looks empty? Make sure at least one bank is{" "}
             <Link href="/transactions" className={linkCls}>connected</Link> and your{" "}
-            <Link href="/thresholds" className={linkCls}>programs</Link> are confirmed — limits only
+            <Link href="/settings#programs" className={linkCls}>programs</Link> are confirmed — limits only
             appear once both are in place.
           </Tip>
         </Section>
@@ -297,7 +297,7 @@ export default function HelpPage() {
         {/* LIMITS */}
         <Section id="limits" icon={<IconTarget size={18} stroke={1.8} />} title="Limits">
           <p>
-            <Link href="/thresholds" className={linkCls}>Limits</Link> lists the reference limits for
+            <Link href="/settings#limits" className={linkCls}>Limits</Link> lists the reference limits for
             your enrolled programs, plus any you add yourself. Each shows its dollar cap, source, and
             current status.
           </p>
@@ -363,7 +363,7 @@ export default function HelpPage() {
           </ul>
           <p>You can receive them three ways:</p>
           <ul className="space-y-2">
-            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/alerts" className={linkCls}>Alerts</Link> page; acknowledge or resolve each one.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/settings#alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a real-time note on a breach, plus optional daily or weekly digests.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Push</span> — install the app to your home screen and enable push in <Link href="/settings" className={linkCls}>Settings</Link>.</li>
           </ul>

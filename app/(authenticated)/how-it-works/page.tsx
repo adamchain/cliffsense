@@ -233,7 +233,7 @@ export default function HowItWorksPage() {
           <p>
             With estimates and projections in hand, the brain compares them against each limit that
             applies to you. Which limits load is driven by your enrolled{" "}
-            <Link href="/thresholds" className={linkCls}>programs</Link> plus any custom caps you add;
+            <Link href="/settings#programs" className={linkCls}>programs</Link> plus any custom caps you add;
             a limit you&apos;ve detached is simply skipped.
           </p>
           <p>Each evaluated limit lands in one of three states:</p>
@@ -253,11 +253,11 @@ export default function HowItWorksPage() {
         <Section id="stage-6" icon={<IconBell size={18} stroke={1.8} />} title="6 · Alert — telling you at the right moment">
           <p>
             When a limit moves into Watch or Over, the final stage raises an{" "}
-            <Link href="/alerts" className={linkCls}>alert</Link>. Crucially, it de-duplicates:
+            <Link href="/settings#alerts" className={linkCls}>alert</Link>. Crucially, it de-duplicates:
             you&apos;re pinged when something <span className="font-semibold text-[var(--color-cs-text)]">changes or escalates</span>,
             not for the same issue on every daily sync.
           </p>
-          <p>Alerts reach you three ways, each configurable in <Link href="/settings" className={linkCls}>Settings</Link>:</p>
+          <p>Alerts reach you three ways, each configurable on the <Link href="/settings#notifications" className={linkCls}>Limits</Link> page:</p>
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the Alerts page.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a real-time note on a breach, plus optional digests.</li>

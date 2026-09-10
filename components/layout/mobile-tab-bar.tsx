@@ -35,7 +35,7 @@ export function MobileTabBar({
       >
         {primary.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
-          const showCount = href === "/alerts" && alertCount > 0;
+          const showCount = href === "/settings" && alertCount > 0;
           return (
             <Link
               key={href}

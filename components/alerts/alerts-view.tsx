@@ -104,9 +104,11 @@ function isTimeSensitive(level: string, trigger: string): boolean {
 export function AlertsView({
   beneficiaryId,
   reportingActions = [],
+  embedded = false,
 }: {
   beneficiaryId: string | null;
   reportingActions?: ReportingAction[];
+  embedded?: boolean;
 }) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -168,7 +170,11 @@ export function AlertsView({
     <div>
       <div data-tour="alerts-page">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="cs-big-title">Alerts</h1>
+        {embedded ? (
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">Alerts</h2>
+        ) : (
+          <h1 className="cs-big-title">Alerts</h1>
+        )}
         <div className="flex items-center gap-3">
           <button
             type="button"

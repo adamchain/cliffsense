@@ -160,7 +160,7 @@ export function SettingsForm({
         </div>
       </div>
 
-      <div className="border-t border-[var(--color-cs-sep)] pt-4" data-tour="settings-email">
+      <div className="border-t border-[var(--color-cs-sep)] pt-4" data-tour="settings-email" id="notifications">
         <h3 className="mb-3 text-[15px] font-semibold text-[var(--color-cs-text)]">
           Email notifications
         </h3>
