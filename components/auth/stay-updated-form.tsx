@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export function StayUpdatedForm() {
   const [name, setName] = useState("");
@@ -105,6 +106,12 @@ export function StayUpdatedForm() {
         >
           {loading ? "Submitting…" : "Keep me posted"}
         </button>
+        <Link
+          href="/auth/signin"
+          className="w-full rounded-sm border border-[var(--color-cs-border)] py-2.5 text-center text-sm font-medium text-[var(--color-cs-text)] hover:border-[var(--color-cs-brand)] hover:text-[var(--color-cs-brand)]"
+        >
+          Have early access? Log in
+        </Link>
       </form>
     </div>
   );

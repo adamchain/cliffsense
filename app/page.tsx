@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { HeroVideo } from "@/components/landing/hero-video";
 import { StayUpdatedForm } from "@/components/auth/stay-updated-form";
 
@@ -41,14 +40,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <footer className="relative pb-6 text-center">
-        <Link
-          href="/auth/signin"
-          className="text-[12px] text-white/35 hover:text-white/60 transition-colors"
-        >
-          Sign in
-        </Link>
-      </footer>
     </main>
   );
 }

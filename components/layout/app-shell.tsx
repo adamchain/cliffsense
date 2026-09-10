@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconBell, IconSettings, IconShieldLock } from "@tabler/icons-react";
 import { BrandMark } from "@/components/brand/brand-mark";
+import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
 import { TopbarControls } from "./topbar-controls";
@@ -193,6 +194,7 @@ export function AppShell({
         <div className="min-w-0 flex-1 px-4 pb-28 pt-2 sm:px-5 lg:p-6 lg:pb-6">{children}</div>
       </div>
 
+      <FeedbackWidget />
       <MobileTabBar
         primary={tabPrimary}
         more={tabMore}
