@@ -19,7 +19,13 @@ import {
   scheduleFor,
   type ReportTrack,
 } from "@/lib/benefits/reporting-schedules";
-import { calendarEventHref } from "@/lib/calendar/event-id";
+import {
+  DEADLINE_KIND_DEFAULT_TITLE,
+  DEADLINE_KIND_LABEL,
+  DEADLINE_KINDS,
+  isCaseClockKind,
+  type DeadlineKind,
+} from "@/lib/calendar/deadline-kinds";
 
 type UserDeadline = {
   _id: string;
@@ -105,8 +111,10 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     program: "",
     dueDate: "",
     track: "scheduled" as ReportTrack,
+    kind: "deadline" as string,
     title: "",
     note: "",
+    continuedBenefitsDate: "",
   });
 
   const load = useCallback(async () => {
@@ -169,8 +177,11 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const renewals = upcoming
     .filter((a) => a.kind === "renewal")
     .sort((a, b) => a.date.localeCompare(b.date));
+  const caseClocks = upcoming
+    .filter((a) => isCaseClockKind(a.kind))
+    .sort((a, b) => a.date.localeCompare(b.date));
   const otherDeadlines = upcoming
-    .filter((a) => a.kind !== "renewal")
+    .filter((a) => a.kind !== "renewal" && !isCaseClockKind(a.kind))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const itemsByDate = useMemo(() => {
@@ -186,6 +197,9 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const visibleRenewals = selectedDate
     ? renewals.filter((a) => a.date === selectedDate)
     : renewals;
+  const visibleClocks = selectedDate
+    ? caseClocks.filter((a) => a.date === selectedDate)
+    : caseClocks;
   const visibleOthers = selectedDate
     ? otherDeadlines.filter((a) => a.date === selectedDate)
     : otherDeadlines;
@@ -203,9 +217,12 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         program: form.program || null,
         dueDate: form.dueDate,
         track: form.track,
-        kind: "deadline",
+        kind: form.kind,
         title: form.title.trim(),
         note: form.note.trim() || undefined,
+        continuedBenefitsDate: form.kind === "appeal" && form.continuedBenefitsDate
+          ? form.continuedBenefitsDate
+          : undefined,
       }),
     });
     setSaving(false);
@@ -214,7 +231,15 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
       setError((j as { error?: string }).error ?? "Could not save");
       return;
     }
-    setForm({ program: "", dueDate: "", track: "scheduled", title: "", note: "" });
+    setForm({
+      program: "",
+      dueDate: "",
+      track: "scheduled",
+      kind: "deadline",
+      title: "",
+      note: "",
+      continuedBenefitsDate: "",
+    });
     setShowAdd(false);
     await load();
   }
@@ -271,7 +296,8 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         <Link href="/settings" className="text-[var(--color-cs-brand)]">
           Settings
         </Link>{" "}
-        stay at the top. Confirm every date with the agency.
+        stay at the top. Add interviews, verifications, premiums, CDRs, assessments, and appeal /
+        continued-benefit dates from the notice. Confirm every date with the agency.
       </p>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
@@ -320,16 +346,45 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
               </select>
             </label>
             <label className="block">
-              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Track</span>
+              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Clock type</span>
               <select
                 className="cs-input"
-                value={form.track}
-                onChange={(e) => setForm((f) => ({ ...f, track: e.target.value as ReportTrack }))}
+                value={form.kind}
+                onChange={(e) => {
+                  const kind = e.target.value as DeadlineKind;
+                  setForm((f) => ({
+                    ...f,
+                    kind,
+                    title:
+                      !f.title.trim() ||
+                      Object.values(DEADLINE_KIND_DEFAULT_TITLE).includes(f.title)
+                        ? DEADLINE_KIND_DEFAULT_TITLE[kind]
+                        : f.title,
+                  }));
+                }}
               >
-                <option value="scheduled">Scheduled paperwork</option>
-                <option value="event">Change report</option>
+                {DEADLINE_KINDS.filter((k) => k !== "renewal").map((k) => (
+                  <option key={k} value={k}>
+                    {DEADLINE_KIND_LABEL[k]}
+                  </option>
+                ))}
               </select>
             </label>
+            {form.kind === "appeal" && (
+              <label className="block">
+                <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
+                  Continued-benefits date (often earlier)
+                </span>
+                <input
+                  type="date"
+                  className="cs-input"
+                  value={form.continuedBenefitsDate}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, continuedBenefitsDate: e.target.value }))
+                  }
+                />
+              </label>
+            )}
           </div>
           <div className="mt-3 flex justify-end gap-2">
             <button type="button" className="text-[var(--color-cs-brand)]" onClick={() => setShowAdd(false)}>
@@ -431,6 +486,18 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                   selectedDate
                     ? "No renewals on this day."
                     : "No renewal dates yet — set them in Settings."
+                }
+                onDone={(id) => void setCompleted(id, true)}
+                onRemove={(id) => void remove(id)}
+              />
+              <AgendaBlock
+                label="Case clocks"
+                hint="From the notice"
+                items={visibleClocks}
+                empty={
+                  selectedDate
+                    ? "No interviews, premiums, CDRs, or appeals on this day."
+                    : "No case clocks yet. Tap + to add an interview, verification, premium, CDR, assessment, or appeal."
                 }
                 onDone={(id) => void setCompleted(id, true)}
                 onRemove={(id) => void remove(id)}

@@ -31,7 +31,58 @@ function isWageEvent(title: string, kind: string): boolean {
 }
 
 function isRenewalEvent(title: string, kind: string): boolean {
-  return kind === "renewal" || /\brenewal|redetermination|recert/i.test(title);
+  return kind === "renewal" || kind === "sar" || /\brenewal|redetermination|recert/i.test(title);
+}
+
+function kindHeadline(kind: string, wage: boolean, renewal: boolean): { headline: string; summary: string } {
+  switch (kind) {
+    case "interview":
+      return {
+        headline: "Prep for the interview",
+        summary: "Update the phone number on COMPASS, upload proofs first, and request a reschedule if the agency used an old number.",
+      };
+    case "verification":
+      return {
+        headline: "Prep the verification packet",
+        summary: "Send complete statements (every page), not screenshots. Call the CAO to confirm what is still missing.",
+      };
+    case "premium":
+      return {
+        headline: "Cure the MAWD premium",
+        summary: "Confirm arrears and due date, pay through an accepted channel, then apply for another Medicaid category if it cannot be cured.",
+      };
+    case "cdr":
+      return {
+        headline: "Prep the medical review",
+        summary: "Return CDR forms by the deadline, list providers, and keep treating-source records for the whole review period.",
+      };
+    case "assessment":
+      return {
+        headline: "Prep the waiver reassessment",
+        summary: "Financial renewal does not replace level-of-care. Reschedule immediately and gather current care records.",
+      };
+    case "appeal":
+    case "continued_benefits":
+      return {
+        headline: "Protect appeal and continued benefits",
+        summary: "The continued-benefits deadline is often earlier than the appeal deadline. File a new application in parallel.",
+      };
+    default:
+      return wage
+        ? {
+            headline: "Prep for wage reporting",
+            summary: "Pull pay stubs, confirm earned-income totals, then file on the agency site.",
+          }
+        : renewal
+          ? {
+              headline: "Prep for renewal",
+              summary: "Gather proof of income, resources, and household — then respond by the due date.",
+            }
+          : {
+              headline: "Prep for this deadline",
+              summary: "Use Vault, Forms, and Money to assemble what the agency will ask for.",
+            };
+  }
 }
 
 /**
@@ -139,17 +190,9 @@ export function buildEventPrepPackage(input: PrepInput): EventPrepPackage {
     href: "/advisor",
   });
 
-  const headline = wage
-    ? "Prep for wage reporting"
-    : renewal
-      ? "Prep for renewal"
-      : "Prep for this deadline";
-
-  const summary = wage
-    ? "Pull pay stubs, confirm earned-income totals, then file on the agency site."
-    : renewal
-      ? "Gather proof of income, resources, and household — then respond by the due date."
-      : "Use Vault, Forms, and Money to assemble what the agency will ask for.";
+  const headlinePack = kindHeadline(input.kind, wage, renewal);
+  const headline = headlinePack.headline;
+  const summary = headlinePack.summary;
 
   return { headline, summary, items };
 }

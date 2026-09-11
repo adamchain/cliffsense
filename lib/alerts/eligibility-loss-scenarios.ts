@@ -290,7 +290,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     level: "breach",
     risk: "Lump sums can push resources over $2,000 for SSI/ABD in the month received.",
     action: "Report within 10 days. Ask counsel about first-party SNT or ABLE before depositing to checking.",
-    autoDetect: false,
+    autoDetect: true,
   },
   {
     id: "reporting_household_change",

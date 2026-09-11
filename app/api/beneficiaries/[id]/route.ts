@@ -38,6 +38,7 @@ const patchSchema = z.object({
     .optional(),
   county: z.string().trim().optional(),
   householdSize: z.coerce.number().int().min(1).optional(),
+  twpMonthsUsed: z.coerce.number().int().min(0).max(9).optional(),
   benefitsEnrolled: z.array(enrollmentSchema).optional(),
 });
 
@@ -87,6 +88,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (parsed.data.state !== undefined) $set.state = parsed.data.state;
   if (parsed.data.county !== undefined) $set.county = parsed.data.county;
   if (parsed.data.householdSize !== undefined) $set.householdSize = parsed.data.householdSize;
+  if (parsed.data.twpMonthsUsed !== undefined) $set.twpMonthsUsed = parsed.data.twpMonthsUsed;
 
   let nextEnrolled: {
     program: string;
@@ -171,7 +173,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const ben = await Beneficiary.findById(id)
-    .select("firstName lastName dateOfBirth state county householdSize isOwner")
+    .select("firstName lastName dateOfBirth state county householdSize twpMonthsUsed isOwner")
     .lean();
   if (!ben) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

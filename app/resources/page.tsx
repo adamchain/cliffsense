@@ -2,6 +2,7 @@ import { SntEstimator } from "@/components/benefits/snt-estimator";
 import { MedicaidWorkRequirements } from "@/components/benefits/medicaid-work-requirements";
 import { SalarySntScenarios } from "@/components/benefits/salary-snt-scenarios";
 import { EligibilityLossCatalog } from "@/components/benefits/eligibility-loss-catalog";
+import { WorkPlanner } from "@/components/benefits/work-planner";
 
 type Row = { label: string; value: string; note?: string };
 
@@ -162,6 +163,8 @@ export default function ResourcesPage() {
       <MedicaidWorkRequirements />
 
       <SalarySntScenarios />
+
+      <WorkPlanner />
 
       <EligibilityLossCatalog />
 

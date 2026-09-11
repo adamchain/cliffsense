@@ -201,6 +201,45 @@ export function buildReportingActions(input: {
     });
   }
 
+  // --- Signal 4: unusual non-wage deposits (gifts, settlements, unlabeled transfers) ---
+  const LUMP_MIN_SINGLE_CENTS = 1000_00;
+  const LUMP_MIN_MONTH_CENTS = 1500_00;
+  const unusualCats = new Set(["other_income", "unclear", "transfer"]);
+  let unusualMonth = 0;
+  const unusualNames: string[] = [];
+  for (const t of transactions) {
+    if (t.pending || t.excludedFromThresholds) continue;
+    if (!t.date.startsWith(prefix)) continue;
+    if (t.amountCents >= 0) continue;
+    if (!unusualCats.has(t.userCategory)) continue;
+    const amt = Math.abs(t.amountCents);
+    unusualMonth += amt;
+    if (amt >= LUMP_MIN_SINGLE_CENTS) {
+      const label = payerName(t) || "deposit";
+      if (!unusualNames.includes(label)) unusualNames.push(label);
+    }
+  }
+  if (unusualMonth >= LUMP_MIN_MONTH_CENTS || unusualNames.length > 0) {
+    const means = rules.filter((r) => r.reportsAssetChange || r.reportsIncomeChange);
+    if (means.length > 0) {
+      actions.push({
+        id: `unusual-deposit:${prefix}`,
+        severity: "review",
+        title: "Unusual deposit — review before month-end",
+        detail:
+          unusualNames.length > 0
+            ? `Large non-wage inflow this month (${usd(unusualMonth)}) including: ${unusualNames.join(
+                ", ",
+              )}. Classify it (income, resource, reimbursement, or trust) before the next resource month. Do not give the money away or move it into someone else's account.`
+            : `Non-wage inflows this month total ${usd(
+                unusualMonth,
+              )}. Classify them (income vs resource vs reimbursement vs trust) before month-end. Spending later may not erase a receipt-month income event.`,
+        deadlineISO,
+        programs: means.map(guidance),
+      });
+    }
+  }
+
   // Reportable items first, then reviews; stable otherwise.
   return actions.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === "report" ? -1 : 1));
 }

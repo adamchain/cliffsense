@@ -43,6 +43,8 @@ const beneficiarySchema = new Schema(
     state: { type: String, default: "", trim: true, uppercase: true },
     county: { type: String, default: "", trim: true },
     householdSize: { type: Number, default: 1, min: 1 },
+    /** SSDI Trial Work Period months the user has counted (0–9). */
+    twpMonthsUsed: { type: Number, default: 0, min: 0, max: 9 },
     benefitsEnrolled: { type: [benefitEnrollmentSchema], default: [] },
     /** systemKeys of bundled system thresholds the user has detached (opted out of). */
     detachedThresholdKeys: { type: [String], default: [] },

@@ -17,7 +17,20 @@ const reportingDeadlineSchema = new Schema(
     /** Distinguishes vital renewals from ad-hoc deadlines. */
     kind: {
       type: String,
-      enum: ["renewal", "deadline", "sar", "appointment", "other"],
+      enum: [
+        "renewal",
+        "deadline",
+        "sar",
+        "appointment",
+        "interview",
+        "verification",
+        "premium",
+        "cdr",
+        "assessment",
+        "appeal",
+        "continued_benefits",
+        "other",
+      ],
       default: "deadline",
       index: true,
     },

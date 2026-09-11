@@ -6,6 +6,7 @@ import { assertBeneficiaryAccess, assertBeneficiaryWriteAccess } from "@/lib/ben
 import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
+import { DEADLINE_KINDS } from "@/lib/calendar/deadline-kinds";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -45,9 +46,10 @@ const postSchema = z.object({
   program: z.string().max(20).optional().nullable(),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD"),
   track: z.enum(["scheduled", "event"]).optional(),
-  kind: z.enum(["renewal", "deadline", "sar", "appointment", "other"]).optional(),
+  kind: z.enum(DEADLINE_KINDS).optional(),
   title: z.string().min(1).max(200),
   note: z.string().max(1000).optional(),
+  continuedBenefitsDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export async function POST(req: Request) {
@@ -66,9 +68,11 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
+  const beneficiaryId = new mongoose.Types.ObjectId(parsed.data.beneficiaryId);
+  const userId = new mongoose.Types.ObjectId(session.user.id);
   const doc = await ReportingDeadline.create({
-    beneficiaryId: new mongoose.Types.ObjectId(parsed.data.beneficiaryId),
-    userId: new mongoose.Types.ObjectId(session.user.id),
+    beneficiaryId,
+    userId,
     program: parsed.data.program ?? null,
     dueDate: new Date(`${parsed.data.dueDate}T00:00:00.000Z`),
     track: parsed.data.track ?? "scheduled",
@@ -77,6 +81,21 @@ export async function POST(req: Request) {
     note: parsed.data.note ?? "",
   });
 
+  let continuedId: string | null = null;
+  if (parsed.data.kind === "appeal" && parsed.data.continuedBenefitsDate) {
+    const continued = await ReportingDeadline.create({
+      beneficiaryId,
+      userId,
+      program: parsed.data.program ?? null,
+      dueDate: new Date(`${parsed.data.continuedBenefitsDate}T00:00:00.000Z`),
+      track: "event",
+      kind: "continued_benefits",
+      title: "Request continued benefits",
+      note: "Often earlier than the appeal deadline. Use the date on the adverse notice.",
+    });
+    continuedId = continued._id.toString();
+  }
+
   await logActivity({
     userId: session.user.id,
     beneficiaryId: parsed.data.beneficiaryId,
@@ -84,8 +103,8 @@ export async function POST(req: Request) {
     action: "reporting_deadline.created",
     resourceType: "reporting_deadline",
     resourceId: doc._id.toString(),
-    details: { title: doc.title, dueDate: parsed.data.dueDate },
+    details: { title: doc.title, dueDate: parsed.data.dueDate, continuedId },
   });
 
-  return NextResponse.json({ deadline: { _id: doc._id.toString() } });
+  return NextResponse.json({ deadline: { _id: doc._id.toString(), continuedId } });
 }

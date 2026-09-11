@@ -70,4 +70,17 @@ describe("buildReportingActions", () => {
     expect(a).toBeTruthy();
     expect(a!.programs[0].short).toBe("ABD Medicaid");
   });
+
+  it("flags unusual non-wage deposits for review before month-end", () => {
+    const actions = buildReportingActions({
+      programs: ["SSI"],
+      rows: [],
+      transactions: [tx("2026-06-20", -180000, "other_income", "ESTATE OF SMITH")],
+      now: NOW,
+    });
+    const a = actions.find((x) => x.id.startsWith("unusual-deposit:"));
+    expect(a).toBeTruthy();
+    expect(a!.severity).toBe("review");
+    expect(a!.detail).toMatch(/Do not give/i);
+  });
 });

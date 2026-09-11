@@ -338,6 +338,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
     ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
     maxAssetCents: maxAsset,
     grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
+    otherInflowCents: breakdown.otherCents,
     monthPrefix: prefix,
   });
   alertsCreated += scenarioResult.alertsCreated;

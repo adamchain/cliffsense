@@ -12,6 +12,7 @@ import { DeleteAccountButton } from "./delete-account-button";
 import { PushToggle } from "@/components/push/push-toggle";
 import { AlertsView } from "@/components/alerts/alerts-view";
 import { ThresholdsView } from "@/components/thresholds/thresholds-view";
+import { WorkPlanner } from "@/components/benefits/work-planner";
 import { BenefitsHubNav } from "@/components/settings/benefits-hub-nav";
 import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { buildReportingActions } from "@/lib/reporting/reporting-actions";
@@ -39,12 +40,13 @@ export default async function SettingsPage() {
 
   const beneficiaryId = primary?._id.toString() ?? null;
   let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
+  let twpMonthsUsed = 0;
   if (primary?._id) {
     const now = new Date();
     const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
       .toISOString()
       .slice(0, 10);
-    const [payload, txns] = await Promise.all([
+    const [payload, txns, twpDoc] = await Promise.all([
       loadThresholdDashboardPayload(primary._id),
       Transaction.find({ beneficiaryId: primary._id, date: { $gte: sixMonthsAgo } })
         .select({
@@ -57,6 +59,7 @@ export default async function SettingsPage() {
           excludedFromThresholds: 1,
         })
         .lean(),
+      Beneficiary.findById(primary._id).select("twpMonthsUsed").lean(),
     ]);
     reportingActions = buildReportingActions({
       programs: payload.programsEnrolled,
@@ -78,6 +81,7 @@ export default async function SettingsPage() {
       })),
       now,
     });
+    twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
   }
 
   const initials = (user.name ?? user.email ?? "?")
@@ -127,6 +131,10 @@ export default async function SettingsPage() {
 
         <section id="limits" className={sectionCls}>
           <ThresholdsView beneficiaryId={beneficiaryId} embedded />
+          <WorkPlanner
+            beneficiaryId={beneficiaryId}
+            initialTwpMonths={twpMonthsUsed}
+          />
         </section>
 
         {ownerBen && (

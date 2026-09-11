@@ -28,6 +28,7 @@ export type ScenarioEvalInput = {
   ssiCountableCents: number;
   maxAssetCents: number;
   grossMonthlyCents: number;
+  otherInflowCents?: number;
   monthPrefix: string;
 };
 
@@ -132,6 +133,10 @@ export async function evaluateScenarioAlerts(
   const prior = input.priorEarnedGrossCents ?? 0;
   if (prior > 0 && earned > prior * 1.1 && earned - prior >= 100_00) {
     consider("reporting_wage_change_10day");
+  }
+  const otherIn = input.otherInflowCents ?? 0;
+  if (otherIn >= 1500_00) {
+    consider("reporting_lump_sum");
   }
 
   const alertIdsCreated: Types.ObjectId[] = [];
