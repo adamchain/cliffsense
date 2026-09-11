@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import Alert from "@/lib/db/models/Alert";
 import { appUrl } from "@/lib/email/mailer";
 import { wantsAlertType } from "@/lib/email/recipients";
+import { playbookPushBody, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 import { pushConfigured, sendPushToUser } from "@/lib/push/web-push";
 import User from "@/lib/db/models/User";
 
@@ -30,14 +31,25 @@ export async function sendAlertPushForNewAlerts(alertIds: string[]): Promise<num
     if (!wantsAlertType(user?.notificationPrefs, String(a.trigger ?? ""))) {
       continue;
     }
-    const level = String(a.level ?? "info");
+    const snap = (a.dataSnapshot ?? {}) as {
+      playbookId?: string;
+      scenarioId?: string;
+      program?: string;
+      thresholdType?: string;
+      title?: string;
+    };
+    const playbook = resolveAlertPlaybook({
+      playbookId: snap.playbookId,
+      scenarioId: snap.scenarioId,
+      program: snap.program,
+      thresholdType: snap.thresholdType,
+      trigger: String(a.trigger ?? ""),
+      title: snap.title,
+    });
     const res = await sendPushToUser(String(a.userId), {
-      title:
-        level === "breach"
-          ? "MyBenefitsPA: threshold reached"
-          : "MyBenefitsPA: heads up",
-      body: String(a.message ?? ""),
-      url: `${appUrl()}/settings#alerts`,
+      title: playbook.title,
+      body: playbookPushBody(playbook),
+      url: `${appUrl()}/alerts`,
       tag: String(a._id),
     });
     if (res.skipped) {

@@ -15,6 +15,8 @@ import {
 import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
 import { advisorAskHref, fixThresholdQuestion } from "@/lib/benefits/fix-prompts";
 import { ActionCenter } from "@/components/actions/action-center";
+import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
+import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 import type { ReportingAction } from "@/lib/reporting/reporting-actions";
 
 type AlertRow = {
@@ -26,7 +28,12 @@ type AlertRow = {
   createdAt: string;
   dataSnapshot?: {
     thresholdLabel?: string;
+    thresholdType?: string;
     program?: string;
+    programs?: string[];
+    playbookId?: string;
+    scenarioId?: string;
+    title?: string;
     limitCents?: number;
     currentValueCents?: number;
   };
@@ -235,6 +242,13 @@ export function AlertsView({
         </div>
       )}
 
+      <p className="mb-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+        Each alert is an action plan: program, rule, deadline, documents, next coverage, and appeal
+        dates. A DHS closure code is a recorded case action — codes 042 and 440 are procedural labels,
+        and SNAP 474 means the certification period ended. They do not by themselves prove household
+        fault or that the person was ineligible.
+      </p>
+
       <div className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
         Notifications
       </div>
@@ -244,11 +258,23 @@ export function AlertsView({
         {!loading &&
           rows.map((a) => {
             const snap = a.dataSnapshot;
-            const prog = snap?.program ? programCodeKey(snap.program) : null;
+            const playbook = resolveAlertPlaybook({
+              playbookId: snap?.playbookId,
+              scenarioId: snap?.scenarioId,
+              program: snap?.program,
+              thresholdType: snap?.thresholdType,
+              trigger: a.trigger,
+              title: snap?.title,
+            });
+            const prog = snap?.program
+              ? programCodeKey(snap.program)
+              : playbook.programs[0]
+                ? programCodeKey(playbook.programs[0])
+                : null;
             const progMeta = prog ? programMetaFor(prog) : null;
             const Icon = iconFor(a.trigger, a.level);
-            const source = progMeta?.label ?? "MyBenefitsPA";
-            const title = snap?.thresholdLabel ?? triggerLabel(a.trigger);
+            const source = progMeta?.label ?? playbook.programs[0] ?? "MyBenefitsPA";
+            const title = snap?.thresholdLabel ?? playbook.title ?? triggerLabel(a.trigger);
             const sensitive = isTimeSensitive(a.level, a.trigger) && a.status === "new";
 
             return (
@@ -266,37 +292,41 @@ export function AlertsView({
                   </div>
                   {sensitive && <div className="cs-acard-badge">Time Sensitive</div>}
                   <div className="cs-acard-title">{title}</div>
-                  <p className="cs-acard-body">{a.message}</p>
+                  <p className="cs-acard-body">{playbook.cureAction}</p>
+                  <AlertPlaybookPanel playbook={playbook} />
 
                   <div className="cs-acard-actions">
-                    {(() => {
-                      if (!prog || !progMeta || snap?.limitCents == null) return null;
-                      const fixHref = advisorAskHref(
-                        fixThresholdQuestion({
-                          program: prog,
-                          label: snap.thresholdLabel ?? progMeta.label,
-                          currentValueCents: snap.currentValueCents,
-                          limitCents: snap.limitCents,
-                          status: a.level === "breach" ? "concern" : "watch",
-                        }),
-                      );
-                      return (
-                        <>
-                          <Link href={fixHref} className="cs-acard-btn cs-acard-btn-primary">
-                            <span className="inline-flex items-center gap-1">
-                              <IconSparkles size={13} stroke={1.5} aria-hidden />
-                              Ask AI how to fix
-                            </span>
-                          </Link>
-                          <Link href={`/thresholds/${prog}`} className="cs-acard-btn">
-                            <span className="inline-flex items-center gap-1">
-                              <IconExternalLink size={13} stroke={1.5} aria-hidden />
-                              View {progMeta.label}
-                            </span>
-                          </Link>
-                        </>
-                      );
-                    })()}
+                    <Link
+                      href={
+                        prog && progMeta && snap?.limitCents != null
+                          ? advisorAskHref(
+                              fixThresholdQuestion({
+                                program: prog,
+                                label: snap.thresholdLabel ?? progMeta.label,
+                                currentValueCents: snap.currentValueCents,
+                                limitCents: snap.limitCents,
+                                status: a.level === "breach" ? "concern" : "watch",
+                              }),
+                            )
+                          : advisorAskHref(
+                              `For Pennsylvania benefits: ${playbook.title}. ${playbook.cureAction} ${playbook.alternativePathway} What should I do next? Note this is not an eligibility determination.`,
+                            )
+                      }
+                      className="cs-acard-btn cs-acard-btn-primary"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <IconSparkles size={13} stroke={1.5} aria-hidden />
+                        Ask AI how to fix
+                      </span>
+                    </Link>
+                    {prog && progMeta && (
+                      <Link href={`/thresholds/${prog}`} className="cs-acard-btn">
+                        <span className="inline-flex items-center gap-1">
+                          <IconExternalLink size={13} stroke={1.5} aria-hidden />
+                          View {progMeta.label}
+                        </span>
+                      </Link>
+                    )}
                     {a.status === "new" && (
                       <>
                         <button

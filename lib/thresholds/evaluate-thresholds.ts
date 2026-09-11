@@ -7,6 +7,7 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
+import { playbookIdForThreshold } from "@/lib/alerts/alert-playbook";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
@@ -289,6 +290,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
           thresholdLabel: th.label,
           thresholdType: th.thresholdType,
           program: th.program,
+          playbookId: playbookIdForThreshold(String(th.program), String(th.thresholdType)),
           limitCents,
           currentValueCents: currentValue,
           projectedValueCents: projectedValue,

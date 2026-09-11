@@ -7,6 +7,7 @@ import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
 import { TopbarControls } from "./topbar-controls";
 import { SectionTabs } from "./section-tabs";
+import { GlobalAskBar } from "./global-ask-bar";
 import {
   ALL_SECTIONS,
   PRIMARY_HREFS,
@@ -93,6 +94,12 @@ export function AppShell({
   isAdmin?: boolean;
 }) {
   const badge = alertCount > 9 ? "9+" : String(alertCount);
+  const hideTopSearch =
+    activeHref === "/reports" ||
+    activeHref.startsWith("/reports/") ||
+    activeHref === "/documents" ||
+    activeHref.startsWith("/documents/");
+  const showAskBar = !(activeHref === "/advisor" || activeHref.startsWith("/advisor/"));
 
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
   const leaves = flattenSections(ALL_SECTIONS);
@@ -149,7 +156,7 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-cs-surface)]">
         {/* Desktop / tablet topbar; mobile pages own their headers */}
         <header className="sticky top-0 z-30 hidden h-16 shrink-0 items-center gap-2 border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)]/90 px-4 backdrop-blur sm:gap-3 sm:px-6 lg:flex">
-          <TopbarControls />
+          <TopbarControls hideSearch={hideTopSearch} />
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
@@ -183,17 +190,26 @@ export function AppShell({
         {/* Compact mobile utility row (search + overflow nav) */}
         <div className="flex items-center gap-2 px-4 pt-3 lg:hidden">
           <MobileNavDrawer nav={drawerNav} activeHref={activeHref} alertCount={alertCount} />
-          <div className="min-w-0 flex-1">
-            <TopbarControls />
-          </div>
+          {hideTopSearch ? null : (
+            <div className="min-w-0 flex-1">
+              <TopbarControls />
+            </div>
+          )}
         </div>
 
         <SectionTabs />
 
-        <div className="min-w-0 flex-1 px-4 pb-28 pt-2 sm:px-5 lg:p-6 lg:pb-6">{children}</div>
+        <div
+          className={`min-w-0 flex-1 px-4 pt-2 sm:px-5 lg:p-6 ${
+            showAskBar ? "pb-36 lg:pb-24" : "pb-28 lg:pb-6"
+          }`}
+        >
+          {children}
+        </div>
       </div>
 
       <FeedbackWidget />
+      {showAskBar ? <GlobalAskBar /> : null}
       <MobileTabBar
         primary={tabPrimary}
         more={tabMore}

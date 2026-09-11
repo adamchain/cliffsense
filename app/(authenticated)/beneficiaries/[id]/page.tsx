@@ -10,6 +10,9 @@ import { formatPlainUsdFromCents } from "@/lib/format/money";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
 import { getBeneficiaryAccessRole } from "@/lib/beneficiaries/access";
 import { SharingPanel } from "@/components/beneficiaries/sharing-panel";
+import { BeneficiaryProfileForm } from "@/components/beneficiaries/beneficiary-profile-form";
+import { toDateInputValue } from "@/lib/beneficiaries/date-input";
+import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 
 export default async function BeneficiaryDetailPage({
   params,
@@ -25,7 +28,8 @@ export default async function BeneficiaryDetailPage({
   await connectDB();
   const role = await getBeneficiaryAccessRole(session.user.id, id);
   if (!role) notFound();
-  const canManageSharing = role === "owner" || role === "co_manager";
+  const canWrite = role === "owner" || role === "co_manager";
+  const canManageSharing = canWrite;
   const ben = await Beneficiary.findById(id).lean();
   if (!ben) notFound();
 
@@ -68,6 +72,22 @@ export default async function BeneficiaryDetailPage({
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
+        <section className="md:col-span-2 rounded border border-[var(--color-cs-border)] bg-white p-4">
+          <h2 className="mb-3 text-sm font-medium text-[var(--color-cs-text)]">Profile</h2>
+          <BeneficiaryProfileForm
+            beneficiaryId={ben._id.toString()}
+            canWrite={canWrite}
+            initial={{
+              firstName: ben.firstName ?? "",
+              lastName: ben.lastName ?? "",
+              dateOfBirth: toDateInputValue(ben.dateOfBirth as Date | null),
+              state: ben.state ?? "",
+              county: ben.county ?? "",
+              householdSize: ben.householdSize ?? 1,
+            }}
+          />
+        </section>
+
         <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
           <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Enrolled programs</h2>
           {(ben.benefitsEnrolled ?? []).length === 0 ? (
@@ -173,14 +193,35 @@ export default async function BeneficiaryDetailPage({
             </p>
           ) : (
             <ul className="divide-y divide-[var(--color-cs-border)] text-[13px]">
-              {recentAlerts.map((a) => (
+              {recentAlerts.map((a) => {
+                const snap = (a.dataSnapshot ?? {}) as {
+                  playbookId?: string;
+                  scenarioId?: string;
+                  program?: string;
+                  thresholdType?: string;
+                  title?: string;
+                  thresholdLabel?: string;
+                };
+                const playbook = resolveAlertPlaybook({
+                  playbookId: snap.playbookId,
+                  scenarioId: snap.scenarioId,
+                  program: snap.program,
+                  thresholdType: snap.thresholdType,
+                  trigger: a.trigger,
+                  title: snap.title,
+                });
+                return (
                 <li key={a._id.toString()} className="py-2">
                   <div className="text-[11px] uppercase text-[var(--color-cs-text-secondary)]">
                     {a.level} · {a.trigger} · {new Date(a.createdAt).toLocaleString()}
                   </div>
-                  <p className="text-[var(--color-cs-text)]">{a.message}</p>
+                  <p className="font-medium text-[var(--color-cs-text)]">
+                    {snap.thresholdLabel ?? playbook.title}
+                  </p>
+                  <p className="text-[var(--color-cs-text-secondary)]">{playbook.cureAction}</p>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>

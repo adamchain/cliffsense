@@ -1,11 +1,12 @@
 import { enrolledMatchesProgram } from "@/lib/programs";
 
 /**
- * Eligibility-loss warning scenarios derived from Frank Rapoport’s PA benefits
- * guides (Eligibility Guide V3, SummaryEligibilityLimits V3, Graham Guardrail)
- * and the Jul 2026 product asks. Used for alert copy, settings prefs, and the
- * Resources reference. Auto-detectable scenarios are evaluated in
- * evaluate-scenario-alerts.ts; the rest are educational warnings.
+ * Limit-based eligibility-loss warning scenarios derived from Frank Rapoport’s
+ * PA benefits guides (Eligibility Guide V3, SummaryEligibilityLimits V3, Graham
+ * Guardrail) and the Jul 2026 product asks. Used for live alert copy and
+ * Settings alert-type prefs. Named prevention stories with 6-step action plans
+ * live in eligibility-loss-personas.ts. Auto-detectable rows are evaluated in
+ * evaluate-scenario-alerts.ts.
  */
 
 export type ScenarioAlertTrigger = "cliff" | "reporting" | "snt" | "able";

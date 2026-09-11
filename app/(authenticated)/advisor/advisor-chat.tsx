@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconSend } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AskComposer } from "@/components/layout/ask-composer";
 
 type Message = {
   id: string;
@@ -208,29 +208,14 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
         )}
         {error && <p className="text-[12px] text-[var(--color-cs-danger)]">{error}</p>}
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void send(input);
-        }}
-        className="flex items-center gap-2 border-t border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.92)] px-3.5 py-2.5 backdrop-blur"
-      >
-        <input
+      <div className="flex justify-center border-t border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.92)] px-3.5 py-2.5 backdrop-blur">
+        <AskComposer
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about your benefits"
+          onChange={setInput}
+          onSubmit={() => void send(input)}
           disabled={sending}
-          className="h-10 flex-1 rounded-[20px] border border-[var(--color-cs-sep)] bg-[var(--color-cs-card)] px-3.5 text-[15px] outline-none"
         />
-        <button
-          type="submit"
-          disabled={sending || !input.trim()}
-          className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-white disabled:opacity-50"
-          aria-label="Send"
-        >
-          <IconSend size={16} stroke={2} aria-hidden />
-        </button>
-      </form>
+      </div>
     </section>
   );
 }

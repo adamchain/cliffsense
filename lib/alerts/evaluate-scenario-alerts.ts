@@ -40,7 +40,7 @@ function enrolledFor(scenario: EligibilityLossScenario, programSet: string[]): b
 }
 
 function alertMessage(s: EligibilityLossScenario): string {
-  return `${s.title}: ${s.risk} ${s.action} Informational only — confirm with SSA, CAO, or a benefits counselor.`;
+  return `${s.title}: ${s.risk}`;
 }
 
 async function recentlyAlerted(beneficiaryId: Types.ObjectId, scenarioId: string): Promise<boolean> {
@@ -148,6 +148,7 @@ export async function evaluateScenarioAlerts(
       message: alertMessage(s),
       dataSnapshot: {
         scenarioId: s.id,
+        playbookId: s.id,
         title: s.title,
         programs: s.programs,
         monthPrefix: input.monthPrefix,

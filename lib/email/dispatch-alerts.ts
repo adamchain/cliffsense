@@ -5,6 +5,7 @@ import User from "@/lib/db/models/User";
 import { appUrl, sendEmail } from "@/lib/email/mailer";
 import { resolveRecipients, wantsAlertType } from "@/lib/email/recipients";
 import { renderEmail } from "@/lib/email/template";
+import { playbookEmailParagraphs, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 
 /**
  * Sends one realtime email per new alert. Users on the "realtime" cadence get
@@ -47,25 +48,34 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       continue;
     }
 
+    const snap = (a.dataSnapshot ?? {}) as {
+      playbookId?: string;
+      scenarioId?: string;
+      program?: string;
+      thresholdType?: string;
+      title?: string;
+    };
+    const playbook = resolveAlertPlaybook({
+      playbookId: snap.playbookId,
+      scenarioId: snap.scenarioId,
+      program: snap.program,
+      thresholdType: snap.thresholdType,
+      trigger,
+      title: snap.title,
+    });
+    const paragraphs = playbookEmailParagraphs(playbook);
     const subject = `MyBenefitsPA: ${
       level === "breach" ? "Important" : trigger === "cliff" || trigger === "snt" || trigger === "able"
         ? "Eligibility warning"
         : trigger === "reporting"
           ? "Reporting reminder"
           : "Heads up"
-    } — threshold activity`;
+    } — ${playbook.title}`;
     const { html, text } = renderEmail({
-      heading:
-        level === "breach"
-          ? "A benefit threshold needs attention"
-          : trigger === "reporting"
-            ? "A reporting deadline may apply"
-            : trigger === "cliff" || trigger === "snt" || trigger === "able"
-              ? "An eligibility cliff needs a look"
-              : "Heads up on a benefit threshold",
-      preheader: String(a.message ?? "").slice(0, 110),
+      heading: playbook.title,
+      preheader: playbook.cureAction.slice(0, 110),
       tone: level === "breach" ? "danger" : level === "warning" ? "warning" : "info",
-      paragraphs: [String(a.message ?? "")],
+      paragraphs,
       cta: { label: "View in MyBenefitsPA", url: `${appUrl()}/alerts` },
     });
     const res = await sendEmail({ to: recipients, subject, html, text });

@@ -20,7 +20,7 @@ type SearchGroup = { type: string; items: SearchItem[] };
  * search returns nothing, the user can hand the query to the AI advisor, which
  * opens the advisor page with the question pre-loaded and starts a chat.
  */
-export function TopbarControls() {
+export function TopbarControls({ hideSearch = false }: { hideSearch?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [groups, setGroups] = useState<SearchGroup[]>([]);
@@ -120,7 +120,7 @@ export function TopbarControls() {
         </button>
       </div>
 
-      {/* Search */}
+      {hideSearch ? null : (
       <div ref={wrapRef} className="relative min-w-0 flex-1">
         <div className="flex items-center gap-2 rounded-full border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] px-3 focus-within:border-[var(--color-cs-brand)] focus-within:bg-white">
           {loading ? (
@@ -212,6 +212,7 @@ export function TopbarControls() {
           </div>
         ) : null}
       </div>
+      )}
     </div>
   );
 }
