@@ -6,6 +6,9 @@ import {
   IconPhone,
 } from "@tabler/icons-react";
 import type { ReportingAction } from "@/lib/reporting/reporting-actions";
+import { playbookById } from "@/lib/alerts/alert-playbook";
+import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
+import Link from "next/link";
 
 /* ---------------------------------------------------------------------------
  * Action Center: program-aware "what to do" cards. Each detected change shows
@@ -42,6 +45,17 @@ export function ActionCenter({ actions }: { actions: ReportingAction[] }) {
               <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
                 {a.detail}
               </p>
+              {a.classifyHref && (
+                <Link
+                  href={a.classifyHref}
+                  className="mt-2 inline-block text-[13px] font-semibold text-[var(--color-cs-brand)]"
+                >
+                  Classify deposits in Money
+                </Link>
+              )}
+              {a.playbookId && playbookById(a.playbookId) && (
+                <AlertPlaybookPanel playbook={playbookById(a.playbookId)!} />
+              )}
 
               <div className="mt-3 space-y-2">
                 {a.programs.map((p) => (

@@ -70,9 +70,9 @@ export function playbookIdForDeadlineKind(kind: string, program?: string | null)
     case "sar":
       return "medicaid_renewal_packet";
     case "interview":
-      return "medicaid_renewal_packet";
+      return "snap_interview";
     case "verification":
-      return "medicaid_renewal_packet";
+      return "verification_request";
     case "premium":
       return "mawd_transition";
     case "cdr":

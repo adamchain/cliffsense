@@ -11,6 +11,7 @@ import { countVisibleBankConnections } from "@/lib/banks/linked-connections";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 import { buildProgramCards } from "@/lib/benefits/program-tier";
 import { calendarEventHref } from "@/lib/calendar/event-id";
+import { isCaseClockKind } from "@/lib/calendar/deadline-kinds";
 
 function relativeLabel(isoDate: string): string {
   const today = new Date();
@@ -120,11 +121,14 @@ export default async function DashboardPage() {
     const renewals = mapped
       .filter((m) => m.kind === "renewal")
       .sort((a, b) => a.due.localeCompare(b.due));
+    const clocks = mapped
+      .filter((m) => isCaseClockKind(m.kind))
+      .sort((a, b) => a.due.localeCompare(b.due));
     const others = mapped
-      .filter((m) => m.kind !== "renewal")
+      .filter((m) => m.kind !== "renewal" && !isCaseClockKind(m.kind))
       .sort((a, b) => a.due.localeCompare(b.due));
     if (renewals[0]) nextRenewalDays = daysUntil(renewals[0].due);
-    upcoming = [...renewals, ...others].slice(0, 8).map(
+    upcoming = [...renewals, ...clocks, ...others].slice(0, 8).map(
       ({ id, title, subtitle, mon, day, rel, href, kind }) => ({
         id,
         title,

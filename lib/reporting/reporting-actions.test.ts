@@ -81,6 +81,7 @@ describe("buildReportingActions", () => {
     const a = actions.find((x) => x.id.startsWith("unusual-deposit:"));
     expect(a).toBeTruthy();
     expect(a!.severity).toBe("review");
+    expect(a!.playbookId).toBe("reporting_lump_sum");
     expect(a!.detail).toMatch(/Do not give/i);
   });
 });

@@ -22,6 +22,10 @@ import {
   type EventPrepItem,
 } from "@/lib/calendar/event-prep";
 import { filingLocationForEvent } from "@/lib/calendar/filing-location";
+import { DEADLINE_KIND_LABEL, isDeadlineKind, playbookIdForDeadlineKind } from "@/lib/calendar/deadline-kinds";
+import { playbookById } from "@/lib/alerts/alert-playbook";
+import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
+import { CategoryHandoffPanel } from "@/components/alerts/category-handoff-panel";
 
 export type EventDetailModel = {
   title: string;
@@ -200,12 +204,14 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
     item.id === "advisor" ? { ...item, href: advisorHref } : item,
   );
 
-  const kindLabel =
-    event.kind === "renewal"
+  const kindLabel = isDeadlineKind(event.kind)
+    ? DEADLINE_KIND_LABEL[event.kind]
+    : event.kind === "renewal"
       ? "Renewal"
       : /wage|earnings/i.test(event.title)
         ? "Wage report"
         : "Deadline";
+  const playbook = playbookById(playbookIdForDeadlineKind(event.kind, event.program));
 
   return (
     <div className="pb-8">
@@ -422,6 +428,13 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
           <p className="mb-3 px-0.5 text-[13.5px] leading-snug text-[var(--color-cs-text-secondary)]">
             {prep.summary}
           </p>
+
+          {playbook && (
+            <div className="mb-3">
+              <AlertPlaybookPanel playbook={playbook} />
+              <CategoryHandoffPanel programs={playbook.programs} />
+            </div>
+          )}
 
           <div className="space-y-2.5">
             {prepItems.map((item) => (

@@ -25,6 +25,9 @@ export type ReportingAction = {
   /** ISO deadline (PA: 10th of next month) or null. */
   deadlineISO: string | null;
   programs: ActionProgramGuidance[];
+  /** Optional 7-field playbook to show on the Action Center card. */
+  playbookId?: string;
+  classifyHref?: string;
 };
 
 export type ReportingTx = {
@@ -226,6 +229,8 @@ export function buildReportingActions(input: {
               )}. Classify them (income vs resource vs reimbursement vs trust) before month-end. Spending later may not erase a receipt-month income event.`,
         deadlineISO,
         programs: means.map(guidance),
+        playbookId: "reporting_lump_sum",
+        classifyHref: "/transactions",
       });
     }
   }

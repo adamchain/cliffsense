@@ -434,6 +434,42 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     { personaId: "maria_earnings_double" },
   ),
 
+  snap_interview: pb(
+    "snap_interview",
+    "SNAP or DHS interview",
+    ["SNAP", "MedicaidMAGI"],
+    "SNAP can close for failure to complete the interview even when the household remains eligible. Medicaid follows a separate process.",
+    "Update the phone number on COMPASS and with the CAO, request a reschedule if the agency used an obsolete number, and upload proofs before the interview.",
+    {
+      personaId: "jamal_snap_interview",
+      closureCodes: ["440", "474"],
+      documents: [
+        "Current COMPASS contact information",
+        "Income, household, shelter, and utility proof",
+        "Interview appointment notice",
+        "Confirmation that the interview was completed",
+      ],
+    },
+  ),
+
+  verification_request: pb(
+    "verification_request",
+    "Agency verification request",
+    ["MedicaidABD", "MedicaidMAGI", "SSI", "SNAP"],
+    "Coverage can close for failure to verify even when balances remain under the resource limit. A screenshot often does not satisfy a request for a complete statement.",
+    "Read the request literally, send every page of the statement or a bank letter, explain unusual deposits, and call before the deadline to confirm the file is complete.",
+    {
+      personaId: "grace_missing_bank_statement",
+      closureCodes: ["042"],
+      documents: [
+        "Complete bank statements for the requested period",
+        "Written explanation of unusual deposits",
+        "Proof of transmission",
+        "CAO call log",
+      ],
+    },
+  ),
+
   medicaid_renewal_packet: pb(
     "medicaid_renewal_packet",
     "Medicaid renewal packet due",
