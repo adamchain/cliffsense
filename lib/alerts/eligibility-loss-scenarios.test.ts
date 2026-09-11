@@ -32,8 +32,14 @@ describe("eligibility-loss personas", () => {
 });
 
 describe("eligibility-loss scenarios", () => {
-  it("catalogs 30 auto/reference cliff scenarios", () => {
-    expect(ELIGIBILITY_LOSS_SCENARIOS).toHaveLength(30);
+  it("catalogs the reference cliffs plus gated 2026–27 policy rows", () => {
+    expect(ELIGIBILITY_LOSS_SCENARIOS.length).toBeGreaterThanOrEqual(30);
+    expect(
+      ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "magi_work_requirements_2027")?.autoDetect,
+    ).toBe(false);
+    expect(
+      ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "immigrant_restrictions_2026")?.autoDetect,
+    ).toBe(false);
   });
 
   it("has unique ids", () => {

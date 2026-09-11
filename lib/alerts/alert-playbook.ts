@@ -313,6 +313,23 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     },
   ),
 
+  immigrant_restrictions_2026: pb(
+    "immigrant_restrictions_2026",
+    "Immigrant-eligibility restriction (projected Oct 2026)",
+    ["MedicaidMAGI", "SNAP"],
+    "Coverage or SNAP may close because of a policy-driven category restriction, or because the agency misclassified immigration status.",
+    "Obtain the actual notice. Submit current status documents. Have qualified immigration and benefits counsel check protected categories. Screen emergency Medicaid, pregnancy, CHIP, Marketplace, and food resources. Appeal and file a replacement application before the end date.",
+    {
+      personaId: "farah_immigrant_restriction",
+      effectiveDateNote: VERIFY_FUTURE_POLICY,
+      documents: [
+        "Adverse notice with statutory basis and program",
+        "Immigration status documents",
+        "Replacement applications",
+      ],
+    },
+  ),
+
   lucas_magi_income: pb(
     "lucas_magi_income",
     "MAGI Medicaid current monthly income",

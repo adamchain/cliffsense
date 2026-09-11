@@ -1,8 +1,8 @@
 import { SntEstimator } from "@/components/benefits/snt-estimator";
-import { MedicaidWorkRequirements } from "@/components/benefits/medicaid-work-requirements";
 import { SalarySntScenarios } from "@/components/benefits/salary-snt-scenarios";
 import { EligibilityLossCatalog } from "@/components/benefits/eligibility-loss-catalog";
 import { WorkPlanner } from "@/components/benefits/work-planner";
+import { PolicyScreen } from "@/components/policy/policy-screen";
 
 type Row = { label: string; value: string; note?: string };
 
@@ -160,7 +160,7 @@ export default function ResourcesPage() {
         programs — separate from the <em>income</em> rules above, which govern how trust <em>payments</em> affect the monthly SSI check.
       </p>
 
-      <MedicaidWorkRequirements />
+      <PolicyScreen />
 
       <SalarySntScenarios />
 

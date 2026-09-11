@@ -45,6 +45,8 @@ const beneficiarySchema = new Schema(
     householdSize: { type: Number, default: 1, min: 1 },
     /** SSDI Trial Work Period months the user has counted (0–9). */
     twpMonthsUsed: { type: Number, default: 0, min: 0, max: 9 },
+    /** Answers for the gated 2026–27 SNAP/MAGI/immigrant policy screen. */
+    policyScreen: { type: Schema.Types.Mixed, default: null },
     benefitsEnrolled: { type: [benefitEnrollmentSchema], default: [] },
     /** systemKeys of bundled system thresholds the user has detached (opted out of). */
     detachedThresholdKeys: { type: [String], default: [] },

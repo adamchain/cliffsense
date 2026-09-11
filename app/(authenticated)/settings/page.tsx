@@ -13,9 +13,11 @@ import { PushToggle } from "@/components/push/push-toggle";
 import { AlertsView } from "@/components/alerts/alerts-view";
 import { ThresholdsView } from "@/components/thresholds/thresholds-view";
 import { WorkPlanner } from "@/components/benefits/work-planner";
+import { PolicyScreen } from "@/components/policy/policy-screen";
 import { BenefitsHubNav } from "@/components/settings/benefits-hub-nav";
 import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { buildReportingActions } from "@/lib/reporting/reporting-actions";
+import { coercePolicyScreen, ageFromDateOfBirth } from "@/lib/policy/screen";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 
 const sectionCls = "scroll-mt-28";
@@ -41,6 +43,7 @@ export default async function SettingsPage() {
   const beneficiaryId = primary?._id.toString() ?? null;
   let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
   let twpMonthsUsed = 0;
+  let policyScreenInitial = coercePolicyScreen(null);
   if (primary?._id) {
     const now = new Date();
     const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
@@ -59,7 +62,7 @@ export default async function SettingsPage() {
           excludedFromThresholds: 1,
         })
         .lean(),
-      Beneficiary.findById(primary._id).select("twpMonthsUsed").lean(),
+      Beneficiary.findById(primary._id).select("twpMonthsUsed policyScreen dateOfBirth").lean(),
     ]);
     reportingActions = buildReportingActions({
       programs: payload.programsEnrolled,
@@ -82,6 +85,8 @@ export default async function SettingsPage() {
       now,
     });
     twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
+    const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
+    policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
   }
 
   const initials = (user.name ?? user.email ?? "?")
@@ -135,6 +140,10 @@ export default async function SettingsPage() {
             beneficiaryId={beneficiaryId}
             initialTwpMonths={twpMonthsUsed}
           />
+        </section>
+
+        <section id="policy" className={sectionCls}>
+          <PolicyScreen beneficiaryId={beneficiaryId} initial={policyScreenInitial} />
         </section>
 
         {ownerBen && (

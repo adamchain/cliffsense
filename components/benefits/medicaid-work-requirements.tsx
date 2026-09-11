@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { POLICY_RULES, gateLabel, ruleGate } from "@/lib/policy/rules";
 
 /**
- * Informational tracker for the Medicaid expansion work requirement effective
- * Jan 1, 2027 (ages 19–64). Hours calculator + exemption / appeals reference.
- * Not a compliance determination — confirm with CAO / COMPASS.
+ * Hours tracker for the projected MAGI expansion work rule. Gated: the deck
+ * date is not treated as current Pennsylvania law until `verified` is true.
  */
 
 const MONTHLY_HOURS_TARGET = 80;
@@ -30,9 +30,23 @@ const EXEMPTIONS = [
   "American Indian / Alaska Native (where the state adopts that exemption)",
 ];
 
-export function MedicaidWorkRequirements() {
-  const [rows, setRows] = useState<ActivityRow[]>(DEFAULT_ROWS);
+export function MedicaidWorkRequirements({
+  embedded = false,
+  initialHours,
+  onTotalHours,
+}: {
+  embedded?: boolean;
+  initialHours?: number | null;
+  onTotalHours?: (hours: number) => void;
+}) {
+  const [rows, setRows] = useState<ActivityRow[]>(() => {
+    if (initialHours == null || initialHours <= 0) return DEFAULT_ROWS;
+    return DEFAULT_ROWS.map((r) =>
+      r.id === "paid" ? { ...r, hours: String(initialHours) } : r,
+    );
+  });
   const [frailNote, setFrailNote] = useState(false);
+  const magiGate = ruleGate(POLICY_RULES.magi_work_80h);
 
   const total = useMemo(
     () =>
@@ -42,6 +56,11 @@ export function MedicaidWorkRequirements() {
       }, 0),
     [rows],
   );
+
+  useEffect(() => {
+    onTotalHours?.(total);
+  }, [total, onTotalHours]);
+
   const met = total >= MONTHLY_HOURS_TARGET;
   const remaining = Math.max(0, MONTHLY_HOURS_TARGET - total);
 
@@ -50,18 +69,24 @@ export function MedicaidWorkRequirements() {
   }
 
   return (
-    <section className="mt-10">
-      <h2 className="text-base font-medium text-[var(--color-cs-text)]">
-        Medicaid work requirements — Pennsylvania expansion (2027)
-      </h2>
-      <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        Effective <span className="font-medium text-[var(--color-cs-text)]">January 1, 2027</span> for
-        ages 19–64 in Medicaid expansion. Most enrollees must document{" "}
-        <span className="font-medium text-[var(--color-cs-text)]">80 hours/month</span> of qualifying
-        activity (paid work ≈ ${PAID_WORK_DOLLARS_HINT}/mo, volunteering, training, half-time education,
-        or a combination) — or qualify for an exemption. Informational only; COMPASS / your county
-        assistance office make the determination.
-      </p>
+    <section className={embedded ? "mt-2" : "mt-10"}>
+      {!embedded && (
+        <>
+          <h2 className="text-base font-medium text-[var(--color-cs-text)]">
+            MAGI hours tracker (projected 2027)
+          </h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            The deck describes an 80-hour monthly activity rule for MAGI expansion adults 19–64,
+            proposed for January 1, 2027 (paid work ≈ ${PAID_WORK_DOLLARS_HINT}/mo, volunteering,
+            training, half-time education). Informational only.
+          </p>
+        </>
+      )}
+      {!embedded && (
+        <p className="mt-2 rounded-md bg-[#fff4ce] px-3 py-2 text-[12px] leading-relaxed text-[#8a5400]">
+          {gateLabel(magiGate)}
+        </p>
+      )}
 
       <div className="mt-3 grid gap-4 rounded border border-[var(--color-cs-border)] bg-white p-4 lg:grid-cols-2">
         <div>
