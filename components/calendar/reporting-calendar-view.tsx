@@ -26,6 +26,7 @@ import {
   isCaseClockKind,
   type DeadlineKind,
 } from "@/lib/calendar/deadline-kinds";
+import { calendarEventHref } from "@/lib/calendar/event-id";
 
 type UserDeadline = {
   _id: string;

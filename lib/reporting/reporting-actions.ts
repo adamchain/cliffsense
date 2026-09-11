@@ -53,16 +53,6 @@ function payerName(t: ReportingTx): string {
   return (t.merchantName || t.name || "").trim();
 }
 
-function counts(t: ReportingTx, prefix: string): boolean {
-  return (
-    !t.pending &&
-    !t.excludedFromThresholds &&
-    t.userCategory === "earned_income" &&
-    t.amountCents < 0 &&
-    t.date.startsWith(prefix)
-  );
-}
-
 function guidance(rule: ProgramRule): ActionProgramGuidance {
   return {
     short: rule.short,
