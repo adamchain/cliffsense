@@ -10,6 +10,7 @@ export function BeneficiaryOnboardingForm() {
   const { update } = useSession();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [state, setState] = useState("");
   const [householdSize, setHouseholdSize] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,7 @@ export function BeneficiaryOnboardingForm() {
       body: JSON.stringify({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        dateOfBirth,
         state: state.toUpperCase(),
         householdSize,
         isOwner: false,
@@ -39,15 +41,15 @@ export function BeneficiaryOnboardingForm() {
     const me = await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ onboardingStep: "plaid" }),
+      body: JSON.stringify({ onboardingStep: "authority" }),
     });
     setLoading(false);
     if (!me.ok) {
       setError("Saved person but could not advance onboarding.");
       return;
     }
-    await update({ onboardingStep: "plaid" });
-    router.push("/onboarding/plaid");
+    await update({ onboardingStep: "authority" });
+    router.push("/onboarding/authority");
     router.refresh();
   }
 
@@ -79,6 +81,19 @@ export function BeneficiaryOnboardingForm() {
             className="cs-input"
           />
         </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="cs-label" htmlFor="dob">
+          Date of birth
+        </label>
+        <input
+          id="dob"
+          type="date"
+          required
+          value={dateOfBirth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
+          className="cs-input"
+        />
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="cs-label" htmlFor="st">

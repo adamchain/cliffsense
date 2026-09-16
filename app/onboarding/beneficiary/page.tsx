@@ -9,7 +9,7 @@ export default async function OnboardingBeneficiaryPage() {
     redirect("/auth/signin");
   }
   if (session.user.accountType === "beneficiary") {
-    redirect("/onboarding/plaid");
+    redirect("/onboarding/authority");
   }
 
   return (

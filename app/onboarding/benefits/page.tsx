@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { BenefitsForm } from "./benefits-form";
-import { PROGRAMS } from "@/lib/programs";
 
 export default async function OnboardingBenefitsPage() {
   const session = await auth();
@@ -14,11 +13,11 @@ export default async function OnboardingBenefitsPage() {
     <OnboardingShell
       accountType={session.user.accountType}
       currentStepId="benefits"
-      eyebrow="Programs"
-      title="Which benefits are enrolled?"
-      subtitle="Choose every program and Medicaid category that applies. You can update this anytime in Settings."
+      eyebrow="Benefit inventory"
+      title="Screen each program separately"
+      subtitle="Do not stop at “Social Security” or “Medicaid.” Mark Current, Possible, No, or Unknown — and identify the exact category when a program is current."
     >
-      <BenefitsForm programs={[...PROGRAMS]} />
+      <BenefitsForm accountType={session.user.accountType} />
     </OnboardingShell>
   );
 }

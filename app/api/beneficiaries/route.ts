@@ -12,6 +12,7 @@ const createSchema = z.object({
   county: z.string().optional(),
   householdSize: z.coerce.number().min(1).optional(),
   isOwner: z.boolean().optional(),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
 });
 
 export async function GET() {
@@ -37,7 +38,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
   await connectDB();
-  const { firstName, lastName, state, county, householdSize, isOwner } = parsed.data;
+  const { firstName, lastName, state, county, householdSize, isOwner, dateOfBirth } = parsed.data;
+  const dob =
+    dateOfBirth && dateOfBirth.length === 10 ? new Date(`${dateOfBirth}T00:00:00.000Z`) : null;
   const doc = await Beneficiary.create({
     ownerUserId: session.user.id,
     isOwner: isOwner ?? false,
@@ -46,6 +49,7 @@ export async function POST(req: Request) {
     state: state?.toUpperCase() ?? "",
     county: county ?? "",
     householdSize: householdSize ?? 1,
+    dateOfBirth: dob && !Number.isNaN(dob.getTime()) ? dob : null,
   });
   await logActivity({
     userId: session.user.id,

@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
     const hashedPassword = await bcrypt.hash(password, 12);
-    const onboardingStep = accountType === "beneficiary" ? "profile" : "profile";
+    const onboardingStep = "role";
     const applicationStatus = initialApplicationStatus(accountType);
     const user = await User.create({
       email: email.toLowerCase(),

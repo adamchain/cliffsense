@@ -6,9 +6,12 @@ import { OnboardingExitButton } from "@/components/onboarding/onboarding-exit-bu
 export function OnboardingProgress({
   steps,
   currentStepId,
+  subProgress,
 }: {
   steps: OnboardingStep[];
   currentStepId: OnboardingStepId;
+  /** Optional inner wizard (e.g. one program at a time). */
+  subProgress?: { current: number; total: number };
 }) {
   const currentIdx = onboardingStepIndex(steps, currentStepId);
   const total = steps.length;
@@ -19,6 +22,9 @@ export function OnboardingProgress({
         <div className="flex items-center justify-between gap-3">
           <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
             Onboarding · Step {currentIdx + 1} of {total}
+            {subProgress
+              ? ` · ${subProgress.current} of ${subProgress.total}`
+              : ""}
           </p>
           <OnboardingExitButton />
         </div>

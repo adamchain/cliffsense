@@ -175,25 +175,24 @@ export default function HelpPage() {
           <Steps
             items={[
               <>
-                <span className="font-semibold text-[var(--color-cs-text)]">Create your profile.</span>{" "}
-                Tell us your state and household size — limits and rules vary by both.
+                <span className="font-semibold text-[var(--color-cs-text)]">Confirm the Monitor role.</span>{" "}
+                Authority is not assumed from a POA or from using this app.
               </>,
               <>
-                <span className="font-semibold text-[var(--color-cs-text)]">Add the beneficiary.</span>{" "}
-                The person whose benefits you&apos;re tracking (this may be you).
+                <span className="font-semibold text-[var(--color-cs-text)]">Record identity.</span>{" "}
+                Name, date of birth, address, household, marital status, and how to reach the person.
               </>,
               <>
-                <span className="font-semibold text-[var(--color-cs-text)]">Confirm enrolled programs.</span>{" "}
-                Pick the programs in play (SNAP, ABD Medicaid, MAGI, Waiver, MAWD, SSI/SSDI, etc.). This decides which limits appear.
+                <span className="font-semibold text-[var(--color-cs-text)]">Screen each program.</span>{" "}
+                Mark Current / Possible / No / Unknown. Identify the exact Medicaid category — never a generic “Medicaid.”
               </>,
               <>
-                <span className="font-semibold text-[var(--color-cs-text)]">Connect a bank.</span>{" "}
-                Securely link accounts through Plaid so deposits and balances can be read (read-only).
+                <span className="font-semibold text-[var(--color-cs-text)]">Connect a bank (optional).</span>{" "}
+                Read-only Plaid access builds the income and resource baseline.
               </>,
               <>
-                <span className="font-semibold text-[var(--color-cs-text)]">Turn on notifications.</span>{" "}
-                Choose email digests and/or push alerts, then open your{" "}
-                <Link href="/dashboard" className={linkCls}>dashboard</Link>.
+                <span className="font-semibold text-[var(--color-cs-text)]">Choose alert email.</span>{" "}
+                Daily digest by default; you can switch to realtime or weekly.
               </>,
             ]}
           />

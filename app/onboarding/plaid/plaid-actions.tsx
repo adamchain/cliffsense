@@ -17,10 +17,10 @@ export function PlaidOnboardingActions({ beneficiaryId }: { beneficiaryId: strin
     await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ onboardingStep: "benefits" }),
+      body: JSON.stringify({ onboardingStep: "notifications" }),
     });
-    await update({ onboardingStep: "benefits" });
-    router.push("/onboarding/benefits");
+    await update({ onboardingStep: "notifications" });
+    router.push("/onboarding/notifications");
     router.refresh();
     setLoading(false);
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -11,6 +11,7 @@ import {
   authTextInputClass,
 } from "@/components/auth/auth-field-classes";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
+import { BETA_SESSION_KEY, isValidBetaAccessCode } from "@/lib/auth/beta-access";
 import {
   IconCheck,
   IconUser,
@@ -125,6 +126,10 @@ const stepHeadings: Record<1 | 2 | 3, { title: string; intro: React.ReactNode }>
 
 export default function SignUpPage() {
   const router = useRouter();
+  const [betaReady, setBetaReady] = useState(false);
+  const [needsBeta, setNeedsBeta] = useState(true);
+  const [betaCode, setBetaCode] = useState("");
+  const [betaError, setBetaError] = useState<string | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [accountType, setAccountType] = useState<(typeof types)[number]["id"]>("beneficiary");
   const [name, setName] = useState("");
@@ -135,6 +140,32 @@ export default function SignUpPage() {
   const [sendingCode, setSendingCode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(BETA_SESSION_KEY) === "1") {
+        setNeedsBeta(false);
+      }
+    } catch {
+      /* ignore */
+    }
+    setBetaReady(true);
+  }, []);
+
+  function submitBetaCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValidBetaAccessCode(betaCode)) {
+      setBetaError("That access code is incorrect. Check your invite and try again.");
+      return;
+    }
+    try {
+      sessionStorage.setItem(BETA_SESSION_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+    setNeedsBeta(false);
+    setBetaError(null);
+  }
 
   /** Step 3: create the account, which emails a 6-digit confirmation code. */
   async function register() {
@@ -199,7 +230,7 @@ export default function SignUpPage() {
           email,
           code,
           redirect: false,
-          callbackUrl: "/onboarding/profile",
+          callbackUrl: "/onboarding/role",
         }),
         new Promise<null>((_, reject) =>
           setTimeout(() => reject(new Error("timeout")), 20_000),
@@ -209,7 +240,7 @@ export default function SignUpPage() {
         setError("That code is invalid or expired. Request a new one.");
         return;
       }
-      router.push("/onboarding/profile");
+      router.push("/onboarding/role");
       router.refresh();
     } catch (err) {
       setError(
@@ -223,6 +254,56 @@ export default function SignUpPage() {
   }
 
   const heading = stepHeadings[step];
+
+  if (!betaReady) {
+    return <div className="min-h-screen bg-[var(--color-cs-surface)]" />;
+  }
+
+  if (needsBeta) {
+    return (
+      <AuthPageShell>
+        <header className="border-b border-[var(--color-cs-border)] pb-7">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-cs-accent-orange)]">
+            Private beta
+          </p>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-[var(--color-cs-navy)] sm:text-4xl">
+            Access code required
+          </h1>
+          <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Enter your invite code before creating an account or starting onboarding.
+          </p>
+        </header>
+        <form className="mt-8 rounded-lg border border-[var(--color-cs-border)] bg-white p-6 sm:p-7" onSubmit={submitBetaCode}>
+          <label className={authLabelClass} htmlFor="beta-code">
+            Access code
+          </label>
+          <input
+            id="beta-code"
+            autoFocus
+            type="text"
+            value={betaCode}
+            onChange={(e) => {
+              setBetaCode(e.target.value);
+              setBetaError(null);
+            }}
+            placeholder="Access code"
+            className={`${authTextInputClass} mt-1.5`}
+          />
+          {betaError ? (
+            <p className="mt-3 text-[13px] font-medium text-[var(--color-cs-danger)]">{betaError}</p>
+          ) : null}
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <Link href="/auth/signin" className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center">
+              Back to sign in
+            </Link>
+            <button type="submit" className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[120px]`}>
+              Continue
+            </button>
+          </div>
+        </form>
+      </AuthPageShell>
+    );
+  }
 
   return (
     <>

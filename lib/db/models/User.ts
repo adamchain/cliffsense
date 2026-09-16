@@ -57,7 +57,17 @@ const userSchema = new Schema(
     },
     onboardingStep: {
       type: String,
-      enum: ["none", "profile", "beneficiary", "plaid", "benefits", "notifications", "complete"],
+      enum: [
+        "none",
+        "role",
+        "profile",
+        "beneficiary",
+        "authority",
+        "plaid",
+        "benefits",
+        "notifications",
+        "complete",
+      ],
       default: "none",
     },
     /** Set when the in-app product walkthrough finishes or is skipped. Null = not done yet. */

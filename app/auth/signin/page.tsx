@@ -7,6 +7,7 @@ import { AuthLoadingOverlay } from "@/components/auth/auth-loading-overlay";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
 import { sameOriginDest } from "@/lib/auth/redirect";
 import { appPathAfterLogin } from "@/lib/auth/public-path";
+import { BETA_SESSION_KEY, isValidBetaAccessCode } from "@/lib/auth/beta-access";
 import { IconLock, IconShieldCheck } from "@tabler/icons-react";
 
 const SIGN_IN_TIMEOUT_MS = 20_000;
@@ -102,7 +103,12 @@ export default function SignInPage() {
 
   function submitBetaCode(e: React.FormEvent) {
     e.preventDefault();
-    if (betaCode.trim() === "access0108") {
+    if (isValidBetaAccessCode(betaCode)) {
+      try {
+        sessionStorage.setItem(BETA_SESSION_KEY, "1");
+      } catch {
+        /* ignore */
+      }
       window.location.assign("/auth/signup");
     } else {
       setBetaError("That access code is incorrect. Check your invite and try again.");

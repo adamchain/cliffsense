@@ -19,7 +19,7 @@ export default async function OnboardingPlaidPage() {
 
   const subtitle = (
     <>
-      We use Plaid to detect recurring deposits and balances that may count toward benefit limits.
+      We use Plaid to load a financial baseline — recurring deposits, wages, and balances that may count toward a specific program’s rules.
       {!linkReady && (
         <>
           {" "}
@@ -44,8 +44,8 @@ export default async function OnboardingPlaidPage() {
     <OnboardingShell
       accountType={session.user.accountType}
       currentStepId="plaid"
-      eyebrow="Plaid"
-      title="Connect a bank account"
+      eyebrow="Bank"
+      title="Load a financial baseline"
       subtitle={subtitle}
     >
       <div className="cs-card p-6 md:p-7">

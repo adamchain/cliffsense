@@ -35,6 +35,17 @@ const META: Record<string, ProgramMeta> = {
       "Report income, resource, living-arrangement, and household changes by the 10th of the month after the change. SSI recipients must also generally report monthly wages.",
     officialUrl: "https://www.ssa.gov/ssi/",
   },
+  DAC: {
+    code: "DAC",
+    label: "DAC / CDB",
+    fullName: "Disabled Adult Child / Childhood Disability Benefits",
+    agency: "Social Security Administration (SSA)",
+    blurb:
+      "Title II benefits on a parent’s record for an adult whose disability began before age 22. Separate from own-record SSDI. Marriage and SGA can affect eligibility.",
+    reporting:
+      "Report work, marital-status, and medical-improvement changes to SSA. DAC is not created by a POA.",
+    officialUrl: "https://www.ssa.gov/benefits/disability/",
+  },
   SSDI: {
     code: "SSDI",
     label: "SSDI",

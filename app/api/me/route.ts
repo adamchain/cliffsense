@@ -11,7 +11,17 @@ const patchSchema = z.object({
   state: z.string().length(2).optional(),
   householdSize: z.coerce.number().min(1).optional(),
   onboardingStep: z
-    .enum(["none", "profile", "beneficiary", "plaid", "benefits", "notifications", "complete"])
+    .enum([
+      "none",
+      "role",
+      "profile",
+      "beneficiary",
+      "authority",
+      "plaid",
+      "benefits",
+      "notifications",
+      "complete",
+    ])
     .optional(),
   notificationPrefs: z
     .object({
@@ -38,6 +48,11 @@ const patchSchema = z.object({
       state: z.string().length(2),
       county: z.string().optional(),
       householdSize: z.coerce.number().min(1),
+      dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+      address: z.string().max(200).optional(),
+      maritalStatus: z.string().max(40).optional(),
+      disabilityStatus: z.string().max(40).optional(),
+      preferredCommunications: z.string().max(120).optional(),
     })
     .optional(),
   /** true = mark walkthrough done; false = reset so it can run again. */
@@ -109,6 +124,16 @@ export async function PATCH(req: Request) {
 
   if (ownerProfile) {
     const filter = { ownerUserId: session.user.id, isOwner: true };
+    const dob =
+      ownerProfile.dateOfBirth && ownerProfile.dateOfBirth.length === 10
+        ? new Date(`${ownerProfile.dateOfBirth}T00:00:00.000Z`)
+        : undefined;
+    const openingPatch = {
+      address: ownerProfile.address ?? "",
+      maritalStatus: ownerProfile.maritalStatus ?? "",
+      disabilityStatus: ownerProfile.disabilityStatus ?? "",
+      preferredCommunications: ownerProfile.preferredCommunications ?? "",
+    };
     let ben = await Beneficiary.findOne(filter);
     if (!ben) {
       ben = await Beneficiary.create({
@@ -118,6 +143,8 @@ export async function PATCH(req: Request) {
         state: ownerProfile.state.toUpperCase(),
         county: ownerProfile.county ?? "",
         householdSize: ownerProfile.householdSize,
+        dateOfBirth: dob && !Number.isNaN(dob.getTime()) ? dob : null,
+        opening: openingPatch,
         isOwner: true,
       });
       await logActivity({
@@ -135,6 +162,8 @@ export async function PATCH(req: Request) {
       ben.state = ownerProfile.state.toUpperCase();
       ben.county = ownerProfile.county ?? "";
       ben.householdSize = ownerProfile.householdSize;
+      if (dob && !Number.isNaN(dob.getTime())) ben.dateOfBirth = dob;
+      ben.opening = { ...((ben.opening as Record<string, unknown> | null) ?? {}), ...openingPatch };
       await ben.save();
       await logActivity({
         userId: session.user.id,

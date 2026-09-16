@@ -288,6 +288,7 @@ export function formsForPrograms(programs: Program[]): CatalogForm[] {
 export const PROGRAM_LABELS: Record<Program, string> = {
   SSI: "SSI — Supplemental Security Income",
   SSDI: "SSDI — Social Security Disability Insurance",
+  DAC: "DAC / CDB — Childhood Disability Benefits",
   SNAP: "SNAP — Food assistance",
   MedicaidABD: "ABD Medicaid — Healthy Horizons",
   MedicaidMAGI: "MAGI Medicaid — expansion / families",

@@ -7,6 +7,7 @@ const benefitEnrollmentSchema = new Schema(
       enum: [
         "SSI",
         "SSDI",
+        "DAC",
         "SNAP",
         "Medicaid",
         "MedicaidABD",
@@ -47,6 +48,8 @@ const beneficiarySchema = new Schema(
     twpMonthsUsed: { type: Number, default: 0, min: 0, max: 9 },
     /** Answers for the gated 2026–27 SNAP/MAGI/immigrant policy screen. */
     policyScreen: { type: Schema.Types.Mixed, default: null },
+    /** Case-opening answers from Benefit Monitor onboarding (authority, screening, identity extras). */
+    opening: { type: Schema.Types.Mixed, default: null },
     benefitsEnrolled: { type: [benefitEnrollmentSchema], default: [] },
     /** systemKeys of bundled system thresholds the user has detached (opted out of). */
     detachedThresholdKeys: { type: [String], default: [] },

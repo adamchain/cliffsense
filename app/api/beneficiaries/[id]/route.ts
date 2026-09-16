@@ -39,6 +39,19 @@ const patchSchema = z.object({
   county: z.string().trim().optional(),
   householdSize: z.coerce.number().int().min(1).optional(),
   twpMonthsUsed: z.coerce.number().int().min(0).max(9).optional(),
+  opening: z
+    .object({
+      consentAcknowledged: z.boolean().optional(),
+      authorities: z.array(z.string()).optional(),
+      managers: z.record(z.string(), z.string()).optional(),
+      address: z.string().optional(),
+      maritalStatus: z.string().optional(),
+      disabilityStatus: z.string().optional(),
+      preferredCommunications: z.string().optional(),
+      benefitScreening: z.record(z.string(), z.string()).optional(),
+      medicaidCategory: z.string().optional(),
+    })
+    .optional(),
   policyScreen: z
     .object({
       age: z.number().nullable(),
@@ -112,6 +125,19 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (parsed.data.householdSize !== undefined) $set.householdSize = parsed.data.householdSize;
   if (parsed.data.twpMonthsUsed !== undefined) $set.twpMonthsUsed = parsed.data.twpMonthsUsed;
   if (parsed.data.policyScreen !== undefined) $set.policyScreen = parsed.data.policyScreen;
+  if (parsed.data.opening !== undefined) {
+    const prior =
+      existing.opening && typeof existing.opening === "object"
+        ? (existing.opening as Record<string, unknown>)
+        : {};
+    $set.opening = {
+      ...prior,
+      ...parsed.data.opening,
+      ...(parsed.data.opening.consentAcknowledged
+        ? { consentAcknowledgedAt: prior.consentAcknowledgedAt ?? new Date() }
+        : {}),
+    };
+  }
 
   let nextEnrolled: {
     program: string;

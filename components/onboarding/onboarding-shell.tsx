@@ -15,6 +15,8 @@ type OnboardingShellProps = {
   title: ReactNode;
   /** Supporting copy under the heading. */
   subtitle?: ReactNode;
+  /** Inner progress for a multi-question step. */
+  subProgress?: { current: number; total: number };
   children: ReactNode;
 };
 
@@ -30,6 +32,7 @@ export function OnboardingShell({
   eyebrow,
   title,
   subtitle,
+  subProgress,
   children,
 }: OnboardingShellProps) {
   const steps = getOnboardingSteps(accountType);
@@ -37,7 +40,7 @@ export function OnboardingShell({
   const prevStep = idx > 0 ? steps[idx - 1] : null;
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      <OnboardingProgress steps={steps} currentStepId={currentStepId} />
+      <OnboardingProgress steps={steps} currentStepId={currentStepId} subProgress={subProgress} />
       <main className="mx-auto w-full max-w-lg px-5 py-10 sm:py-14">
         <Link href="/" className="inline-flex" aria-label="MyBenefitsPA home">
           <Image

@@ -2,6 +2,7 @@
 export const PROGRAMS = [
   "SSI",
   "SSDI",
+  "DAC",
   "SNAP",
   "MedicaidABD",
   "MedicaidMAGI",
