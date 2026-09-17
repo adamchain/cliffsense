@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateWorkPlanner, SGA_NONBLIND_CENTS, TWP_SERVICE_CENTS } from "./work-planner";
+import { workPlannerAskLinkLabel, workPlannerAskQuestion } from "./fix-prompts";
 
 describe("work planner", () => {
   it("flags SSDI TWP then SGA after nine months", () => {
@@ -28,5 +29,57 @@ describe("work planner", () => {
       overtimeIsTemporary: false,
     });
     expect(rows.find((r) => r.id === "mawd")?.status).toBe("concern");
+  });
+
+  it("maps planner status to ask / confirm / explain labels", () => {
+    expect(workPlannerAskLinkLabel("ok")).toBe("Explain with AI");
+    expect(workPlannerAskLinkLabel("watch")).toBe("Confirm with AI");
+    expect(workPlannerAskLinkLabel("concern")).toBe("Ask AI what to do");
+  });
+
+  it("hands each planner card to the advisor with wages and the on-screen result", () => {
+    const input = {
+      monthlyGrossWagesCents: 0,
+      otherUnearnedCents: 1200_00,
+      twpMonthsUsed: 0,
+      overtimeIsTemporary: false,
+    };
+    const rows = evaluateWorkPlanner(input);
+    for (const row of rows) {
+      const q = workPlannerAskQuestion({ ...row, ...input });
+      expect(q).toContain(row.program === "Medicaid" ? "Medicaid" : row.program);
+      expect(q).toContain(row.headline);
+      expect(q).toMatch(/\$1,200\.00 unearned/);
+      expect(q.length).toBeLessThanOrEqual(500);
+    }
+    expect(workPlannerAskQuestion({ ...rows.find((r) => r.id === "mawd")!, ...input })).toMatch(
+      /What should I do next/,
+    );
+  });
+
+  it("keeps overtime and SGA concern questions within the advisor ask length", () => {
+    const overtimeRows = evaluateWorkPlanner({
+      monthlyGrossWagesCents: 2800_00,
+      otherUnearnedCents: 900_00,
+      twpMonthsUsed: 4,
+      overtimeIsTemporary: true,
+    });
+    const sgaRows = evaluateWorkPlanner({
+      monthlyGrossWagesCents: SGA_NONBLIND_CENTS,
+      otherUnearnedCents: 0,
+      twpMonthsUsed: 9,
+      overtimeIsTemporary: false,
+    });
+    for (const row of [...overtimeRows, ...sgaRows]) {
+      const overtime = overtimeRows.includes(row);
+      const q = workPlannerAskQuestion({
+        ...row,
+        monthlyGrossWagesCents: overtime ? 2800_00 : SGA_NONBLIND_CENTS,
+        otherUnearnedCents: overtime ? 900_00 : 0,
+        twpMonthsUsed: overtime ? 4 : 9,
+        overtimeIsTemporary: overtime,
+      });
+      expect(q.length).toBeLessThanOrEqual(500);
+    }
   });
 });

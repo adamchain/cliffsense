@@ -43,3 +43,41 @@ export function programOverviewQuestion(program: string): string {
     `(income, assets, reporting) and practical tips to stay eligible while improving my situation.`
   );
 }
+
+/** Button/link label for a work-planner card: ask, confirm, or explain. */
+export function workPlannerAskLinkLabel(status: "ok" | "watch" | "concern"): string {
+  if (status === "concern") return "Ask AI what to do";
+  if (status === "watch") return "Confirm with AI";
+  return "Explain with AI";
+}
+
+/**
+ * Question that hands a work-and-income planner card to the advisor so it can
+ * explain the estimate, confirm the reading, or advise next steps.
+ */
+export function workPlannerAskQuestion(input: {
+  program: string;
+  status: "ok" | "watch" | "concern";
+  headline: string;
+  detail: string;
+  monthlyGrossWagesCents: number;
+  otherUnearnedCents: number;
+  twpMonthsUsed: number;
+  overtimeIsTemporary?: boolean;
+}): string {
+  const prog = programLabel(input.program);
+  const wages = formatPlainUsdFromCents(input.monthlyGrossWagesCents);
+  const unearned = formatPlainUsdFromCents(input.otherUnearnedCents);
+  const overtime = input.overtimeIsTemporary ? " Temporary overtime is marked." : "";
+  const intent =
+    input.status === "concern"
+      ? "What should I do next, and who do I confirm with?"
+      : input.status === "watch"
+        ? "Confirm whether I'm reading this right and what to watch."
+        : "Explain this in plain language and what to watch.";
+  return (
+    `PA 2026 ${prog} work-income planner (${input.status}): ${input.headline}. ` +
+    `Modeled ${wages}/mo wages, ${unearned} unearned, ${input.twpMonthsUsed}/9 TWP months.` +
+    `${overtime} ${input.detail} ${intent} Not an eligibility determination.`
+  );
+}

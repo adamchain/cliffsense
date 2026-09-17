@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { IconSparkles } from "@tabler/icons-react";
 import { evaluateWorkPlanner } from "@/lib/benefits/work-planner";
+import {
+  advisorAskHref,
+  workPlannerAskLinkLabel,
+  workPlannerAskQuestion,
+} from "@/lib/benefits/fix-prompts";
 
 function dollarsToCents(raw: string): number {
   const n = Number(String(raw).replace(/[^0-9.]/g, ""));
@@ -100,29 +107,56 @@ export function WorkPlanner({
       )}
       {saveState && <p className="mt-1 text-[12px] text-[var(--color-cs-text-secondary)]">{saveState}</p>}
       <ul className="mt-4 space-y-2">
-        {rows.map((r) => (
-          <li
-            key={r.id}
-            className="rounded border border-[var(--color-cs-border)] bg-white p-3 text-[13px]"
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <p className="font-medium text-[var(--color-cs-text)]">{r.program}</p>
-              <span
-                className={`text-[11px] font-semibold uppercase ${
+        {rows.map((r) => {
+          const askLabel = workPlannerAskLinkLabel(r.status);
+          const askHref = advisorAskHref(
+            workPlannerAskQuestion({
+              program: r.program,
+              status: r.status,
+              headline: r.headline,
+              detail: r.detail,
+              monthlyGrossWagesCents: dollarsToCents(wages),
+              otherUnearnedCents: dollarsToCents(unearned),
+              twpMonthsUsed: twp,
+              overtimeIsTemporary,
+            }),
+          );
+          return (
+            <li
+              key={r.id}
+              className="rounded border border-[var(--color-cs-border)] bg-white p-3 text-[13px]"
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="font-medium text-[var(--color-cs-text)]">{r.program}</p>
+                <span
+                  className={`text-[11px] font-semibold uppercase ${
+                    r.status === "concern"
+                      ? "text-[var(--color-cs-danger)]"
+                      : r.status === "watch"
+                        ? "text-[var(--color-cs-warning)]"
+                        : "text-[var(--color-cs-text-muted)]"
+                  }`}
+                >
+                  {r.status}
+                </span>
+              </div>
+              <p className="mt-1 text-[var(--color-cs-text)]">{r.headline}</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">{r.detail}</p>
+              <Link
+                href={askHref}
+                aria-label={`${askLabel} about ${r.program}`}
+                className={
                   r.status === "concern"
-                    ? "text-[var(--color-cs-danger)]"
-                    : r.status === "watch"
-                      ? "text-[var(--color-cs-warning)]"
-                      : "text-[var(--color-cs-text-muted)]"
-                }`}
+                    ? "mt-2 inline-flex items-center gap-1 rounded-[14px] bg-[var(--color-cs-brand)] px-3 py-1.5 text-[12.5px] font-semibold text-white"
+                    : "mt-2 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[var(--color-cs-brand)]"
+                }
               >
-                {r.status}
-              </span>
-            </div>
-            <p className="mt-1 text-[var(--color-cs-text)]">{r.headline}</p>
-            <p className="mt-1 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">{r.detail}</p>
-          </li>
-        ))}
+                <IconSparkles size={13} stroke={1.5} aria-hidden />
+                {askLabel}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
