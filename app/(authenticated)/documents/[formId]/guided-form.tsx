@@ -141,7 +141,7 @@ export function GuidedForm({
             }`}
           >
             <IconDownload size={16} stroke={1.8} aria-hidden />
-            {downloading ? "Preparing…" : officialAvailable ? "MyBenefitsPA summary" : "Download PDF"}
+            {downloading ? "Preparing…" : officialAvailable ? "BeneWatch summary" : "Download PDF"}
           </button>
           <button
             type="button"

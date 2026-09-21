@@ -34,7 +34,7 @@ export function composeDigestText(groups: DigestGroup[], frequency: "daily" | "w
     lines.push("");
   }
 
-  lines.push(`Open MyBenefitsPA: ${appUrl()}/alerts`);
+  lines.push(`Open BeneWatch: ${appUrl()}/alerts`);
   return withDisclaimer(lines.join("\n"));
 }
 
@@ -152,14 +152,14 @@ export async function sendDigestForFrequency(frequency: "daily" | "weekly"): Pro
     }));
 
     const subject =
-      frequency === "weekly" ? "MyBenefitsPA weekly summary" : "MyBenefitsPA daily summary";
+      frequency === "weekly" ? "BeneWatch weekly summary" : "BeneWatch daily summary";
     const { html } = renderEmail({
       heading: frequency === "weekly" ? "Your weekly benefits summary" : "Your daily benefits summary",
       preheader: `${groups.reduce((n, g) => n + g.alerts.length, 0)} new threshold ${
         groups.reduce((n, g) => n + g.alerts.length, 0) === 1 ? "alert" : "alerts"
       }.`,
       bodyHtml: composeDigestHtml(groups, frequency),
-      cta: { label: "Open MyBenefitsPA", url: `${appUrl()}/alerts` },
+      cta: { label: "Open BeneWatch", url: `${appUrl()}/alerts` },
     });
     const res = await sendEmail({
       to: recipients,

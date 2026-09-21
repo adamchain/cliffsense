@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { HeroVideo } from "@/components/landing/hero-video";
 import { StayUpdatedForm } from "@/components/auth/stay-updated-form";
+import { BrandStackedMark } from "@/components/brand/brand-logo";
 
 export default function HomePage() {
   return (
@@ -9,14 +9,9 @@ export default function HomePage() {
       <div className="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28 lg:py-36">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="max-w-2xl">
-            <Image
-              src="/mybenefitspa-logo.png"
-              alt="MyBenefitsPA"
-              width={180}
-              height={142}
-              priority
-              className="h-12 w-auto brightness-0 invert"
-            />
+            <div className="inline-flex rounded-2xl bg-white px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.18)]">
+              <BrandStackedMark priority className="h-16 w-auto sm:h-[4.5rem]" />
+            </div>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
                 Coming soon
@@ -29,7 +24,7 @@ export default function HomePage() {
               Act Before an Avoidable Lapse Becomes a Loss of Care
             </h1>
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-              MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
+              BeneWatch gives beneficiaries and authorized caregivers an active system for
               recognizing approaching benefit risks, organizing required evidence, tracking
               critical deadlines, and maintaining a clear record of what has been submitted.
             </p>

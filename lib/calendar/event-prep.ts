@@ -86,7 +86,7 @@ function kindHeadline(kind: string, wage: boolean, renewal: boolean): { headline
 }
 
 /**
- * Checklist of items MyBenefitsPA can help gather before a deadline.
+ * Checklist of items BeneWatch can help gather before a deadline.
  */
 export function buildEventPrepPackage(input: PrepInput): EventPrepPackage {
   const code = input.program ? programCodeKey(input.program) : null;

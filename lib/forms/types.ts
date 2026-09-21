@@ -87,13 +87,13 @@ export type FillableFormDef = {
   /** The matching official form to file (PDF or portal). */
   officialUrl: string;
   officialLabel: string;
-  /** When true, this is a MyBenefitsPA helper worksheet, not the agency's form. */
+  /** When true, this is a BeneWatch helper worksheet, not the agency's form. */
   helper?: boolean;
   sections: FormSection[];
   /** Printed at the foot of the generated document. */
   disclaimer: string;
   /**
-   * When set, MyBenefitsPA can fetch the official fillable PDF at `officialUrl`
+   * When set, BeneWatch can fetch the official fillable PDF at `officialUrl`
    * and auto-fill its AcroForm fields. Keys are this form's field `name`s; values
    * are keyword phrases matched (case-insensitively) against each official field's
    * internal name + tooltip text. Only set for forms whose officialUrl is a

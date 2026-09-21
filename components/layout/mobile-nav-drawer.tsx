@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import { BrandLogo } from "@/components/brand/brand-logo";
+import { isHrefActive } from "./nav-config";
 import type { NavItem } from "./mobile-tab-bar";
 
 /**
@@ -23,7 +25,7 @@ export function MobileNavDrawer({
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const badge = alertCount > 9 ? "9+" : String(alertCount);
-  const isActive = (href: string) => activeHref === href || activeHref.startsWith(href + "/");
+  const isActive = (href: string) => isHrefActive(activeHref, href);
 
   // Portals need a client mount; also lock body scroll while the drawer is open.
   useEffect(() => setMounted(true), []);
@@ -42,10 +44,8 @@ export function MobileNavDrawer({
     <div className="fixed inset-0 z-[100] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-[var(--color-cs-navy)]/40" onClick={() => setOpen(false)} />
           <div className="cs-safe-bottom absolute inset-y-0 left-0 flex w-72 max-w-[82%] flex-col bg-white shadow-[var(--shadow-cs-float)]">
-            <div className="flex items-center justify-between px-4 py-4">
-              <span className="text-[17px] font-extrabold tracking-tight text-[var(--color-cs-text)]">
-                MyBenefitsPA
-              </span>
+            <div className="flex items-center justify-between gap-3 px-4 py-4">
+              <BrandLogo className="h-7 w-auto min-w-0 max-w-[70%]" />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -58,7 +58,7 @@ export function MobileNavDrawer({
             <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-6" aria-label="Main">
               {nav.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
-                const showCount = href === "/settings" && alertCount > 0;
+                const showCount = href === "/limits" && alertCount > 0;
                 return (
                   <Link
                     key={href}

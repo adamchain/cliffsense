@@ -39,7 +39,7 @@ export function StayUpdatedForm() {
       <div className="w-full rounded-lg border border-[var(--color-cs-border)] bg-white p-6 shadow-sm">
         <h2 className="text-lg font-medium text-[var(--color-cs-text)]">You&apos;re on the list</h2>
         <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-          Thank you. We&apos;ll be in touch as MyBenefitsPA becomes available.
+          Thank you. We&apos;ll be in touch as BeneWatch becomes available.
         </p>
       </div>
     );
@@ -49,7 +49,7 @@ export function StayUpdatedForm() {
     <div className="w-full rounded-lg border border-[var(--color-cs-border)] bg-white p-6 shadow-sm">
       <h2 className="text-lg font-medium text-[var(--color-cs-text)]">Stay updated</h2>
       <p className="mt-1 text-[13px] text-[var(--color-cs-text-secondary)]">
-        We&apos;re building MyBenefitsPA. Leave your info and we&apos;ll reach out when it&apos;s ready.
+        We&apos;re building BeneWatch. Leave your info and we&apos;ll reach out when it&apos;s ready.
       </p>
       <form className="mt-5 flex flex-col gap-3.5" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1">

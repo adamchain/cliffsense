@@ -1,7 +1,7 @@
 # CliffSense — iOS Prototype
 
 `ios-prototype.html` is a self-contained, clickable iOS-style prototype of the
-CliffSense (MyBenefitsPA) mobile experience. Open it in any browser — no build
+CliffSense (BeneWatch) mobile experience. Open it in any browser — no build
 step or dependencies (all CSS/JS/SVG is inline).
 
 ## What's in it

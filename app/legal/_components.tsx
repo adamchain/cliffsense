@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /* ----------------------------------------------------------------------------
  * Shared presentational helpers for the legal/compliance pages. The content of
- * each policy is taken verbatim from the MyBenefitsPA "Counsel Review Draft 1.0"
+ * each policy is taken verbatim from the BeneWatch "Counsel Review Draft 1.0"
  * compliance package and rendered with the site's design tokens.
  * ------------------------------------------------------------------------- */
 
@@ -26,7 +26,7 @@ export function DocHeader({
         <table className="w-full border-collapse text-left text-[13px]">
           <tbody>
             {[
-              ["Company", "MyBenefitsPA Inc."],
+              ["Company", "BeneWatch Inc."],
               ["Website", "www.mybenefitspa.com"],
               ["Document Status", "Counsel Review Draft 1.0"],
               ["Document Date", "June 23, 2026"],

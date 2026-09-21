@@ -4,9 +4,9 @@ import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing
 import { continueDestination } from "@/lib/auth/continue-destination";
 
 export const metadata: Metadata = {
-  title: "About Us — MyBenefitsPA",
+  title: "About Us — BeneWatch",
   description:
-    "Preserving access. Strengthening caregiver capacity. Reducing avoidable benefit loss. Learn why MyBenefitsPA is being built for Pennsylvania beneficiaries and authorized caregivers.",
+    "Preserving access. Strengthening caregiver capacity. Reducing avoidable benefit loss. Learn why BeneWatch is being built for Pennsylvania beneficiaries and authorized caregivers.",
 };
 
 const PROBLEM_GAPS = [
@@ -88,13 +88,13 @@ export default async function AboutPage() {
         {/* Intro */}
         <section className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-6">
-            <p className="cs-eyebrow text-[var(--color-cs-brand)]">About MyBenefitsPA</p>
+            <p className="cs-eyebrow text-[var(--color-cs-brand)]">About BeneWatch</p>
             <h1 className="mt-2 text-[32px] font-bold leading-tight tracking-[-0.5px] text-[var(--color-cs-text)] sm:text-[40px]">
               Preserving Access. Strengthening Caregiver Capacity. Reducing Avoidable Benefit Loss.
             </h1>
             <div className="mt-6 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               <p>
-                MyBenefitsPA is a Pennsylvania-first benefits continuity and renewal compliance
+                BeneWatch is a Pennsylvania-first benefits continuity and renewal compliance
                 platform being developed for beneficiaries, families, and authorized caregivers.
               </p>
               <p>
@@ -103,7 +103,7 @@ export default async function AboutPage() {
                 Medicaid and other public benefits.
               </p>
               <p>
-                MyBenefitsPA does not replace Pennsylvania&apos;s eligibility infrastructure. It
+                BeneWatch does not replace Pennsylvania&apos;s eligibility infrastructure. It
                 fills a different need: helping households manage the continuous responsibilities
                 that arise between applications, renewals, agency decisions, and other official
                 transactions.
@@ -148,7 +148,7 @@ export default async function AboutPage() {
             <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               Pennsylvania&apos;s own records show that closures associated with missing information,
               expired certification periods, unmet reporting obligations, and financial changes recur
-              at substantial scale. MyBenefitsPA is designed around prevention: readiness, deadlines,
+              at substantial scale. BeneWatch is designed around prevention: readiness, deadlines,
               evidence, accountability, and follow-up before an avoidable interruption becomes a loss
               of care.
             </p>
@@ -165,7 +165,7 @@ export default async function AboutPage() {
               Built From Firsthand Experience
             </h2>
             <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              <p>MyBenefitsPA grew from a personal need.</p>
+              <p>BeneWatch grew from a personal need.</p>
               <p>
                 One of our founders, Frank, is the father of an adult son with special needs. Frank
                 experienced firsthand the continuing demands of maintaining multiple public benefits:
@@ -201,7 +201,7 @@ export default async function AboutPage() {
         <section className="border-b border-[var(--color-cs-border)] bg-gradient-to-b from-[#e8faef] to-[var(--color-cs-surface)] py-16 sm:py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-6">
             <h2 className="text-[26px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[32px]">
-              What MyBenefitsPA Is Being Built to Do
+              What BeneWatch Is Being Built to Do
             </h2>
             <div className="mt-8 space-y-5">
               {CAPABILITIES.map((c) => (
@@ -226,7 +226,7 @@ export default async function AboutPage() {
               Designed for Real-World Caregiving
             </h2>
             <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              MyBenefitsPA is designed for both beneficiary-directed and caregiver-managed
+              BeneWatch is designed for both beneficiary-directed and caregiver-managed
               households, including:
             </p>
             <ul className="mt-6 space-y-3">
@@ -265,7 +265,7 @@ export default async function AboutPage() {
                 incomplete evidence, or could not prove what it had already provided.
               </p>
               <p>
-                MyBenefitsPA bridges the operational gap between official benefit systems and the
+                BeneWatch bridges the operational gap between official benefit systems and the
                 people who must manage their requirements every day.
               </p>
             </div>
@@ -280,7 +280,7 @@ export default async function AboutPage() {
             </h2>
             <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               A benefit-continuity platform must earn and preserve the trust of the people who use
-              it. MyBenefitsPA is being designed around:
+              it. BeneWatch is being designed around:
             </p>
             <ul className="mt-6 space-y-2.5">
               {TRUST.map((item) => (
@@ -294,10 +294,10 @@ export default async function AboutPage() {
               ))}
             </ul>
             <p className="mt-8 text-[13px] leading-relaxed text-[var(--color-cs-text-muted)]">
-              Important notice: MyBenefitsPA is not a government agency and does not determine or
+              Important notice: BeneWatch is not a government agency and does not determine or
               guarantee eligibility, continued coverage, benefit amounts, or the outcome of any
               application, renewal, reconsideration, or appeal. Information provided through
-              MyBenefitsPA does not replace official agency instructions or individualized legal,
+              BeneWatch does not replace official agency instructions or individualized legal,
               tax, financial, medical, or benefits advice.
             </p>
           </div>

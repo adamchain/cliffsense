@@ -86,9 +86,9 @@ export async function POST(req: Request) {
       const code = await issueLoginCode(user._id, LOGIN_CODE_TTL_MS);
       const { html, text } = renderEmail({
         heading: "Your sign-in code",
-        preheader: `${code} is your MyBenefitsPA sign-in code.`,
+        preheader: `${code} is your BeneWatch sign-in code.`,
         paragraphs: [
-          "Welcome to MyBenefitsPA. Enter this code on the sign-up screen to confirm your email and finish creating your account.",
+          "Welcome to BeneWatch. Enter this code on the sign-up screen to confirm your email and finish creating your account.",
         ],
         code,
         bodyText:
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       });
       const sent = await sendEmail({
         to: user.email,
-        subject: `Your MyBenefitsPA sign-in code: ${code}`,
+        subject: `Your BeneWatch sign-in code: ${code}`,
         html,
         text,
       });

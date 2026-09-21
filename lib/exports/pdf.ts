@@ -81,7 +81,7 @@ export async function renderReportPdf(
   ensure(28);
   y -= 10;
   draw(
-    "Informational only. MyBenefitsPA does not determine eligibility — confirm with the relevant agency.",
+    "Informational only. BeneWatch does not determine eligibility — confirm with the relevant agency.",
     { font: sans, size: 8, color: rgb(0.4, 0.4, 0.4) },
   );
 

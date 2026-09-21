@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Bullets, DocHeader, Section, Table } from "../_components";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — MyBenefitsPA",
+  title: "Privacy Policy — BeneWatch",
   description:
-    "How MyBenefitsPA collects, uses, discloses, protects, retains, and deletes personal information.",
+    "How BeneWatch collects, uses, discloses, protects, retains, and deletes personal information.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -24,15 +24,15 @@ export default function PrivacyPolicyPage() {
 
       <Section title="1. Introduction and Scope">
         <p>
-          This Privacy Policy explains how MyBenefitsPA Inc. collects, uses, discloses, protects,
-          retains, and deletes personal information in connection with the MyBenefitsPA website,
+          This Privacy Policy explains how BeneWatch Inc. collects, uses, discloses, protects,
+          retains, and deletes personal information in connection with the BeneWatch website,
           applications, software-as-a-service platform, alerts, document storage, advisor/caregiver
           features, AI-assisted guidance, and financial-data integrations.
         </p>
         <p>
           The Platform is intended to help users and authorized advisors organize and monitor
           information relevant to public-benefit eligibility, renewal deadlines, income and asset
-          thresholds, and supporting documentation. MyBenefitsPA is not a government agency, is not
+          thresholds, and supporting documentation. BeneWatch is not a government agency, is not
           affiliated with SSA, CMS, Medicaid, SNAP, MAWD, any state Medicaid agency, any county
           assistance office, or any financial institution, and does not guarantee benefit eligibility,
           approval, renewal, or avoidance of overpayment.
@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
           This Policy is designed to address federal and state privacy and data-security requirements
           where applicable, including consumer privacy laws such as the Delaware Personal Data Privacy
           Act, federal privacy and unfair-practices standards enforced by the FTC, financial-data
-          safeguards where applicable, HIPAA obligations where MyBenefitsPA acts as a covered entity or
+          safeguards where applicable, HIPAA obligations where BeneWatch acts as a covered entity or
           business associate, and state consumer-health-data requirements where applicable.
         </p>
       </Section>
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
             ],
             [
               "PHI",
-              "Protected Health Information as defined by HIPAA, but only when MyBenefitsPA is legally acting as a covered entity or business associate. Health or disability information uploaded directly by a consumer may be sensitive health information even if it is not HIPAA PHI.",
+              "Protected Health Information as defined by HIPAA, but only when BeneWatch is legally acting as a covered entity or business associate. Health or disability information uploaded directly by a consumer may be sensitive health information even if it is not HIPAA PHI.",
             ],
             [
               "Consumer Health Data",
@@ -129,8 +129,8 @@ export default function PrivacyPolicyPage() {
       <Section title="4. Plaid and Financial-Data Authorization">
         <p>
           When a user connects a financial account through Plaid or another financial-data provider,
-          the user authorizes MyBenefitsPA and the provider to access and process only the financial
-          data selected and necessary for the user-requested services. MyBenefitsPA does not request,
+          the user authorizes BeneWatch and the provider to access and process only the financial
+          data selected and necessary for the user-requested services. BeneWatch does not request,
           receive, or store the user&apos;s financial-institution username or password. Connections use
           tokenized access and provider-managed authentication flows.
         </p>
@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
 
       <Section title="5. Consent for Sensitive Data">
         <p>
-          MyBenefitsPA processes Sensitive Data only where the user has requested the relevant service,
+          BeneWatch processes Sensitive Data only where the user has requested the relevant service,
           where processing is necessary to provide that service, where another lawful basis applies, or
           where affirmative consent is required and obtained. Consent is recorded in a consent ledger
           that may include the consenting person, date and time, device or IP metadata, data
@@ -157,7 +157,7 @@ export default function PrivacyPolicyPage() {
         <p>
           Users may revoke consent or disconnect integrations through account settings or by contacting
           support@mybenefitspa.com. Revocation may limit or terminate Platform functionality.
-          Revocation does not require MyBenefitsPA to delete records retained for legal, security,
+          Revocation does not require BeneWatch to delete records retained for legal, security,
           dispute, audit, regulatory, or documented benefits-monitoring purposes.
         </p>
       </Section>
@@ -188,8 +188,8 @@ export default function PrivacyPolicyPage() {
         </p>
         <p>
           Where applicable law gives users the right to opt out of profiling or automated
-          decision-making producing legal or similarly significant effects, MyBenefitsPA will honor
-          that right. MyBenefitsPA does not make final eligibility decisions, approve benefits, deny
+          decision-making producing legal or similarly significant effects, BeneWatch will honor
+          that right. BeneWatch does not make final eligibility decisions, approve benefits, deny
           benefits, or submit government determinations.
         </p>
       </Section>
@@ -226,9 +226,9 @@ export default function PrivacyPolicyPage() {
           ]}
         />
         <p>
-          MyBenefitsPA does not sell personal information. MyBenefitsPA does not use Sensitive Data for
+          BeneWatch does not sell personal information. BeneWatch does not use Sensitive Data for
           targeted advertising. If any future feature involves targeted advertising, sale, or profiling
-          subject to opt-out rights, MyBenefitsPA will provide required notices and controls before
+          subject to opt-out rights, BeneWatch will provide required notices and controls before
           enabling that feature.
         </p>
       </Section>
@@ -244,7 +244,7 @@ export default function PrivacyPolicyPage() {
           items={[
             "The Platform may require upload or verification of authority documents before advisor access is granted or expanded.",
             "Access may be limited by role, beneficiary, data category, program, document folder, and permitted action.",
-            "MyBenefitsPA may suspend advisor access if authority is disputed, expired, revoked, incomplete, or reasonably suspected to be misused.",
+            "BeneWatch may suspend advisor access if authority is disputed, expired, revoked, incomplete, or reasonably suspected to be misused.",
             "Beneficiaries or authorized account holders may revoke advisor access, subject to legal holds and account-control rules.",
           ]}
         />
@@ -259,7 +259,7 @@ export default function PrivacyPolicyPage() {
           to required notice and choice.
         </p>
         <p>
-          Where required by law, MyBenefitsPA recognizes Universal Opt-Out Mechanisms, including Global
+          Where required by law, BeneWatch recognizes Universal Opt-Out Mechanisms, including Global
           Privacy Control, for applicable opt-out rights. Because the Platform is not designed for
           targeted advertising using Sensitive Data, Global Privacy Control will be treated
           conservatively as an opt-out from sale, sharing for targeted advertising, and applicable
@@ -272,13 +272,13 @@ export default function PrivacyPolicyPage() {
           Depending on state of residence and applicable law, users may have rights to access, confirm
           processing, receive a copy, correct, delete, obtain portability, opt out of sale, opt out of
           targeted advertising, opt out of certain profiling, withdraw consent, limit use of sensitive
-          information, appeal a denied request, and use an authorized agent. MyBenefitsPA will not
+          information, appeal a denied request, and use an authorized agent. BeneWatch will not
           discriminate against a user for exercising legally protected privacy rights.
         </p>
         <Bullets
           items={[
-            "Requests may be submitted to support@mybenefitspa.com. MyBenefitsPA will verify the requester's identity and authority before disclosing or deleting information.",
-            "If a request is denied, MyBenefitsPA will provide the reason and, where required, instructions for appeal. Appeals will be reviewed by a person not involved in the original denial where practicable.",
+            "Requests may be submitted to support@mybenefitspa.com. BeneWatch will verify the requester's identity and authority before disclosing or deleting information.",
+            "If a request is denied, BeneWatch will provide the reason and, where required, instructions for appeal. Appeals will be reviewed by a person not involved in the original denial where practicable.",
             "Deletion requests may be limited by legal holds, security logs, fraud-prevention needs, dispute records, tax/accounting obligations, benefits-record retention needs, and other lawful exceptions.",
             "Authorized-agent requests require proof of authorization and may require direct confirmation from the user or legal representative.",
           ]}
@@ -287,17 +287,17 @@ export default function PrivacyPolicyPage() {
 
       <Section title="12. HIPAA, Consumer Health Data, and Benefits Confidentiality">
         <p>
-          MyBenefitsPA will comply with HIPAA only to the extent it is legally acting as a covered
-          entity or business associate. When MyBenefitsPA receives PHI under a business associate
+          BeneWatch will comply with HIPAA only to the extent it is legally acting as a covered
+          entity or business associate. When BeneWatch receives PHI under a business associate
           agreement, HIPAA rights and obligations apply according to that agreement and applicable law.
           When a consumer directly uploads medical or disability documents, the information may be
-          sensitive health or disability data even if HIPAA does not apply. MyBenefitsPA protects that
+          sensitive health or disability data even if HIPAA does not apply. BeneWatch protects that
           data under this Policy, the Security Policy, applicable consumer-health-data laws, and
           contractual commitments.
         </p>
         <p>
           Public-benefits records may be subject to program-specific confidentiality rules.
-          MyBenefitsPA does not access agency portals, submit forms, contact agencies, or represent
+          BeneWatch does not access agency portals, submit forms, contact agencies, or represent
           users before agencies unless a separate authorized feature or written agreement permits that
           activity.
         </p>
@@ -305,7 +305,7 @@ export default function PrivacyPolicyPage() {
 
       <Section title="13. Security, Retention, and Deletion">
         <p>
-          MyBenefitsPA uses administrative, technical, and physical safeguards described in its Security
+          BeneWatch uses administrative, technical, and physical safeguards described in its Security
           and Safeguards Policy, including encryption in transit, encryption at rest, role-based
           access, MFA, logging, vendor controls, monitoring, and incident response. Retention and
           deletion are governed by the Data Retention and Deletion Policy.
@@ -323,7 +323,7 @@ export default function PrivacyPolicyPage() {
 
       <Section title="15. Changes and Contact">
         <p>
-          MyBenefitsPA may update this Policy from time to time. Material changes will be communicated
+          BeneWatch may update this Policy from time to time. Material changes will be communicated
           by posting an updated policy and, where required, email or in-Platform notice.
         </p>
         <p>

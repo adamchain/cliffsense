@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const code = await issueLoginCode(user._id, LOGIN_CODE_TTL_MS);
     const { html, text } = renderEmail({
       heading: "Your sign-in code",
-      preheader: `${code} is your MyBenefitsPA sign-in code.`,
+      preheader: `${code} is your BeneWatch sign-in code.`,
       paragraphs: ["Enter this code on the sign-in screen to continue."],
       code,
       bodyText: "This code expires in 10 minutes. If you didn't request it, you can ignore this email.",
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     });
     const sent = await sendEmail({
       to: user.email,
-      subject: `Your MyBenefitsPA sign-in code: ${code}`,
+      subject: `Your BeneWatch sign-in code: ${code}`,
       html,
       text,
     });

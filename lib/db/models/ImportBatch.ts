@@ -19,7 +19,7 @@ const importRowSchema = new Schema(
     name: { type: String, default: "" },
     merchantName: { type: String, default: "" },
     category: { type: String, default: "" },
-    /** Suggested MyBenefitsPA userCategory (may be overridden by rules on commit). */
+    /** Suggested BeneWatch userCategory (may be overridden by rules on commit). */
     suggestedUserCategory: { type: String, default: "unclear" },
     /** The original CSV line, kept for audit / troubleshooting. */
     rawLine: { type: String, default: "" },

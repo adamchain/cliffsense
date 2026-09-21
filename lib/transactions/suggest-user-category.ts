@@ -1,6 +1,6 @@
 /**
  * Maps Plaid Personal Finance Categories (+ amount direction + payor text)
- * to MyBenefitsPA `userCategory` values used for limits and reporting.
+ * to BeneWatch `userCategory` values used for limits and reporting.
  *
  * @see https://plaid.com/documents/transactions-personal-finance-category-taxonomy.csv
  */
@@ -73,7 +73,7 @@ export function looksLikeBenefitPayor(args: SuggestArgs): boolean {
 }
 
 /**
- * Returns a suggested MyBenefitsPA category, or `null` when we should leave the row as `unclear`
+ * Returns a suggested BeneWatch category, or `null` when we should leave the row as `unclear`
  * for manual review.
  */
 export function suggestUserCategoryFromPlaid(args: SuggestArgs): CliffUserCategory | null {

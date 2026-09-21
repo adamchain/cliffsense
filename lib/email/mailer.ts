@@ -33,7 +33,7 @@ export function defaultFrom(): string {
   const explicit = process.env.MAILGUN_FROM_EMAIL?.trim();
   if (explicit) return explicit;
   // Sandbox domains require the postmaster@ sender; production should set MAILGUN_FROM_EMAIL.
-  return `MyBenefitsPA <postmaster@${mailgunDomain()}>`;
+  return `BeneWatch <postmaster@${mailgunDomain()}>`;
 }
 
 function toList(value: string | string[] | undefined): string[] {
@@ -87,8 +87,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 }
 
-const DISCLAIMER = "Informational only — MyBenefitsPA does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
+const DISCLAIMER = "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
 
 export function withDisclaimer(body: string): string {
-  return `${body}\n\n— MyBenefitsPA\n${DISCLAIMER}`;
+  return `${body}\n\n— BeneWatch\n${DISCLAIMER}`;
 }

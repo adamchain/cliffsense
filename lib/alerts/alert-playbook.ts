@@ -36,7 +36,7 @@ export const VERIFY_FUTURE_POLICY =
   "First confirm the rule is in effect for this person, category, and certification period. 2026–2027 policy dates, Pennsylvania waivers, exemptions, and delayed starts must be verified before treating a projected rule as current law.";
 
 export const INFORMATIONAL_ONLY =
-  "Informational only — MyBenefitsPA does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
+  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
 
 const DEFAULT_DOCS = [
   "Current pay stubs or benefit award letters",
@@ -75,7 +75,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "generic_limit",
     "A stored benefit limit needs review",
     [],
-    "Linked account activity is near a reference limit stored in MyBenefitsPA.",
+    "Linked account activity is near a reference limit stored in BeneWatch.",
     "Open the program page, confirm the figures, and report any real change through SSA or COMPASS/CAO. Do not change work or spending solely on this alert.",
   ),
 

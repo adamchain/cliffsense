@@ -4,23 +4,11 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
-import Transaction from "@/lib/db/models/Transaction";
 import { SettingsForm } from "./settings-form";
-import { ProgramsForm } from "./programs-form";
 import { SignOutButton } from "./sign-out-button";
 import { DeleteAccountButton } from "./delete-account-button";
 import { PushToggle } from "@/components/push/push-toggle";
-import { AlertsView } from "@/components/alerts/alerts-view";
-import { ThresholdsView } from "@/components/thresholds/thresholds-view";
-import { WorkPlanner } from "@/components/benefits/work-planner";
-import { PolicyScreen } from "@/components/policy/policy-screen";
-import { BenefitsHubNav } from "@/components/settings/benefits-hub-nav";
-import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
-import { buildReportingActions } from "@/lib/reporting/reporting-actions";
-import { coercePolicyScreen, ageFromDateOfBirth } from "@/lib/policy/screen";
-import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
-
-const sectionCls = "scroll-mt-28";
+import { LegacySettingsHashRedirect } from "@/components/settings/legacy-hash-redirect";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -28,65 +16,15 @@ export default async function SettingsPage() {
     redirect("/auth/signin");
   }
   await connectDB();
-  const [user, ownerBen, primary] = await Promise.all([
-    User.findById(session.user.id).select("name email accountType notificationPrefs onboardingStep").lean(),
+  const [user, ownerBen] = await Promise.all([
+    User.findById(session.user.id).select("name email accountType notificationPrefs").lean(),
     Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
-      .select("firstName lastName state county householdSize benefitsEnrolled")
+      .select("state householdSize")
       .lean(),
-    getActiveBeneficiaryForUser(session.user.id),
   ]);
 
   if (!user) {
     redirect("/auth/signin");
-  }
-
-  const beneficiaryId = primary?._id.toString() ?? null;
-  let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
-  let twpMonthsUsed = 0;
-  let policyScreenInitial = coercePolicyScreen(null);
-  if (primary?._id) {
-    const now = new Date();
-    const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
-      .toISOString()
-      .slice(0, 10);
-    const [payload, txns, twpDoc] = await Promise.all([
-      loadThresholdDashboardPayload(primary._id),
-      Transaction.find({ beneficiaryId: primary._id, date: { $gte: sixMonthsAgo } })
-        .select({
-          date: 1,
-          amountCents: 1,
-          userCategory: 1,
-          name: 1,
-          merchantName: 1,
-          pending: 1,
-          excludedFromThresholds: 1,
-        })
-        .lean(),
-      Beneficiary.findById(primary._id).select("twpMonthsUsed policyScreen dateOfBirth").lean(),
-    ]);
-    reportingActions = buildReportingActions({
-      programs: payload.programsEnrolled,
-      rows: payload.rows.map((r) => ({
-        thresholdType: r.thresholdType,
-        label: r.label,
-        program: r.program,
-        status: r.status,
-        attached: r.attached,
-      })),
-      transactions: txns.map((t) => ({
-        date: String(t.date),
-        amountCents: Number(t.amountCents),
-        userCategory: String(t.userCategory ?? ""),
-        name: t.name ? String(t.name) : undefined,
-        merchantName: t.merchantName ? String(t.merchantName) : undefined,
-        pending: Boolean(t.pending),
-        excludedFromThresholds: Boolean(t.excludedFromThresholds),
-      })),
-      now,
-    });
-    twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
-    const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
-    policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
   }
 
   const initials = (user.name ?? user.email ?? "?")
@@ -98,12 +36,11 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className="cs-big-title mb-1">Limits &amp; alerts</h1>
-      <p className="mb-3 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Watch limits, review alerts, choose programs, and set who gets notified — all in one place.
+      <LegacySettingsHashRedirect />
+      <h1 className="cs-big-title mb-1">Settings</h1>
+      <p className="mb-6 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Your account, notifications, and who this app is for.
       </p>
-
-      <BenefitsHubNav />
 
       <Link
         href="/beneficiaries"
@@ -126,52 +63,7 @@ export default async function SettingsPage() {
       </Link>
 
       <div className="space-y-10">
-        <section id="alerts" className={sectionCls}>
-          <AlertsView
-            beneficiaryId={beneficiaryId}
-            reportingActions={reportingActions}
-            embedded
-          />
-        </section>
-
-        <section id="limits" className={sectionCls}>
-          <ThresholdsView beneficiaryId={beneficiaryId} embedded />
-          <WorkPlanner
-            beneficiaryId={beneficiaryId}
-            initialTwpMonths={twpMonthsUsed}
-          />
-        </section>
-
-        <section id="policy" className={sectionCls}>
-          <PolicyScreen beneficiaryId={beneficiaryId} initial={policyScreenInitial} />
-        </section>
-
-        {ownerBen && (
-          <section id="programs" className={sectionCls}>
-            <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">
-              Programs
-            </h2>
-            <p className="mb-3 text-[13px] text-[var(--color-cs-text-secondary)]">
-              Choose what you receive so the right limits and alerts attach.
-            </p>
-            <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-              <ProgramsForm
-                beneficiaryId={ownerBen._id.toString()}
-                initialPrograms={(ownerBen.benefitsEnrolled ?? []).map((b) => b.program)}
-                initialRenewals={Object.fromEntries(
-                  (ownerBen.benefitsEnrolled ?? []).map((b) => [
-                    b.program,
-                    b.nextRenewalDate
-                      ? new Date(b.nextRenewalDate as Date).toISOString().slice(0, 10)
-                      : null,
-                  ]),
-                )}
-              />
-            </div>
-          </section>
-        )}
-
-        <section id="profile" className={sectionCls}>
+        <section id="profile" className="scroll-mt-28">
           <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">
             Profile &amp; notifications
           </h2>
@@ -196,7 +88,7 @@ export default async function SettingsPage() {
           </div>
         </section>
 
-        <section data-tour="settings-notifications" className={sectionCls}>
+        <section data-tour="settings-notifications" className="scroll-mt-28">
           <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
             <h3 className="text-[15px] font-semibold text-[var(--color-cs-text)]">
               Push on this device
@@ -215,6 +107,7 @@ export default async function SettingsPage() {
           <div className="cs-ios-list">
             {(
               [
+                { href: "/limits", label: "Limits & alerts" },
                 { href: "/beneficiaries", label: "Beneficiaries" },
                 { href: "/transactions", label: "Linked banks" },
                 { href: "/reports", label: "Data & exports" },
@@ -237,7 +130,7 @@ export default async function SettingsPage() {
             <DeleteAccountButton />
           </div>
           <p className="pt-1 text-center text-[12px] text-[var(--color-cs-text-muted)]">
-            MyBenefitsPA 1.0
+            BeneWatch 1.0
           </p>
         </section>
       </div>

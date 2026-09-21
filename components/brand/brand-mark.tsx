@@ -9,7 +9,7 @@ const PX: Record<"sm" | "md" | "lg" | "xl", number> = {
 };
 
 /**
- * The MyBenefitsPA state-and-check icon. Its navy outline is invisible on the
+ * The BeneWatch state-and-check icon. Its navy outline is invisible on the
  * brand-colored header/aside, so pass `onDark` to seat it on a white chip.
  */
 export function BrandMark({
@@ -22,7 +22,7 @@ export function BrandMark({
   const px = PX[size];
   const img = (
     <Image
-      src="/mybenefitspa-icon.png"
+      src="/benewatch-icon.png"
       alt=""
       width={px}
       height={px}

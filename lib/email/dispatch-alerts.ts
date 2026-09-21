@@ -64,7 +64,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       title: snap.title,
     });
     const paragraphs = playbookEmailParagraphs(playbook);
-    const subject = `MyBenefitsPA: ${
+    const subject = `BeneWatch: ${
       level === "breach" ? "Important" : trigger === "cliff" || trigger === "snt" || trigger === "able"
         ? "Eligibility warning"
         : trigger === "reporting"
@@ -76,7 +76,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       preheader: playbook.cureAction.slice(0, 110),
       tone: level === "breach" ? "danger" : level === "warning" ? "warning" : "info",
       paragraphs,
-      cta: { label: "View in MyBenefitsPA", url: `${appUrl()}/alerts` },
+      cta: { label: "View in BeneWatch", url: `${appUrl()}/alerts` },
     });
     const res = await sendEmail({ to: recipients, subject, html, text });
     if (!res.ok) {

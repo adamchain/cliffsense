@@ -73,7 +73,7 @@ export async function generateFormPdf(
   };
 
   // ---------- Header ----------
-  page.drawText("MyBenefitsPA", { x: MARGIN, y: y - 12, size: 12, font: bold, color: NAVY });
+  page.drawText("BeneWatch", { x: MARGIN, y: y - 12, size: 12, font: bold, color: NAVY });
   y -= 24;
   drawWrapped(form.title, bold, 18, NAVY, 5);
   y -= 2;
@@ -115,5 +115,5 @@ export async function generateFormPdf(
 /** A filesystem-safe filename for the generated document. */
 export function pdfFilename(form: FillableFormDef): string {
   const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return `mybenefitspa-${slug}.pdf`;
+  return `benewatch-${slug}.pdf`;
 }

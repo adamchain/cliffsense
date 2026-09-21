@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const NAV = [
   { label: "Features", href: "/#features" },
@@ -17,15 +17,8 @@ export function MarketingHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-[rgba(248,248,250,0.82)] backdrop-blur-[22px] backdrop-saturate-150">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 sm:px-6">
-        <Link href="/" className="flex items-center" aria-label="MyBenefitsPA home">
-          <Image
-            src="/mybenefitspa-logo.png"
-            alt="MyBenefitsPA"
-            width={180}
-            height={142}
-            priority
-            className="h-8 w-auto"
-          />
+        <Link href="/" className="flex items-center" aria-label="BeneWatch home">
+          <BrandLogo priority className="h-8 w-auto" />
         </Link>
         <nav className="hidden items-center gap-7 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] md:flex">
           {NAV.map((item) => (
@@ -90,13 +83,7 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_3fr]">
           <div>
-            <Image
-              src="/mybenefitspa-logo.png"
-              alt="MyBenefitsPA"
-              width={180}
-              height={142}
-              className="h-8 w-auto"
-            />
+            <BrandLogo className="h-8 w-auto" />
             <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               A Pennsylvania-first, user-controlled benefits continuity and renewal compliance
               platform.
@@ -126,14 +113,14 @@ export function MarketingFooter() {
         <div className="mt-12 border-t border-[var(--color-cs-border)] pt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[12px] text-[var(--color-cs-text-muted)]">
-              © {new Date().getFullYear()} MyBenefitsPA. All rights reserved.
+              © {new Date().getFullYear()} BeneWatch. All rights reserved.
             </p>
             <p className="text-[12px] text-[var(--color-cs-text-muted)]">
               Not a government agency — does not determine eligibility.
             </p>
           </div>
           <p className="mt-4 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            MyBenefitsPA does not determine or guarantee eligibility, benefit amounts, continued
+            BeneWatch does not determine or guarantee eligibility, benefit amounts, continued
             coverage, or the outcome of any agency proceeding. It does not replace official agency
             instructions or individualized legal, tax, financial, medical, or benefits advice.
           </p>

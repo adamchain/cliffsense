@@ -33,7 +33,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 /**
  * Builds a compact, token-bounded plain-text snapshot of the beneficiary's
- * MyBenefitsPA financial picture for the AI advisor: enrolled programs, this
+ * BeneWatch financial picture for the AI advisor: enrolled programs, this
  * month's income breakdown (earned vs unearned with exclusions), account
  * balances, category mix, live limit/threshold status, and recent transactions.
  *

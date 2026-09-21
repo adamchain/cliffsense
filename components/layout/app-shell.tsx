@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconBell, IconSettings, IconShieldLock } from "@tabler/icons-react";
-import { BrandMark } from "@/components/brand/brand-mark";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
@@ -33,7 +33,7 @@ function SidebarGroup({
   const hasChildren = !!section.children?.length;
   const Icon = section.icon;
   const parentActive = !hasChildren && active;
-  const containsAlerts = section.href === "/settings";
+  const containsAlerts = section.href === "/limits";
 
   return (
     <div>
@@ -62,7 +62,7 @@ function SidebarGroup({
               >
                 <ChildIcon size={14} stroke={childActive ? 2 : 1.75} aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{label}</span>
-                {href === "/settings" && alertCount > 0 && (
+                {href === "/limits" && alertCount > 0 && (
                   <span className="cs-macos-sidebar-badge">
                     {alertCount > 9 ? "9+" : alertCount}
                   </span>
@@ -100,6 +100,7 @@ export function AppShell({
     activeHref === "/documents" ||
     activeHref.startsWith("/documents/");
   const showAskBar = !(activeHref === "/advisor" || activeHref.startsWith("/advisor/"));
+  const settingsActive = isHrefActive(activeHref, "/settings");
 
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
   const leaves = flattenSections(ALL_SECTIONS);
@@ -117,9 +118,8 @@ export function AppShell({
     <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[15px] text-[var(--color-cs-text)]">
       {/* ---------- Desktop sidebar (macOS style) ---------- */}
       <nav className="cs-macos-sidebar hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:self-start" aria-label="Main">
-        <Link href="/dashboard" className="cs-macos-sidebar-brand">
-          <BrandMark size="md" />
-          <span>MyBenefitsPA</span>
+        <Link href="/dashboard" className="cs-macos-sidebar-brand" aria-label="BeneWatch home">
+          <BrandLogo className="h-7 w-auto" />
         </Link>
 
         <div className="cs-macos-sidebar-scroll">
@@ -160,7 +160,7 @@ export function AppShell({
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
-              href="/settings#alerts"
+              href="/limits#alerts"
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
               aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
             >
@@ -173,8 +173,11 @@ export function AppShell({
             </Link>
             <Link
               href="/settings"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
+              className={`flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] ${
+                settingsActive ? "text-[var(--color-cs-brand)]" : "text-[var(--color-cs-text)]"
+              }`}
               aria-label="Settings"
+              aria-current={settingsActive ? "page" : undefined}
             >
               <IconSettings size={19} stroke={1.7} />
             </Link>
@@ -195,6 +198,30 @@ export function AppShell({
               <TopbarControls />
             </div>
           )}
+          <div className={`flex shrink-0 items-center gap-2 ${hideTopSearch ? "ml-auto" : ""}`}>
+            <Link
+              href="/limits#alerts"
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
+              aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
+            >
+              <IconBell size={19} stroke={1.7} />
+              {alertCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-cs-pa-red)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                  {badge}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/settings"
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] ${
+                settingsActive ? "text-[var(--color-cs-brand)]" : "text-[var(--color-cs-text)]"
+              }`}
+              aria-label="Settings"
+              aria-current={settingsActive ? "page" : undefined}
+            >
+              <IconSettings size={19} stroke={1.7} />
+            </Link>
+          </div>
         </div>
 
         <SectionTabs />

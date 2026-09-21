@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Bullets, DocHeader, Section, Table } from "../_components";
 
 export const metadata: Metadata = {
-  title: "Security and Safeguards Policy — MyBenefitsPA",
+  title: "Security and Safeguards Policy — BeneWatch",
   description:
-    "Administrative, technical, and physical safeguards used by MyBenefitsPA to protect the Platform and user data.",
+    "Administrative, technical, and physical safeguards used by BeneWatch to protect the Platform and user data.",
 };
 
 export default function SecurityPage() {
@@ -25,7 +25,7 @@ export default function SecurityPage() {
       <Section title="1. Security Commitment and Scope">
         <p>
           This Security and Safeguards Policy describes the administrative, technical, and physical
-          safeguards used by MyBenefitsPA to protect confidentiality, integrity, availability, and
+          safeguards used by BeneWatch to protect confidentiality, integrity, availability, and
           resilience of the Platform and user data. It applies to production systems, administrative
           systems, financial-data integrations, support systems, document storage, AI workflows, audit
           logs, vendors, employees, contractors, and advisors with system access.
@@ -43,7 +43,7 @@ export default function SecurityPage() {
       <Section title="2. Governance and Accountability">
         <Bullets
           items={[
-            "MyBenefitsPA designates an executive security owner or qualified security lead responsible for the written information security program, risk assessments, policies, vendor security, incident response, and management reporting.",
+            "BeneWatch designates an executive security owner or qualified security lead responsible for the written information security program, risk assessments, policies, vendor security, incident response, and management reporting.",
             "Security policies are reviewed at least annually and after material changes in architecture, vendors, data flows, legal requirements, incidents, or threat conditions.",
             "Risk assessments are documented, prioritized, assigned to owners, and tracked to remediation.",
             "Security exceptions require documented business justification, compensating controls, expiration dates, and approval by the security lead.",
@@ -111,7 +111,7 @@ export default function SecurityPage() {
 
       <Section title="6. Financial-Data Integration Security">
         <p>
-          Plaid and similar integrations are treated as Restricted data systems. MyBenefitsPA uses
+          Plaid and similar integrations are treated as Restricted data systems. BeneWatch uses
           provider-managed authentication flows and does not store financial-institution usernames or
           passwords. Integration design follows data minimization, tokenization, least privilege, and
           revocation-by-design principles.
@@ -188,7 +188,7 @@ export default function SecurityPage() {
 
       <Section title="10. Logging, Monitoring, and Detection">
         <p>
-          MyBenefitsPA collects security-relevant logs from applications, APIs, cloud services,
+          BeneWatch collects security-relevant logs from applications, APIs, cloud services,
           databases, authentication systems, administrative consoles, financial-data integrations, data
           exports, and high-risk user actions. Logs are access-controlled, tamper-resistant where
           practicable, time-synchronized, and retained according to the Data Retention and Deletion
@@ -205,7 +205,7 @@ export default function SecurityPage() {
 
       <Section title="11. Incident Response and Breach Notification">
         <p>
-          MyBenefitsPA maintains an incident response plan covering preparation, identification, triage,
+          BeneWatch maintains an incident response plan covering preparation, identification, triage,
           containment, eradication, recovery, post-incident review, evidence preservation,
           communications, and breach-notification analysis. Incidents involving financial data, SSNs,
           health/disability data, PHI where applicable, or public-benefits records receive heightened
@@ -237,7 +237,7 @@ export default function SecurityPage() {
       <Section title="13. GLBA, HIPAA, and Benefits-Data Safeguards Where Applicable">
         <p>
           Where GLBA, the FTC Safeguards Rule, HIPAA, state consumer-health-data laws, public-benefits
-          confidentiality laws, or contractual security standards apply, MyBenefitsPA maps applicable
+          confidentiality laws, or contractual security standards apply, BeneWatch maps applicable
           requirements to its written safeguards program, vendor contracts, privacy notices, breach
           workflows, access controls, and audit documentation. The company avoids public claims of
           &ldquo;HIPAA compliant,&rdquo; &ldquo;bank-grade,&rdquo; &ldquo;state-of-the-art,&rdquo; or
@@ -259,7 +259,7 @@ export default function SecurityPage() {
 
       <Section title="15. Physical, Endpoint, and Remote-Work Security">
         <p>
-          MyBenefitsPA relies on cloud-provider physical security controls for production
+          BeneWatch relies on cloud-provider physical security controls for production
           infrastructure. Employee and contractor devices used for company work must use disk
           encryption, screen lock, supported operating systems, endpoint protection or EDR where
           appropriate, secure configuration, and remote-wipe capability. Restricted data may not be

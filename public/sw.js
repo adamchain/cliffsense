@@ -1,4 +1,4 @@
-/* MyBenefitsPA service worker — Web Push handler.
+/* BeneWatch service worker — Web Push handler.
  * Receives push messages and shows a notification; focuses/opens the app on click.
  * Intentionally minimal (no offline caching) so it can't serve stale app shells. */
 
@@ -16,14 +16,14 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "MyBenefitsPA", body: event.data ? event.data.text() : "" };
+    data = { title: "BeneWatch", body: event.data ? event.data.text() : "" };
   }
 
-  const title = data.title || "MyBenefitsPA";
+  const title = data.title || "BeneWatch";
   const options = {
     body: data.body || "",
-    icon: "/mybenefitspa-icon.png",
-    badge: "/mybenefitspa-icon.png",
+    icon: "/benewatch-icon.png",
+    badge: "/benewatch-icon.png",
     tag: data.tag || undefined,
     data: { url: data.url || "/alerts" },
   };

@@ -8,7 +8,7 @@ import type { FillableFormDef, FormFieldDef, PrefillValues } from "@/lib/forms/t
  * ------------------------------------------------------------------------- */
 
 const STATEMENT_DISCLAIMER =
-  "MyBenefitsPA is an informational tool and does not determine eligibility or submit forms on your behalf. Review everything for accuracy and file the official form with the agency. Knowingly giving false information on a benefits form may be a crime.";
+  "BeneWatch is an informational tool and does not determine eligibility or submit forms on your behalf. Review everything for accuracy and file the official form with the agency. Knowingly giving false information on a benefits form may be a crime.";
 
 /** SSA-795 — Statement of Claimant or Other Person. A general-purpose signed
  *  statement SSA accepts to report changes when no specific form exists. */
@@ -66,12 +66,12 @@ const SSA_795: FillableFormDef = {
 };
 
 /** A universal income / household change worksheet. Not an official form — a
- *  MyBenefitsPA helper the user fills, prints, and uses to report changes to
+ *  BeneWatch helper the user fills, prints, and uses to report changes to
  *  PA DHS (SNAP/TANF/Medicaid), SSA, Pennie, or a housing authority. */
 const CHANGE_REPORT: FillableFormDef = {
   id: "change-report",
   title: "Income & Household Change Report",
-  agency: "MyBenefitsPA (helper worksheet)",
+  agency: "BeneWatch (helper worksheet)",
   purpose:
     "A plain-language worksheet to organize a change before you report it to your agency. Pre-filled from your profile — fill the rest, print, and bring or attach it.",
   officialUrl: "https://www.pa.gov/agencies/dhs/resources/for-residents/semi-annual-reporting",

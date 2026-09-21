@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const LEGAL_LINKS = [
   { href: "/legal/privacy", label: "Privacy Policy" },
@@ -15,15 +15,8 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-          <Link href="/landing" className="flex items-center" aria-label="MyBenefitsPA home">
-            <Image
-              src="/mybenefitspa-logo.png"
-              alt="MyBenefitsPA"
-              width={180}
-              height={142}
-              priority
-              className="h-8 w-auto"
-            />
+          <Link href="/landing" className="flex items-center" aria-label="BeneWatch home">
+            <BrandLogo priority className="h-8 w-auto" />
           </Link>
           <Link
             href="/landing"
@@ -53,7 +46,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             ))}
           </nav>
           <p className="mt-6 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            © {new Date().getFullYear()} MyBenefitsPA Inc. Informational tool only. Not legal, tax, or
+            © {new Date().getFullYear()} BeneWatch Inc. Informational tool only. Not legal, tax, or
             benefits advice. Questions: support@mybenefitspa.com.
           </p>
         </div>

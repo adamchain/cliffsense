@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Bullets, DocHeader, Section, Table } from "../_components";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions — MyBenefitsPA",
+  title: "Terms and Conditions — BeneWatch",
   description:
-    "Terms governing access to and use of the MyBenefitsPA platform, integrations, and related services.",
+    "Terms governing access to and use of the BeneWatch platform, integrations, and related services.",
 };
 
 export default function TermsPage() {
@@ -24,7 +24,7 @@ export default function TermsPage() {
 
       <Section title="1. Acceptance of Terms">
         <p>
-          These Terms and Conditions govern access to and use of the MyBenefitsPA website, application,
+          These Terms and Conditions govern access to and use of the BeneWatch website, application,
           platform, alerts, AI-assisted features, document storage, advisor/caregiver tools,
           financial-data integrations, and related services. By creating an account, connecting a
           financial account, uploading documents, inviting an advisor, or otherwise using the Platform,
@@ -39,7 +39,7 @@ export default function TermsPage() {
 
       <Section title="2. Description of Services">
         <p>
-          MyBenefitsPA provides a technology platform for organizing and monitoring information relevant
+          BeneWatch provides a technology platform for organizing and monitoring information relevant
           to public benefits and financial eligibility. Features may include Plaid-connected
           financial-data retrieval, income and asset monitoring, renewal reminders, document storage,
           AI-assisted summaries, compliance alerts, advisor access, and user-requested reports.
@@ -55,10 +55,10 @@ export default function TermsPage() {
       <Section title="3. Important Disclaimers">
         <Bullets
           items={[
-            "MyBenefitsPA is not a federal, state, or local government agency and is not affiliated with SSA, CMS, Medicaid, SNAP, MAWD, any state Medicaid agency, any county assistance office, or any financial institution.",
-            "MyBenefitsPA does not provide legal, medical, tax, accounting, fiduciary, investment, representative-payee, guardianship, public-benefits legal, or government-agency advice.",
+            "BeneWatch is not a federal, state, or local government agency and is not affiliated with SSA, CMS, Medicaid, SNAP, MAWD, any state Medicaid agency, any county assistance office, or any financial institution.",
+            "BeneWatch does not provide legal, medical, tax, accounting, fiduciary, investment, representative-payee, guardianship, public-benefits legal, or government-agency advice.",
             "Platform outputs are informational and operational support tools only. They are not official eligibility determinations, agency notices, benefit approvals, benefit denials, renewal approvals, legal opinions, or financial advice.",
-            "MyBenefitsPA does not guarantee eligibility, continued eligibility, benefit approval, renewal success, avoidance of overpayment, avoidance of benefit reduction or termination, or accuracy of agency action.",
+            "BeneWatch does not guarantee eligibility, continued eligibility, benefit approval, renewal success, avoidance of overpayment, avoidance of benefit reduction or termination, or accuracy of agency action.",
             "Users remain responsible for reading official agency notices, reporting changes, preserving records, filing renewals, submitting forms, responding to deadlines, and consulting qualified professionals when needed.",
           ]}
         />
@@ -69,11 +69,11 @@ export default function TermsPage() {
           The Platform is intended for users age 18 or older in the United States. Users must provide
           accurate, current, and complete account information and keep it updated. Users are responsible
           for safeguarding account credentials, using strong authentication, and promptly notifying
-          MyBenefitsPA of suspected unauthorized access.
+          BeneWatch of suspected unauthorized access.
         </p>
         <p>
-          MyBenefitsPA may require multi-factor authentication for accounts that access sensitive
-          information, advisor accounts, administrative roles, and high-risk login events. MyBenefitsPA
+          BeneWatch may require multi-factor authentication for accounts that access sensitive
+          information, advisor accounts, administrative roles, and high-risk login events. BeneWatch
           may suspend or restrict access to protect users, the Platform, or affected Beneficiaries.
         </p>
       </Section>
@@ -101,7 +101,7 @@ export default function TermsPage() {
         />
         <p>
           Users must not upload another person&apos;s information, connect another person&apos;s
-          financial account, or invite an advisor unless they have lawful authority. MyBenefitsPA may
+          financial account, or invite an advisor unless they have lawful authority. BeneWatch may
           request documentation and may suspend access if authority is disputed, revoked, expired,
           incomplete, or reasonably suspected to be misused.
         </p>
@@ -110,14 +110,14 @@ export default function TermsPage() {
       <Section title="6. Financial-Data Integrations">
         <p>
           The Platform may integrate with Plaid or similar financial-data providers. By connecting a
-          financial account, the user authorizes MyBenefitsPA and the provider to access, retrieve,
+          financial account, the user authorizes BeneWatch and the provider to access, retrieve,
           transmit, process, and store authorized financial information for Platform services. The
           user&apos;s use of the provider is subject to the provider&apos;s own terms and privacy
           policy.
         </p>
         <Bullets
           items={[
-            "MyBenefitsPA does not collect or store financial-institution login credentials.",
+            "BeneWatch does not collect or store financial-institution login credentials.",
             "Financial data may include account metadata, balances, transactions, account ownership information where authorized, and connection status.",
             "Data may be refreshed periodically so that alerts and monitoring remain current.",
             "Users may disconnect accounts. Disconnection stops future retrieval but historical data may be retained under the Data Retention and Deletion Policy.",
@@ -137,8 +137,8 @@ export default function TermsPage() {
           items={[
             "The user must review Platform alerts promptly and independently confirm deadlines and reporting duties.",
             "The user must maintain complete and accurate financial, household, medical, residency, and benefits information.",
-            "The user must not rely on MyBenefitsPA as the sole source for official benefit eligibility, renewal, appeal, or reporting decisions.",
-            "The user must notify MyBenefitsPA of integration errors, missing accounts, incorrect transaction classifications, missing documents, outdated program settings, or disputed advisor access.",
+            "The user must not rely on BeneWatch as the sole source for official benefit eligibility, renewal, appeal, or reporting decisions.",
+            "The user must notify BeneWatch of integration errors, missing accounts, incorrect transaction classifications, missing documents, outdated program settings, or disputed advisor access.",
           ]}
         />
       </Section>
@@ -151,7 +151,7 @@ export default function TermsPage() {
           incorrectly classified. Users must review, verify, and correct outputs before relying on them.
         </p>
         <p>
-          MyBenefitsPA does not authorize users to submit AI-generated materials to an agency or court
+          BeneWatch does not authorize users to submit AI-generated materials to an agency or court
           without human review. Users are solely responsible for final decisions, filings, submissions,
           reports, appeals, and communications.
         </p>
@@ -160,7 +160,7 @@ export default function TermsPage() {
       <Section title="9. Privacy, Security, and Retention">
         <p>
           The Privacy Policy, Security and Safeguards Policy, and Data Retention and Deletion Policy are
-          incorporated into these Terms. Users agree that MyBenefitsPA may process personal information,
+          incorporated into these Terms. Users agree that BeneWatch may process personal information,
           Sensitive Data, Financial Data, documents, AI interactions, and usage data as described in
           those policies.
         </p>
@@ -174,7 +174,7 @@ export default function TermsPage() {
       <Section title="10. User Content and License">
         <p>
           Users retain ownership of documents, records, data, and other content uploaded to the
-          Platform. Users grant MyBenefitsPA a limited, non-exclusive, worldwide license to host,
+          Platform. Users grant BeneWatch a limited, non-exclusive, worldwide license to host,
           store, copy, transmit, analyze, classify, summarize, display, and process User Content solely
           to provide, secure, support, improve, and comply with the Platform services and legal
           obligations.
@@ -190,7 +190,7 @@ export default function TermsPage() {
         <Bullets
           items={[
             "Do not use the Platform for unlawful, fraudulent, abusive, harmful, or unauthorized purposes.",
-            "Do not attempt to access another user's account, Beneficiary profile, financial account, advisor account, or MyBenefitsPA system without authorization.",
+            "Do not attempt to access another user's account, Beneficiary profile, financial account, advisor account, or BeneWatch system without authorization.",
             "Do not upload malware, interfere with security controls, scrape the Platform, reverse engineer non-public systems, or bypass usage limits.",
             "Do not impersonate a Beneficiary, advisor, government official, agency, financial institution, or legal representative.",
             "Do not use Platform outputs to mislead agencies, conceal assets or income, commit fraud, or make false benefit submissions.",
@@ -201,7 +201,7 @@ export default function TermsPage() {
       <Section title="12. Fees and Paid Services">
         <p>
           If paid services are offered, pricing, renewal, cancellation, refund, and billing terms will
-          be disclosed at purchase or in a separate order form. MyBenefitsPA may change fees
+          be disclosed at purchase or in a separate order form. BeneWatch may change fees
           prospectively with reasonable notice where required. Third-party charges, government fees,
           professional fees, and financial-institution charges are not included unless expressly stated.
         </p>
@@ -209,8 +209,8 @@ export default function TermsPage() {
 
       <Section title="13. Suspension and Termination">
         <p>
-          MyBenefitsPA may suspend or terminate accounts, restrict features, disconnect integrations, or
-          revoke advisor access if MyBenefitsPA reasonably believes that the account is insecure,
+          BeneWatch may suspend or terminate accounts, restrict features, disconnect integrations, or
+          revoke advisor access if BeneWatch reasonably believes that the account is insecure,
           authority is disputed, data is being misused, the Terms are violated, legal compliance
           requires action, or continued access may harm a user, Beneficiary, the Platform, or a third
           party.
@@ -226,15 +226,15 @@ export default function TermsPage() {
         <p>
           The Platform may rely on third-party providers, including Plaid, cloud hosting providers,
           communications providers, security tools, analytics tools, payment processors, AI service
-          providers, and support platforms. MyBenefitsPA is not responsible for third-party services
-          outside MyBenefitsPA&apos;s reasonable control. Third-party terms and privacy policies may
+          providers, and support platforms. BeneWatch is not responsible for third-party services
+          outside BeneWatch&apos;s reasonable control. Third-party terms and privacy policies may
           apply.
         </p>
       </Section>
 
       <Section title="15. Intellectual Property">
         <p>
-          MyBenefitsPA and its licensors own all rights in the Platform, software, workflows, designs,
+          BeneWatch and its licensors own all rights in the Platform, software, workflows, designs,
           models, templates, rules engines, documentation, logos, trademarks, content, and technology,
           excluding User Content. Users receive a limited, revocable, non-exclusive, non-transferable
           license to use the Platform according to these Terms.
@@ -249,7 +249,7 @@ export default function TermsPage() {
           non-infringement, accuracy, availability, benefit eligibility, or uninterrupted operation.
         </p>
         <p>
-          To the maximum extent permitted by applicable law, MyBenefitsPA will not be liable for
+          To the maximum extent permitted by applicable law, BeneWatch will not be liable for
           indirect, incidental, consequential, special, exemplary, punitive, or enhanced damages; lost
           profits; lost benefits; benefit denials; benefit reductions; overpayment claims; lost data;
           goodwill; business interruption; or third-party conduct, even if advised of the possibility of
@@ -260,7 +260,7 @@ export default function TermsPage() {
       <Section title="17. Indemnification">
         <p>
           To the extent permitted by law, users agree to defend, indemnify, and hold harmless
-          MyBenefitsPA from claims, damages, losses, liabilities, costs, and expenses arising from the
+          BeneWatch from claims, damages, losses, liabilities, costs, and expenses arising from the
           user&apos;s misuse of the Platform, violation of these Terms, unauthorized access to another
           person&apos;s data, inaccurate authority representations, unlawful benefit submissions, or
           violation of another person&apos;s rights.
@@ -280,7 +280,7 @@ export default function TermsPage() {
 
       <Section title="19. Changes and Contact">
         <p>
-          MyBenefitsPA may update these Terms from time to time. Material changes will be communicated
+          BeneWatch may update these Terms from time to time. Material changes will be communicated
           by posting an updated version and, where required, additional notice. Continued use after the
           effective date means acceptance of the updated Terms.
         </p>

@@ -8,7 +8,7 @@
 import { appUrl } from "@/lib/email/mailer";
 
 export const BRAND = {
-  name: "MyBenefitsPA",
+  name: "BeneWatch",
   blue: "#1b6cc4",
   blueHover: "#15579e",
   navy: "#0f2a4c",
@@ -24,7 +24,7 @@ export const BRAND = {
 } as const;
 
 const DISCLAIMER =
-  "Informational only — MyBenefitsPA does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
+  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
 
 export type EmailTone = "info" | "success" | "warning" | "danger";
 
@@ -72,7 +72,7 @@ export function escapeHtml(s: string): string {
 export function renderEmail(opts: RenderEmailOptions): { html: string; text: string } {
   const accent = toneColor(opts.tone);
   const base = appUrl();
-  const logoUrl = `${base}/mybenefitspa-logo.png`;
+  const logoUrl = `${base}/benewatch-logo.png`;
   const paragraphs = opts.paragraphs ?? [];
 
   const paragraphsHtml = paragraphs
@@ -146,7 +146,7 @@ ${preheader}
         )}</p>
         <p style="margin:0;font-size:12px;line-height:1.5;color:${BRAND.textMuted};">
           <a href="${base}" target="_blank" style="color:${BRAND.blue};text-decoration:none;">${BRAND.name}</a>
-          &nbsp;·&nbsp; You're receiving this because you have a MyBenefitsPA account.
+          &nbsp;·&nbsp; You're receiving this because you have a BeneWatch account.
         </p>
       </td></tr>
     </table>

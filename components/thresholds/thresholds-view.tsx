@@ -206,7 +206,7 @@ export function ThresholdsView({
       {data && data.programsEnrolled.length === 0 && (
         <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
           Select enrolled programs in{" "}
-          <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
+          <Link href="/limits#programs" className="text-[var(--color-cs-brand)] hover:underline">
             Programs
           </Link>{" "}
           to attach system reference limits.

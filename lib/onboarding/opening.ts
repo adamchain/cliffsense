@@ -2,7 +2,7 @@ export const AUTHORITY_OPTIONS = [
   {
     id: "consent",
     label: "Beneficiary consent / Bene-Watch authorization",
-    permits: "Use MyBenefitsPA for this person and receive records they are authorized to share.",
+    permits: "Use BeneWatch for this person and receive records they are authorized to share.",
     doesNot: "Does not by itself create legal authority with SSA, DHS, a bank, trustee, or health plan.",
   },
   {

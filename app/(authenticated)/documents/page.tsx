@@ -8,7 +8,7 @@ import { PROGRAMS, isMedicaidFamilyProgram, type Program } from "@/lib/programs"
 import { FORMS_CATALOG, PROGRAM_LABELS } from "@/lib/forms/catalog";
 import { FormsBrowser } from "./forms-browser";
 
-export const metadata = { title: "Forms · MyBenefitsPA" };
+export const metadata = { title: "Forms · BeneWatch" };
 
 export default async function DocumentsPage() {
   const session = await auth();

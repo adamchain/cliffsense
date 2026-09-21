@@ -26,7 +26,7 @@ import { displayValue } from "@/lib/forms/format";
  * ------------------------------------------------------------------------- */
 
 /** Thrown when the official PDF can't be loaded or auto-filled — the caller
- *  falls back to the self-contained MyBenefitsPA summary PDF. */
+ *  falls back to the self-contained BeneWatch summary PDF. */
 export class OfficialPdfUnavailable extends Error {}
 
 const FETCH_TIMEOUT_MS = 12_000;
@@ -49,7 +49,7 @@ async function loadTemplateBytes(form: FillableFormDef): Promise<Uint8Array | Ar
   try {
     const res = await fetch(form.officialUrl, {
       signal: controller.signal,
-      headers: { "user-agent": "MyBenefitsPA/1.0 (+https://mybenefitspa.com)" },
+      headers: { "user-agent": "BeneWatch/1.0 (+https://mybenefitspa.com)" },
       next: { revalidate: 86_400 },
     });
     if (!res.ok) throw new OfficialPdfUnavailable(`upstream ${res.status}`);

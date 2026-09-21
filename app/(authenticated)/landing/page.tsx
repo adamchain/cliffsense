@@ -17,9 +17,9 @@ import { HeroVideo } from "@/components/landing/hero-video";
 import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing-chrome";
 
 export const metadata: Metadata = {
-  title: "MyBenefitsPA — Act Before an Avoidable Lapse Becomes a Loss of Care",
+  title: "BeneWatch — Act Before an Avoidable Lapse Becomes a Loss of Care",
   description:
-    "MyBenefitsPA gives beneficiaries and authorized caregivers an active system for recognizing approaching benefit risks, organizing required evidence, tracking critical deadlines, and maintaining a clear record of what has been submitted — working alongside Pennsylvania and federal benefit systems.",
+    "BeneWatch gives beneficiaries and authorized caregivers an active system for recognizing approaching benefit risks, organizing required evidence, tracking critical deadlines, and maintaining a clear record of what has been submitted — working alongside Pennsylvania and federal benefit systems.",
 };
 
 type Icon = ComponentType<{ size?: number; stroke?: number; className?: string }>;
@@ -162,7 +162,7 @@ export default function LandingPage() {
               Act Before an Avoidable Lapse Becomes a Loss of Care
             </h1>
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-              MyBenefitsPA gives beneficiaries and authorized caregivers an active system for
+              BeneWatch gives beneficiaries and authorized caregivers an active system for
               recognizing approaching benefit risks, organizing required evidence, tracking
               critical deadlines, and maintaining a clear record of what has been submitted, what
               remains outstanding, and what follow-up is required.
@@ -172,7 +172,7 @@ export default function LandingPage() {
                 href="#how-it-works"
                 className="inline-flex items-center justify-center rounded-sm bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-cs-navy)] hover:bg-white/90"
               >
-                See How MyBenefitsPA Works
+                See How BeneWatch Works
               </a>
               <Link
                 href="/about#perspective"
@@ -202,7 +202,7 @@ export default function LandingPage() {
           </span>
         </div>
         <p className="mx-auto mt-5 max-w-3xl px-6 text-center text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-          Important: MyBenefitsPA is not a government agency and does not determine or guarantee
+          Important: BeneWatch is not a government agency and does not determine or guarantee
           eligibility.
         </p>
       </section>
@@ -221,8 +221,8 @@ export default function LandingPage() {
             </p>
           </blockquote>
           <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Frank, one of MyBenefitsPA&apos;s founders, is the father of an adult son with special
-            needs. He helped create MyBenefitsPA to give families something official benefit systems
+            Frank, one of BeneWatch&apos;s founders, is the father of an adult son with special
+            needs. He helped create BeneWatch to give families something official benefit systems
             do not provide: a durable, individualized operating record that identifies what is due,
             what proof is required, what risk is approaching, who is responsible, and what action
             remains available.
@@ -241,7 +241,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl px-5 sm:px-6">
           <p className="cs-eyebrow text-[var(--color-cs-brand)]">The gap between transactions</p>
           <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
-            Why MyBenefitsPA Is Needed
+            Why BeneWatch Is Needed
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
             Pennsylvania&apos;s official systems process applications, renewals, reported changes,
@@ -260,7 +260,7 @@ export default function LandingPage() {
             ))}
           </ul>
           <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            MyBenefitsPA is being developed to address that operational gap.
+            BeneWatch is being developed to address that operational gap.
           </p>
         </div>
       </section>
@@ -277,7 +277,7 @@ export default function LandingPage() {
           <div className="mt-8 rounded-[28px] border border-[var(--color-cs-border)] bg-white p-2 shadow-[var(--shadow-cs-float)] sm:p-2.5">
             <Shot
               src="/screenshots/home-desktop.png"
-              alt="The MyBenefitsPA home screen: each benefit shown against its limit, with upcoming renewals alongside"
+              alt="The BeneWatch home screen: each benefit shown against its limit, with upcoming renewals alongside"
               priority
             />
           </div>
@@ -287,7 +287,7 @@ export default function LandingPage() {
       {/* How it works — 3 steps */}
       <section id="how-it-works" className="border-y border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
-          <p className="cs-eyebrow text-[var(--color-cs-brand)]">How MyBenefitsPA helps</p>
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">How BeneWatch helps</p>
           <h2 className="mt-2 max-w-3xl text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
             Protect Benefit Continuity in Three Steps
           </h2>
@@ -374,7 +374,7 @@ export default function LandingPage() {
           </h2>
           <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-white/70">
             <p>
-              MyBenefitsPA does not replace COMPASS, myCOMPASS, the Pennsylvania Department of Human
+              BeneWatch does not replace COMPASS, myCOMPASS, the Pennsylvania Department of Human
               Services, County Assistance Offices, the Social Security Administration, Medicare,
               managed-care plans, or any other official eligibility or case-management system.
             </p>
@@ -384,7 +384,7 @@ export default function LandingPage() {
               report changes, submit evidence, and pursue appeals.
             </p>
             <p>
-              MyBenefitsPA prepares the household to complete those responsibilities accurately and
+              BeneWatch prepares the household to complete those responsibilities accurately and
               on time.
             </p>
           </div>
@@ -436,7 +436,7 @@ export default function LandingPage() {
             <div className="mt-6 rounded-[22px] border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-2 shadow-[var(--shadow-cs-float)]">
               <Shot
                 src="/screenshots/calendar-desktop.png"
-                alt="The MyBenefitsPA calendar with upcoming renewals and due dates"
+                alt="The BeneWatch calendar with upcoming renewals and due dates"
               />
             </div>
           </div>
@@ -452,7 +452,7 @@ export default function LandingPage() {
             <div className="mt-6 rounded-[22px] border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-2 shadow-[var(--shadow-cs-float)]">
               <Shot
                 src="/screenshots/vault-desktop.png"
-                alt="The MyBenefitsPA vault with labeled folders for benefit evidence"
+                alt="The BeneWatch vault with labeled folders for benefit evidence"
               />
             </div>
           </div>
@@ -469,14 +469,14 @@ export default function LandingPage() {
           <p className="mx-auto mt-4 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
             A preventable benefit loss may begin with a missed notice, incomplete evidence, an
             unexplained deposit, a reporting deadline, or a document that cannot later be proven to
-            have been submitted. MyBenefitsPA is designed to help households recognize those risks
+            have been submitted. BeneWatch is designed to help households recognize those risks
             while action is still possible.
           </p>
           <p className="mt-8 text-[15px] font-semibold tracking-wide text-[var(--color-cs-text)]">
             Coming soon
           </p>
           <p className="mx-auto mt-8 max-w-2xl text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Important notice: MyBenefitsPA is not a government agency and does not determine or
+            Important notice: BeneWatch is not a government agency and does not determine or
             guarantee eligibility, benefit amounts, continued coverage, or the outcome of any agency
             proceeding.
           </p>

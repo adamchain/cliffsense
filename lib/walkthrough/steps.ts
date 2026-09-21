@@ -51,10 +51,10 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
   },
   {
     id: "limits",
-    href: "/settings",
+    href: "/limits",
     target: "limits-page",
     title: "Limits",
-    body: "Every reference limit for your programs lives here, on the same page as alerts, programs, and notifications. Attach or detach system limits, add custom ones, and watch warning lines before a hard cap.",
+    body: "Every reference limit for your programs lives here, on the same page as alerts and programs. Attach or detach system limits, add custom ones, and watch warning lines before a hard cap.",
   },
   {
     id: "calendar",
@@ -65,10 +65,10 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
   },
   {
     id: "alerts",
-    href: "/settings",
+    href: "/limits",
     target: "alerts-page",
     title: "Early alerts",
-    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here — plus optional email and push further down this page.",
+    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here. Email and push are configured in Settings.",
   },
   {
     id: "settings",

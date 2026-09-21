@@ -243,7 +243,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
             </div>
             <div className="relative z-[1] flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="cs-hero-tag">
+                <div className="cs-hero-tag max-w-full flex-wrap">
                   {fed ? (
                     <UsFlagMark className="cs-fed-flag" />
                   ) : (
@@ -251,7 +251,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                   )}
                   {agencyTag} · {kindLabel}
                 </div>
-                <h1 className="cs-hero-name mt-2 !text-[26px] !leading-tight">{title}</h1>
+                <h1 className="cs-hero-name mt-2 !text-[22px] !leading-tight sm:!text-[26px]">{title}</h1>
                 {reportingPeriod && (
                   <p className="mt-2 text-[13px] text-white/75">
                     Reporting period · {reportingPeriod}
@@ -268,7 +268,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                 </div>
               </div>
             </div>
-            <div className="cs-hero-bottom relative z-[1] mt-6">
+            <div className="cs-hero-bottom relative z-[1] mt-6 flex items-end justify-between gap-3">
               <div>
                 <div className="cs-hero-label">
                   {event.estimatedWagesCents != null ? "Estimated wages" : "Due by"}
@@ -282,7 +282,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                 </div>
               </div>
               <div
-                className={`text-right text-[22px] font-bold tabular-nums tracking-tight ${
+                className={`shrink-0 text-right text-[20px] font-bold tabular-nums tracking-tight sm:text-[22px] ${
                   days <= 7 && days >= 0 ? "text-[#ffd0d0]" : ""
                 }`}
               >
@@ -293,20 +293,20 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
 
           {/* Snapshot strip */}
           <div className="mt-3.5 flex overflow-hidden rounded-[18px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-            <div className="flex-1 px-2 py-3 text-center">
+            <div className="min-w-0 flex-1 px-1.5 py-3 text-center sm:px-2">
               <div className="text-[13px] font-bold leading-snug">{chip.weekday}</div>
               <div className="mt-0.5 text-[11.5px] text-[var(--color-cs-text-secondary)]">
                 {chip.mon} {chip.day}
               </div>
             </div>
-            <div className="flex-1 border-l border-[var(--color-cs-sep)] px-2 py-3 text-center">
+            <div className="min-w-0 flex-1 border-l border-[var(--color-cs-sep)] px-1.5 py-3 text-center sm:px-2">
               <div className="flex items-center justify-center gap-1 text-[13px] font-bold">
                 <IconClock size={14} stroke={2} className="text-[var(--color-cs-text-secondary)]" />
                 {timeLabel}
               </div>
               <div className="mt-0.5 text-[11.5px] text-[var(--color-cs-text-secondary)]">Deadline</div>
             </div>
-            <div className="flex-1 border-l border-[var(--color-cs-sep)] px-2 py-3 text-center">
+            <div className="min-w-0 flex-1 border-l border-[var(--color-cs-sep)] px-1.5 py-3 text-center sm:px-2">
               <div
                 className={`text-[13px] font-bold tabular-nums ${
                   days <= 7 ? "text-[var(--color-cs-danger)]" : ""
@@ -320,7 +320,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
 
           {/* Location / map card */}
           <div className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-            <div className="relative h-[168px] bg-[#dce6ef]">
+            <div className="relative h-[140px] bg-[#dce6ef] sm:h-[168px]">
               <iframe
                 title={`Map of ${place.name}`}
                 src={place.mapsEmbedUrl}
@@ -351,13 +351,13 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                   <div className="mt-1 text-[12px] text-[var(--color-cs-text-muted)]">{howToFile}</div>
                 </div>
               </div>
-              <div className="mt-3.5 flex flex-wrap gap-2">
+              <div className="mt-3.5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 {channelUrl && (
                   <a
                     href={channelUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="cs-btn cs-btn-primary !h-9 !rounded-full !px-3.5 !text-[13px]"
+                    className="cs-btn cs-btn-primary min-h-11 w-full justify-center !rounded-full !px-3.5 !text-[13px] sm:min-h-0 sm:!h-9 sm:w-auto"
                   >
                     {place.onlineFirst ? "File online" : "Open channel"}
                     <IconExternalLink size={14} />
@@ -367,7 +367,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
                   href={place.directionsUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="cs-btn cs-btn-secondary !h-9 !rounded-full !px-3.5 !text-[13px]"
+                  className="cs-btn cs-btn-secondary min-h-11 w-full justify-center !rounded-full !px-3.5 !text-[13px] sm:min-h-0 sm:!h-9 sm:w-auto"
                 >
                   Directions
                 </a>
@@ -413,14 +413,14 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
 
           <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
             Due {longDeadline(event.date)}. Nothing you prepare here is shared with any agency —
-            MyBenefitsPA only helps you organize before you file.
+            BeneWatch only helps you organize before you file.
           </p>
         </div>
 
         {/* Right: prep package */}
         <aside className="lg:sticky lg:top-24">
-          <div className="mb-2 flex items-baseline justify-between px-0.5">
-            <h2 className="text-[22px] font-bold tracking-tight">{prep.headline}</h2>
+          <div className="mb-2 flex items-baseline justify-between gap-3 px-0.5">
+            <h2 className="min-w-0 text-[20px] font-bold tracking-tight sm:text-[22px]">{prep.headline}</h2>
             <Link href={advisorHref} className="text-[15px] text-[var(--color-cs-brand)]">
               Ask Advisor
             </Link>

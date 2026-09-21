@@ -31,7 +31,8 @@ const PAGES: { label: string; href: string; keywords: string }[] = [
   { label: "Dashboard", href: "/dashboard", keywords: "home overview limits balances" },
   { label: "Banking / Transactions", href: "/transactions", keywords: "transactions banking deposits payments" },
   { label: "Recurring", href: "/recurring", keywords: "recurring streams subscriptions income" },
-  { label: "Limits, alerts & settings", href: "/settings", keywords: "limits thresholds eligibility alerts notifications settings account profile programs" },
+  { label: "Limits & alerts", href: "/limits", keywords: "limits thresholds eligibility alerts programs policy" },
+  { label: "Settings", href: "/settings", keywords: "settings account profile notifications email push" },
   { label: "Reports & Docs", href: "/documents", keywords: "forms reports documents reporting recertification" },
   { label: "Exports", href: "/reports", keywords: "exports csv pdf download" },
   { label: "Vault", href: "/vault", keywords: "vault files documents storage" },
@@ -117,14 +118,14 @@ export async function GET(req: Request) {
     const alertItems = alerts.map((a) => ({
       label: String(a.message ?? "").slice(0, 80),
       sublabel: String(a.level ?? ""),
-      href: "/settings#alerts",
+      href: "/limits#alerts",
     }));
     if (alertItems.length) groups.push({ type: "Alerts", items: alertItems });
 
     const thItems = thresholds.map((t) => ({
       label: String(t.label ?? "Limit"),
       sublabel: t.program ? String(t.program) : undefined,
-      href: t.program ? `/thresholds/${String(t.program)}` : "/settings#limits",
+      href: t.program ? `/thresholds/${String(t.program)}` : "/limits#limits",
     }));
     if (thItems.length) groups.push({ type: "Limits", items: thItems });
   }

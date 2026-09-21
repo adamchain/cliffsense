@@ -132,7 +132,7 @@ export function PlaidConnectModal({
 
             <div className="space-y-4 px-5 py-5">
               <p className="text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-                Plaid gives MyBenefitsPA read-only access to balances and transactions. We never
+                Plaid gives BeneWatch read-only access to balances and transactions. We never
                 see your bank credentials and can&apos;t move money.
               </p>
 

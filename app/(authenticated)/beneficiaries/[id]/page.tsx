@@ -119,7 +119,7 @@ export default async function BeneficiaryDetailPage({
           {thresholds.length === 0 ? (
             <p className="text-[12px] text-[var(--color-cs-text-secondary)]">
               No limits.{" "}
-              <Link href="/settings#limits" className="text-[var(--color-cs-brand)] hover:underline">
+              <Link href="/limits#limits" className="text-[var(--color-cs-brand)] hover:underline">
                 Add one
               </Link>
               .
@@ -181,7 +181,7 @@ export default async function BeneficiaryDetailPage({
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-medium text-[var(--color-cs-text)]">Recent alerts</h2>
             <Link
-              href="/settings#alerts"
+              href="/limits#alerts"
               className="text-[11px] text-[var(--color-cs-brand)] hover:underline"
             >
               View all

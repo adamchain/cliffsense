@@ -45,7 +45,7 @@ for fid, url in SOURCES.items():
     dst = os.path.join(OUT_DIR, f"{fid}.pdf")
     if not os.path.exists(src):
         print(f"{fid}: downloading original…")
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 MyBenefitsPA"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 BeneWatch"})
         with urllib.request.urlopen(req) as resp, open(src, "wb") as out:
             out.write(resp.read())
 

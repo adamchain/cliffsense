@@ -20,9 +20,9 @@ import {
 import { StartWalkthroughButton } from "@/components/walkthrough/start-walkthrough-button";
 
 export const metadata: Metadata = {
-  title: "Help & Guide · MyBenefitsPA",
+  title: "Help & Guide · BeneWatch",
   description:
-    "Quick start, step-by-step how-tos, and details on how MyBenefitsPA tracks your benefit limits.",
+    "Quick start, step-by-step how-tos, and details on how BeneWatch tracks your benefit limits.",
 };
 
 /* ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export default function HelpPage() {
         Help &amp; Guide
       </h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        MyBenefitsPA links your bank activity to your benefit programs and gives you a calm,
+        BeneWatch links your bank activity to your benefit programs and gives you a calm,
         early heads-up before you approach an income or asset limit. Here&apos;s how to set it up
         and get the most from it.
       </p>
@@ -199,7 +199,7 @@ export default function HelpPage() {
           <Tip>
             Already set up but the dashboard looks empty? Make sure at least one bank is{" "}
             <Link href="/transactions" className={linkCls}>connected</Link> and your{" "}
-            <Link href="/settings#programs" className={linkCls}>programs</Link> are confirmed — limits only
+            <Link href="/limits#programs" className={linkCls}>programs</Link> are confirmed — limits only
             appear once both are in place.
           </Tip>
         </Section>
@@ -220,7 +220,7 @@ export default function HelpPage() {
             </Term>
             <Term name="Limit (threshold)">
               A dollar line a program watches — a monthly income cap or an asset/resource cap.
-              MyBenefitsPA compares your estimated activity to each one.
+              BeneWatch compares your estimated activity to each one.
             </Term>
             <Term name="Estimate, not a decision">
               Numbers are estimated from your categorized bank activity. Real eligibility involves
@@ -235,7 +235,7 @@ export default function HelpPage() {
           <Steps
             items={[
               <>Go to <Link href="/transactions" className={linkCls}>Money</Link> and choose <span className="font-semibold text-[var(--color-cs-text)]">Connect bank</span>.</>,
-              <>Find your bank and sign in <span className="font-semibold text-[var(--color-cs-text)]">on Plaid&apos;s secure screen</span>. MyBenefitsPA never sees your banking username or password.</>,
+              <>Find your bank and sign in <span className="font-semibold text-[var(--color-cs-text)]">on Plaid&apos;s secure screen</span>. BeneWatch never sees your banking username or password.</>,
               <>Pick the checking/savings accounts to link. Deposits and balances begin importing within a minute or two.</>,
               <>Return to <Link href="/transactions" className={linkCls}>Banking</Link> to review and categorize the imported activity.</>,
             ]}
@@ -248,7 +248,7 @@ export default function HelpPage() {
             <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--color-cs-text)]">
               <IconLock size={14} stroke={1.8} aria-hidden /> Access is read-only.
             </span>{" "}
-            MyBenefitsPA can see transactions and balances to do the math — it can never move money.
+            BeneWatch can see transactions and balances to do the math — it can never move money.
             Access tokens are encrypted at rest.
           </Tip>
         </Section>
@@ -280,7 +280,7 @@ export default function HelpPage() {
         <Section id="recurring" icon={<IconRepeat size={18} stroke={1.8} />} title="Recurring income">
           <p>
             The <Link href="/recurring" className={linkCls}>Recurring</Link> screen detects repeating
-            deposits like a paycheck or monthly benefit. Confirm a stream and MyBenefitsPA can{" "}
+            deposits like a paycheck or monthly benefit. Confirm a stream and BeneWatch can{" "}
             <span className="font-semibold text-[var(--color-cs-text)]">project the rest of the month</span>{" "}
             — so you get a heads-up before a limit is crossed, not after.
           </p>
@@ -296,7 +296,7 @@ export default function HelpPage() {
         {/* LIMITS */}
         <Section id="limits" icon={<IconTarget size={18} stroke={1.8} />} title="Limits">
           <p>
-            <Link href="/settings#limits" className={linkCls}>Limits</Link> lists the reference limits for
+            <Link href="/limits#limits" className={linkCls}>Limits</Link> lists the reference limits for
             your enrolled programs, plus any you add yourself. Each shows its dollar cap, source, and
             current status.
           </p>
@@ -355,14 +355,14 @@ export default function HelpPage() {
 
         {/* ALERTS */}
         <Section id="alerts" icon={<IconBell size={18} stroke={1.8} />} title="Alerts & notifications">
-          <p>When activity approaches or crosses a limit, MyBenefitsPA raises an alert:</p>
+          <p>When activity approaches or crosses a limit, BeneWatch raises an alert:</p>
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]">Watch</span> — you&apos;ve reached a limit&apos;s warning line, or a projection suggests you&apos;ll approach it by month-end.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Over limit</span> — current activity meets or exceeds the cap.</li>
           </ul>
           <p>You can receive them three ways:</p>
           <ul className="space-y-2">
-            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/settings#alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/limits#alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a real-time note on a breach, plus optional daily or weekly digests.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Push</span> — install the app to your home screen and enable push in <Link href="/settings" className={linkCls}>Settings</Link>.</li>
           </ul>
@@ -404,7 +404,7 @@ export default function HelpPage() {
         {/* FAQ */}
         <Section id="faq" icon={<IconCircleCheck size={18} stroke={1.8} />} title="FAQ">
           <dl className="space-y-3">
-            <Term name="Will MyBenefitsPA report my income to anyone?">
+            <Term name="Will BeneWatch report my income to anyone?">
               No. It&apos;s a private tool for you. Nothing is shared with SSA, your county office, or any
               agency. You decide what to do with the information.
             </Term>
@@ -455,7 +455,7 @@ export default function HelpPage() {
         </a>
       </div>
       <p className="mt-4 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-        MyBenefitsPA is an informational tool, not legal, tax, or benefits advice, and not a
+        BeneWatch is an informational tool, not legal, tax, or benefits advice, and not a
         determination of eligibility. See our{" "}
         <Link href="/legal/privacy" className="underline hover:text-[var(--color-cs-text-secondary)]">Privacy Policy</Link>,{" "}
         <Link href="/legal/terms" className="underline hover:text-[var(--color-cs-text-secondary)]">Terms</Link>, and{" "}

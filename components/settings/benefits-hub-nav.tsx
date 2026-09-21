@@ -7,8 +7,6 @@ const SECTIONS = [
   { id: "limits", label: "Limits" },
   { id: "policy", label: "2026–27 policy" },
   { id: "programs", label: "Programs" },
-  { id: "profile", label: "Profile" },
-  { id: "notifications", label: "Notifications" },
 ] as const;
 
 export function BenefitsHubNav() {

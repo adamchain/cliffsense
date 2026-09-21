@@ -27,13 +27,13 @@ export type NavItem = { href: string; label: string; icon: IconCmp };
 export type NavSection = { label: string; icon: IconCmp; href: string; children?: NavItem[] };
 
 /* ---------------------------------------------------------------------------
- * Sidebar order: Home → Calendar → Alerts, then the rest.
+ * Sidebar order: Home → Calendar → Limits, then the rest.
  * ------------------------------------------------------------------------- */
 
 export const PRIMARY_SECTIONS: NavSection[] = [
   { label: "Home", icon: IconHome, href: "/dashboard" },
   { label: "Calendar", icon: IconCalendarEvent, href: "/calendar" },
-  { label: "Limits", icon: IconTarget, href: "/settings" },
+  { label: "Limits", icon: IconTarget, href: "/limits" },
   { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
   { label: "Forms", icon: IconFileText, href: "/documents" },
   { label: "Money", icon: IconWallet, href: "/transactions" },
@@ -54,18 +54,20 @@ export const ALL_SECTIONS: NavSection[] = [...PRIMARY_SECTIONS, ...UTILITY_SECTI
 export const PRIMARY_HREFS = [
   "/dashboard",
   "/calendar",
-  "/settings",
+  "/limits",
   "/documents",
   "/transactions",
 ];
 
 export function isHrefActive(activeHref: string, href: string): boolean {
-  if (href === "/settings") {
+  if (href === "/limits") {
     return (
-      activeHref === "/settings" ||
-      activeHref.startsWith("/settings/") ||
+      activeHref === "/limits" ||
+      activeHref.startsWith("/limits/") ||
       activeHref === "/thresholds" ||
-      activeHref.startsWith("/thresholds/")
+      activeHref.startsWith("/thresholds/") ||
+      activeHref === "/alerts" ||
+      activeHref.startsWith("/alerts/")
     );
   }
   return activeHref === href || activeHref.startsWith(href + "/");

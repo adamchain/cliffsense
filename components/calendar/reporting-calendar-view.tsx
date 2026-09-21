@@ -280,25 +280,30 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
   const monthOffsets = [0, 1, 2];
 
   return (
-    <div>
-      <div className="mb-3 flex items-center justify-between gap-3" data-tour="calendar-page">
-        <h1 className="cs-big-title">Calendar</h1>
+    <div className="min-w-0 overflow-x-hidden">
+      <div className="mb-2 flex items-center justify-between gap-3 sm:mb-3" data-tour="calendar-page">
+        <h1 className="cs-big-title !text-[28px] sm:!text-[2.125rem]">Calendar</h1>
         <button
           type="button"
-          className="cs-circbtn"
+          className="cs-circbtn !h-11 !w-11 sm:!h-[34px] sm:!w-[34px]"
           aria-label="Add deadline"
           onClick={() => setShowAdd((s) => !s)}
         >
           <IconPlus size={20} stroke={2.2} />
         </button>
       </div>
-      <p className="mb-4 text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Renewals from{" "}
-        <Link href="/settings" className="text-[var(--color-cs-brand)]">
-          Settings
-        </Link>{" "}
-        stay at the top. Add interviews, verifications, premiums, CDRs, assessments, and appeal /
-        continued-benefit dates from the notice. Confirm every date with the agency.
+      <p className="mb-4 text-[13.5px] leading-snug text-[var(--color-cs-text-secondary)] sm:leading-normal">
+        <span className="sm:hidden">
+          Tap a day to filter. Confirm every date with the agency.
+        </span>
+        <span className="hidden sm:inline">
+          Renewals from{" "}
+          <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
+            Limits
+          </Link>{" "}
+          stay at the top. Add interviews, verifications, premiums, CDRs, assessments, and appeal /
+          continued-benefit dates from the notice. Confirm every date with the agency.
+        </span>
       </p>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
@@ -309,11 +314,11 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
           className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
         >
           <div className="mb-2 text-[16px] font-bold">Add a deadline</div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 sm:gap-2">
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Title</span>
               <input
-                className="cs-input"
+                className="cs-input text-base sm:text-[15px]"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="e.g. SNAP semi-annual report"
@@ -324,7 +329,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Due date</span>
               <input
                 type="date"
-                className="cs-input"
+                className="cs-input text-base sm:text-[15px]"
                 value={form.dueDate}
                 min={todayIso()}
                 onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
@@ -334,7 +339,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Program</span>
               <select
-                className="cs-input"
+                className="cs-input text-base sm:text-[15px]"
                 value={form.program}
                 onChange={(e) => setForm((f) => ({ ...f, program: e.target.value }))}
               >
@@ -349,7 +354,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
             <label className="block">
               <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Clock type</span>
               <select
-                className="cs-input"
+                className="cs-input text-base sm:text-[15px]"
                 value={form.kind}
                 onChange={(e) => {
                   const kind = e.target.value as DeadlineKind;
@@ -378,7 +383,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                 </span>
                 <input
                   type="date"
-                  className="cs-input"
+                  className="cs-input text-base sm:text-[15px]"
                   value={form.continuedBenefitsDate}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, continuedBenefitsDate: e.target.value }))
@@ -387,26 +392,36 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
               </label>
             )}
           </div>
-          <div className="mt-3 flex justify-end gap-2">
-            <button type="button" className="text-[var(--color-cs-brand)]" onClick={() => setShowAdd(false)}>
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:mt-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              className="cs-btn cs-btn-ghost min-h-11 w-full sm:min-h-0 sm:w-auto"
+              onClick={() => setShowAdd(false)}
+            >
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="cs-btn cs-btn-primary disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={saving}
+              className="cs-btn cs-btn-primary min-h-11 w-full disabled:opacity-50 sm:min-h-0 sm:w-auto"
+            >
               {saving ? "Saving…" : "Add"}
             </button>
           </div>
         </form>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,17.5rem)_1fr] lg:items-start">
-        {/* Left: compact multi-month */}
-        <div className="max-w-[17.5rem]">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="text-[17px] font-bold tracking-tight">{monthTitle}</div>
-            <div className="flex gap-1">
+      <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,17.5rem)_1fr] lg:items-start lg:gap-6">
+        {/* Month grid: full-width on mobile, compact rail on desktop */}
+        <div className="min-w-0 w-full lg:max-w-[17.5rem]">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="min-w-0 truncate text-[22px] font-bold tracking-tight lg:text-[17px]">
+              {monthTitle}
+            </div>
+            <div className="flex shrink-0 gap-1">
               <button
                 type="button"
-                className="cs-circbtn !h-8 !w-8"
+                className="cs-circbtn !h-11 !w-11 lg:!h-8 lg:!w-8"
                 aria-label="Previous month"
                 onClick={() => {
                   const m = viewMonth - 1;
@@ -416,11 +431,11 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                   } else setViewMonth(m);
                 }}
               >
-                <IconChevronLeft size={16} stroke={2.2} />
+                <IconChevronLeft size={18} stroke={2.2} />
               </button>
               <button
                 type="button"
-                className="cs-circbtn !h-8 !w-8"
+                className="cs-circbtn !h-11 !w-11 lg:!h-8 lg:!w-8"
                 aria-label="Next month"
                 onClick={() => {
                   const m = viewMonth + 1;
@@ -430,7 +445,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                   } else setViewMonth(m);
                 }}
               >
-                <IconChevronRight size={16} stroke={2.2} />
+                <IconChevronRight size={18} stroke={2.2} />
               </button>
             </div>
           </div>
@@ -448,33 +463,39 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                 year: "numeric",
               });
               return (
-                <MonthGrid
-                  key={`${y}-${m}`}
-                  year={y}
-                  month={m}
-                  title={offset === 0 ? undefined : title}
-                  compact
-                  itemsByDate={itemsByDate}
-                  selectedDate={selectedDate}
-                  onSelect={(d) => setSelectedDate((cur) => (cur === d ? null : d))}
-                />
+                <div key={`${y}-${m}`} className={offset === 0 ? undefined : "hidden lg:block"}>
+                  <MonthGrid
+                    year={y}
+                    month={m}
+                    title={offset === 0 ? undefined : title}
+                    compact={offset > 0}
+                    itemsByDate={itemsByDate}
+                    selectedDate={selectedDate}
+                    onSelect={(d) => setSelectedDate((cur) => (cur === d ? null : d))}
+                  />
+                </div>
               );
             })}
           </div>
 
           {selectedDate && (
-            <button
-              type="button"
-              onClick={() => setSelectedDate(null)}
-              className="mt-3 inline-flex items-center gap-1 text-[13px] text-[var(--color-cs-brand)]"
-            >
-              <IconX size={14} /> Clear day filter
-            </button>
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-[14px] bg-[var(--color-cs-card)] px-3 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)] lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none">
+              <span className="min-w-0 truncate text-[13px] font-medium text-[var(--color-cs-text)]">
+                {dayParts(selectedDate).full}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedDate(null)}
+                className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-[var(--color-cs-brand)]"
+              >
+                <IconX size={14} /> Clear
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Agenda: below the months on mobile, sticky right column on desktop */}
-        <div className="mt-5 lg:mt-0 lg:sticky lg:top-24">
+        {/* Agenda: directly under the month on mobile, sticky right column on desktop */}
+        <div className="min-w-0 lg:sticky lg:top-24">
           {loading ? (
             <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
           ) : (
@@ -549,8 +570,8 @@ function TipsCard() {
             Enter the date from each agency notice so it appears here and on Home. Confirm every
             date with the agency.
           </p>
-          <Link href="/settings" className="mt-2 inline-block font-semibold text-[var(--color-cs-brand)]">
-            Set renewal dates in Settings →
+          <Link href="/limits#programs" className="mt-2 inline-block font-semibold text-[var(--color-cs-brand)]">
+            Set renewal dates in Limits →
           </Link>
         </div>
       )}
@@ -614,10 +635,12 @@ function AgendaBlock({
                     <div className="d">{parts.day}</div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-2">
                       <div className="min-w-0">
-                        <div className="truncate text-[16px] font-semibold">{item.title}</div>
-                        <div className="mt-0.5 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
+                        <div className="text-[16px] font-semibold leading-snug sm:truncate">
+                          {item.title}
+                        </div>
+                        <div className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
                           {meta?.label ?? "General"} · {parts.full}
                           {item.detail ? ` · ${item.detail}` : ""}
                         </div>
@@ -634,13 +657,13 @@ function AgendaBlock({
                     </div>
                   </div>
                 </Link>
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-[58px]">
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 sm:pl-[58px]">
                   {item.channelUrl && (
                     <a
                       href={item.channelUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                      className="inline-flex min-h-9 items-center gap-1 text-[13px] font-semibold text-[var(--color-cs-brand)] sm:min-h-0 sm:text-[12px]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <IconExternalLink size={12} />
@@ -649,14 +672,14 @@ function AgendaBlock({
                   )}
                   <Link
                     href={href}
-                    className="text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                    className="inline-flex min-h-9 items-center text-[13px] font-semibold text-[var(--color-cs-brand)] sm:min-h-0 sm:text-[12px]"
                   >
                     Details
                   </Link>
                   {item.program && (
                     <Link
                       href={`/thresholds/${item.program}`}
-                      className="text-[12px] font-semibold text-[var(--color-cs-brand)]"
+                      className="inline-flex min-h-9 items-center text-[13px] font-semibold text-[var(--color-cs-brand)] sm:min-h-0 sm:text-[12px]"
                     >
                       View limits
                     </Link>
@@ -666,17 +689,17 @@ function AgendaBlock({
                       <button
                         type="button"
                         onClick={() => onDone(item.id.replace(/^usr-/, ""))}
-                        className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--color-cs-success)]"
+                        className="inline-flex min-h-9 items-center gap-1 text-[13px] font-semibold text-[var(--color-cs-success)] sm:min-h-0 sm:text-[12px]"
                       >
                         <IconCheck size={13} /> Done
                       </button>
                       <button
                         type="button"
                         onClick={() => onRemove(item.id.replace(/^usr-/, ""))}
-                        className="inline-flex text-[var(--color-cs-text-muted)]"
+                        className="inline-flex min-h-9 min-w-9 items-center justify-center text-[var(--color-cs-text-muted)] sm:min-h-0 sm:min-w-0"
                         aria-label="Remove"
                       >
-                        <IconTrash size={14} />
+                        <IconTrash size={16} />
                       </button>
                     </>
                   )}
@@ -721,7 +744,9 @@ function MonthGrid({
   for (let d = 1; d <= daysInMonth; d += 1) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const cellSize = compact ? "h-8 w-8 text-[12px]" : "h-9 w-9 text-[13px]";
+  const cellSize = compact
+    ? "h-8 w-8 text-[12px]"
+    : "h-10 w-10 text-[15px] sm:h-9 sm:w-9 sm:text-[13px] lg:h-8 lg:w-8 lg:text-[12px]";
 
   return (
     <div>
@@ -735,7 +760,9 @@ function MonthGrid({
         {WEEKDAYS.map((d, i) => (
           <div
             key={i}
-            className="pb-1 text-center text-[10px] font-semibold text-[var(--color-cs-text-secondary)]"
+            className={`pb-1.5 text-center font-semibold text-[var(--color-cs-text-secondary)] ${
+              compact ? "text-[10px]" : "text-[11px] sm:text-[10px]"
+            }`}
           >
             {d}
           </div>
@@ -752,7 +779,7 @@ function MonthGrid({
               key={date}
               type="button"
               onClick={() => onSelect(date)}
-              className="flex aspect-square items-center justify-center"
+              className="flex min-h-11 items-center justify-center sm:min-h-0 sm:aspect-square"
             >
               <span
                 className={`flex ${cellSize} items-center justify-center tabular-nums ${

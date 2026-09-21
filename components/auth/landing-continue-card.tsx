@@ -32,7 +32,7 @@ export function LandingContinueCard({
         {ctaLabel}
       </Link>
       <p className="mt-3 text-center text-xs text-[var(--color-cs-text-secondary)]">
-        Or keep scrolling to learn more about MyBenefitsPA.
+        Or keep scrolling to learn more about BeneWatch.
       </p>
     </div>
   );

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
 import type { OnboardingStepId } from "@/lib/onboarding/steps";
 import { getOnboardingSteps, onboardingStepIndex } from "@/lib/onboarding/steps";
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 type OnboardingShellProps = {
   accountType: string | undefined;
@@ -42,15 +42,8 @@ export function OnboardingShell({
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
       <OnboardingProgress steps={steps} currentStepId={currentStepId} subProgress={subProgress} />
       <main className="mx-auto w-full max-w-lg px-5 py-10 sm:py-14">
-        <Link href="/" className="inline-flex" aria-label="MyBenefitsPA home">
-          <Image
-            src="/mybenefitspa-logo.png"
-            alt="MyBenefitsPA"
-            width={180}
-            height={142}
-            priority
-            className="h-8 w-auto"
-          />
+        <Link href="/" className="inline-flex" aria-label="BeneWatch home">
+          <BrandLogo priority className="h-8 w-auto" />
         </Link>
         {prevStep ? (
           <Link

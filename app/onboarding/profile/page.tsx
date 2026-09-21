@@ -19,7 +19,7 @@ export default async function OnboardingProfilePage() {
       title={self ? "Confirm the beneficiary" : "Your details"}
       subtitle={
         self
-          ? "Identity, household, and how to reach them. This is the baseline MyBenefitsPA monitors from — not a guess about eligibility."
+          ? "Identity, household, and how to reach them. This is the baseline BeneWatch monitors from — not a guess about eligibility."
           : "We’ll use this for your Monitor account. Next you’ll add the person whose benefits you track, then document authority."
       }
     >

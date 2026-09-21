@@ -1,6 +1,6 @@
 /**
  * 30 beneficiary eligibility-loss prevention scenarios from the clarified
- * MyBenefitsPA product brief (closure-code notes included). Educational
+ * BeneWatch product brief (closure-code notes included). Educational
  * action plans — not individual eligibility determinations.
  */
 

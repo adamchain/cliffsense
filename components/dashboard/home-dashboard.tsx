@@ -184,7 +184,7 @@ export function HomeDashboard({
             Select enrolled programs and connect a bank to see wallet-style benefit cards here.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/settings#limits" className="cs-btn cs-btn-primary">
+            <Link href="/limits#limits" className="cs-btn cs-btn-primary">
               Set up limits
             </Link>
             {beneficiaryId ? (
@@ -271,7 +271,7 @@ export function HomeDashboard({
                   return (
                     <div className="rounded-[18px] bg-white px-4 py-5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                       No renewals or deadlines yet. Set them in{" "}
-                      <Link href="/settings#programs" className="text-[var(--color-cs-brand)]">
+                      <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
                         Limits
                       </Link>{" "}
                       or{" "}
@@ -336,7 +336,7 @@ export function HomeDashboard({
             </div>
             <div className="mt-3 flex flex-col gap-2.5 px-4">
               <Link
-                href="/settings#limits"
+                href="/limits#limits"
                 onClick={() => setAddOpen(false)}
                 className="flex items-center gap-3.5 rounded-[14px] bg-[var(--color-cs-card)] px-4 py-3.5 text-[17px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
               >

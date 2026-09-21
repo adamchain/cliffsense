@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { IconDots, IconX } from "@tabler/icons-react";
+import { isHrefActive } from "./nav-config";
 
 type IconCmp = ComponentType<{ size?: number; stroke?: number; className?: string; fill?: string }>;
 export type NavItem = { href: string; label: string; icon: IconCmp };
@@ -24,7 +25,7 @@ export function MobileTabBar({
 }) {
   const [open, setOpen] = useState(false);
   const badge = alertCount > 9 ? "9+" : String(alertCount);
-  const isActive = (href: string) => activeHref === href || activeHref.startsWith(href + "/");
+  const isActive = (href: string) => isHrefActive(activeHref, href);
   const moreActive = more.some((m) => isActive(m.href));
 
   return (
@@ -35,7 +36,7 @@ export function MobileTabBar({
       >
         {primary.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
-          const showCount = href === "/settings" && alertCount > 0;
+          const showCount = href === "/limits" && alertCount > 0;
           return (
             <Link
               key={href}

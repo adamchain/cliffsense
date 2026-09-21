@@ -8,7 +8,7 @@ import { onboardingPathForStep } from "@/lib/onboarding/steps";
 import { connectDB } from "@/lib/db/mongodb";
 import { ApplicationClient } from "./application-client";
 
-export const metadata = { title: "Your application · MyBenefitsPA" };
+export const metadata = { title: "Your application · BeneWatch" };
 
 export default async function ApplicationPage() {
   const session = await auth();

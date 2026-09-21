@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { IconCheck, IconClock, IconAlertTriangle, IconUpload, IconRefresh } from "@tabler/icons-react";
 import type { SerializedApplication } from "@/lib/applications/serialize";
 import { DOC_TYPE_OPTIONS, RELATIONSHIP_OPTIONS } from "@/lib/applications/labels";
 import { ApplicationStatusBadge, ApplicationTimeline } from "@/components/applications/status-parts";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const DOC_REVIEW_STYLE: Record<string, string> = {
   verified: "text-[#2f6d1a]",
@@ -163,14 +163,7 @@ export function ApplicationClient({ initial }: { initial: SerializedApplication 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
       <main className="mx-auto w-full max-w-xl px-5 py-10 sm:py-14">
-        <Image
-          src="/mybenefitspa-logo.png"
-          alt="MyBenefitsPA"
-          width={180}
-          height={142}
-          priority
-          className="h-8 w-auto"
-        />
+        <BrandLogo priority className="h-8 w-auto" />
 
         <div className="mt-8 flex items-center gap-3">
           <h1 className="text-[24px] font-bold leading-tight tracking-tight">Your application</h1>

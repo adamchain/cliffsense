@@ -425,8 +425,8 @@ export function BenefitDetailView({
         {relatedDates.length === 0 ? (
           <div className="rounded-[18px] bg-white px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
             No upcoming dates for {title}. Set renewals in{" "}
-            <Link href="/settings" className="text-[var(--color-cs-brand)]">
-              Settings
+            <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
+              Limits
             </Link>
             .
           </div>
@@ -604,7 +604,7 @@ export function BenefitDetailView({
           )}
 
           <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
-            MyBenefitsPA counts these against the {title} threshold from your linked accounts.
+            BeneWatch counts these against the {title} threshold from your linked accounts.
             Nothing here is shared with any agency. Figures are informational — not an eligibility
             determination.
           </p>

@@ -277,7 +277,7 @@ export function AlertsView({
                 : null;
             const progMeta = prog ? programMetaFor(prog) : null;
             const Icon = iconFor(a.trigger, a.level);
-            const source = progMeta?.label ?? playbook.programs[0] ?? "MyBenefitsPA";
+            const source = progMeta?.label ?? playbook.programs[0] ?? "BeneWatch";
             const title = snap?.thresholdLabel ?? playbook.title ?? triggerLabel(a.trigger);
             const sensitive = isTimeSensitive(a.level, a.trigger) && a.status === "new";
 

@@ -112,7 +112,7 @@ const stepHeadings: Record<1 | 2 | 3, { title: string; intro: React.ReactNode }>
   1: {
     title: "Create your account",
     intro:
-      "Tell us how you’ll be using MyBenefitsPA. This shapes your setup and the features you’ll see first.",
+      "Tell us how you’ll be using BeneWatch. This shapes your setup and the features you’ll see first.",
   },
   2: {
     title: "Your details",

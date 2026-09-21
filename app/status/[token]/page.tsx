@@ -1,25 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
 import { connectDB } from "@/lib/db/mongodb";
 import Application from "@/lib/db/models/Application";
 import ApplicationDocument from "@/lib/db/models/ApplicationDocument";
 import { ApplicationStatusBadge, ApplicationTimeline } from "@/components/applications/status-parts";
 import { relationshipLabel } from "@/lib/applications/labels";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
-export const metadata = { title: "Application status · MyBenefitsPA" };
+export const metadata = { title: "Application status · BeneWatch" };
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
       <main className="mx-auto w-full max-w-xl px-5 py-10 sm:py-14">
-        <Image
-          src="/mybenefitspa-logo.png"
-          alt="MyBenefitsPA"
-          width={180}
-          height={142}
-          priority
-          className="h-8 w-auto"
-        />
+        <BrandLogo priority className="h-8 w-auto" />
         {children}
       </main>
     </div>

@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 /**
  * Fetches the official agency PDF and auto-fills its form fields from the user's
  * answers, returning the real government form ready to print or submit. Falls
- * back (422) to the MyBenefitsPA summary PDF when the official form can't be
+ * back (422) to the BeneWatch summary PDF when the official form can't be
  * fetched or matched.
  */
 const schema = z.object({
@@ -56,7 +56,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ formId: string
         {
           error: "official_unavailable",
           details:
-            "Couldn't auto-fill the official PDF right now. Use the MyBenefitsPA summary, or open the official form to fill it by hand.",
+            "Couldn't auto-fill the official PDF right now. Use the BeneWatch summary, or open the official form to fill it by hand.",
         },
         { status: 422 },
       );

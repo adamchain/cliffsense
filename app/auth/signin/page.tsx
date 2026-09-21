@@ -240,7 +240,7 @@ export default function SignInPage() {
           <div className="mt-6 rounded-lg border border-[var(--color-cs-border)] bg-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-[var(--color-cs-text)]">Beta access required</p>
             <p className="mt-1 text-[13px] text-[var(--color-cs-text-secondary)]">
-              MyBenefitsPA is currently in private beta. Enter your access code to create an account.
+              BeneWatch is currently in private beta. Enter your access code to create an account.
             </p>
             <form className="mt-4 flex flex-col gap-3" onSubmit={submitBetaCode}>
               <input
