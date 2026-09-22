@@ -92,12 +92,12 @@ export default function ResourcesPage() {
           {
             label: "MAWD (Workers with Disabilities) — countable income",
             value: "$3,325 / mo",
-            note: "250% FPL. Countable income after SSI-related exclusions — not a gross-wage cap. Premium ~5% of countable income.",
+            note: "One person. Two is $4,509. Countable income, not a gross paycheck. Workers with Job Success uses 600% ($7,980 for one person).",
           },
           {
             label: "MAWD — assets",
             value: "$10,000",
-            note: "Paid employment required. Workers with Job Success can extend coverage up to 600% FPL.",
+            note: "Any household size. Exactly at $10,000 still qualifies. No asset cap once Workers with Job Success is recorded.",
           },
           { label: "QMB (Medicare Savings) — income", value: "$1,350 / mo", note: "100% FPL + $20. Pays Medicare premiums & cost-sharing." },
           { label: "QMB — resources", value: "~$9,660", note: "Single." },

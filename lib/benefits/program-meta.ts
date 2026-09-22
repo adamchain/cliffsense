@@ -118,7 +118,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "Medical Assistance for Workers with Disabilities",
     agency: "PA Department of Human Services",
     blurb:
-      "Medicaid for a Pennsylvania worker with a disability (generally age 16–64 with paid employment). Countable-income limit $3,325/month (250% FPL); $10,000 resources. Premium is usually 5% of countable income. Workers with Job Success can extend coverage up to 600% FPL.",
+      "Medicaid for a Pennsylvania worker with a disability (generally age 16–64 with paid employment). 2026 countable income is $3,325 a month for one person and $4,509 for two. Resources are $10,000 or less. Workers with Job Success uses 600% of the poverty guideline and no longer caps assets at $10,000.",
     reporting:
       "Report income, resource, and employment changes to PA DHS within 10 days. Paid employment is required.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",

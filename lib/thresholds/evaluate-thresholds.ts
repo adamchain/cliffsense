@@ -14,6 +14,7 @@ import {
   ssiBenefitCentsToExclude,
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
+import { enrolledWorkersWithJobSuccess } from "@/lib/benefits/mawd-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import {
@@ -299,6 +300,14 @@ export async function evaluateThresholdsForBeneficiary(input: {
     // Waiver income is a gross test, and neither limit applies while the person receives SSI.
     // A married waiver resource share is set at assessment, so the $8,000 seed must not alert on its own.
     if (sk === "pa_waiver_income_2026" || sk === "pa_waiver_resources_2026") continue;
+    // MAWD income depends on household size and whether Workers with Job Success is recorded.
+    if (
+      sk === "pa_mawd_income_2026" ||
+      sk === "pa_mawd_resources_2026" ||
+      sk === "pa_mawd_job_success_income_2026"
+    ) {
+      continue;
+    }
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -441,6 +450,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
       deposits: benefitDeposits,
     }),
     married: isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus),
+    mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
+    mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,

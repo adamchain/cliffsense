@@ -12,6 +12,12 @@ import {
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import {
+  mawdIncomeAlert,
+  mawdIncomeLimitCents,
+  mawdJobSuccessIncomeLimitCents,
+  mawdResourceAlert,
+} from "@/lib/benefits/mawd-limits";
 import { WAIVER_GROSS_INCOME_CENTS, waiverIncomeAlert, waiverResourceAlert } from "@/lib/benefits/waiver-limits";
 import { dacSgaAlert, dacWaiverTwilight, ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import {
@@ -64,6 +70,10 @@ export type ScenarioEvalInput = {
   waiverGrossCents?: number;
   /** Marital status recorded as married. The community-spouse resource share is not inferred from this. */
   married?: boolean;
+  /** MAWD countable income, after the $20, $65, and one-half exclusions. */
+  mawdCountableCents?: number;
+  /** True when Workers with Job Success is recorded on the MAWD enrollment. */
+  mawdJobSuccess?: boolean;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -169,7 +179,7 @@ export async function evaluateScenarioAlerts(
         else if (assets > Math.floor(resourceLimit * 0.85)) consider("abd_resources_2k", "warning");
       }
     }
-    if (earned > 0 && abdIncome >= abdLimit) consider("mawd_transition");
+    if (earned > 0 && abdIncome >= abdLimit && !hasProgram(input.programs, "MAWD")) consider("mawd_transition");
   }
   if (hasProgram(input.programs, "MedicaidWaiver") && !hasProgram(input.programs, "SSI")) {
     const waiverGross = input.waiverGrossCents ?? gross;
@@ -179,7 +189,9 @@ export async function evaluateScenarioAlerts(
       const resourceLevel = waiverResourceAlert(assets);
       if (resourceLevel) consider("waiver_resources_8k", resourceLevel);
     }
-    if (earned > 0 && waiverGross > WAIVER_GROSS_INCOME_CENTS) consider("mawd_transition");
+    if (earned > 0 && waiverGross > WAIVER_GROSS_INCOME_CENTS && !hasProgram(input.programs, "MAWD")) {
+      consider("mawd_transition");
+    }
     if (
       (hasProgram(input.programs, "SSDI") &&
         ssdiWaiverTwilight(earned, waiverGross, input.twpMonthsUsed ?? 0)) ||
@@ -188,10 +200,23 @@ export async function evaluateScenarioAlerts(
       consider("ssdi_waiver_twilight");
     }
   }
+  if (hasProgram(input.programs, "MAWD")) {
+    const mawdIncome = input.mawdCountableCents ?? countable;
+    const mawdLimit = input.mawdJobSuccess
+      ? mawdJobSuccessIncomeLimitCents(householdSize)
+      : mawdIncomeLimitCents(householdSize);
+    const incomeLevel = mawdIncomeAlert(mawdIncome, mawdLimit);
+    if (incomeLevel) consider("mawd_income_limit", incomeLevel);
+    if (!input.mawdJobSuccess) {
+      const resourceLevel = mawdResourceAlert(assets);
+      if (resourceLevel) consider("mawd_resources_10k", resourceLevel);
+    }
+  }
   if (
     !hasProgram(input.programs, "MedicaidABD") &&
     !hasProgram(input.programs, "MedicaidWaiver") &&
-    (hasProgram(input.programs, "MAWD") || hasProgram(input.programs, "Medicaid")) &&
+    !hasProgram(input.programs, "MAWD") &&
+    hasProgram(input.programs, "Medicaid") &&
     earned >= SGA_NONBLIND_CENTS
   ) {
     consider("mawd_transition");

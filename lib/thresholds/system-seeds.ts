@@ -480,7 +480,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA MAWD — countable monthly income (250% FPL, 2026)",
     description:
-      "Medical Assistance for Workers with Disabilities countable-income limit: 250% FPL = $3,325/month (single). This is a countable-income test, not a gross-wage cap — apply the $20 general exclusion, $65 earned-income exclusion, then only one-half of remaining wages, plus applicable disability/work-expense deductions. Do not compare a gross paycheck to $3,325. Paid employment is required. Standard MAWD charges a monthly premium of about 5% of countable income. You can keep Waiver services on MAWD." +
+      "MAWD countable income is 250% of the 2026 poverty guideline: $3,325 for one person and $4,509 for two. Apply the $20 general exclusion, the $65 earned exclusion, and one-half of the remaining wages. Do not compare a gross paycheck to this limit. Paid work is required. The standard premium is about 5% of countable income. Workers with Job Success uses the 600% line instead." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
@@ -497,7 +497,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA MAWD — asset limit (2026)",
     description:
-      "MAWD countable resource limit: $10,000. Uses Medicaid/SSI-related exclusions (principal residence, an allowable vehicle, qualifying SNT and ABLE balances). A direct SNT cash distribution may be unearned income in the receipt month and a resource if kept in a personal account." +
+      "Countable resources must be $10,000 or less, for any household size. Exactly at $10,000 still qualifies. Once Workers with Job Success is recorded, assets are no longer capped at $10,000. A home, one vehicle, and qualifying ABLE and special needs trust balances stay excluded." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
@@ -514,7 +514,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA MAWD Workers with Job Success — countable income (600% FPL, 2026)",
     description:
-      "Pennsylvania's Workers with Job Success pathway can extend MAWD-related coverage above the standard 250% FPL level, up to 600% FPL (about $7,980/month countable for a single person in 2026) if the separate requirements are met. This is a continuation ceiling, not the standard MAWD test." +
+      "Workers with Job Success countable income is 600% of the 2026 poverty guideline: $7,980 for one person and $10,820 for two. It applies only after Workers with Job Success is recorded. It is not the standard MAWD test." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,

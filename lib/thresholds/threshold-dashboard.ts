@@ -6,6 +6,11 @@ import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import {
+  enrolledWorkersWithJobSuccess,
+  mawdIncomeLimitCents,
+  mawdJobSuccessIncomeLimitCents,
+} from "@/lib/benefits/mawd-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import {
   abdCountableCents,
@@ -262,6 +267,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     deposits: benefitDeposits,
   });
   const onSsi = programs.some((p) => String(p).toUpperCase() === "SSI");
+  const mawdJobSuccess = enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []);
   const married = isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus);
   const abdIncomeNow = abdCountableCents({ breakdown, programs, householdSize, deposits: benefitDeposits });
   const abdIncomeProjected = abdCountableCents({
@@ -349,6 +355,23 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         projectedValue = waiverGrossProjected;
       }
     } else if (sk === "pa_waiver_resources_2026" && (onSsi || married)) {
+      currentValue = null;
+      projectedValue = null;
+    } else if (sk === "pa_mawd_income_2026") {
+      if (mawdJobSuccess) {
+        currentValue = null;
+        projectedValue = null;
+      } else {
+        limitCents = mawdIncomeLimitCents(householdSize);
+      }
+    } else if (sk === "pa_mawd_job_success_income_2026") {
+      if (!mawdJobSuccess) {
+        currentValue = null;
+        projectedValue = null;
+      } else {
+        limitCents = mawdJobSuccessIncomeLimitCents(householdSize);
+      }
+    } else if (sk === "pa_mawd_resources_2026" && mawdJobSuccess) {
       currentValue = null;
       projectedValue = null;
     }

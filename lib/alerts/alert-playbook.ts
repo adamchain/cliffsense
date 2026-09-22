@@ -361,7 +361,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "MAWD may keep Medicaid when wages rise — if paid work continues",
     ["MAWD", "MedicaidABD", "MedicaidWaiver"],
     "MAWD allows higher income (250% FPL ≈ $3,325; Job Success up to 600% FPL) but requires paid work and a premium (~5% of countable income). Volunteer work does not qualify.",
-    "If wages threaten SSDI or ABD, apply for MAWD before the current category closes. If work is ending, apply for another Medicaid category first — stopping work can end MAWD even when income and resources still fit.",
+    "If wages threaten SSDI, ABD, or a waiver, and the person is not already on MAWD, apply before the current category closes. If work is ending, apply for another Medicaid category first — stopping work can end MAWD even when income and resources still fit.",
     {
       personaId: "priya_mawd_stops_work",
       documents: [
@@ -370,6 +370,22 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
         "Alternate-category application if work is ending",
       ],
     },
+  ),
+
+  mawd_income_limit: pb(
+    "mawd_income_limit",
+    "MAWD countable income limit",
+    ["MAWD"],
+    "MAWD countable income is 250% of the poverty guideline: $3,325 for one person and $4,509 for two. Workers with Job Success uses 600%: $7,980 for one person and $10,820 for two. This is countable income, not a gross paycheck.",
+    "Report the change to the County Assistance Office within 10 days. Paid work has to continue. The standard premium is about 5% of countable income.",
+  ),
+
+  mawd_resources_10k: pb(
+    "mawd_resources_10k",
+    "MAWD resource limit",
+    ["MAWD"],
+    "Countable resources must be $10,000 or less, for any household size. Exactly at $10,000 still qualifies. Once Workers with Job Success is recorded, assets are no longer capped at $10,000.",
+    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
   ),
 
   magi_work_requirements_2027: pb(
@@ -647,7 +663,7 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p === "SSDI") return "ssdi_sga_after_twp";
   if (p === "DAC") return "dac_sga_disability";
   if (p.includes("WAIVER") || p === "CHC") return asset ? "waiver_resources_8k" : "waiver_income_2982";
-  if (p === "MAWD") return "mawd_transition";
+  if (p === "MAWD") return asset ? "mawd_resources_10k" : "mawd_income_limit";
   if (p === "QMB") return "qmb_income_resources";
   if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
   if (p === "SNAP") return asset ? "snap_elderly_resources" : "snap_gross_200_fpl";

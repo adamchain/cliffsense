@@ -232,7 +232,7 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Income, resource, and employment changes",
         detail:
-          "Do not compare gross wages to the $3,325 countable-income limit. Report job stoppage — unpaid or volunteer work does not qualify.",
+          "Do not compare a gross paycheck to the countable-income limit ($3,325 for one person, $4,509 for two). Workers with Job Success uses the 600% line. Resources are $10,000 or less until that pathway is recorded. Report job stoppage — unpaid or volunteer work does not qualify.",
         deadline: "Within 10 days",
       },
     ],
