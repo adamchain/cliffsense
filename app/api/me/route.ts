@@ -6,7 +6,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { logActivity } from "@/lib/activity/log-activity";
-import { emitHouseholdChangeAlert } from "@/lib/alerts/evaluate-scenario-alerts";
+import { emitDacMarriageAlert, emitHouseholdChangeAlert, isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 
@@ -186,6 +186,7 @@ export async function PATCH(req: Request) {
         sizeChanged: priorHouseholdSize !== undefined && ownerProfile.householdSize !== priorHouseholdSize,
         maritalChanged:
           typeof ownerProfile.maritalStatus === "string" && ownerProfile.maritalStatus !== priorMarital,
+        maritalStatus: ownerProfile.maritalStatus,
       });
     }
   } else if (state !== undefined || householdSize !== undefined) {
@@ -242,17 +243,28 @@ async function maybeAlertHouseholdChange(input: {
   programs: string[];
   sizeChanged: boolean;
   maritalChanged: boolean;
+  maritalStatus?: string;
 }): Promise<void> {
   if (!input.sizeChanged && !input.maritalChanged) return;
   try {
+    const ids: string[] = [];
     const id = await emitHouseholdChangeAlert({
       beneficiaryId: input.beneficiaryId,
       ownerUserId: input.ownerUserId,
       actorUserId: input.actorUserId,
       programs: input.programs,
     });
-    if (!id) return;
-    const ids = [id.toString()];
+    if (id) ids.push(id.toString());
+    if (input.maritalChanged && isMarriedStatus(input.maritalStatus)) {
+      const marriageId = await emitDacMarriageAlert({
+        beneficiaryId: input.beneficiaryId,
+        ownerUserId: input.ownerUserId,
+        actorUserId: input.actorUserId,
+        programs: input.programs,
+      });
+      if (marriageId) ids.push(marriageId.toString());
+    }
+    if (ids.length === 0) return;
     await sendAlertEmailsForNewAlerts(ids);
     await sendAlertPushForNewAlerts(ids);
   } catch (e) {

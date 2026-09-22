@@ -6,7 +6,7 @@ import { assertBeneficiaryAccess, assertBeneficiaryWriteAccess } from "@/lib/ben
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { logActivity } from "@/lib/activity/log-activity";
-import { emitHouseholdChangeAlert } from "@/lib/alerts/evaluate-scenario-alerts";
+import { emitDacMarriageAlert, emitHouseholdChangeAlert, isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
@@ -208,6 +208,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         programs: (updated.benefitsEnrolled ?? []).map((b) => b.program),
       });
       if (householdAlertId) alertIds.push(householdAlertId.toString());
+      if (isMarriedStatus(nextMarital)) {
+        const marriageAlertId = await emitDacMarriageAlert({
+          beneficiaryId: updated._id,
+          ownerUserId: updated.ownerUserId,
+          actorUserId: session.user.id,
+          programs: (updated.benefitsEnrolled ?? []).map((b) => b.program),
+        });
+        if (marriageAlertId) alertIds.push(marriageAlertId.toString());
+      }
     } catch (e) {
       console.warn("emitHouseholdChangeAlert", e);
     }

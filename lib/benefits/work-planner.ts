@@ -44,6 +44,21 @@ export function ssdiWageAlert(
   return null;
 }
 
+/**
+ * DAC has no trial work period. Approaching non-blind SGA is a warning.
+ * Reaching SGA is when the disability finding can end. Blind SGA is not used until blindness is recorded.
+ */
+export function dacSgaAlert(earnedGrossCents: number): "warning" | "breach" | null {
+  if (earnedGrossCents >= SGA_NONBLIND_CENTS) return "breach";
+  if (earnedGrossCents >= Math.floor(SGA_NONBLIND_CENTS * 0.85)) return "warning";
+  return null;
+}
+
+/** DAC waiver path: wages at SGA and income still under the waiver cap. No Trial Work Period wait. */
+export function dacWaiverTwilight(earnedGrossCents: number, grossMonthlyCents: number): boolean {
+  return earnedGrossCents >= SGA_NONBLIND_CENTS && grossMonthlyCents < WAIVER_INCOME_CENTS;
+}
+
 /** Waiver can still be open after SSDI cash is at risk: 9 TWP months used, wages at SGA, income under the waiver cap. */
 export function ssdiWaiverTwilight(
   earnedGrossCents: number,

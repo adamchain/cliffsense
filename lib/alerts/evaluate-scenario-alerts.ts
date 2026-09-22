@@ -11,7 +11,7 @@ import {
   ssiFbrCents,
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
-import { ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
+import { dacSgaAlert, dacWaiverTwilight, ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import {
   SNAP_ELDERLY_RESOURCE_CENTS,
   snapGross130Cents,
@@ -118,8 +118,9 @@ export async function evaluateScenarioAlerts(
     if (ssdiAlert === "sga") consider("ssdi_sga_after_twp", "breach");
     else if (ssdiAlert === "twp") consider("ssdi_twp_service_month", "warning");
   }
-  if (hasProgram(input.programs, "DAC") && earned >= Math.floor(SGA_NONBLIND_CENTS * 0.85)) {
-    consider("dac_sga_disability");
+  if (hasProgram(input.programs, "DAC")) {
+    const dacAlert = dacSgaAlert(earned);
+    if (dacAlert) consider("dac_sga_disability", dacAlert);
   }
   if (hasProgram(input.programs, "SSI")) {
     const fbr = ssiFbrCents(householdSize);
@@ -155,8 +156,9 @@ export async function evaluateScenarioAlerts(
       consider("waiver_income_2982");
     }
     if (
-      (hasProgram(input.programs, "SSDI") || hasProgram(input.programs, "DAC")) &&
-      ssdiWaiverTwilight(earned, gross, input.twpMonthsUsed ?? 0)
+      (hasProgram(input.programs, "SSDI") &&
+        ssdiWaiverTwilight(earned, gross, input.twpMonthsUsed ?? 0)) ||
+      (hasProgram(input.programs, "DAC") && dacWaiverTwilight(earned, gross))
     ) {
       consider("ssdi_waiver_twilight");
     }
@@ -252,6 +254,30 @@ export async function evaluateScenarioAlerts(
   }
 
   return { alertsCreated, alertIdsCreated };
+}
+
+export function isMarriedStatus(value: string | null | undefined): boolean {
+  return (value ?? "").trim().toLowerCase() === "married";
+}
+
+/** Fired when a DAC enrollee's marital status is set to married. Not inferred from bank deposits. */
+export async function emitDacMarriageAlert(input: {
+  beneficiaryId: Types.ObjectId;
+  ownerUserId: Types.ObjectId | string;
+  actorUserId: string;
+  programs: string[];
+}): Promise<Types.ObjectId | null> {
+  if (!input.programs.some((p) => p.toUpperCase() === "DAC")) return null;
+  const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "dac_marriage");
+  if (!scenario) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id)) return null;
+  return insertScenarioAlert({
+    beneficiaryId: input.beneficiaryId,
+    ownerUserId: input.ownerUserId,
+    actorUserId: input.actorUserId,
+    scenario,
+    monthPrefix: new Date().toISOString().slice(0, 7),
+  });
 }
 
 /** Fired when household size or marital status actually changes. Not inferred from bank deposits. */
