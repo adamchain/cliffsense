@@ -12,6 +12,7 @@ import {
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import { WAIVER_GROSS_INCOME_CENTS, waiverIncomeAlert, waiverResourceAlert } from "@/lib/benefits/waiver-limits";
 import { dacSgaAlert, dacWaiverTwilight, ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import {
   SNAP_ELDERLY_RESOURCE_CENTS,
@@ -25,7 +26,6 @@ import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
-const WAIVER_INCOME_CENTS = 2982_00;
 const QMB_INCOME_CENTS = 1350_00;
 const EXTRA_HELP_INCOME_CENTS = 2015_00;
 
@@ -60,6 +60,10 @@ export type ScenarioEvalInput = {
   substantialGamblingWin?: boolean;
   /** Healthy Horizons countable income, with the SSI payment and a DAC benefit removed. */
   abdCountableCents?: number;
+  /** Waiver gross countable income. A DAC benefit is already removed. */
+  waiverGrossCents?: number;
+  /** Marital status recorded as married. The community-spouse resource share is not inferred from this. */
+  married?: boolean;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -153,34 +157,41 @@ export async function evaluateScenarioAlerts(
     else if (abdIncome >= Math.floor(abdLimit * 0.85)) consider("abd_income_limit", "warning");
 
     const age = ageFromDateOfBirth(input.dateOfBirth, now);
-    const resourceLimit = abdResourceLimitCents({
-      householdSize,
-      onWaiver: hasProgram(input.programs, "MedicaidWaiver"),
-      age,
-    });
-    if (resourceLimit != null) {
-      if (assets > resourceLimit) consider("abd_resources_2k", "breach");
-      else if (assets > Math.floor(resourceLimit * 0.85)) consider("abd_resources_2k", "warning");
+    // A waiver enrollment uses the waiver resource alert, which also knows the SSI and marriage exceptions.
+    if (!hasProgram(input.programs, "MedicaidWaiver")) {
+      const resourceLimit = abdResourceLimitCents({
+        householdSize,
+        onWaiver: false,
+        age,
+      });
+      if (resourceLimit != null) {
+        if (assets > resourceLimit) consider("abd_resources_2k", "breach");
+        else if (assets > Math.floor(resourceLimit * 0.85)) consider("abd_resources_2k", "warning");
+      }
     }
     if (earned > 0 && abdIncome >= abdLimit) consider("mawd_transition");
   }
-  if (hasProgram(input.programs, "MedicaidWaiver") || hasProgram(input.programs, "Medicaid")) {
-    if (gross >= Math.floor(WAIVER_INCOME_CENTS * 0.85) || countable >= Math.floor(WAIVER_INCOME_CENTS * 0.85)) {
-      consider("waiver_income_2982");
+  if (hasProgram(input.programs, "MedicaidWaiver") && !hasProgram(input.programs, "SSI")) {
+    const waiverGross = input.waiverGrossCents ?? gross;
+    const incomeLevel = waiverIncomeAlert(waiverGross);
+    if (incomeLevel) consider("waiver_income_2982", incomeLevel);
+    if (!input.married) {
+      const resourceLevel = waiverResourceAlert(assets);
+      if (resourceLevel) consider("waiver_resources_8k", resourceLevel);
     }
+    if (earned > 0 && waiverGross > WAIVER_GROSS_INCOME_CENTS) consider("mawd_transition");
     if (
       (hasProgram(input.programs, "SSDI") &&
-        ssdiWaiverTwilight(earned, gross, input.twpMonthsUsed ?? 0)) ||
-      (hasProgram(input.programs, "DAC") && dacWaiverTwilight(earned, gross))
+        ssdiWaiverTwilight(earned, waiverGross, input.twpMonthsUsed ?? 0)) ||
+      (hasProgram(input.programs, "DAC") && dacWaiverTwilight(earned, waiverGross))
     ) {
       consider("ssdi_waiver_twilight");
     }
   }
   if (
     !hasProgram(input.programs, "MedicaidABD") &&
-    (hasProgram(input.programs, "MedicaidWaiver") ||
-      hasProgram(input.programs, "MAWD") ||
-      hasProgram(input.programs, "Medicaid")) &&
+    !hasProgram(input.programs, "MedicaidWaiver") &&
+    (hasProgram(input.programs, "MAWD") || hasProgram(input.programs, "Medicaid")) &&
     earned >= SGA_NONBLIND_CENTS
   ) {
     consider("mawd_transition");

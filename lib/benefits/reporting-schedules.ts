@@ -212,7 +212,7 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Income, assets, employment, household & care-need changes",
         detail:
-          "2026 waiver income limit is $2,982/month. SSDI and wages count; DAC is excluded in PA. Report changes that affect disability or care needs.",
+          "2026 waiver gross income limit is $2,982 a month. Income equal to that still qualifies. Resources are $8,000 for one person. Neither limit is used when the person receives SSI. A married couple's protected share is set at the waiver assessment. A DAC benefit is left out of the income test.",
         deadline: "Within 10 days",
       },
     ],

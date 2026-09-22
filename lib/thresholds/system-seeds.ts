@@ -412,7 +412,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — monthly income (2026)",
     description:
-      "2026 long-term-care / waiver income limit: $2,982/month (300% of the SSI Federal Benefit Rate). Only the applicant's income counts; SSDI and wages count, but DAC benefits are excluded (PA is a 1634 state). Waiver approval confers full Medicaid (\"deemed eligible\"), so ABD income limits do not apply. Qualifying SNT balances are excluded; cash released to a personal bank account can count as income/resources for the waiver category." +
+      "2026 HCBS special income limit: $2,982 a month, 300% of the SSI federal benefit rate. Income equal to $2,982 still qualifies. The test is gross countable income. Wages and SSDI count, and a DAC benefit is left out. The $20, $65, and one-half disregards are not applied. The County Assistance Office does not apply this limit when the person receives SSI." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,
@@ -429,7 +429,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA HCBS / CHC Waiver — asset limit (2026)",
     description:
-      "2026 waiver asset limit: $8,000 (higher if married under spousal impoverishment rules). A 5-year (60-month) look-back applies to asset transfers. Special Needs Trusts and ABLE balances are excluded while the funds remain in the trust/ABLE account; cash deposited to a personal account is no longer automatically excluded." +
+      "The one-person waiver resource limit is $8,000: the $2,000 limit plus a $6,000 disregard. Exactly at $8,000 still qualifies. This limit is not used when the person receives SSI. A married couple's protected share is set at the waiver assessment, from $32,532 to $162,660 in 2026, and is not this $8,000 figure." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_HEALTHLAW,

@@ -107,7 +107,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "Pennsylvania HCBS / Community HealthChoices Waiver",
     agency: "PA Department of Human Services",
     blurb:
-      "Home- and community-based waiver (including CHC). 2026 income limit $2,982/month (300% of SSI FBR) and $8,000 assets. SSDI and wages count; DAC is excluded in Pennsylvania (1634). Approval confers full Medicaid (deemed eligible).",
+      "Home- and community-based waiver (including CHC). 2026 gross income limit $2,982 a month. Income equal to that still qualifies. Resources are $8,000 for one person. Neither limit is used when the person receives SSI.",
     reporting:
       "Report income, asset, employment, household, and care-need changes within 10 days.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",

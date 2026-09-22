@@ -6,7 +6,7 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
-import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
+import { evaluateScenarioAlerts, isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import {
   abdCountableCents,
   adjustedSsiCountable,
@@ -14,6 +14,7 @@ import {
   ssiBenefitCentsToExclude,
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
+import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import {
   isSubstantialGamblingWin,
@@ -295,6 +296,9 @@ export async function evaluateThresholdsForBeneficiary(input: {
     // Healthy Horizons income and resources depend on household size, waiver enrollment, and age.
     // The scenario owns those alerts so a couple is not tested against the one-person seed.
     if (sk === "pa_medicaid_abd_income_2026" || sk === "pa_medicaid_abd_resources_2026") continue;
+    // Waiver income is a gross test, and neither limit applies while the person receives SSI.
+    // A married waiver resource share is set at assessment, so the $8,000 seed must not alert on its own.
+    if (sk === "pa_waiver_income_2026" || sk === "pa_waiver_resources_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -431,6 +435,12 @@ export async function evaluateThresholdsForBeneficiary(input: {
       householdSize,
       deposits: benefitDeposits,
     }),
+    waiverGrossCents: waiverGrossCountableCents({
+      breakdown,
+      programs,
+      deposits: benefitDeposits,
+    }),
+    married: isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus),
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,

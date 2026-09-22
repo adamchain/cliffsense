@@ -4,7 +4,9 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
+import { isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import {
   abdCountableCents,
   adjustedSsiCountable,
@@ -253,6 +255,14 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
     }),
   });
+  const waiverGrossNow = waiverGrossCountableCents({ breakdown, programs, deposits: benefitDeposits });
+  const waiverGrossProjected = waiverGrossCountableCents({
+    breakdown: projectedBreakdown,
+    programs,
+    deposits: benefitDeposits,
+  });
+  const onSsi = programs.some((p) => String(p).toUpperCase() === "SSI");
+  const married = isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus);
   const abdIncomeNow = abdCountableCents({ breakdown, programs, householdSize, deposits: benefitDeposits });
   const abdIncomeProjected = abdCountableCents({
     breakdown: projectedBreakdown,
@@ -325,26 +335,42 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         onWaiver: programs.some((p) => p.toUpperCase() === "MEDICAIDWAIVER"),
         age,
       });
-      if (resourceLimit == null) {
+      if (resourceLimit == null || programs.some((p) => String(p).toUpperCase() === "MEDICAIDWAIVER")) {
+        currentValue = null;
+        projectedValue = null;
+      }
+      if (resourceLimit != null) limitCents = resourceLimit;
+    } else if (sk === "pa_waiver_income_2026") {
+      if (onSsi) {
         currentValue = null;
         projectedValue = null;
       } else {
-        limitCents = resourceLimit;
+        currentValue = waiverGrossNow;
+        projectedValue = waiverGrossProjected;
       }
+    } else if (sk === "pa_waiver_resources_2026" && (onSsi || married)) {
+      currentValue = null;
+      projectedValue = null;
     }
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
-    const breachNow = isAsset
+    let breachNow = isAsset
       ? assetBreach(currentValue ?? 0, limitCents)
       : incomeBreach(currentValue ?? 0, limitCents);
-    const warnNow = isAsset
+    let warnNow = isAsset
       ? assetWarn(currentValue ?? 0, limitCents, warnAt)
       : incomeWarn(currentValue ?? 0, limitCents, warnAt);
-    const predictive =
+    let predictive =
       projectedValue != null &&
       !isAsset &&
       incomeBreach(projectedValue, limitCents) &&
       !breachNow;
+    if (sk === "pa_waiver_income_2026") {
+      const value = currentValue ?? 0;
+      breachNow = value > limitCents;
+      warnNow = value >= Math.floor(limitCents * warnAt) && value <= limitCents;
+      predictive = projectedValue != null && projectedValue > limitCents && !breachNow;
+    }
 
     let status: ThresholdUiStatus = "ok";
     if (!attached) status = "ok"; // detached limits are not evaluated

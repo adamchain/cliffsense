@@ -79,9 +79,9 @@ export default function ResourcesPage() {
           {
             label: "HCBS / CHC Waiver — income",
             value: "$2,982 / mo",
-            note: "300% of SSI FBR. SSDI + wages count; DAC excluded. Approval confers full Medicaid (deemed eligible).",
+            note: "Gross countable income. Equal to $2,982 still qualifies. Not used when the person receives SSI. A DAC benefit is left out.",
           },
-          { label: "HCBS / CHC Waiver — assets", value: "$8,000", note: "Higher for married applicants (spousal impoverishment)." },
+          { label: "HCBS / CHC Waiver — assets", value: "$8,000", note: "One person: $2,000 plus a $6,000 disregard. Not used on SSI. A married couple's protected share is set at assessment." },
           {
             label: "MAGI Medicaid — assets",
             value: "No asset test",

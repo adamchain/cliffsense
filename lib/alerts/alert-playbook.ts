@@ -320,14 +320,29 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "waiver_income_2982",
     "HCBS / CHC waiver income ceiling",
     ["MedicaidWaiver"],
-    "2026 waiver income limit is $2,982/mo (300% FBR). Only the applicant's income counts; DAC is often excluded in PA (1634).",
-    "Report income via COMPASS/CAO within 10 days. Keep waiver approval and LOC documents. Screen MAWD if wages threaten the ceiling but paid work continues.",
+    "The 2026 waiver special income limit is $2,982 a month, 300% of the SSI rate. Income equal to $2,982 still qualifies. Count gross income. Wages and SSDI count, and a DAC benefit is left out. This limit is not used when the person receives SSI.",
+    "Report the change to the County Assistance Office within 10 days. Someone over this limit may still qualify for another Medicaid category, including MAWD if paid work continues.",
     {
       personaId: "noah_waiver_reassessment",
       documents: [
         "Pay stubs and SSDI letters",
         "Waiver approval / CHC enrollment",
         "Level-of-care or reassessment notices",
+      ],
+    },
+  ),
+
+  waiver_resources_8k: pb(
+    "waiver_resources_8k",
+    "HCBS / CHC waiver resource limit",
+    ["MedicaidWaiver"],
+    "The waiver resource limit is $8,000 for one person: the $2,000 limit plus a $6,000 disregard. Exactly at $8,000 still qualifies. This limit is not used when the person receives SSI. A married couple's protected share is set at the waiver assessment and is not this $8,000 figure.",
+    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    {
+      documents: [
+        "Recent bank statements",
+        "Waiver approval / CHC enrollment",
+        "ABLE or special needs trust statements, if any",
       ],
     },
   ),
@@ -631,7 +646,7 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p === "SSI") return asset ? "ssi_resources_2k" : "ssi_countable_income_fbr";
   if (p === "SSDI") return "ssdi_sga_after_twp";
   if (p === "DAC") return "dac_sga_disability";
-  if (p.includes("WAIVER") || p === "CHC") return "waiver_income_2982";
+  if (p.includes("WAIVER") || p === "CHC") return asset ? "waiver_resources_8k" : "waiver_income_2982";
   if (p === "MAWD") return "mawd_transition";
   if (p === "QMB") return "qmb_income_resources";
   if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
