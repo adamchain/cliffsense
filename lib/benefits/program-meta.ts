@@ -85,7 +85,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "ABD / Healthy Horizons Medicaid (Aged, Blind, or Disabled)",
     agency: "PA Department of Human Services",
     blurb:
-      "Full Medical Assistance for aged, blind, or disabled adults. SSI-related counting; 2026 single income limit $1,330/month and $2,000 countable resources ($8,000 if Medicaid was entered through a waiver).",
+      "Full Medical Assistance for aged, blind, or disabled adults. SSI-related counting. 2026 income is $1,330 a month for one person and $1,804 for two. Resources are $2,000 for one person and $3,000 for two or more, or $8,000 when Medicaid was entered through a waiver.",
     reporting:
       "Report income, assets, household, work, and disability/care-need changes to COMPASS/CAO within 10 days. Annual renewal packet.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",

@@ -87,8 +87,8 @@ export default function ResourcesPage() {
             value: "No asset test",
             note: "Expansion adults 19–64 and MAGI families. Income is MAGI (about 138% FPL).",
           },
-          { label: "Full Medicaid (ABD / Healthy Horizons) — income", value: "$1,330 / mo", note: "Single. SSDI counts; DAC excluded. SSI-related $20 / $65 + ½ counting." },
-          { label: "Full Medicaid (ABD) — assets", value: "$2,000", note: "$8,000 if Medicaid was entered through a waiver." },
+          { label: "Full Medicaid (ABD / Healthy Horizons) — income", value: "$1,330 / mo", note: "One person. Two is $1,804. SSI-countable income. The SSI payment and a DAC benefit are left out. SSDI counts." },
+          { label: "Full Medicaid (ABD) — assets", value: "$2,000", note: "$3,000 for two or more. $8,000 if Medicaid was entered through a waiver. Not tested under age 21." },
           {
             label: "MAWD (Workers with Disabilities) — countable income",
             value: "$3,325 / mo",

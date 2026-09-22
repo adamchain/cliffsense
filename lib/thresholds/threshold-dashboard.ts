@@ -4,7 +4,9 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
+import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import {
+  abdCountableCents,
   adjustedSsiCountable,
   ssiBenefitCentsToExclude,
   studentEarnedIncomeExclusionCents,
@@ -251,6 +253,13 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
     }),
   });
+  const abdIncomeNow = abdCountableCents({ breakdown, programs, householdSize, deposits: benefitDeposits });
+  const abdIncomeProjected = abdCountableCents({
+    breakdown: projectedBreakdown,
+    programs,
+    householdSize,
+    deposits: benefitDeposits,
+  });
 
   const rows: ThresholdDashboardRow[] = [];
 
@@ -287,6 +296,9 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         if (String(th.program ?? "").toUpperCase() === "SSI") {
           currentValue = ssiAdjusted.countable;
           projectedValue = projectedSsiCountable;
+        } else if (String(th.program ?? "").toUpperCase() === "MEDICAIDABD") {
+          currentValue = abdIncomeNow;
+          projectedValue = abdIncomeProjected;
         } else {
           currentValue = ssiCountableMonthlyIncomeCents(breakdown);
           projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
@@ -304,7 +316,22 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         break;
     }
 
-    const limitCents = snapStoredGrossLimitCents(sk, th.limitCents as number, householdSize);
+    let limitCents = snapStoredGrossLimitCents(sk, th.limitCents as number, householdSize);
+    if (sk === "pa_medicaid_abd_income_2026") {
+      limitCents = abdIncomeLimitCents(householdSize);
+    } else if (sk === "pa_medicaid_abd_resources_2026") {
+      const resourceLimit = abdResourceLimitCents({
+        householdSize,
+        onWaiver: programs.some((p) => p.toUpperCase() === "MEDICAIDWAIVER"),
+        age,
+      });
+      if (resourceLimit == null) {
+        currentValue = null;
+        projectedValue = null;
+      } else {
+        limitCents = resourceLimit;
+      }
+    }
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
     const breachNow = isAsset

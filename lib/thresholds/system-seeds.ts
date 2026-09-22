@@ -446,7 +446,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA ABD / Healthy Horizons Medicaid — monthly income (2026)",
     description:
-      "2026 ABD (Aged/Blind/Disabled) Healthy Horizons income limit: $1,330/month for a single disabled adult. SSDI counts as unearned income (less the $20 exclusion); earned income gets the $65 + ½ exclusions; DAC is excluded in Pennsylvania. If you're over this, you may spend down to the Medically Needy Income Limit ($425/mo single) on medical bills. Waiver enrollees can exceed this and still keep Medicaid via deemed eligibility." +
+      "Healthy Horizons income is 100% of the 2026 poverty guideline, counted the SSI way. The $20 exclusion is already inside the limit, so it is not added again. One person is $1,330; two $1,804; three $2,277; four $2,750; five $3,224; six $3,697. The SSI payment and a DAC benefit are left out. SSDI counts. Someone over the limit may spend down to the medically needy level ($425 a month for one person), or qualify through a waiver or MAWD." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
@@ -463,7 +463,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA ABD Medicaid — asset limit (2026)",
     description:
-      "2026 ABD Medicaid asset limit: $2,000 (individual). $8,000 may apply when Medicaid was entered through a waiver. Excluded: primary home, one vehicle, household goods, qualifying SNT and ABLE balances. Cash from an SNT into a personal bank account can count toward this limit if retained past the receipt month." +
+      "Categorically needy resources are $2,000 for one person and $3,000 for two or more. Exactly at the limit still qualifies. A waiver enrollment uses the $8,000 waiver resource limit. Resources are not tested when the person is under 21. Excluded: a primary home, one vehicle, household goods, and qualifying ABLE and special needs trust balances." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,

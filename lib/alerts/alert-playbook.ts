@@ -303,16 +303,16 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "abd_income_limit",
     "ABD / Healthy Horizons income ceiling",
     ["MedicaidABD"],
-    "Full ABD Medicaid income for a single adult is about $1,330/mo using SSI-related counting — not MAGI.",
-    "Confirm the category with the CAO. If over ABD but under waiver ($2,982) or MAWD ($3,325), ask about a transfer before coverage closes.",
+    "Healthy Horizons income is 100% of the poverty guideline for the household: $1,330 for one person, $1,804 for two, then $2,277, $2,750, $3,224, and $3,697. Count SSI-countable income. Leave out the SSI payment and a DAC benefit. SSDI still counts.",
+    "Report the change to the County Assistance Office within 10 days. Someone over the limit may still qualify by spending down to the medically needy level, or through a waiver or MAWD.",
   ),
 
   abd_resources_2k: pb(
     "abd_resources_2k",
     "ABD Medicaid resource limit",
     ["MedicaidABD"],
-    "Standard ABD countable resources are capped near $2,000 ($8,000 if Medicaid entered through a waiver).",
-    "Report balance spikes within 10 days. Prefer ABLE/SNT for excess liquid funds. Do not transfer below fair value.",
+    "The resource limit is $2,000 for one person and $3,000 for two or more. A waiver case uses $8,000. Exactly at the limit still qualifies. This test does not apply when the person is under 21.",
+    "Report a balance over the limit within 10 days. An ABLE account or a special needs trust can hold money that would otherwise count. Do not give assets away to get under the limit.",
     { personaId: "sophia_inheritance_checking" },
   ),
 

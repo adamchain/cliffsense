@@ -170,7 +170,7 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Income, assets, household & coverage changes",
         detail:
-          "ABD / Healthy Horizons uses SSI-related counting. Report income, assets near $2,000 ($8,000 if Medicaid was entered through a waiver), household, address, and other coverage. Cash from an SNT into a personal account can count.",
+          "ABD / Healthy Horizons uses SSI-related counting. Report income, and assets near $2,000 for one person or $3,000 for two or more ($8,000 if Medicaid was entered through a waiver). Also report household, address, and other coverage. Cash from an SNT into a personal account can count.",
         deadline: "Within 10 days",
       },
     ],
@@ -468,7 +468,7 @@ export const CHANGE_TYPES: ChangeType[] = [
       SSI: Y("Report as resources approach $2,000 ($3,000 couple)."),
       SSDI: N("No asset test for SSDI — nothing to report."),
       SNAP: N("PA has no SNAP asset test for most households."),
-      MEDICAID: M("MAGI: no. ABD/LTC: yes, near the $2,000 limit."),
+      MEDICAID: M("MAGI: no. ABD: yes, near $2,000 for one person or $3,000 for two or more."),
       TANF: Y("Report as assets approach the $1,000 resource limit."),
       WIC: N("No asset test."),
       LIHEAP: N("No asset test."),

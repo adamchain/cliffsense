@@ -11,6 +11,7 @@ import {
   ssiFbrCents,
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
+import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import { dacSgaAlert, dacWaiverTwilight, ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import {
   SNAP_ELDERLY_RESOURCE_CENTS,
@@ -24,11 +25,9 @@ import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
-const ABD_INCOME_CENTS = 1330_00;
 const WAIVER_INCOME_CENTS = 2982_00;
 const QMB_INCOME_CENTS = 1350_00;
 const EXTRA_HELP_INCOME_CENTS = 2015_00;
-const RESOURCE_2K_CENTS = 2000_00;
 
 export type ScenarioEvalInput = {
   beneficiaryId: Types.ObjectId;
@@ -59,6 +58,8 @@ export type ScenarioEvalInput = {
   /** SNAP gross income with one-time lump sums removed. */
   snapGrossCents?: number;
   substantialGamblingWin?: boolean;
+  /** Healthy Horizons countable income, with the SSI payment and a DAC benefit removed. */
+  abdCountableCents?: number;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -145,11 +146,23 @@ export async function evaluateScenarioAlerts(
   const able = input.ableBalanceCents ?? 0;
   if (able > 100_000_00) consider("ssi_able_100k", "breach");
   else if (able > Math.floor(100_000_00 * 0.85)) consider("ssi_able_100k", "warning");
-  if (hasProgram(input.programs, "MedicaidABD") || hasProgram(input.programs, "Medicaid")) {
-    if (countable >= Math.floor(ABD_INCOME_CENTS * 0.85) || gross >= Math.floor(ABD_INCOME_CENTS * 0.85)) {
-      consider("abd_income_limit");
+  if (hasProgram(input.programs, "MedicaidABD")) {
+    const abdIncome = input.abdCountableCents ?? countable;
+    const abdLimit = abdIncomeLimitCents(householdSize);
+    if (abdIncome >= abdLimit) consider("abd_income_limit", "breach");
+    else if (abdIncome >= Math.floor(abdLimit * 0.85)) consider("abd_income_limit", "warning");
+
+    const age = ageFromDateOfBirth(input.dateOfBirth, now);
+    const resourceLimit = abdResourceLimitCents({
+      householdSize,
+      onWaiver: hasProgram(input.programs, "MedicaidWaiver"),
+      age,
+    });
+    if (resourceLimit != null) {
+      if (assets > resourceLimit) consider("abd_resources_2k", "breach");
+      else if (assets > Math.floor(resourceLimit * 0.85)) consider("abd_resources_2k", "warning");
     }
-    if (assets > Math.floor(RESOURCE_2K_CENTS * 0.85)) consider("abd_resources_2k");
+    if (earned > 0 && abdIncome >= abdLimit) consider("mawd_transition");
   }
   if (hasProgram(input.programs, "MedicaidWaiver") || hasProgram(input.programs, "Medicaid")) {
     if (gross >= Math.floor(WAIVER_INCOME_CENTS * 0.85) || countable >= Math.floor(WAIVER_INCOME_CENTS * 0.85)) {
@@ -164,12 +177,13 @@ export async function evaluateScenarioAlerts(
     }
   }
   if (
-    hasProgram(input.programs, "MedicaidABD") ||
-    hasProgram(input.programs, "MedicaidWaiver") ||
-    hasProgram(input.programs, "MAWD") ||
-    hasProgram(input.programs, "Medicaid")
+    !hasProgram(input.programs, "MedicaidABD") &&
+    (hasProgram(input.programs, "MedicaidWaiver") ||
+      hasProgram(input.programs, "MAWD") ||
+      hasProgram(input.programs, "Medicaid")) &&
+    earned >= SGA_NONBLIND_CENTS
   ) {
-    if (earned >= SGA_NONBLIND_CENTS) consider("mawd_transition");
+    consider("mawd_transition");
   }
   if (
     hasProgram(input.programs, "QMB") &&
@@ -220,6 +234,7 @@ export async function evaluateScenarioAlerts(
       assetCents: assets,
       programs: input.programs,
       householdSize,
+      age: ageFromDateOfBirth(input.dateOfBirth, now),
     })
   ) {
     consider("reporting_lump_sum");

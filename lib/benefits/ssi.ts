@@ -1,3 +1,4 @@
+import { abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import {
   SSI_GENERAL_INCOME_EXCLUSION_CENTS,
   ssiCountableMonthlyIncomeCents,
@@ -137,18 +138,74 @@ export function lumpSumNeedsReport(input: {
   assetCents: number;
   programs: string[];
   householdSize: number;
+  age?: number | null;
 }): boolean {
   const programs = input.programs.map((p) => p.toUpperCase());
   const onSsi = programs.includes("SSI");
-  const onAbd = programs.includes("MEDICAIDABD") || programs.includes("MEDICAID");
+  const onAbd = programs.includes("MEDICAIDABD");
   if (!onSsi && !onAbd) return false;
   if (input.otherInflowCents >= 1500_00) return true;
   if (input.otherInflowCents < 100_00) return false;
   const before = input.assetCents - input.otherInflowCents;
   const limits: number[] = [];
   if (onSsi) limits.push(ssiResourceLimitCents(input.householdSize));
-  if (onAbd) limits.push(2000_00);
+  if (onAbd) {
+    const abdLimit = abdResourceLimitCents({
+      householdSize: input.householdSize,
+      onWaiver: programs.includes("MEDICAIDWAIVER"),
+      age: input.age ?? null,
+    });
+    if (abdLimit != null) limits.push(abdLimit);
+  }
   return limits.some((limit) => input.assetCents > limit && before <= limit);
+}
+
+const SSDI_NAMED = /\bssdi\b|social security disability/i;
+const DAC_NAMED = /\bdac\b|disabled adult child|childhood disability/i;
+
+/**
+ * Unearned dollars left out of the Healthy Horizons income test: the SSI payment, and a DAC benefit.
+ * SSDI stays in. When the person is on DAC and not SSDI, benefit deposits other than a named SSDI payment are treated as the DAC check.
+ */
+export function abdUnearnedExclusionCents(input: {
+  programs: string[];
+  householdSize: number;
+  deposits: { amountCents: number; name?: string }[];
+}): number {
+  const programs = input.programs.map((p) => p.toUpperCase());
+  const onDac = programs.includes("DAC");
+  const onSsdi = programs.includes("SSDI");
+  if (onDac && !onSsdi) {
+    let excluded = 0;
+    for (const d of input.deposits) {
+      const cents = Math.abs(d.amountCents);
+      if (cents <= 0) continue;
+      const name = d.name ?? "";
+      if (SSDI_NAMED.test(name) && !DAC_NAMED.test(name)) continue;
+      excluded += cents;
+    }
+    return excluded;
+  }
+  let excluded = ssiBenefitCentsToExclude(input);
+  if (!onDac) return excluded;
+  for (const d of input.deposits) {
+    const name = d.name ?? "";
+    if (!DAC_NAMED.test(name)) continue;
+    excluded += Math.abs(d.amountCents);
+  }
+  return excluded;
+}
+
+/** SSI-countable income for Healthy Horizons, with the SSI payment and a DAC benefit removed. */
+export function abdCountableCents(input: {
+  breakdown: MonthlyIncomeBreakdown;
+  programs: string[];
+  householdSize: number;
+  deposits: { amountCents: number; name?: string }[];
+}): number {
+  return ssiCountableMonthlyIncomeCents(input.breakdown, {
+    excludeUnearnedCents: abdUnearnedExclusionCents(input),
+  });
 }
 
 export function adjustedSsiCountable(input: {

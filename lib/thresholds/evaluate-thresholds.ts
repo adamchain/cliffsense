@@ -8,6 +8,7 @@ import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
 import {
+  abdCountableCents,
   adjustedSsiCountable,
   isSntCashDeposit,
   ssiBenefitCentsToExclude,
@@ -291,6 +292,9 @@ export async function evaluateThresholdsForBeneficiary(input: {
     // SSDI TWP and SGA alerts come from the scenario, which knows how many TWP months are recorded.
     // The blind SGA figure stays a reference until statutory blindness is recorded.
     if (sk === "ssdi_twp_2026" || sk === "ssdi_sga_nonblind_2026" || sk === "ssdi_sga_blind_2026") continue;
+    // Healthy Horizons income and resources depend on household size, waiver enrollment, and age.
+    // The scenario owns those alerts so a couple is not tested against the one-person seed.
+    if (sk === "pa_medicaid_abd_income_2026" || sk === "pa_medicaid_abd_resources_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -421,6 +425,12 @@ export async function evaluateThresholdsForBeneficiary(input: {
     ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
     ssiAdjustedCountableCents: ssiAdjusted.countable,
     ssiUnearnedOnlyCents: ssiAdjusted.unearnedOnly,
+    abdCountableCents: abdCountableCents({
+      breakdown,
+      programs,
+      householdSize,
+      deposits: benefitDeposits,
+    }),
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,
