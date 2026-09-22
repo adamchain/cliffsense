@@ -1,8 +1,7 @@
+import { snapGross130Cents } from "@/lib/benefits/snap-limits";
 import { utcMonthPrefix } from "@/lib/thresholds/metrics";
 
-/** 200% FPL gross monthly limits already used for PA SNAP (cents), household of 1–6. */
-const SNAP_200_FPL_CENTS = [2610_00, 3534_00, 4458_00, 5360_00, 6284_00, 7208_00];
-const SNAP_200_FPL_EXTRA_CENTS = 924_00;
+export { snapGross130Cents } from "@/lib/benefits/snap-limits";
 
 const MIN_NEW_WORK_CENTS = 50_00;
 const MIN_PAYCHECK_DELTA_CENTS = 100_00;
@@ -19,19 +18,6 @@ export type WageDeposit = {
   amountCents: number;
   payerKey: string;
 };
-
-/**
- * 130% FPL gross, derived from the app's 200% SNAP table so both tests use one scale.
- * Simplified reporting's income trigger is 130% FPL, not the 200% eligibility ceiling.
- */
-export function snapGross130Cents(householdSize: number): number {
-  const n = Math.max(1, Math.floor(householdSize) || 1);
-  const at200 =
-    n <= 6
-      ? SNAP_200_FPL_CENTS[n - 1]!
-      : SNAP_200_FPL_CENTS[5]! + (n - 6) * SNAP_200_FPL_EXTRA_CENTS;
-  return Math.round((at200 * 130) / 200);
-}
 
 export function priorMonthPrefix(monthPrefix: string): string {
   const [y, m] = monthPrefix.split("-").map(Number);
@@ -112,7 +98,7 @@ export function programsThatMustReportWageChange(
   grossMonthlyCents: number,
   householdSize: number,
 ): string[] {
-  const overSnapLine = grossMonthlyCents >= snapGross130Cents(householdSize);
+  const overSnapLine = grossMonthlyCents > snapGross130Cents(householdSize);
   const out: string[] = [];
   for (const program of programs) {
     const key = programKey(program);

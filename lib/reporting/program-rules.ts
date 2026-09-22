@@ -102,7 +102,7 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportUrl: COMPASS,
     phone: PA_DHS_PHONE,
     deadlineNote:
-      "Simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,500 or more. A raise under 130% FPL waits for the semi-annual report.",
+      "Simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,750 or more. A raise under 130% FPL waits for the semi-annual report.",
     howTo: [
       "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
       `Or call the Statewide Customer Service Center at ${PA_DHS_PHONE}, or your County Assistance Office.`,

@@ -32,7 +32,7 @@ const END_2025 = new Date("2025-12-31T23:59:59.999Z");
  * reporting has only three 10-day triggers.
  */
 const PA_REPORTING_NOTE =
-  " Reporting clocks differ by program. SSI and Extra Help: by the 10th of the month after the change. Medicaid: within 10 days. SSDI and DAC: promptly. SNAP simplified reporting: within 10 days only when gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,500 or more.";
+  " Reporting clocks differ by program. SSI and Extra Help: by the 10th of the month after the change. Medicaid: within 10 days. SSDI and DAC: promptly. SNAP simplified reporting: within 10 days only when gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,750 or more.";
 
 /** Suffix appended to every estimated (non-determinative) limit description. */
 const ESTIMATE_NOTE =
@@ -248,14 +248,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 3534_00,
+    limitCents: 3526_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 2 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 2-person household: $3,534. Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 2-person household: $3,526. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -265,14 +265,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 4458_00,
+    limitCents: 4442_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 3 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 3-person household: $4,458. Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 3-person household: $4,442. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -299,14 +299,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 6284_00,
+    limitCents: 6276_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA SNAP — gross monthly income, household of 5 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 5-person household: $6,284 (add ~$924 per additional person). Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 5-person household: $6,276. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -316,14 +316,48 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 7208_00,
+    limitCents: 7192_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 6+ (200% FPL)",
+    label: "PA SNAP — gross monthly income, household of 6 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 6-or-more-person household: $7,208 (add ~$924 per additional person). Includes SSDI, DAC, and earned income." +
+      "Gross monthly income limit (200% FPL) for a 6-person household: $7,192. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      ESTIMATE_NOTE +
+      PA_REPORTING_NOTE,
+    sourceUrl: PA_DHS_SNAP,
+  },
+  {
+    systemKey: "pa_snap_gross_hh7_2026",
+    program: "SNAP",
+    state: "PA",
+    thresholdType: "monthly_gross_income",
+    limitCents: 8110_00,
+    comparison: "lte",
+    warnAtPercent: 0.9,
+    effectiveFrom: FROM_2026,
+    effectiveTo: null,
+    label: "PA SNAP — gross monthly income, household of 7 (200% FPL)",
+    description:
+      "Gross monthly income limit (200% FPL) for a 7-person household: $8,110. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      ESTIMATE_NOTE +
+      PA_REPORTING_NOTE,
+    sourceUrl: PA_DHS_SNAP,
+  },
+  {
+    systemKey: "pa_snap_gross_hh8_2026",
+    program: "SNAP",
+    state: "PA",
+    thresholdType: "monthly_gross_income",
+    limitCents: 9026_00,
+    comparison: "lte",
+    warnAtPercent: 0.9,
+    effectiveFrom: FROM_2026,
+    effectiveTo: null,
+    label: "PA SNAP — gross monthly income, household of 8+ (200% FPL)",
+    description:
+      "Gross monthly income limit (200% FPL) for an 8-person household: $9,026. Add $918 for each additional person. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -332,15 +366,15 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "pa_snap_resources_2026",
     program: "SNAP",
     state: "PA",
-    thresholdType: "asset_balance",
-    limitCents: 4250_00,
+    thresholdType: "custom",
+    limitCents: 4750_00,
     comparison: "lte",
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — resource limit (elderly/disabled, if gross test failed)",
+    label: "PA SNAP — resource limit (elderly/disabled, only if over 200% FPL)",
     description:
-      "Most PA households have NO SNAP asset limit under BBCE. The $4,250 federal resource limit applies only to a household with a member 60+ or disabled that is over the 200% FPL gross limit and instead qualifies under federal rules (which waive the gross-income test but apply an asset test)." +
+      "Most PA households have no SNAP asset limit while gross income is at or under 200% FPL. $4,750 applies only to a household with a member age 60 or older, or with a disability, whose gross income is over that 200% line and who is instead tested on net income. The same $4,750 is the substantial lottery or gambling winnings line for every household. This figure is not compared with an ordinary checking balance." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,

@@ -27,7 +27,7 @@ export type AlertPlaybook = {
 };
 
 export const REPORT_BY_10TH =
-  "The reporting clock depends on the program. SSI and Extra Help: by the 10th of the month after the change month. Medicaid (ABD, MAGI, waiver, MAWD, and QMB): within 10 days. SSDI and DAC: promptly, with no fixed calendar date. SNAP simplified reporting: within 10 days only if gross income exceeds 130% FPL, an ABAWD's hours drop below 80 a month, or gambling winnings are $4,500 or more. A notice with its own due date controls.";
+  "The reporting clock depends on the program. SSI and Extra Help: by the 10th of the month after the change month. Medicaid (ABD, MAGI, waiver, MAWD, and QMB): within 10 days. SSDI and DAC: promptly, with no fixed calendar date. SNAP simplified reporting: within 10 days only if gross income exceeds 130% FPL, an ABAWD's hours drop below 80 a month, or gambling winnings are $4,750 or more. A notice with its own due date controls.";
 
 export const APPEAL_AND_CONTINUE =
   "If an adverse notice has already issued, appeal by the date on that notice. Request continued cash, medical coverage, or services by any shorter continuation deadline on the same notice — it is often earlier than the appeal deadline. File a new application in parallel if reopening is uncertain.";
@@ -439,11 +439,49 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "snap_gross_200_fpl",
     "SNAP gross income may exceed 200% FPL",
     ["SNAP"],
-    "PA SNAP uses a 200% FPL gross test (about $2,610 for HH1). Crossing it is typically a 10-day reportable change.",
-    "Report to COMPASS/CAO. Recalculate with earned-income deduction, shelter, and allowable medical expenses. If overtime was temporary, say so and send later regular pay stubs so the agency does not project the spike forever.",
+    "PA SNAP uses a 200% FPL gross test for the household size. Reaching it can end Broad-Based Categorical Eligibility. A household with a member age 60 or older, or with a disability, can still qualify on the net-income test. The 10-day income report is gross income over 130% FPL, not this ceiling.",
+    "Recalculate with the earned-income deduction, shelter, and allowable medical expenses. If overtime was temporary, say so and send later regular pay stubs so the agency does not project the spike forever.",
+    { personaId: "nicole_overtime_churn" },
+  ),
+
+  snap_report_130_fpl: pb(
+    "snap_report_130_fpl",
+    "SNAP gross income is over 130% FPL",
+    ["SNAP"],
+    "Under simplified reporting, gross income over 130% of the poverty line for the household size must be reported within 10 days. Income exactly on the line waits for the semi-annual report.",
+    "Report the gross income to COMPASS within 10 days. Keep pay stubs. A raise that stays at or under 130% FPL waits for the semi-annual report.",
+  ),
+
+  snap_elderly_resources: pb(
+    "snap_elderly_resources",
+    "SNAP resources may matter after the 200% gross test",
+    ["SNAP"],
+    "Most households at or under 200% FPL have no SNAP resource test. $4,750 applies when a member is age 60 or older, or disabled, and gross income is already over the household's 200% line.",
+    "Confirm age or disability and the gross-income figure before moving savings. Ordinary checking balances while the household is at or under 200% are not a SNAP resource limit.",
+  ),
+
+  snap_gambling_winnings: pb(
+    "snap_gambling_winnings",
+    "Substantial lottery or gambling winnings",
+    ["SNAP"],
+    "Winnings of $4,750 or more from a single lottery or gambling game must be reported within 10 days and can end SNAP even when the household is otherwise under 200% FPL.",
+    "Report the winnings to COMPASS within 10 days. Keep the ticket, payout record, and any statement showing how much is still left.",
+  ),
+
+  snap_sar_renewal: pb(
+    "snap_sar_renewal",
+    "SNAP semi-annual report or recertification",
+    ["SNAP"],
+    "A missed semi-annual report (closure code 440) suspends SNAP until the form is submitted. The semi-annual report has no interview. Closure code 474 means the certification period ended.",
+    "Submit the semi-annual report or recertification by the date on the notice. Upload income, household, and shelter proof. Call the County Assistance Office to confirm the form was received.",
     {
-      personaId: "nicole_overtime_churn",
       closureCodes: ["440", "474"],
+      documents: [
+        "Semi-annual report or recertification notice",
+        "Income, household, and shelter proof",
+        "COMPASS confirmation",
+        "CAO call log",
+      ],
     },
   ),
 
@@ -529,7 +567,6 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "Update the phone number on COMPASS and with the CAO, request a reschedule if the agency used an obsolete number, and upload proofs before the interview.",
     {
       personaId: "jamal_snap_interview",
-      closureCodes: ["440", "474"],
       documents: [
         "Current COMPASS contact information",
         "Income, household, shelter, and utility proof",
@@ -598,7 +635,7 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p === "MAWD") return "mawd_transition";
   if (p === "QMB") return "qmb_income_resources";
   if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
-  if (p === "SNAP") return "snap_gross_200_fpl";
+  if (p === "SNAP") return asset ? "snap_elderly_resources" : "snap_gross_200_fpl";
   if (p.includes("MAGI")) return "lucas_magi_income";
   if (p === "MEDICAID") return "generic_limit";
   if (p.includes("ABD")) return asset ? "abd_resources_2k" : "abd_income_limit";

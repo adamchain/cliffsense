@@ -12,6 +12,12 @@ import {
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
 import { ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
+import {
+  SNAP_ELDERLY_RESOURCE_CENTS,
+  snapGross130Cents,
+  snapGross200Cents,
+} from "@/lib/benefits/snap-limits";
+import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import { detectWageChange, programsThatMustReportWageChange, type WageDeposit } from "@/lib/alerts/wage-change";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import { enrolledMatchesProgram } from "@/lib/programs";
@@ -22,7 +28,6 @@ const ABD_INCOME_CENTS = 1330_00;
 const WAIVER_INCOME_CENTS = 2982_00;
 const QMB_INCOME_CENTS = 1350_00;
 const EXTRA_HELP_INCOME_CENTS = 2015_00;
-const SNAP_HH1_GROSS_CENTS = 2610_00;
 const RESOURCE_2K_CENTS = 2000_00;
 
 export type ScenarioEvalInput = {
@@ -51,6 +56,9 @@ export type ScenarioEvalInput = {
   dateOfBirth?: Date | string | null;
   /** Trial Work Period service months the household has recorded. Zero means none recorded yet. */
   twpMonthsUsed?: number;
+  /** SNAP gross income with one-time lump sums removed. */
+  snapGrossCents?: number;
+  substantialGamblingWin?: boolean;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -173,8 +181,22 @@ export async function evaluateScenarioAlerts(
   ) {
     consider("extra_help_income");
   }
-  if (hasProgram(input.programs, "SNAP") && gross >= Math.floor(SNAP_HH1_GROSS_CENTS * 0.85)) {
-    consider("snap_gross_200_fpl");
+  if (hasProgram(input.programs, "SNAP")) {
+    const snapGross = input.snapGrossCents ?? gross;
+    if (snapGross > snapGross130Cents(householdSize)) consider("snap_report_130_fpl", "warning");
+    if (input.substantialGamblingWin) consider("snap_gambling_winnings", "breach");
+    const age = ageFromDateOfBirth(input.dateOfBirth, now);
+    const elderlyOrDisabled =
+      (age != null && age >= 60) ||
+      hasProgram(input.programs, "SSI") ||
+      hasProgram(input.programs, "SSDI") ||
+      hasProgram(input.programs, "DAC");
+    if (elderlyOrDisabled && snapGross > snapGross200Cents(householdSize)) {
+      if (assets > SNAP_ELDERLY_RESOURCE_CENTS) consider("snap_elderly_resources", "breach");
+      else if (assets > Math.floor(SNAP_ELDERLY_RESOURCE_CENTS * 0.85)) {
+        consider("snap_elderly_resources", "warning");
+      }
+    }
   }
 
   const wageKind = detectWageChange({
@@ -185,7 +207,7 @@ export async function evaluateScenarioAlerts(
   });
   if (
     wageKind &&
-    programsThatMustReportWageChange(input.programs, wageKind, gross, householdSize).length > 0
+    programsThatMustReportWageChange(input.programs, wageKind, input.snapGrossCents ?? gross, householdSize).length > 0
   ) {
     consider("reporting_wage_change_10day");
   }

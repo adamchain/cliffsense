@@ -65,11 +65,11 @@ export function isCaseClockKind(kind: string | null | undefined): boolean {
 
 /** Playbook to attach when opening this clock. */
 export function playbookIdForDeadlineKind(kind: string, program?: string | null): string {
-  void program;
+  const programKey = (program ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   switch (kind) {
     case "renewal":
     case "sar":
-      return "medicaid_renewal_packet";
+      return programKey === "SNAP" ? "snap_sar_renewal" : "medicaid_renewal_packet";
     case "interview":
       return "snap_interview";
     case "verification":

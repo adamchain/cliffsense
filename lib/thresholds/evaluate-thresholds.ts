@@ -14,6 +14,12 @@ import {
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
+import {
+  isSubstantialGamblingWin,
+  oneTimeOtherIncomeCents,
+  passesSnapHouseholdRule,
+  snapStoredGrossLimitCents,
+} from "@/lib/benefits/snap-limits";
 import { playbookIdForThreshold } from "@/lib/alerts/alert-playbook";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
@@ -53,11 +59,8 @@ function passesHouseholdRule(systemKey: string | undefined, householdSize: numbe
   if (systemKey === "ssi_resources_individual_2025" || systemKey === "ssi_countable_income_2026") {
     return householdSize < 2;
   }
-  const snap = /^pa_snap_gross_hh(\d+)_/.exec(systemKey);
-  if (snap) {
-    const n = Number(snap[1]);
-    return n >= 6 ? householdSize >= 6 : householdSize === n;
-  }
+  const snapHousehold = passesSnapHouseholdRule(systemKey, householdSize);
+  if (snapHousehold != null) return snapHousehold;
   return true;
 }
 
@@ -300,6 +303,11 @@ export async function evaluateThresholdsForBeneficiary(input: {
       case "monthly_gross_income":
         currentValue = grossMonthlyIncomeCents(breakdown);
         projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        if (String(th.program ?? "").toUpperCase() === "SNAP") {
+          const lump = oneTimeOtherIncomeCents(txMapped, prefix);
+          currentValue = Math.max(0, currentValue - lump);
+          projectedValue = Math.max(0, (projectedValue ?? 0) - lump);
+        }
         break;
       case "monthly_unearned_income":
         if (String(th.program ?? "").toUpperCase() === "SSI") {
@@ -318,7 +326,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
         continue;
     }
 
-    const limitCents = th.limitCents as number;
+    const limitCents = snapStoredGrossLimitCents(sk, th.limitCents as number, householdSize);
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
 
     const isAsset = th.thresholdType === "asset_balance";
@@ -418,6 +426,18 @@ export async function evaluateThresholdsForBeneficiary(input: {
     sntCashDeposit,
     dateOfBirth: (beneficiary.dateOfBirth as Date | string | null | undefined) ?? null,
     grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
+    snapGrossCents: Math.max(0, grossMonthlyIncomeCents(breakdown) - oneTimeOtherIncomeCents(txMapped, prefix)),
+    substantialGamblingWin: isSubstantialGamblingWin(
+      txMapped
+        .filter(
+          (t) =>
+            t.date.startsWith(prefix) &&
+            t.amountCents < 0 &&
+            !t.pending &&
+            !t.excludedFromThresholds,
+        )
+        .map((t) => ({ amountCents: Math.abs(t.amountCents), name: `${t.name ?? ""} ${t.merchantName ?? ""}` })),
+    ),
     otherInflowCents: breakdown.otherCents,
     monthPrefix: prefix,
     earnedDeposits,

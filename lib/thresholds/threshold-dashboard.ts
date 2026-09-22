@@ -10,6 +10,7 @@ import {
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
+import { oneTimeOtherIncomeCents, passesSnapHouseholdRule, snapStoredGrossLimitCents } from "@/lib/benefits/snap-limits";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
@@ -41,11 +42,8 @@ function passesHouseholdRule(systemKey: string | undefined, householdSize: numbe
   if (systemKey === "ssi_resources_individual_2025" || systemKey === "ssi_countable_income_2026") {
     return householdSize < 2;
   }
-  const snap = /^pa_snap_gross_hh(\d+)_/.exec(systemKey);
-  if (snap) {
-    const n = Number(snap[1]);
-    return n >= 6 ? householdSize >= 6 : householdSize === n;
-  }
+  const snapHousehold = passesSnapHouseholdRule(systemKey, householdSize);
+  if (snapHousehold != null) return snapHousehold;
   return true;
 }
 
@@ -272,9 +270,15 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         projectedValue = projectedBreakdown.earnedGrossCents;
         break;
       case "monthly_gross_income":
-        // SNAP gross-income test: all countable income, no disregards.
+        // SNAP gross-income test: wages, benefits, and recurring other income.
+        // A one-time lump sum of $1,500 or more is left out.
         currentValue = grossMonthlyIncomeCents(breakdown);
         projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        if (String(th.program ?? "").toUpperCase() === "SNAP") {
+          const lump = oneTimeOtherIncomeCents(txMapped, prefix);
+          currentValue = Math.max(0, currentValue - lump);
+          projectedValue = Math.max(0, (projectedValue ?? 0) - lump);
+        }
         break;
       case "monthly_unearned_income":
         // ABD / QMB / Waiver "monthly income" limits use SSI countable-income
@@ -300,7 +304,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         break;
     }
 
-    const limitCents = th.limitCents as number;
+    const limitCents = snapStoredGrossLimitCents(sk, th.limitCents as number, householdSize);
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
     const breachNow = isAsset

@@ -90,8 +90,10 @@ describe("detectWageChange", () => {
 });
 
 describe("programsThatMustReportWageChange", () => {
-  it("uses 130% of the SNAP 200% table for a household of 1", () => {
-    expect(snapGross130Cents(1)).toBe(169_650);
+  it("uses the federal 130% line, and income exactly on that line does not report", () => {
+    expect(snapGross130Cents(1)).toBe(1696_00);
+    expect(programsThatMustReportWageChange(["SNAP"], "increase", 1696_00, 1)).toEqual([]);
+    expect(programsThatMustReportWageChange(["SNAP"], "increase", 1696_01, 1)).toEqual(["SNAP"]);
   });
 
   it("keeps an ordinary SNAP raise off the reporting list", () => {

@@ -39,8 +39,8 @@ describe("alert playbooks", () => {
     const renewal = ALERT_PLAYBOOKS.medicaid_renewal_packet!;
     expect(renewal.closureCodes).toEqual(expect.arrayContaining(["042"]));
     expect(playbookPersonaSteps(renewal)).toHaveLength(6);
-    const snap = ALERT_PLAYBOOKS.snap_gross_200_fpl!;
-    expect(snap.closureCodes).toEqual(expect.arrayContaining(["474"]));
+    const snap = ALERT_PLAYBOOKS.snap_sar_renewal!;
+    expect(snap.closureCodes).toEqual(expect.arrayContaining(["440", "474"]));
     const email = playbookEmailParagraphs(renewal).join("\n");
     expect(email).toMatch(/Threatened program/);
     expect(email).toMatch(/042/);
