@@ -12,6 +12,13 @@ import {
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import {
+  extraHelpIncomeAlert,
+  extraHelpIncomeLimitCents,
+  extraHelpIsAutomatic,
+  extraHelpResourceAlert,
+  extraHelpResourceLimitCents,
+} from "@/lib/benefits/extra-help-limits";
 import { magiAdultAgeApplies, magiAdultIncomeAlert, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
 import { qmbIncomeAlert, qmbResourceAlert, qmbIncomeLimitCents, qmbResourceLimitCents } from "@/lib/benefits/qmb-limits";
 import {
@@ -34,7 +41,6 @@ import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
-const EXTRA_HELP_INCOME_CENTS = 2015_00;
 
 export type ScenarioEvalInput = {
   beneficiaryId: Types.ObjectId;
@@ -77,6 +83,8 @@ export type ScenarioEvalInput = {
   mawdJobSuccess?: boolean;
   /** QMB income before the $20 disregard. The published limit already includes that $20. */
   qmbIncomeCents?: number;
+  /** Extra Help income before the $20 disregard. The published limit already includes that $20. */
+  extraHelpIncomeCents?: number;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -161,8 +169,10 @@ export async function evaluateScenarioAlerts(
     if (input.sntCashDeposit) consider("ssi_snt_cash");
   }
   const able = input.ableBalanceCents ?? 0;
-  if (able > 100_000_00) consider("ssi_able_100k", "breach");
-  else if (able > Math.floor(100_000_00 * 0.85)) consider("ssi_able_100k", "warning");
+  if (hasProgram(input.programs, "SSI")) {
+    if (able > 100_000_00) consider("ssi_able_100k", "breach");
+    else if (able > Math.floor(100_000_00 * 0.85)) consider("ssi_able_100k", "warning");
+  }
   if (hasProgram(input.programs, "MedicaidABD")) {
     const abdIncome = input.abdCountableCents ?? countable;
     const abdLimit = abdIncomeLimitCents(householdSize);
@@ -241,11 +251,18 @@ export async function evaluateScenarioAlerts(
     const resourceLevel = qmbResourceAlert(assets, resourceLimit);
     if (resourceLevel) consider("qmb_resources", resourceLevel);
   }
-  if (
-    programSet.some((x) => x.includes("EXTRA") || x === "LIS" || x === "EXTRAHELP") &&
-    gross >= Math.floor(EXTRA_HELP_INCOME_CENTS * 0.85)
-  ) {
-    consider("extra_help_income");
+  const onExtraHelp = input.programs.some((p) => {
+    const key = p.toUpperCase();
+    return key === "EXTRAHELP" || key === "LIS" || key.includes("EXTRA");
+  });
+  if (onExtraHelp && !extraHelpIsAutomatic(input.programs)) {
+    const extraHelpIncome = input.extraHelpIncomeCents ?? countable;
+    const incomeLimit = extraHelpIncomeLimitCents(householdSize);
+    const incomeLevel = extraHelpIncomeAlert(extraHelpIncome, incomeLimit);
+    if (incomeLevel) consider("extra_help_income", incomeLevel);
+    const resourceLimit = extraHelpResourceLimitCents(householdSize);
+    const resourceLevel = extraHelpResourceAlert(assets, resourceLimit);
+    if (resourceLevel) consider("extra_help_resources", resourceLevel);
   }
   if (hasProgram(input.programs, "SNAP")) {
     const snapGross = input.snapGrossCents ?? gross;

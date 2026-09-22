@@ -66,10 +66,10 @@ export default function ResourcesPage() {
       />
 
       <RefTable
-        title="Medicare Part D Extra Help (LIS) — single, 2026"
+        title="Medicare Part D Extra Help (LIS) — 2026"
         rows={[
-          { label: "Monthly income", value: "$2,015 / mo", note: "$24,180 / year. SSDI, DAC, and wages all count." },
-          { label: "Resource (asset) limit", value: "$18,090", note: "Excludes home, car, and personal items." },
+          { label: "Monthly income", value: "$2,015 / mo", note: "One person. A couple must be below $2,725. The $20 disregard is already included. Reaching the limit does not qualify." },
+          { label: "Resource (asset) limit", value: "$18,090", note: "One person. A couple must be below $36,100. Automatic with Medicaid, QMB, or SSI." },
         ]}
       />
 

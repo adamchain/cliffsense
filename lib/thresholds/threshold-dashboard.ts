@@ -11,6 +11,12 @@ import {
   mawdIncomeLimitCents,
   mawdJobSuccessIncomeLimitCents,
 } from "@/lib/benefits/mawd-limits";
+import {
+  extraHelpIncomeBeforeGeneralExclusionCents,
+  extraHelpIncomeLimitCents,
+  extraHelpIsAutomatic,
+  extraHelpResourceLimitCents,
+} from "@/lib/benefits/extra-help-limits";
 import { magiAdultAgeApplies, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
 import { qmbIncomeBeforeGeneralExclusionCents, qmbIncomeLimitCents, qmbResourceLimitCents } from "@/lib/benefits/qmb-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
@@ -388,6 +394,21 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       projectedValue = qmbIncomeBeforeGeneralExclusionCents(projectedBreakdown);
     } else if (sk === "pa_qmb_resources_2026") {
       limitCents = qmbResourceLimitCents(householdSize);
+    } else if (sk === "extra_help_lis_income_monthly_2026") {
+      limitCents = extraHelpIncomeLimitCents(householdSize);
+      if (extraHelpIsAutomatic(programs)) {
+        currentValue = null;
+        projectedValue = null;
+      } else {
+        currentValue = extraHelpIncomeBeforeGeneralExclusionCents(breakdown);
+        projectedValue = extraHelpIncomeBeforeGeneralExclusionCents(projectedBreakdown);
+      }
+    } else if (sk === "extra_help_lis_resources_2026") {
+      limitCents = extraHelpResourceLimitCents(householdSize);
+      if (extraHelpIsAutomatic(programs)) {
+        currentValue = null;
+        projectedValue = null;
+      }
     }
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
@@ -402,6 +423,12 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       !isAsset &&
       incomeBreach(projectedValue, limitCents) &&
       !breachNow;
+    if (sk === "extra_help_lis_resources_2026") {
+      const value = currentValue ?? 0;
+      breachNow = value >= limitCents;
+      warnNow = value >= Math.floor(limitCents * warnAt) && value < limitCents;
+      predictive = false;
+    }
     if (sk === "pa_waiver_income_2026" || sk === "pa_medicaid_magi_adult_2026" || sk === "pa_qmb_income_2026") {
       const value = currentValue ?? 0;
       breachNow = value > limitCents;

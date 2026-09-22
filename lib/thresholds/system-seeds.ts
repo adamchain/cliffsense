@@ -681,7 +681,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "Medicare Part D Extra Help (LIS) — monthly income (single, 2026)",
     description:
-      "2026 monthly income limit for a single individual: $2,015 ($24,180/year). Income from SSDI, DAC, and work all count toward this test (with the standard $20 disregard already built into the published limit). Extra Help is means-tested even though Medicare and SSDI are not. A direct SNT cash distribution can count as income, and cash retained in a personal bank account can increase countable resources." +
+      "2026 full Extra Help income must be below $2,015 a month for one person and below $2,725 for a couple. Those amounts already include the $20 disregard, so it is not subtracted again. SSDI, a DAC benefit, and wages count. Someone with Medicaid, QMB, or SSI gets Extra Help automatically." +
       ESTIMATE_NOTE,
     sourceUrl: MEDICARE_EXTRA_HELP,
   },
@@ -697,7 +697,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "Medicare Part D Extra Help (LIS) — resource limit (single, 2026)",
     description:
-      "2026 asset limit for a single individual: $18,090 (excludes home, car, and personal items)." +
+      "2026 full Extra Help resources must be below $18,090 for one person and below $36,100 for a couple, including the burial allowance. A home, one car, and personal items stay excluded. Someone with Medicaid, QMB, or SSI gets Extra Help automatically." +
       ESTIMATE_NOTE,
     sourceUrl: MEDICARE_EXTRA_HELP,
   },

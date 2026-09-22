@@ -266,7 +266,7 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Income, resources, household & marital-status changes",
         detail:
-          "2026 single Extra Help limits are $2,015/month income and $18,090 resources. SSDI, DAC, and wages all count.",
+          "2026 Extra Help income must be below $2,015 a month for one person and below $2,725 for a couple. Resources must be below $18,090 or $36,100. Someone with Medicaid, QMB, or SSI gets Extra Help automatically.",
         deadline: "By the 10th of the month after the change",
       },
     ],

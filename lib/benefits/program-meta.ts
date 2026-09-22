@@ -140,7 +140,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "Medicare Part D Extra Help (Low-Income Subsidy)",
     agency: "Social Security Administration",
     blurb:
-      "Helps pay Medicare Part D prescription costs. 2026 single limits: $2,015/month income ($24,180/year) and $18,090 resources. SSDI, DAC, and wages all count. Automatic if you have Medicaid, QMB, or SSI.",
+      "Helps pay Medicare Part D prescription costs. 2026 income must be below $2,015 a month for one person and below $2,725 for a couple. Resources must be below $18,090 or $36,100. Automatic if you have Medicaid, QMB, or SSI.",
     reporting:
       "Report income, resource, marital-status, address, and household changes to SSA by the 10th of the month after the change.",
     officialUrl: "https://www.ssa.gov/medicare/part-d-extra-help",

@@ -15,6 +15,7 @@ import {
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
 import { enrolledWorkersWithJobSuccess } from "@/lib/benefits/mawd-limits";
+import { extraHelpIncomeBeforeGeneralExclusionCents } from "@/lib/benefits/extra-help-limits";
 import { qmbIncomeBeforeGeneralExclusionCents } from "@/lib/benefits/qmb-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
@@ -313,6 +314,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     if (sk === "pa_medicaid_magi_adult_2026") continue;
     // QMB income already includes the $20 disregard, and the couple limits differ from the one-person seed.
     if (sk === "pa_qmb_income_2026" || sk === "pa_qmb_resources_2026") continue;
+    // Extra Help uses the published limit, which already includes the $20, and skips people who get it automatically.
+    if (sk === "extra_help_lis_income_monthly_2026" || sk === "extra_help_lis_resources_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -458,6 +461,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
     mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
     mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
     qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown),
+    extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(breakdown),
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,

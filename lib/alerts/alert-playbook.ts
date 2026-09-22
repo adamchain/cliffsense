@@ -468,10 +468,19 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
 
   extra_help_income: pb(
     "extra_help_income",
-    "Medicare Extra Help (LIS) income or resources",
+    "Medicare Extra Help income limit",
     ["ExtraHelp"],
-    "2026 Extra Help single limits are about $2,015/mo income and $18,090 resources. SSDI, DAC, and wages count; SSDI has no asset test of its own.",
-    "Report changes to SSA by the 10th of the next month. A large gift can threaten Extra Help without touching SSDI.",
+    "2026 Extra Help income must be below $2,015 a month for one person and below $2,725 for a couple. That figure already includes the $20 disregard. SSDI, a DAC benefit, and wages count. Someone with Medicaid, QMB, or SSI gets Extra Help automatically.",
+    "Report the change to SSA by the 10th of the next month.",
+    { personaId: "george_gift_qmb_lis" },
+  ),
+
+  extra_help_resources: pb(
+    "extra_help_resources",
+    "Medicare Extra Help resource limit",
+    ["ExtraHelp"],
+    "2026 Extra Help resources must be below $18,090 for one person and below $36,100 for a couple. Those amounts include the burial allowance. Someone with Medicaid, QMB, or SSI gets Extra Help automatically.",
+    "Report a balance that reaches the limit to SSA by the 10th of the next month. Do not give assets away to get under the limit.",
     { personaId: "george_gift_qmb_lis" },
   ),
 
@@ -674,7 +683,7 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p.includes("WAIVER") || p === "CHC") return asset ? "waiver_resources_8k" : "waiver_income_2982";
   if (p === "MAWD") return asset ? "mawd_resources_10k" : "mawd_income_limit";
   if (p === "QMB") return asset ? "qmb_resources" : "qmb_income_resources";
-  if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
+  if (p.includes("EXTRA") || p === "LIS") return asset ? "extra_help_resources" : "extra_help_income";
   if (p === "SNAP") return asset ? "snap_elderly_resources" : "snap_gross_200_fpl";
   if (p.includes("MAGI")) return "lucas_magi_income";
   if (p === "MEDICAID") return "generic_limit";
