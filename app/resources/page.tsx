@@ -99,8 +99,8 @@ export default function ResourcesPage() {
             value: "$10,000",
             note: "Any household size. Exactly at $10,000 still qualifies. No asset cap once Workers with Job Success is recorded.",
           },
-          { label: "QMB (Medicare Savings) — income", value: "$1,350 / mo", note: "100% FPL + $20. Pays Medicare premiums & cost-sharing." },
-          { label: "QMB — resources", value: "~$9,660", note: "Single." },
+          { label: "QMB (Medicare Savings) — income", value: "$1,350 / mo", note: "One person. A couple is $1,824. The $20 disregard is already included. Income equal to the limit still qualifies." },
+          { label: "QMB — resources", value: "$9,950", note: "One person. A couple is $14,910. Exactly at the limit still qualifies." },
         ]}
       />
 

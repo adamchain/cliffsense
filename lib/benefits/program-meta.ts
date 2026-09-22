@@ -129,7 +129,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "Qualified Medicare Beneficiary (Healthy Horizons MSP)",
     agency: "PA Department of Human Services",
     blurb:
-      "Medicare Savings Program that pays Medicare Part A/B premiums and cost-sharing. Separate from full Medicaid. 2025–2026 single income about $1,350/month (100% FPL + $20) and resources about $9,660.",
+      "Medicare Savings Program that pays Medicare Part A and Part B premiums and cost-sharing. Separate from full Medicaid. 2026 income is $1,350 a month for one person and $1,824 for a couple. Resources are $9,950 or $14,910.",
     reporting:
       "Report income and resource changes within 10 days. Waiver enrollment does not block QMB.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",

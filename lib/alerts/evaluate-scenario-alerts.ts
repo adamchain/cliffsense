@@ -13,6 +13,7 @@ import {
 } from "@/lib/benefits/ssi";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import { magiAdultAgeApplies, magiAdultIncomeAlert, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
+import { qmbIncomeAlert, qmbResourceAlert, qmbIncomeLimitCents, qmbResourceLimitCents } from "@/lib/benefits/qmb-limits";
 import {
   mawdIncomeAlert,
   mawdIncomeLimitCents,
@@ -33,7 +34,6 @@ import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
-const QMB_INCOME_CENTS = 1350_00;
 const EXTRA_HELP_INCOME_CENTS = 2015_00;
 
 export type ScenarioEvalInput = {
@@ -75,6 +75,8 @@ export type ScenarioEvalInput = {
   mawdCountableCents?: number;
   /** True when Workers with Job Success is recorded on the MAWD enrollment. */
   mawdJobSuccess?: boolean;
+  /** QMB income before the $20 disregard. The published limit already includes that $20. */
+  qmbIncomeCents?: number;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -230,11 +232,14 @@ export async function evaluateScenarioAlerts(
       if (magiLevel) consider("lucas_magi_income", magiLevel);
     }
   }
-  if (
-    hasProgram(input.programs, "QMB") &&
-    (countable >= Math.floor(QMB_INCOME_CENTS * 0.85) || gross >= Math.floor(QMB_INCOME_CENTS * 0.85))
-  ) {
-    consider("qmb_income_resources");
+  if (hasProgram(input.programs, "QMB")) {
+    const qmbIncome = input.qmbIncomeCents ?? countable;
+    const incomeLimit = qmbIncomeLimitCents(householdSize);
+    const incomeLevel = qmbIncomeAlert(qmbIncome, incomeLimit);
+    if (incomeLevel) consider("qmb_income_resources", incomeLevel);
+    const resourceLimit = qmbResourceLimitCents(householdSize);
+    const resourceLevel = qmbResourceAlert(assets, resourceLimit);
+    if (resourceLevel) consider("qmb_resources", resourceLevel);
   }
   if (
     programSet.some((x) => x.includes("EXTRA") || x === "LIS" || x === "EXTRAHELP") &&

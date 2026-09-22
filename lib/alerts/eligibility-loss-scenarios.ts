@@ -280,12 +280,22 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   // —— QMB / Extra Help ——
   {
     id: "qmb_income_resources",
-    title: "QMB income or resource limit",
+    title: "QMB income limit",
     programs: ["QMB"],
     trigger: "cliff",
     level: "warning",
-    risk: "QMB (≈ $1,350 income / ~$9,660–$9,950 resources, single) pays Medicare premiums and cost-sharing — separate from full Medicaid.",
-    action: "Report income/resource changes within 10 days. Waiver enrollment does not block QMB.",
+    risk: "The 2026 QMB income limit is $1,350 a month for one person and $1,824 for a couple. That figure already includes the $20 disregard. Income equal to the limit still qualifies. QMB pays Medicare premiums and cost-sharing. It is separate from full Medicaid.",
+    action: "Report the change to the County Assistance Office within 10 days. A waiver enrollment does not block QMB.",
+    autoDetect: true,
+  },
+  {
+    id: "qmb_resources",
+    title: "QMB resource limit",
+    programs: ["QMB"],
+    trigger: "cliff",
+    level: "warning",
+    risk: "The 2026 QMB resource limit is $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB.",
+    action: "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
     autoDetect: true,
   },
   {

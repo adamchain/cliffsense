@@ -12,6 +12,7 @@ import {
   mawdJobSuccessIncomeLimitCents,
 } from "@/lib/benefits/mawd-limits";
 import { magiAdultAgeApplies, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
+import { qmbIncomeBeforeGeneralExclusionCents, qmbIncomeLimitCents, qmbResourceLimitCents } from "@/lib/benefits/qmb-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import {
   abdCountableCents,
@@ -381,6 +382,12 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         currentValue = null;
         projectedValue = null;
       }
+    } else if (sk === "pa_qmb_income_2026") {
+      limitCents = qmbIncomeLimitCents(householdSize);
+      currentValue = qmbIncomeBeforeGeneralExclusionCents(breakdown);
+      projectedValue = qmbIncomeBeforeGeneralExclusionCents(projectedBreakdown);
+    } else if (sk === "pa_qmb_resources_2026") {
+      limitCents = qmbResourceLimitCents(householdSize);
     }
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
@@ -395,7 +402,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       !isAsset &&
       incomeBreach(projectedValue, limitCents) &&
       !breachNow;
-    if (sk === "pa_waiver_income_2026" || sk === "pa_medicaid_magi_adult_2026") {
+    if (sk === "pa_waiver_income_2026" || sk === "pa_medicaid_magi_adult_2026" || sk === "pa_qmb_income_2026") {
       const value = currentValue ?? 0;
       breachNow = value > limitCents;
       warnNow = value >= Math.floor(limitCents * warnAt) && value <= limitCents;

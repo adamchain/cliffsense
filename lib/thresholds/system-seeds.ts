@@ -548,7 +548,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — monthly income (single)",
     description:
-      "QMB income limit: 100% FPL + $20 disregard ≈ $1,350/month (single). QMB pays Medicare Part A/B premiums and cost-sharing and does not block Waiver services. SSDI counts (less $20); earned income gets the $65 + ½ exclusions. Cash from an SNT into a personal account must be reviewed under QMB income rules — SSDI's no-asset rule does not carry over." +
+      "2026 QMB income is $1,350 a month for one person and $1,824 for a couple. Those amounts are 100% of the poverty guideline plus the $20 disregard, so the $20 is not subtracted again. Earned income still gets the $65 exclusion and one-half. Income equal to the limit still qualifies." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,
@@ -558,14 +558,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "QMB",
     state: "PA",
     thresholdType: "asset_balance",
-    limitCents: 9660_00,
+    limitCents: 9950_00,
     comparison: "lte",
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA QMB (Medicare Savings Program) — resource limit (single)",
     description:
-      "QMB resource limit ≈ $9,660 (single); some PA Healthy Horizons charts list about $9,950 (2× the SSI resource standard). Applies regardless of Waiver enrollment or SSDI status. Qualifying SNT/ABLE balances are excluded; retained personal-account cash counts." +
+      "2026 QMB resources are $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB. Qualifying ABLE and special needs trust balances stay excluded." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,

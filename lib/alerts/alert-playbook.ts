@@ -442,10 +442,10 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
 
   qmb_income_resources: pb(
     "qmb_income_resources",
-    "QMB income or resource limit",
+    "QMB income limit",
     ["QMB"],
-    "QMB pays Medicare premiums and cost-sharing under separate financial rules. Loss of SSDI cash does not automatically start or stop QMB. SSDI itself has no asset test.",
-    "Report QMB/Extra Help changes to DHS/SSA as required. Screen SLMB, QI, Extra Help, and later reapplication after resources fall. Update the DHS address separately from SSA.",
+    "The 2026 QMB income limit is $1,350 a month for one person and $1,824 for a couple. That figure already includes the $20 disregard. Income equal to the limit still qualifies. QMB pays Medicare premiums and cost-sharing and is separate from full Medicaid.",
+    "Report the change to the County Assistance Office within 10 days. A waiver enrollment does not block QMB.",
     {
       personaId: "george_gift_qmb_lis",
       documents: [
@@ -455,6 +455,15 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
         "Proof of address updates with DHS and SSA",
       ],
     },
+  ),
+
+  qmb_resources: pb(
+    "qmb_resources",
+    "QMB resource limit",
+    ["QMB"],
+    "The 2026 QMB resource limit is $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB.",
+    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    { personaId: "george_gift_qmb_lis" },
   ),
 
   extra_help_income: pb(
@@ -664,7 +673,7 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p === "DAC") return "dac_sga_disability";
   if (p.includes("WAIVER") || p === "CHC") return asset ? "waiver_resources_8k" : "waiver_income_2982";
   if (p === "MAWD") return asset ? "mawd_resources_10k" : "mawd_income_limit";
-  if (p === "QMB") return "qmb_income_resources";
+  if (p === "QMB") return asset ? "qmb_resources" : "qmb_income_resources";
   if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
   if (p === "SNAP") return asset ? "snap_elderly_resources" : "snap_gross_200_fpl";
   if (p.includes("MAGI")) return "lucas_magi_income";

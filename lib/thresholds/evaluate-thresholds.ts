@@ -15,6 +15,7 @@ import {
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
 import { enrolledWorkersWithJobSuccess } from "@/lib/benefits/mawd-limits";
+import { qmbIncomeBeforeGeneralExclusionCents } from "@/lib/benefits/qmb-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import {
@@ -310,6 +311,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     }
     // Adult MAGI income depends on household size. The scenario also skips SSI and ages outside 19–64.
     if (sk === "pa_medicaid_magi_adult_2026") continue;
+    // QMB income already includes the $20 disregard, and the couple limits differ from the one-person seed.
+    if (sk === "pa_qmb_income_2026" || sk === "pa_qmb_resources_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -454,6 +457,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
     married: isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus),
     mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
     mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
+    qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown),
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,

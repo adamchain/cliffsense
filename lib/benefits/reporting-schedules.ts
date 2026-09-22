@@ -252,7 +252,7 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Income and resource changes",
         detail:
-          "QMB has its own income (~$1,350) and resource (~$9,660) tests. SSDI's no-asset rule does not apply.",
+          "QMB income is $1,350 a month for one person and $1,824 for a couple. Resources are $9,950 or $14,910. SSDI's no-asset rule does not apply.",
         deadline: "Within 10 days",
       },
     ],
