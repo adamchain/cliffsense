@@ -235,7 +235,17 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     autoDetect: true,
   },
 
-  // —— MAGI 2027 ——
+  // —— MAGI ——
+  {
+    id: "lucas_magi_income",
+    title: "MAGI Medicaid income limit",
+    programs: ["MedicaidMAGI"],
+    trigger: "cliff",
+    level: "warning",
+    risk: "HealthChoices for adults age 19–64 is 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test. This limit is not used when the person receives SSI.",
+    action: "Report the change to the County Assistance Office within 10 days. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
+    autoDetect: true,
+  },
   {
     id: "magi_work_requirements_2027",
     title: "MAGI Medicaid 80-hour work rule (2027)",

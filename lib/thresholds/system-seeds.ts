@@ -390,12 +390,12 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     thresholdType: "monthly_gross_income",
     limitCents: 1836_00,
     comparison: "lte",
-    warnAtPercent: 0.9,
+    warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
     label: "PA MAGI Medicaid (adults 19–64) — monthly income (138% FPL, 2026)",
     description:
-      "ACA-expansion adults (19–64): income limit 138% FPL ≈ $1,836/month (single, includes the 5% disregard). MAGI counting — roughly tax AGI plus non-taxable Social Security and tax-exempt interest — and NO asset test for children, pregnant people, parents, or expansion adults. People under 138% FPL go to Medicaid rather than Marketplace subsidies. SSI recipients are automatically eligible." +
+      "HealthChoices for adults age 19–64 is 138% of the 2026 poverty guideline: $1,836 a month for one person, $2,489 for two, $3,142 for three, and $3,795 for four. Income equal to the limit still qualifies. There is no asset test. This line is not used when the person receives SSI, or when the person is under 19 or 65 or older." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS,

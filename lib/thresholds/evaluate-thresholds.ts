@@ -308,6 +308,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     ) {
       continue;
     }
+    // Adult MAGI income depends on household size. The scenario also skips SSI and ages outside 19–64.
+    if (sk === "pa_medicaid_magi_adult_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;

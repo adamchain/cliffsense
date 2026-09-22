@@ -12,6 +12,7 @@ import {
   ssiResourceLimitCents,
 } from "@/lib/benefits/ssi";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
+import { magiAdultAgeApplies, magiAdultIncomeAlert, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
 import {
   mawdIncomeAlert,
   mawdIncomeLimitCents,
@@ -220,6 +221,14 @@ export async function evaluateScenarioAlerts(
     earned >= SGA_NONBLIND_CENTS
   ) {
     consider("mawd_transition");
+  }
+  if (hasProgram(input.programs, "MedicaidMAGI") && !hasProgram(input.programs, "SSI")) {
+    const age = ageFromDateOfBirth(input.dateOfBirth, now);
+    if (magiAdultAgeApplies(age)) {
+      const magiLimit = magiAdultIncomeLimitCents(householdSize);
+      const magiLevel = magiAdultIncomeAlert(gross, magiLimit);
+      if (magiLevel) consider("lucas_magi_income", magiLevel);
+    }
   }
   if (
     hasProgram(input.programs, "QMB") &&

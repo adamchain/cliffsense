@@ -85,7 +85,7 @@ export default function ResourcesPage() {
           {
             label: "MAGI Medicaid — assets",
             value: "No asset test",
-            note: "Expansion adults 19–64 and MAGI families. Income is MAGI (about 138% FPL).",
+            note: "Adults 19–64: $1,836 a month for one person, $2,489 for two. Income equal to the limit still qualifies. Not used when the person receives SSI.",
           },
           { label: "Full Medicaid (ABD / Healthy Horizons) — income", value: "$1,330 / mo", note: "One person. Two is $1,804. SSI-countable income. The SSI payment and a DAC benefit are left out. SSDI counts." },
           { label: "Full Medicaid (ABD) — assets", value: "$2,000", note: "$3,000 for two or more. $8,000 if Medicaid was entered through a waiver. Not tested under age 21." },

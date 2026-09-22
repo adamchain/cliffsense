@@ -11,6 +11,7 @@ import {
   mawdIncomeLimitCents,
   mawdJobSuccessIncomeLimitCents,
 } from "@/lib/benefits/mawd-limits";
+import { magiAdultAgeApplies, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
 import { waiverGrossCountableCents } from "@/lib/benefits/waiver-limits";
 import {
   abdCountableCents,
@@ -374,6 +375,12 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     } else if (sk === "pa_mawd_resources_2026" && mawdJobSuccess) {
       currentValue = null;
       projectedValue = null;
+    } else if (sk === "pa_medicaid_magi_adult_2026") {
+      limitCents = magiAdultIncomeLimitCents(householdSize);
+      if (onSsi || !magiAdultAgeApplies(age)) {
+        currentValue = null;
+        projectedValue = null;
+      }
     }
     const warnAt = typeof th.warnAtPercent === "number" ? th.warnAtPercent : 0.85;
     const isAsset = th.thresholdType === "asset_balance";
@@ -388,7 +395,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       !isAsset &&
       incomeBreach(projectedValue, limitCents) &&
       !breachNow;
-    if (sk === "pa_waiver_income_2026") {
+    if (sk === "pa_waiver_income_2026" || sk === "pa_medicaid_magi_adult_2026") {
       const value = currentValue ?? 0;
       breachNow = value > limitCents;
       warnNow = value >= Math.floor(limitCents * warnAt) && value <= limitCents;

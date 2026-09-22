@@ -96,7 +96,7 @@ const META: Record<string, ProgramMeta> = {
     fullName: "MAGI Medicaid (expansion adults 19–64 and MAGI families)",
     agency: "PA Department of Human Services",
     blurb:
-      "ACA-expansion / MAGI Medical Assistance. Income is tested with MAGI rules (about 138% FPL). No asset test for children, pregnant people, parents, or expansion adults.",
+      "MAGI Medical Assistance. Adults age 19–64 use 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test.",
     reporting:
       "Report income, household, address, and other-coverage changes within 10 days. MAGI categories do not have an asset test.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",

@@ -435,8 +435,8 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "lucas_magi_income",
     "MAGI Medicaid current monthly income",
     ["MedicaidMAGI"],
-    "MAGI expansion uses current monthly household MAGI — not an asset test, and not the same as Marketplace projected annual income.",
-    "Report the change, get the expected end date in writing, and use a special enrollment period for Marketplace or employer coverage before Medicaid ends. Screen disability-based Medicaid, MAWD, waiver, CHIP, or pregnancy coverage for the household.",
+    "HealthChoices for adults age 19–64 is 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test. This limit is not used when the person receives SSI.",
+    "Report the change to the County Assistance Office within 10 days. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
     { personaId: "lucas_magi_income" },
   ),
 
