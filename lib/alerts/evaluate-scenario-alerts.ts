@@ -5,14 +5,19 @@ import {
   type EligibilityLossScenario,
 } from "@/lib/alerts/eligibility-loss-scenarios";
 import Alert from "@/lib/db/models/Alert";
-import { SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
+import {
+  ageMilestoneWindow,
+  lumpSumNeedsReport,
+  ssiFbrCents,
+  ssiResourceLimitCents,
+} from "@/lib/benefits/ssi";
+import { ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import { detectWageChange, programsThatMustReportWageChange, type WageDeposit } from "@/lib/alerts/wage-change";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
 const SGA_NONBLIND_CENTS = 1690_00;
-const TWP_SERVICE_CENTS = 1210_00;
 const ABD_INCOME_CENTS = 1330_00;
 const WAIVER_INCOME_CENTS = 2982_00;
 const QMB_INCOME_CENTS = 1350_00;
@@ -37,6 +42,15 @@ export type ScenarioEvalInput = {
   hasHistoryBeforeMonth?: boolean;
   householdSize?: number;
   now?: Date;
+  /** SSI countable income after removing the SSI payment and applying the student exclusion. */
+  ssiAdjustedCountableCents?: number;
+  /** Same rules with earned income set to zero, used to tell wages from unearned income. */
+  ssiUnearnedOnlyCents?: number;
+  ableBalanceCents?: number;
+  sntCashDeposit?: boolean;
+  dateOfBirth?: Date | string | null;
+  /** Trial Work Period service months the household has recorded. Zero means none recorded yet. */
+  twpMonthsUsed?: number;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -72,31 +86,56 @@ export async function evaluateScenarioAlerts(
   input: ScenarioEvalInput,
 ): Promise<{ alertsCreated: number; alertIdsCreated: Types.ObjectId[] }> {
   const programSet = input.programs.map((p) => p.toUpperCase());
-  const candidates: EligibilityLossScenario[] = [];
+  const candidates: { scenario: EligibilityLossScenario; level: "info" | "warning" | "breach" }[] = [];
 
-  const consider = (id: string) => {
+  const consider = (id: string, level?: "info" | "warning" | "breach") => {
     const s = ELIGIBILITY_LOSS_SCENARIOS.find((x) => x.id === id);
     if (!s?.autoDetect) return;
     if (!enrolledFor(s, programSet)) return;
-    if (!candidates.some((c) => c.id === id)) candidates.push(s);
+    if (candidates.some((c) => c.scenario.id === id)) return;
+    const resolved =
+      level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
+    candidates.push({ scenario: s, level: resolved });
   };
 
   const earned = input.earnedGrossCents;
   const countable = input.ssiCountableCents;
   const assets = input.maxAssetCents;
   const gross = input.grossMonthlyCents;
+  const householdSize = input.householdSize ?? 1;
+  const now = input.now ?? new Date();
 
   if (hasProgram(input.programs, "SSDI")) {
-    if (earned >= SGA_NONBLIND_CENTS) consider("ssdi_sga_after_twp");
-    else if (earned >= TWP_SERVICE_CENTS) consider("ssdi_twp_service_month");
+    const ssdiAlert = ssdiWageAlert(earned, input.twpMonthsUsed ?? 0);
+    if (ssdiAlert === "sga") consider("ssdi_sga_after_twp", "breach");
+    else if (ssdiAlert === "twp") consider("ssdi_twp_service_month", "warning");
   }
   if (hasProgram(input.programs, "DAC") && earned >= Math.floor(SGA_NONBLIND_CENTS * 0.85)) {
     consider("dac_sga_disability");
   }
   if (hasProgram(input.programs, "SSI")) {
-    if (countable >= Math.floor(SSI_FBR_INDIVIDUAL_CENTS * 0.85)) consider("ssi_countable_income_fbr");
-    if (assets > Math.floor(RESOURCE_2K_CENTS * 0.85)) consider("ssi_resources_2k");
+    const fbr = ssiFbrCents(householdSize);
+    const ssiCount = input.ssiAdjustedCountableCents ?? countable;
+    if (ssiCount >= fbr) consider("ssi_countable_income_fbr", "breach");
+    else if (ssiCount >= Math.floor(fbr * 0.85)) consider("ssi_countable_income_fbr", "warning");
+
+    const resourceLimit = ssiResourceLimitCents(householdSize);
+    if (assets > resourceLimit) consider("ssi_resources_2k", "breach");
+    else if (assets > Math.floor(resourceLimit * 0.85)) consider("ssi_resources_2k", "warning");
+
+    const unearnedOnly = input.ssiUnearnedOnlyCents;
+    if (earned > 0 && unearnedOnly != null && ssiCount >= fbr && unearnedOnly < fbr) {
+      consider("ssi_1619b_medicaid_while_zero");
+    }
+
+    const dob = input.dateOfBirth ? new Date(input.dateOfBirth) : null;
+    if (ageMilestoneWindow(dob, 18, now, 120, 30)) consider("ssi_age18_redetermination");
+    if (ageMilestoneWindow(dob, 22, now, 90, 30)) consider("ssi_student_exclusion_ends");
+    if (input.sntCashDeposit) consider("ssi_snt_cash");
   }
+  const able = input.ableBalanceCents ?? 0;
+  if (able > 100_000_00) consider("ssi_able_100k", "breach");
+  else if (able > Math.floor(100_000_00 * 0.85)) consider("ssi_able_100k", "warning");
   if (hasProgram(input.programs, "MedicaidABD") || hasProgram(input.programs, "Medicaid")) {
     if (countable >= Math.floor(ABD_INCOME_CENTS * 0.85) || gross >= Math.floor(ABD_INCOME_CENTS * 0.85)) {
       consider("abd_income_limit");
@@ -107,10 +146,11 @@ export async function evaluateScenarioAlerts(
     if (gross >= Math.floor(WAIVER_INCOME_CENTS * 0.85) || countable >= Math.floor(WAIVER_INCOME_CENTS * 0.85)) {
       consider("waiver_income_2982");
     }
-    if (earned >= SGA_NONBLIND_CENTS && gross < WAIVER_INCOME_CENTS) {
-      if (hasProgram(input.programs, "SSDI") || hasProgram(input.programs, "DAC")) {
-        consider("ssdi_waiver_twilight");
-      }
+    if (
+      (hasProgram(input.programs, "SSDI") || hasProgram(input.programs, "DAC")) &&
+      ssdiWaiverTwilight(earned, gross, input.twpMonthsUsed ?? 0)
+    ) {
+      consider("ssdi_waiver_twilight");
     }
   }
   if (
@@ -137,7 +177,6 @@ export async function evaluateScenarioAlerts(
     consider("snap_gross_200_fpl");
   }
 
-  const now = input.now ?? new Date();
   const wageKind = detectWageChange({
     monthPrefix: input.monthPrefix,
     deposits: input.earnedDeposits ?? [],
@@ -146,12 +185,19 @@ export async function evaluateScenarioAlerts(
   });
   if (
     wageKind &&
-    programsThatMustReportWageChange(input.programs, wageKind, gross, input.householdSize ?? 1).length > 0
+    programsThatMustReportWageChange(input.programs, wageKind, gross, householdSize).length > 0
   ) {
     consider("reporting_wage_change_10day");
   }
   const otherIn = input.otherInflowCents ?? 0;
-  if (otherIn >= 1500_00) {
+  if (
+    lumpSumNeedsReport({
+      otherInflowCents: otherIn,
+      assetCents: assets,
+      programs: input.programs,
+      householdSize,
+    })
+  ) {
     consider("reporting_lump_sum");
   }
   const overdue = await ReportingDeadline.exists({
@@ -165,16 +211,17 @@ export async function evaluateScenarioAlerts(
   const alertIdsCreated: Types.ObjectId[] = [];
   let alertsCreated = 0;
 
-  for (const s of candidates) {
-    if (await recentlyAlerted(input.beneficiaryId, s.id)) continue;
+  for (const pending of candidates) {
+    if (await recentlyAlerted(input.beneficiaryId, pending.scenario.id)) continue;
     const createdId = await insertScenarioAlert({
       beneficiaryId: input.beneficiaryId,
       ownerUserId: input.ownerUserId,
       actorUserId: input.actorUserId,
-      scenario: s,
+      scenario: pending.scenario,
+      level: pending.level,
       monthPrefix: input.monthPrefix,
       earnedGrossCents: earned,
-      ssiCountableCents: countable,
+      ssiCountableCents: input.ssiAdjustedCountableCents ?? countable,
       maxAssetCents: assets,
       grossMonthlyCents: gross,
     });
@@ -209,6 +256,7 @@ async function insertScenarioAlert(input: {
   ownerUserId: Types.ObjectId | string;
   actorUserId: string;
   scenario: EligibilityLossScenario;
+  level?: "info" | "warning" | "breach";
   monthPrefix: string;
   earnedGrossCents?: number;
   ssiCountableCents?: number;
@@ -216,11 +264,12 @@ async function insertScenarioAlert(input: {
   grossMonthlyCents?: number;
 }): Promise<Types.ObjectId> {
   const s = input.scenario;
+  const level = input.level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
   const created = await Alert.create({
     beneficiaryId: input.beneficiaryId,
     userId: input.ownerUserId,
     thresholdId: null,
-    level: s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning",
+    level,
     trigger: s.trigger,
     message: alertMessage(s),
     dataSnapshot: {
@@ -243,7 +292,7 @@ async function insertScenarioAlert(input: {
     action: "alert.created",
     resourceType: "alert",
     resourceId: created._id.toString(),
-    details: { scenarioId: s.id, level: s.level, trigger: s.trigger },
+    details: { scenarioId: s.id, level, trigger: s.trigger },
   });
   return created._id as Types.ObjectId;
 }

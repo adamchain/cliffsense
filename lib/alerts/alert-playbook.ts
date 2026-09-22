@@ -153,8 +153,8 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ssdi_sga_after_twp",
     "SSDI cash may stop after the Trial Work Period",
     ["SSDI"],
-    "Gross earnings at or above SGA ($1,690/mo non-blind, 2026) after nine TWP months can suspend or end SSDI cash.",
-    "Count TWP months from pay stubs, document IRWEs/subsidy, and report work to SSA before treating one high month as a termination.",
+    "After nine recorded Trial Work Period months, gross earnings at or above SGA ($1,690/mo non-blind, 2026) can suspend SSDI cash for that month. Work expenses and a subsidy can still bring countable earnings under SGA. This estimate comes from bank deposits and does not subtract those amounts.",
+    "Count Trial Work Period months from pay stubs. Document work expenses and any subsidy before treating one high month as a suspension. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar.",
     {
       personaId: "anthony_sga_after_twp",
       documents: [
@@ -172,8 +172,8 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ssdi_twp_service_month",
     "This month may count as a Trial Work Period month",
     ["SSDI"],
-    "Gross earnings at or above the TWP service-month amount ($1,210/mo, 2026) count toward nine TWP months in a rolling 60-month window.",
-    "Track TWP months used and report work start, stop, hours, and pay to SSA by the 10th of the next month.",
+    "Gross earnings of $1,210 or more (2026) count as a Trial Work Period service month, including a month at or above SGA. SSDI cash continues until nine service months are recorded. Work expenses and a subsidy can bring countable earnings under the line.",
+    "Record the Trial Work Period months already used. Report work start, stop, hours, and pay to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar.",
     { personaId: "maria_earnings_double" },
   ),
 
@@ -217,16 +217,16 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ssi_countable_income_fbr",
     "SSI cash may fall to $0 near the Federal Benefit Rate",
     ["SSI"],
-    "When countable income reaches the FBR ($994 individual, 2026), the SSI check can fall to $0. Countable wages use the $20 / $65 / ½ rules.",
-    "Project countable income before adding hours. Report wages to SSA. Screen 1619(b), MAWD, or waiver Medicaid before assuming medical coverage ends with the cash check.",
+    "When countable income reaches the FBR ($994 individual or $1,491 for an eligible couple, 2026), the SSI check can fall to $0. The SSI payment itself is not counted. Countable wages use the $20 / $65 / ½ rules, and the student exclusion while under 22.",
+    "Project countable income before adding hours. Report wages to SSA by the 10th of the next month. Screen 1619(b), MAWD, or waiver Medicaid before assuming medical coverage ends with the cash check.",
     { personaId: "maria_earnings_double" },
   ),
 
   ssi_resources_2k: pb(
     "ssi_resources_2k",
-    "SSI countable resources may exceed $2,000",
+    "SSI countable resources may exceed the limit",
     ["SSI"],
-    "Countable resources over $2,000 can suspend SSI. Home, one car, a properly structured SNT, and ABLE are usually excluded; cash in checking generally is not.",
+    "Countable resources over $2,000 ($3,000 for an eligible couple) can suspend SSI. Being exactly at the limit does not. Home, one car, a properly structured SNT, and ABLE are usually excluded; cash in checking generally is not.",
     "Do not give funds away or move them into another person's account. Ask counsel about ABLE or a first-party SNT before the next resource-measurement date. Report the change accurately.",
     {
       personaId: "sophia_inheritance_checking",
@@ -336,8 +336,8 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ssdi_waiver_twilight",
     "SSDI cash may end while waiver income is still safe",
     ["SSDI", "MedicaidWaiver"],
-    "Earnings can end SSDI cash at SGA while still leaving room under the $2,982 waiver income limit.",
-    "Report work to SSA. Ask the CAO about MAWD so medical coverage does not gap if SSDI cash stops.",
+    "After nine recorded Trial Work Period months, earnings at SGA can suspend SSDI cash while income is still under the $2,982 waiver limit.",
+    "Report work to SSA promptly. Ask the CAO about MAWD so medical coverage does not gap if SSDI cash stops.",
     { personaId: "maria_earnings_double" },
   ),
 

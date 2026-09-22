@@ -46,6 +46,8 @@ export type TxLike = {
   pending: boolean;
   /** When true, row is omitted from earned-income threshold math. */
   excludedFromThresholds?: boolean;
+  name?: string;
+  merchantName?: string;
 };
 
 /** Sum earned-income inflows (Plaid: negative cents) for the UTC month prefix. */
@@ -136,6 +138,38 @@ export function monthlyIncomeBreakdownCents(
   };
 }
 
+/** Net wages earlier this calendar year, before monthPrefix. Used for the student annual cap. */
+export function earnedNetBeforeMonthInYearCents(transactions: TxLike[], monthPrefix: string): number {
+  const year = monthPrefix.slice(0, 4);
+  let sum = 0;
+  for (const t of transactions) {
+    if (t.pending || t.excludedFromThresholds) continue;
+    if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
+    const month = t.date.slice(0, 7);
+    if (!month.startsWith(year) || month >= monthPrefix) continue;
+    sum += Math.abs(t.amountCents);
+  }
+  return sum;
+}
+
+/** Benefit deposits this month, with the description used to tell an SSI payment from SSDI. */
+export function benefitDepositsInMonth(
+  transactions: TxLike[],
+  monthPrefix: string,
+): { amountCents: number; name: string }[] {
+  const out: { amountCents: number; name: string }[] = [];
+  for (const t of transactions) {
+    if (t.pending || t.excludedFromThresholds) continue;
+    if (!t.date.startsWith(monthPrefix)) continue;
+    if (t.userCategory !== "benefit_deposit" || t.amountCents >= 0) continue;
+    out.push({
+      amountCents: Math.abs(t.amountCents),
+      name: `${t.name ?? ""} ${t.merchantName ?? ""}`.trim(),
+    });
+  }
+  return out;
+}
+
 /** SNAP-style gross monthly income: every countable inflow, no disregards. */
 export function grossMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
   return b.earnedGrossCents + b.benefitCents + b.otherCents;
@@ -148,14 +182,26 @@ export function grossMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
  * DAC exclusion (indistinguishable from SSDI in bank data), so it can over-state
  * for DAC recipients — surfaced as an estimate, never a determination.
  */
-export function ssiCountableMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
-  const unearned = b.benefitCents + b.otherCents;
+export type SsiCountableOptions = {
+  /** Unearned cents to remove first — the person's own SSI payment. */
+  excludeUnearnedCents?: number;
+  /** Student earned-income exclusion, applied to gross wages before $65 and ½. */
+  studentExclusionCents?: number;
+};
+
+export function ssiCountableMonthlyIncomeCents(
+  b: MonthlyIncomeBreakdown,
+  options?: SsiCountableOptions,
+): number {
+  const exclude = Math.max(0, options?.excludeUnearnedCents ?? 0);
+  const unearned = Math.max(0, b.benefitCents + b.otherCents - exclude);
   const generalToUnearned = Math.min(unearned, SSI_GENERAL_INCOME_EXCLUSION_CENTS);
   const countableUnearned = unearned - generalToUnearned;
   const generalLeftForEarned = SSI_GENERAL_INCOME_EXCLUSION_CENTS - generalToUnearned;
+  const seie = Math.min(Math.max(0, options?.studentExclusionCents ?? 0), Math.max(0, b.earnedGrossCents));
   const earnedAfterExclusions = Math.max(
     0,
-    b.earnedGrossCents - SSI_EARNED_INCOME_EXCLUSION_CENTS - generalLeftForEarned,
+    b.earnedGrossCents - seie - SSI_EARNED_INCOME_EXCLUSION_CENTS - generalLeftForEarned,
   );
   const countableEarned = Math.floor(earnedAfterExclusions / 2);
   return countableUnearned + countableEarned;
@@ -237,17 +283,56 @@ export function projectRecurringEarnedRestOfMonthCents(
   return extra;
 }
 
-export function maxCheckingSavingsBalanceCents(
-  accounts: { type: string; subtype?: string; currentBalanceCents: number }[],
-): number {
-  let max = 0;
+export type ResourceAccount = {
+  type: string;
+  subtype?: string;
+  name?: string;
+  currentBalanceCents: number;
+};
+
+function accountBlob(a: ResourceAccount): string {
+  return `${a.name ?? ""} ${a.subtype ?? ""} ${a.type ?? ""}`.toLowerCase();
+}
+
+/** ABLE accounts are excluded from the $2,000 / $3,000 resource test up to $100,000. */
+export function isAbleAccount(a: ResourceAccount): boolean {
+  return /\bable\b/.test(accountBlob(a));
+}
+
+function isExcludedResourceAccount(a: ResourceAccount): boolean {
+  const t = (a.type ?? "").toLowerCase();
+  const st = (a.subtype ?? "").toLowerCase();
+  if (t === "credit" || t === "loan" || st.includes("credit")) return true;
+  if (isAbleAccount(a)) return true;
+  if (/\b(snt|special needs trust)\b/.test(accountBlob(a))) return true;
+  return false;
+}
+
+/**
+ * Sum of linked balances that count toward an SSI/ABD-style resource test.
+ * Credit, loans, ABLE, and special-needs-trust accounts are left out.
+ */
+export function countableResourceBalanceCents(accounts: ResourceAccount[]): number {
+  let sum = 0;
   for (const a of accounts) {
-    const t = (a.type ?? "").toLowerCase();
-    const st = (a.subtype ?? "").toLowerCase();
-    if (t === "credit") continue;
-    if (st.includes("credit")) continue;
+    if (isExcludedResourceAccount(a)) continue;
     const v = a.currentBalanceCents ?? 0;
-    if (v > max) max = v;
+    if (v > 0) sum += v;
   }
-  return max;
+  return sum;
+}
+
+export function ableAccountBalanceCents(accounts: ResourceAccount[]): number {
+  let sum = 0;
+  for (const a of accounts) {
+    if (!isAbleAccount(a)) continue;
+    const v = a.currentBalanceCents ?? 0;
+    if (v > 0) sum += v;
+  }
+  return sum;
+}
+
+/** @deprecated Use countableResourceBalanceCents. Kept so older callers still compile. */
+export function maxCheckingSavingsBalanceCents(accounts: ResourceAccount[]): number {
+  return countableResourceBalanceCents(accounts);
 }

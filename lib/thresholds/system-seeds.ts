@@ -1,4 +1,4 @@
-import { SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
+import { SSI_FBR_COUPLE_CENTS, SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
 
 export type SystemThresholdSeed = {
   systemKey: string;
@@ -82,9 +82,25 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     warnAtPercent: 0.85,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "SSI — countable income (benefit reaches $0 near here, 2026)",
+    label: "SSI — countable income, individual (benefit reaches $0 near here, 2026)",
     description:
       "2026 Federal Benefit Rate (FBR) for an individual: $994/month. SSI pays FBR minus countable income, so once countable income reaches ~$994 the cash benefit falls to $0 (break-even is roughly $1,014/mo unearned or $2,073/mo earned for an individual). Countable income applies the $20 general and $65 earned exclusions and halves remaining wages; SNAP, most refunds, and ABLE deposits don't count. PA adds a small State Supplementary Payment on top." +
+      ESTIMATE_NOTE,
+    sourceUrl: SSA_REDBOOK,
+  },
+  {
+    systemKey: "ssi_countable_income_couple_2026",
+    program: "SSI",
+    state: null,
+    thresholdType: "monthly_unearned_income",
+    limitCents: SSI_FBR_COUPLE_CENTS,
+    comparison: "lte",
+    warnAtPercent: 0.85,
+    effectiveFrom: FROM_2026,
+    effectiveTo: null,
+    label: "SSI — countable income, eligible couple (benefit reaches $0 near here, 2026)",
+    description:
+      "2026 Federal Benefit Rate (FBR) for an eligible couple: $1,491/month. SSI pays FBR minus countable income, so once countable income reaches ~$1,491 the cash benefit falls to $0. The person's own SSI payment is not counted as income. Countable income applies the $20 general and $65 earned exclusions and halves remaining wages; the student earned-income exclusion applies under age 22." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_REDBOOK,
   },
@@ -170,7 +186,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "SSDI — Trial Work Period service month (2026)",
     description:
-      "2026 Trial Work Period (TWP) trigger: a month counts as a 'service month' if you earn $1,210 or more gross (or work 80+ self-employed hours). You get 9 service months in a rolling 60-month window — full SSDI continues no matter how high earnings go in those months. After the 9 months, the Extended Period of Eligibility begins and SGA governs payment. Report any work start/stop or change in hours, duties, or pay within 10 days." +
+      "2026 Trial Work Period (TWP) trigger: a month counts as a 'service month' if you earn $1,210 or more gross (or work 80+ self-employed hours). You get 9 service months in a rolling 60-month window — full SSDI continues no matter how high earnings go in those months, including a month at SGA. After 9 service months are recorded, the Extended Period of Eligibility begins and SGA governs payment. A stored count of zero means none are recorded yet. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_SGA,
   },
@@ -186,7 +202,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "SSDI — Substantial Gainful Activity (non-blind, 2026)",
     description:
-      "2026 federal SGA ceiling for non-blind individuals: $1,690/month gross earned income. Earning above this (after any Trial Work Period / Extended Period of Eligibility) can suspend SSDI cash benefits for that month. SSA counts earned income only — not the SSDI payment itself — and IRWE, employer subsidies, and self-employment expenses lower countable earnings. Disabled Adult Child (DAC) benefits have no earned-income cap, but SGA still governs whether SSA considers the disability ongoing. Report any start/stop of work within 10 days." +
+      "2026 federal SGA ceiling for non-blind individuals: $1,690/month gross earned income. After nine recorded Trial Work Period months, earning at or above this can suspend SSDI cash for that month. SSA counts earned income only — not the SSDI payment itself — and IRWE, employer subsidies, and self-employment expenses lower countable earnings. Disabled Adult Child (DAC) benefits have no earned-income cap, but SGA still governs whether SSA considers the disability ongoing. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_SGA,
   },
@@ -194,7 +210,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     systemKey: "ssdi_sga_blind_2026",
     program: "SSDI",
     state: null,
-    thresholdType: "monthly_earned_income",
+    thresholdType: "custom",
     limitCents: 2830_00,
     comparison: "lte",
     warnAtPercent: 0.85,
@@ -202,7 +218,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "SSDI — Substantial Gainful Activity (blind, 2026)",
     description:
-      "2026 federal SGA ceiling for statutorily blind individuals: $2,830/month gross earned income — higher than the non-blind limit. Only earned income counts; the SSDI payment itself does not. Report work and earnings changes within 10 days." +
+      "2026 federal SGA ceiling for statutorily blind individuals: $2,830/month gross earned income — higher than the non-blind limit. Only earned income counts; the SSDI payment itself does not. This figure is a reference until statutory blindness is recorded, so it does not raise an alert on its own. Until then the non-blind $1,690 line is the one that is checked. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_SGA,
   },

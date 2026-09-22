@@ -4,6 +4,12 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
+import {
+  adjustedSsiCountable,
+  ssiBenefitCentsToExclude,
+  studentEarnedIncomeExclusionCents,
+} from "@/lib/benefits/ssi";
+import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
@@ -11,7 +17,9 @@ import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
   grossUpEarnedCents,
-  maxCheckingSavingsBalanceCents,
+  benefitDepositsInMonth,
+  countableResourceBalanceCents,
+  earnedNetBeforeMonthInYearCents,
   monthlyIncomeBreakdownCents,
   projectRecurringEarnedRestOfMonthCents,
   ssiCountableMonthlyIncomeCents,
@@ -27,8 +35,12 @@ function matchesState(thresholdState: string | null | undefined, beneficiaryStat
 
 function passesHouseholdRule(systemKey: string | undefined, householdSize: number): boolean {
   if (!systemKey) return true;
-  if (systemKey === "ssi_resources_couple_2025") return householdSize >= 2;
-  if (systemKey === "ssi_resources_individual_2025") return householdSize < 2;
+  if (systemKey === "ssi_resources_couple_2025" || systemKey === "ssi_countable_income_couple_2026") {
+    return householdSize >= 2;
+  }
+  if (systemKey === "ssi_resources_individual_2025" || systemKey === "ssi_countable_income_2026") {
+    return householdSize < 2;
+  }
   const snap = /^pa_snap_gross_hh(\d+)_/.exec(systemKey);
   if (snap) {
     const n = Number(snap[1]);
@@ -134,9 +146,20 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({
       beneficiaryId,
-      date: { $gte: `${priorPrefix}-01`, $lte: `${prefix}-31` },
+      date: {
+        $gte: `${priorPrefix}-01` < `${y}-01-01` ? `${priorPrefix}-01` : `${y}-01-01`,
+        $lte: `${prefix}-31`,
+      },
     })
-      .select({ date: 1, amountCents: 1, userCategory: 1, pending: 1, excludedFromThresholds: 1 })
+      .select({
+        date: 1,
+        amountCents: 1,
+        userCategory: 1,
+        pending: 1,
+        excludedFromThresholds: 1,
+        name: 1,
+        merchantName: 1,
+      })
       .lean(),
     RecurringStream.find({ beneficiaryId })
       .select({
@@ -167,6 +190,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     userCategory: t.userCategory,
     pending: Boolean(t.pending),
     excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    name: t.name ?? "",
+    merchantName: t.merchantName ?? "",
   }));
   const txSum = sumEarnedInflowTransactionsCents(txMapped, prefix);
   const priorMonthEarned = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
@@ -196,17 +221,38 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     earnedGrossCents: grossUpEarnedCents(projectedEarned),
   };
 
-  const accountsFlat: { type: string; subtype?: string; currentBalanceCents: number }[] = [];
+  const accountsFlat: { type: string; subtype?: string; name?: string; currentBalanceCents: number }[] = [];
   for (const c of connections) {
     for (const a of c.accounts ?? []) {
       accountsFlat.push({
         type: a.type ?? "",
         subtype: a.subtype ?? "",
+        name: a.name ?? "",
         currentBalanceCents: a.currentBalanceCents ?? 0,
       });
     }
   }
-  const maxAsset = maxCheckingSavingsBalanceCents(accountsFlat);
+  const maxAsset = countableResourceBalanceCents(accountsFlat);
+  const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
+  const benefitDeposits = benefitDepositsInMonth(txMapped, prefix);
+  const ytdEarnedBefore = grossUpEarnedCents(earnedNetBeforeMonthInYearCents(txMapped, prefix));
+  const ssiAdjusted = adjustedSsiCountable({
+    breakdown,
+    programs,
+    householdSize,
+    benefitDeposits,
+    age,
+    earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+  });
+  const excludeUnearnedCents = ssiBenefitCentsToExclude({ programs, householdSize, deposits: benefitDeposits });
+  const projectedSsiCountable = ssiCountableMonthlyIncomeCents(projectedBreakdown, {
+    excludeUnearnedCents,
+    studentExclusionCents: studentEarnedIncomeExclusionCents({
+      age,
+      earnedGrossThisMonthCents: projectedBreakdown.earnedGrossCents,
+      earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+    }),
+  });
 
   const rows: ThresholdDashboardRow[] = [];
 
@@ -233,8 +279,14 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       case "monthly_unearned_income":
         // ABD / QMB / Waiver "monthly income" limits use SSI countable-income
         // methodology ($20 general + $65 earned + ½ remaining earned).
-        currentValue = ssiCountableMonthlyIncomeCents(breakdown);
-        projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+        // The SSI row also drops the SSI payment itself and applies the student exclusion.
+        if (String(th.program ?? "").toUpperCase() === "SSI") {
+          currentValue = ssiAdjusted.countable;
+          projectedValue = projectedSsiCountable;
+        } else {
+          currentValue = ssiCountableMonthlyIncomeCents(breakdown);
+          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+        }
         break;
       case "asset_balance":
         currentValue = maxAsset;

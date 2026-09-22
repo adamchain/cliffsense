@@ -7,6 +7,13 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { evaluateScenarioAlerts } from "@/lib/alerts/evaluate-scenario-alerts";
+import {
+  adjustedSsiCountable,
+  isSntCashDeposit,
+  ssiBenefitCentsToExclude,
+  studentEarnedIncomeExclusionCents,
+} from "@/lib/benefits/ssi";
+import { ageFromDateOfBirth } from "@/lib/policy/screen";
 import { playbookIdForThreshold } from "@/lib/alerts/alert-playbook";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
@@ -15,7 +22,10 @@ import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
   grossUpEarnedCents,
-  maxCheckingSavingsBalanceCents,
+  ableAccountBalanceCents,
+  benefitDepositsInMonth,
+  countableResourceBalanceCents,
+  earnedNetBeforeMonthInYearCents,
   monthlyIncomeBreakdownCents,
   projectRecurringEarnedRestOfMonthCents,
   ssiCountableMonthlyIncomeCents,
@@ -37,8 +47,12 @@ function matchesState(thresholdState: string | null | undefined, beneficiaryStat
 
 function passesHouseholdRule(systemKey: string | undefined, householdSize: number): boolean {
   if (!systemKey) return true;
-  if (systemKey === "ssi_resources_couple_2025") return householdSize >= 2;
-  if (systemKey === "ssi_resources_individual_2025") return householdSize < 2;
+  if (systemKey === "ssi_resources_couple_2025" || systemKey === "ssi_countable_income_couple_2026") {
+    return householdSize >= 2;
+  }
+  if (systemKey === "ssi_resources_individual_2025" || systemKey === "ssi_countable_income_2026") {
+    return householdSize < 2;
+  }
   const snap = /^pa_snap_gross_hh(\d+)_/.exec(systemKey);
   if (snap) {
     const n = Number(snap[1]);
@@ -201,19 +215,63 @@ export async function evaluateThresholdsForBeneficiary(input: {
     earnedGrossCents: grossUpEarnedCents(projectedEarned),
   };
 
-  const accountsFlat: { type: string; subtype?: string; currentBalanceCents: number }[] = [];
+  const accountsFlat: { type: string; subtype?: string; name?: string; currentBalanceCents: number }[] = [];
   for (const c of connections) {
     for (const a of c.accounts ?? []) {
       accountsFlat.push({
         type: a.type ?? "",
         subtype: a.subtype ?? "",
+        name: a.name ?? "",
         currentBalanceCents: a.currentBalanceCents ?? 0,
       });
     }
   }
-  const maxAsset = maxCheckingSavingsBalanceCents(accountsFlat);
+  const maxAsset = countableResourceBalanceCents(accountsFlat);
+  const ableBalanceCents = ableAccountBalanceCents(accountsFlat);
 
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
+  const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
+  const txMapped = txRows.map((t) => ({
+    date: t.date,
+    amountCents: t.amountCents,
+    userCategory: t.userCategory,
+    pending: Boolean(t.pending),
+    excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    name: t.name ?? "",
+    merchantName: t.merchantName ?? "",
+  }));
+  const benefitDeposits = benefitDepositsInMonth(txMapped, prefix);
+  const ytdEarnedBefore = grossUpEarnedCents(earnedNetBeforeMonthInYearCents(txMapped, prefix));
+  const ssiAdjusted = adjustedSsiCountable({
+    breakdown,
+    programs,
+    householdSize,
+    benefitDeposits,
+    age,
+    earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+  });
+  const excludeUnearnedCents = ssiBenefitCentsToExclude({
+    programs,
+    householdSize,
+    deposits: benefitDeposits,
+  });
+  const projectedStudentExclusion = studentEarnedIncomeExclusionCents({
+    age,
+    earnedGrossThisMonthCents: projectedBreakdown.earnedGrossCents,
+    earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+  });
+  const projectedSsiCountable = ssiCountableMonthlyIncomeCents(projectedBreakdown, {
+    excludeUnearnedCents,
+    studentExclusionCents: projectedStudentExclusion,
+  });
+  const sntCashDeposit = txMapped.some(
+    (t) =>
+      t.date.startsWith(prefix) &&
+      t.amountCents < 0 &&
+      !t.pending &&
+      !t.excludedFromThresholds &&
+      isSntCashDeposit(t.name, t.merchantName),
+  );
   const detachedKeys = new Set<string>(
     (beneficiary.detachedThresholdKeys as string[] | undefined) ?? [],
   );
@@ -227,6 +285,9 @@ export async function evaluateThresholdsForBeneficiary(input: {
     if (!passesHouseholdRule(sk, householdSize)) continue;
     // Skip system limits the user has detached — they should not fire alerts.
     if (th.scope === "system" && sk && detachedKeys.has(sk)) continue;
+    // SSDI TWP and SGA alerts come from the scenario, which knows how many TWP months are recorded.
+    // The blind SGA figure stays a reference until statutory blindness is recorded.
+    if (sk === "ssdi_twp_2026" || sk === "ssdi_sga_nonblind_2026" || sk === "ssdi_sga_blind_2026") continue;
 
     let currentValue = 0;
     let projectedValue: number | null = null;
@@ -241,8 +302,13 @@ export async function evaluateThresholdsForBeneficiary(input: {
         projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
         break;
       case "monthly_unearned_income":
-        currentValue = ssiCountableMonthlyIncomeCents(breakdown);
-        projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+        if (String(th.program ?? "").toUpperCase() === "SSI") {
+          currentValue = ssiAdjusted.countable;
+          projectedValue = projectedSsiCountable;
+        } else {
+          currentValue = ssiCountableMonthlyIncomeCents(breakdown);
+          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+        }
         break;
       case "asset_balance":
         currentValue = maxAsset;
@@ -328,13 +394,6 @@ export async function evaluateThresholdsForBeneficiary(input: {
   // Scenario-specific cliffs (SGA, ISM education via wage jumps, waiver twilight, …)
   const priorMonthDate = new Date(Date.UTC(y, m - 2, 15));
   const priorPrefix = utcMonthPrefix(priorMonthDate).prefix;
-  const txMapped = txRows.map((t) => ({
-    date: t.date,
-    amountCents: t.amountCents,
-    userCategory: t.userCategory,
-    pending: Boolean(t.pending),
-    excludedFromThresholds: Boolean(t.excludedFromThresholds),
-  }));
   const priorEarnedNet = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
   const earnedDeposits = txRows.flatMap((t) => {
     if (t.pending || t.excludedFromThresholds) return [];
@@ -352,13 +411,19 @@ export async function evaluateThresholdsForBeneficiary(input: {
     earnedGrossCents: breakdown.earnedGrossCents,
     priorEarnedGrossCents: grossUpEarnedCents(priorEarnedNet),
     ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
+    ssiAdjustedCountableCents: ssiAdjusted.countable,
+    ssiUnearnedOnlyCents: ssiAdjusted.unearnedOnly,
     maxAssetCents: maxAsset,
+    ableBalanceCents,
+    sntCashDeposit,
+    dateOfBirth: (beneficiary.dateOfBirth as Date | string | null | undefined) ?? null,
     grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
     otherInflowCents: breakdown.otherCents,
     monthPrefix: prefix,
     earnedDeposits,
     hasHistoryBeforeMonth: txRows.some((t) => String(t.date).slice(0, 7) < prefix),
-    householdSize: Math.max(1, beneficiary.householdSize ?? 1),
+    householdSize,
+    twpMonthsUsed: Number(beneficiary.twpMonthsUsed ?? 0),
     now,
   });
   alertsCreated += scenarioResult.alertsCreated;

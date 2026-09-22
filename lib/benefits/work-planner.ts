@@ -29,6 +29,34 @@ export type WorkPlannerRow = {
   detail: string;
 };
 
+/**
+ * SSDI work alert for this month's estimated gross wages.
+ * A stored count below 9, including 0, means the Trial Work Period is still open.
+ * SGA during those months is still a TWP service month, and the cash check continues.
+ */
+export function ssdiWageAlert(
+  earnedGrossCents: number,
+  twpMonthsUsed: number,
+): "twp" | "sga" | null {
+  const twpUsed = Math.max(0, Math.round(twpMonthsUsed));
+  if (earnedGrossCents >= SGA_NONBLIND_CENTS) return twpUsed >= 9 ? "sga" : "twp";
+  if (earnedGrossCents >= TWP_SERVICE_CENTS) return "twp";
+  return null;
+}
+
+/** Waiver can still be open after SSDI cash is at risk: 9 TWP months used, wages at SGA, income under the waiver cap. */
+export function ssdiWaiverTwilight(
+  earnedGrossCents: number,
+  grossMonthlyCents: number,
+  twpMonthsUsed: number,
+): boolean {
+  return (
+    Math.max(0, Math.round(twpMonthsUsed)) >= 9 &&
+    earnedGrossCents >= SGA_NONBLIND_CENTS &&
+    grossMonthlyCents < WAIVER_INCOME_CENTS
+  );
+}
+
 export function ssiCountableFromWages(wagesCents: number, unearnedCents: number): number {
   return ssiCountableMonthlyIncomeCents({
     earnedNetCents: wagesCents,

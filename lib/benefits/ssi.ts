@@ -1,4 +1,8 @@
-import { SSI_GENERAL_INCOME_EXCLUSION_CENTS } from "@/lib/thresholds/metrics";
+import {
+  SSI_GENERAL_INCOME_EXCLUSION_CENTS,
+  ssiCountableMonthlyIncomeCents,
+  type MonthlyIncomeBreakdown,
+} from "@/lib/thresholds/metrics";
 
 /* ---------------------------------------------------------------------------
  * SSI Federal Benefit Rate (FBR) and how third-party payments — especially from
@@ -38,6 +42,156 @@ export const SSI_FBR_INDIVIDUAL_CENTS = 994_00;
 
 /** 2026 SSI Federal Benefit Rate, eligible couple (cents). */
 export const SSI_FBR_COUPLE_CENTS = 1491_00;
+
+/** 2026 student earned-income exclusion. Applies before the $65 and one-half. */
+export const SSI_STUDENT_EXCLUSION_MONTHLY_CENTS = 2410_00;
+export const SSI_STUDENT_EXCLUSION_ANNUAL_CENTS = 9730_00;
+
+/** Individual $2,000; eligible couple $3,000. Exactly at the limit is still eligible. */
+export function ssiResourceLimitCents(householdSize: number): number {
+  return householdSize >= 2 ? 3000_00 : 2000_00;
+}
+
+export function ssiFbrCents(householdSize: number): number {
+  return householdSize >= 2 ? SSI_FBR_COUPLE_CENTS : SSI_FBR_INDIVIDUAL_CENTS;
+}
+
+const SSI_PAY_NAME = /\bssi\b|supplemental security income/i;
+const SSDI_PAY_NAME = /\bssdi\b|disability insurance/i;
+
+/**
+ * Cents of benefit deposits that are the person's own SSI payment.
+ * Those deposits are the benefit, not income that reduces it.
+ * A deposit is excluded when its description says SSI, or when the person is
+ * on SSI (and not SSDI/DAC) and the deposit is no larger than the FBR plus a
+ * small state-supplement cushion. On SSI and SSDI together, an unnamed
+ * deposit is excluded only when another, larger benefit deposit is also present.
+ */
+export function ssiBenefitCentsToExclude(input: {
+  programs: string[];
+  householdSize: number;
+  deposits: { amountCents: number; name?: string }[];
+}): number {
+  const programs = input.programs.map((p) => p.toUpperCase());
+  if (!programs.includes("SSI")) return 0;
+  const alsoTitleIi = programs.includes("SSDI") || programs.includes("DAC");
+  const ceiling = ssiFbrCents(input.householdSize) + 50_00;
+  const rows = input.deposits
+    .map((d) => ({ cents: Math.abs(d.amountCents), name: d.name ?? "" }))
+    .filter((d) => d.cents > 0);
+
+  let excluded = 0;
+  const unnamedUnderCeiling: number[] = [];
+  for (const d of rows) {
+    const namedSsi = SSI_PAY_NAME.test(d.name) && !SSDI_PAY_NAME.test(d.name);
+    const namedSsdi = SSDI_PAY_NAME.test(d.name) && !SSI_PAY_NAME.test(d.name);
+    if (namedSsi) {
+      excluded += d.cents;
+      continue;
+    }
+    if (namedSsdi) continue;
+    if (d.cents <= ceiling) unnamedUnderCeiling.push(d.cents);
+  }
+  if (!alsoTitleIi) {
+    excluded += unnamedUnderCeiling.reduce((a, b) => a + b, 0);
+  } else if (unnamedUnderCeiling.length > 0 && rows.length > unnamedUnderCeiling.length) {
+    excluded += unnamedUnderCeiling.reduce((a, b) => a + b, 0);
+  }
+  return excluded;
+}
+
+/** SEIE for someone under 22. Age 22 and older, or an unknown age, gets none. */
+export function studentEarnedIncomeExclusionCents(input: {
+  age: number | null;
+  earnedGrossThisMonthCents: number;
+  earnedGrossYearToDateBeforeMonthCents: number;
+}): number {
+  if (input.age == null || input.age >= 22 || input.earnedGrossThisMonthCents <= 0) return 0;
+  const remainingAnnual = Math.max(
+    0,
+    SSI_STUDENT_EXCLUSION_ANNUAL_CENTS - Math.max(0, input.earnedGrossYearToDateBeforeMonthCents),
+  );
+  return Math.min(SSI_STUDENT_EXCLUSION_MONTHLY_CENTS, remainingAnnual, input.earnedGrossThisMonthCents);
+}
+
+/** Days from today (UTC) until the birthday on which the person turns `age`. Negative if that birthday has passed. */
+export function daysUntilTurningAge(dob: Date, age: number, now: Date): number {
+  const target = Date.UTC(dob.getUTCFullYear() + age, dob.getUTCMonth(), dob.getUTCDate());
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.round((target - today) / 86400000);
+}
+
+const SNT_CASH_HINT = /\b(snt|special\s+needs\s+trust)\b/i;
+
+/** An inflow whose description says it came from a special needs trust. Shelter paid to a vendor does not land in this account. */
+export function isSntCashDeposit(name?: string, merchantName?: string): boolean {
+  return SNT_CASH_HINT.test(`${name ?? ""} ${merchantName ?? ""}`);
+}
+
+/**
+ * A lump sum is income in the month it arrives. Flag a large one, and also a
+ * smaller one when the balance is over the resource limit only because of it.
+ */
+export function lumpSumNeedsReport(input: {
+  otherInflowCents: number;
+  assetCents: number;
+  programs: string[];
+  householdSize: number;
+}): boolean {
+  const programs = input.programs.map((p) => p.toUpperCase());
+  const onSsi = programs.includes("SSI");
+  const onAbd = programs.includes("MEDICAIDABD") || programs.includes("MEDICAID");
+  if (!onSsi && !onAbd) return false;
+  if (input.otherInflowCents >= 1500_00) return true;
+  if (input.otherInflowCents < 100_00) return false;
+  const before = input.assetCents - input.otherInflowCents;
+  const limits: number[] = [];
+  if (onSsi) limits.push(ssiResourceLimitCents(input.householdSize));
+  if (onAbd) limits.push(2000_00);
+  return limits.some((limit) => input.assetCents > limit && before <= limit);
+}
+
+export function adjustedSsiCountable(input: {
+  breakdown: MonthlyIncomeBreakdown;
+  programs: string[];
+  householdSize: number;
+  benefitDeposits: { amountCents: number; name?: string }[];
+  age: number | null;
+  earnedGrossYearToDateBeforeMonthCents: number;
+}): { countable: number; unearnedOnly: number } {
+  const excludeUnearnedCents = ssiBenefitCentsToExclude({
+    programs: input.programs,
+    householdSize: input.householdSize,
+    deposits: input.benefitDeposits,
+  });
+  const studentExclusionCents = studentEarnedIncomeExclusionCents({
+    age: input.age,
+    earnedGrossThisMonthCents: input.breakdown.earnedGrossCents,
+    earnedGrossYearToDateBeforeMonthCents: input.earnedGrossYearToDateBeforeMonthCents,
+  });
+  const countable = ssiCountableMonthlyIncomeCents(input.breakdown, {
+    excludeUnearnedCents,
+    studentExclusionCents,
+  });
+  const unearnedOnly = ssiCountableMonthlyIncomeCents(
+    { ...input.breakdown, earnedNetCents: 0, earnedGrossCents: 0 },
+    { excludeUnearnedCents },
+  );
+  return { countable, unearnedOnly };
+}
+
+/** True from `withinDays` before the birthday through `afterDays` after it. */
+export function ageMilestoneWindow(
+  dob: Date | null | undefined,
+  age: number,
+  now: Date,
+  withinDays: number,
+  afterDays: number,
+): boolean {
+  if (!dob || Number.isNaN(dob.getTime())) return false;
+  const days = daysUntilTurningAge(dob, age, now);
+  return days <= withinDays && days >= -afterDays;
+}
 
 /**
  * Presumed Maximum Value: the most an ISM item can be counted at.

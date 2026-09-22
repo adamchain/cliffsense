@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  ableAccountBalanceCents,
+  countableResourceBalanceCents,
   grossMonthlyIncomeCents,
   grossUpEarnedCents,
   monthlyIncomeBreakdownCents,
@@ -56,5 +58,31 @@ describe("income aggregations", () => {
   it("applies the $20 general exclusion to unearned first", () => {
     const withUnearned = { earnedNetCents: 0, earnedGrossCents: 0, benefitCents: 120000, otherCents: 0 };
     expect(ssiCountableMonthlyIncomeCents(withUnearned)).toBe(118000); // 120000 − 2000
+  });
+  it("can leave an SSI payment out and apply the student exclusion", () => {
+    const withSsi = { earnedNetCents: 0, earnedGrossCents: 800_00, benefitCents: 994_00, otherCents: 0 };
+    expect(
+      ssiCountableMonthlyIncomeCents(withSsi, { excludeUnearnedCents: 994_00, studentExclusionCents: 800_00 }),
+    ).toBe(0);
+  });
+});
+
+describe("countable resources", () => {
+  it("adds accounts together and leaves out credit, ABLE, and special-needs-trust balances", () => {
+    expect(
+      countableResourceBalanceCents([
+        { type: "depository", name: "Checking", currentBalanceCents: 1500_00 },
+        { type: "depository", name: "Savings", currentBalanceCents: 1500_00 },
+        { type: "depository", name: "PA ABLE", currentBalanceCents: 40_000_00 },
+        { type: "depository", name: "SNT", currentBalanceCents: 8_000_00 },
+        { type: "credit", name: "Card", currentBalanceCents: 900_00 },
+      ]),
+    ).toBe(3000_00);
+    expect(
+      ableAccountBalanceCents([
+        { type: "depository", name: "Checking", currentBalanceCents: 1500_00 },
+        { type: "depository", name: "PA ABLE", currentBalanceCents: 40_000_00 },
+      ]),
+    ).toBe(40_000_00);
   });
 });
