@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import type { Types } from "mongoose";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { logActivity } from "@/lib/activity/log-activity";
+import { emitHouseholdChangeAlert } from "@/lib/alerts/evaluate-scenario-alerts";
+import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
+import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 
 const patchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
@@ -135,6 +139,8 @@ export async function PATCH(req: Request) {
       preferredCommunications: ownerProfile.preferredCommunications ?? "",
     };
     let ben = await Beneficiary.findOne(filter);
+    const priorHouseholdSize = ben?.householdSize;
+    const priorMarital = String((ben?.opening as { maritalStatus?: string } | null)?.maritalStatus ?? "");
     if (!ben) {
       ben = await Beneficiary.create({
         ...filter,
@@ -172,12 +178,22 @@ export async function PATCH(req: Request) {
         action: "beneficiary.updated",
         details: { state: ben.state, householdSize: ben.householdSize },
       });
+      await maybeAlertHouseholdChange({
+        beneficiaryId: ben._id,
+        ownerUserId: ben.ownerUserId,
+        actorUserId: session.user.id,
+        programs: (ben.benefitsEnrolled ?? []).map((b) => b.program),
+        sizeChanged: priorHouseholdSize !== undefined && ownerProfile.householdSize !== priorHouseholdSize,
+        maritalChanged:
+          typeof ownerProfile.maritalStatus === "string" && ownerProfile.maritalStatus !== priorMarital,
+      });
     }
   } else if (state !== undefined || householdSize !== undefined) {
     const ben = await Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true });
     if (ben) {
+      const sizeChanged = householdSize !== undefined && householdSize !== ben.householdSize;
       if (state !== undefined) ben.state = state.toUpperCase();
-      if (householdSize !== undefined) ben.householdSize = householdSize;
+      if (sizeChanged) ben.householdSize = householdSize;
       await ben.save();
       await logActivity({
         userId: session.user.id,
@@ -185,6 +201,14 @@ export async function PATCH(req: Request) {
         category: "beneficiary",
         action: "beneficiary.updated",
         details: { state, householdSize },
+      });
+      await maybeAlertHouseholdChange({
+        beneficiaryId: ben._id,
+        ownerUserId: ben.ownerUserId,
+        actorUserId: session.user.id,
+        programs: (ben.benefitsEnrolled ?? []).map((b) => b.program),
+        sizeChanged,
+        maritalChanged: false,
       });
     }
   }
@@ -209,4 +233,29 @@ export async function PATCH(req: Request) {
       notificationPrefs: user.notificationPrefs,
     },
   });
+}
+
+async function maybeAlertHouseholdChange(input: {
+  beneficiaryId: Types.ObjectId;
+  ownerUserId: Types.ObjectId | string;
+  actorUserId: string;
+  programs: string[];
+  sizeChanged: boolean;
+  maritalChanged: boolean;
+}): Promise<void> {
+  if (!input.sizeChanged && !input.maritalChanged) return;
+  try {
+    const id = await emitHouseholdChangeAlert({
+      beneficiaryId: input.beneficiaryId,
+      ownerUserId: input.ownerUserId,
+      actorUserId: input.actorUserId,
+      programs: input.programs,
+    });
+    if (!id) return;
+    const ids = [id.toString()];
+    await sendAlertEmailsForNewAlerts(ids);
+    await sendAlertPushForNewAlerts(ids);
+  } catch (e) {
+    console.warn("emitHouseholdChangeAlert", e);
+  }
 }

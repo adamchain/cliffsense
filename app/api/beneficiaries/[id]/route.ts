@@ -6,6 +6,7 @@ import { assertBeneficiaryAccess, assertBeneficiaryWriteAccess } from "@/lib/ben
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { logActivity } from "@/lib/activity/log-activity";
+import { emitHouseholdChangeAlert } from "@/lib/alerts/evaluate-scenario-alerts";
 import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
@@ -191,6 +192,27 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     },
   });
 
+  const priorOpening = (existing.opening ?? {}) as { maritalStatus?: string };
+  const nextMarital = parsed.data.opening?.maritalStatus;
+  const householdChanged =
+    (parsed.data.householdSize !== undefined && parsed.data.householdSize !== existing.householdSize) ||
+    (nextMarital !== undefined && nextMarital !== (priorOpening.maritalStatus ?? ""));
+
+  const alertIds: string[] = [];
+  if (householdChanged) {
+    try {
+      const householdAlertId = await emitHouseholdChangeAlert({
+        beneficiaryId: updated._id,
+        ownerUserId: updated.ownerUserId,
+        actorUserId: session.user.id,
+        programs: (updated.benefitsEnrolled ?? []).map((b) => b.program),
+      });
+      if (householdAlertId) alertIds.push(householdAlertId.toString());
+    } catch (e) {
+      console.warn("emitHouseholdChangeAlert", e);
+    }
+  }
+
   const shouldReevaluate =
     parsed.data.benefitsEnrolled !== undefined || parsed.data.householdSize !== undefined;
   if (shouldReevaluate) {
@@ -199,12 +221,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         beneficiaryId: new mongoose.Types.ObjectId(id),
         actorUserId: session.user.id,
       });
-      const ids = er.alertIdsCreated.map((x) => x.toString());
-      await sendAlertEmailsForNewAlerts(ids);
-      await sendAlertPushForNewAlerts(ids);
+      alertIds.push(...er.alertIdsCreated.map((x) => x.toString()));
     } catch (e) {
       console.warn("evaluateThresholdsForBeneficiary after benefits update", e);
     }
+  }
+  if (alertIds.length > 0) {
+    await sendAlertEmailsForNewAlerts(alertIds);
+    await sendAlertPushForNewAlerts(alertIds);
   }
 
   return NextResponse.json({ beneficiary: updated });

@@ -27,7 +27,7 @@ export type AlertPlaybook = {
 };
 
 export const REPORT_BY_10TH =
-  "Report income, resources, work, household, and address changes by the 10th of the month after the change month, unless a notice states a different deadline.";
+  "The reporting clock depends on the program. SSI and Extra Help: by the 10th of the month after the change month. Medicaid (ABD, MAGI, waiver, MAWD, and QMB): within 10 days. SSDI and DAC: promptly, with no fixed calendar date. SNAP simplified reporting: within 10 days only if gross income exceeds 130% FPL, an ABAWD's hours drop below 80 a month, or gambling winnings are $4,500 or more. A notice with its own due date controls.";
 
 export const APPEAL_AND_CONTINUE =
   "If an adverse notice has already issued, appeal by the date on that notice. Request continued cash, medical coverage, or services by any shorter continuation deadline on the same notice — it is often earlier than the appeal deadline. File a new application in parallel if reopening is uncertain.";
@@ -75,8 +75,78 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "generic_limit",
     "A stored benefit limit needs review",
     [],
-    "Linked account activity is near a reference limit stored in BeneWatch.",
-    "Open the program page, confirm the figures, and report any real change through SSA or COMPASS/CAO. Do not change work or spending solely on this alert.",
+    "Linked account activity is near a reference limit stored in BeneWatch. Confirm which program the limit belongs to before treating it as an SSI, Medicaid, or SNAP rule.",
+    "Open the program page, confirm the figures, and report a real change only to the agency that administers that program. Do not change work or spending solely on this alert.",
+    {
+      effectiveDateNote:
+        "Use the due date for the program this limit belongs to. Do not apply the SSI 10th-of-the-month wage calendar to WIC, LIHEAP, ACA, VA, or an unrecognized program.",
+    },
+  ),
+
+  tanf_limit: pb(
+    "tanf_limit",
+    "TANF figure needs a look",
+    ["TANF"],
+    "TANF cash uses a budget and a resource limit near $1,000. A modest wage change may not move the grant because of the earned-income disregard.",
+    "Report budget-affecting income, employment, household, address, and resource changes to COMPASS. Minor changes can wait for the semi-annual report.",
+    { effectiveDateNote: "Report budget-affecting changes within about 10 days. The semi-annual report uses the date printed on the form." },
+  ),
+
+  wic_limit: pb(
+    "wic_limit",
+    "WIC figure is checked at certification",
+    ["WIC"],
+    "WIC rechecks income at the certification appointment. Routine income changes between certifications are not an ongoing report.",
+    "Keep the certification appointment. Tell the clinic if you move or leave the WIC category (for example a child turning 5).",
+    { effectiveDateNote: "Use the certification appointment date. WIC has no monthly wage-reporting clock." },
+  ),
+
+  liheap_limit: pb(
+    "liheap_limit",
+    "LIHEAP has no monthly reporting clock",
+    ["LIHEAP"],
+    "After a LIHEAP award for the season, income changes are not an ongoing report. Crisis help is a separate application.",
+    "Apply during the heating season. If the heat is off or a shutoff notice arrived, file a Crisis application rather than a wage report.",
+    { effectiveDateNote: "Use the seasonal application deadline, or file a Crisis application when the emergency starts." },
+  ),
+
+  aca_limit: pb(
+    "aca_limit",
+    "Pennie income estimate may need an update",
+    ["ACA"],
+    "Marketplace advance credits follow the income estimate in Pennie. Assets do not count. A stored limit here is not an SSI or Medicaid wage clock.",
+    "Update the Pennie income estimate when household income changes, and use a special enrollment period if other coverage changes.",
+    { effectiveDateNote: "Update Pennie within 30 days of an income or household change. Open Enrollment has its own dates." },
+  ),
+
+  va_limit: pb(
+    "va_limit",
+    "VA figure needs a look",
+    ["VA"],
+    "Compensation does not use an income or asset test. Pension does: report income and net-worth changes when they happen.",
+    "Confirm whether this benefit is compensation or pension. Report dependency and address changes for compensation. Report income and net worth for pension.",
+    { effectiveDateNote: "Report VA changes when they happen. There is no SSI-style 10th-of-the-month wage calendar for compensation." },
+  ),
+
+  calendar_notice: pb(
+    "calendar_notice",
+    "Use the date on this calendar item",
+    [],
+    "This date comes from a notice or an item you added. It is not a stored bank-balance limit.",
+    "Open the notice, gather what it asks for, and file or attend before the date on this calendar item.",
+    { effectiveDateNote: "Use the due date shown on this calendar item." },
+  ),
+
+  appeal_continued_benefits: pb(
+    "appeal_continued_benefits",
+    "Appeal and continued benefits",
+    [],
+    "An appeal deadline and a continued-benefits deadline are often different dates. The continued-benefits request is often due sooner.",
+    "Appeal by the date on the notice. Request continued cash, medical coverage, or services by any shorter continuation deadline on the same notice. File a new application in parallel if reopening is uncertain.",
+    {
+      effectiveDateNote:
+        "Use the dates printed on the adverse notice. The continued-benefits deadline is often earlier than the appeal deadline.",
+    },
   ),
 
   ssdi_sga_after_twp: pb(
@@ -392,10 +462,10 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
 
   reporting_wage_change_10day: pb(
     "reporting_wage_change_10day",
-    "Wage change — 10-day reporting clock",
-    ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidWaiver", "MAWD", "SNAP", "QMB"],
-    "Most PA/SSA income and work changes must be reported by the 10th of the month after the change month.",
-    "File with SSA and/or COMPASS/CAO. Keep gross pay stubs. Project SSI, SSDI work incentives, SNAP, and each Medicaid category separately before changing hours.",
+    "Wage change — reporting clock",
+    ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP", "QMB", "ExtraHelp"],
+    "A new job, a raise, a pay cut, or stopped work can be reportable. SNAP simplified reporting does not require an ordinary raise that stays under 130% FPL.",
+    "File with the agency that requires this change. Keep gross pay stubs. Project SSI, SSDI, SNAP, and each Medicaid category separately before changing hours.",
     { personaId: "maria_earnings_double" },
   ),
 
@@ -419,9 +489,9 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
   reporting_household_change: pb(
     "reporting_household_change",
     "Household composition change",
-    ["SNAP", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "SSI"],
-    "Someone moving in or out, a child turning 22, or a spouse joining can change SNAP/Medicaid household size and SSI deeming. A prenuptial agreement generally does not stop federal deeming.",
-    "Report the marriage or living arrangement to SSA and DHS with proof of the other person's income and resources. Recalculate SNAP as a mandatory spouse household.",
+    ["SSI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "QMB", "ExtraHelp", "SNAP"],
+    "Someone moving in or out, a child turning 22, or a spouse joining can change Medicaid household size and SSI deeming. A prenuptial agreement does not stop SSI deeming. Under SNAP simplified reporting, a member moving in usually waits for the semi-annual report.",
+    "Report the change to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS within 10 days for Medicaid. For SNAP, report now only if the case is on change reporting; otherwise keep it for the semi-annual report.",
     { personaId: "denise_marriage_deeming" },
   ),
 
@@ -437,9 +507,9 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
   overpayment_unreported_change: pb(
     "overpayment_unreported_change",
     "Overpayment risk from late reporting",
-    ["SSI", "SSDI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP"],
-    "Late or missing reports commonly create overpayment demands even when the person remains eligible after recalculation.",
-    "When in doubt, report early. Keep dated proof of what was filed. Appeal incorrect overpayments and request waiver when the facts support it.",
+    ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP", "QMB", "ExtraHelp"],
+    "A reporting deadline on the calendar has passed and is still open. Late or missing reports commonly create overpayment demands even when the person remains eligible after recalculation.",
+    "Report the change now and keep dated proof of what was filed. Appeal an incorrect overpayment and request waiver when the facts support it.",
   ),
 
   ssi_1619b_medicaid_while_zero: pb(
@@ -472,17 +542,18 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
   verification_request: pb(
     "verification_request",
     "Agency verification request",
-    ["MedicaidABD", "MedicaidMAGI", "SSI", "SNAP"],
-    "Coverage can close for failure to verify even when balances remain under the resource limit. A screenshot often does not satisfy a request for a complete statement.",
-    "Read the request literally, send every page of the statement or a bank letter, explain unusual deposits, and call before the deadline to confirm the file is complete.",
+    ["MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "QMB", "SSI", "SNAP"],
+    "Coverage can close for failure to verify even when balances remain under the resource limit. A screenshot often does not satisfy a request for a complete statement. DHS closure code 042 (failure to furnish information) is a Medicaid or SNAP case action. It is not an SSI code.",
+    "Read the request literally, send every page of the statement or a bank letter, explain unusual deposits, and call before the deadline on the notice to confirm the file is complete.",
     {
       personaId: "grace_missing_bank_statement",
-      closureCodes: ["042"],
+      effectiveDateNote:
+        "Use the due date printed on the verification notice. That date controls. It is not the SSI 10th-of-the-month wage calendar.",
       documents: [
         "Complete bank statements for the requested period",
         "Written explanation of unusual deposits",
         "Proof of transmission",
-        "CAO call log",
+        "CAO or SSA call log",
       ],
     },
   ),
@@ -529,8 +600,14 @@ export function playbookIdForThreshold(program: string, thresholdType: string): 
   if (p.includes("EXTRA") || p === "LIS") return "extra_help_income";
   if (p === "SNAP") return "snap_gross_200_fpl";
   if (p.includes("MAGI")) return "lucas_magi_income";
-  if (p.includes("ABD") || p === "MEDICAID") return asset ? "abd_resources_2k" : "abd_income_limit";
+  if (p === "MEDICAID") return "generic_limit";
+  if (p.includes("ABD")) return asset ? "abd_resources_2k" : "abd_income_limit";
   if (p === "ABLE") return "ssi_able_100k";
+  if (p === "TANF") return "tanf_limit";
+  if (p === "WIC") return "wic_limit";
+  if (p === "LIHEAP") return "liheap_limit";
+  if (p === "ACA") return "aca_limit";
+  if (p === "VA") return "va_limit";
   return "generic_limit";
 }
 
@@ -576,15 +653,10 @@ export function playbookEmailParagraphs(playbook: AlertPlaybook): string[] {
     `Documents: ${docs}`,
     `If this category cannot continue: ${playbook.alternativePathway}`,
     `Appeal / continued benefits: ${playbook.appealNote}`,
-    INFORMATIONAL_ONLY,
   ];
   const codes = closureCodeNotes(playbook);
   if (codes.length) {
-    paras.splice(
-      8,
-      0,
-      `Closure-code note: ${codes.map((c) => `${c.code} — ${c.note}`).join(" ")}`,
-    );
+    paras.push(`Closure-code note: ${codes.map((c) => `${c.code} — ${c.note}`).join(" ")}`);
   }
   return paras;
 }

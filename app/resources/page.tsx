@@ -40,11 +40,12 @@ export default function ResourcesPage() {
       </p>
 
       <div className="mt-6 rounded border border-[var(--color-cs-brand)] bg-[var(--color-cs-nav-hover)] px-4 py-3 text-[13px]">
-        <span className="font-medium text-[var(--color-cs-text)]">10-day reporting rule.</span>{" "}
+        <span className="font-medium text-[var(--color-cs-text)]">Reporting clocks differ by program.</span>{" "}
         <span className="text-[var(--color-cs-text-secondary)]">
-          Report changes in income, assets, work, household, or marital status within 10 days — by the 10th of the month
-          after the month the change happened (e.g. a change in April is reported by May 10). This applies to SSDI/DAC,
-          Medicaid &amp; Waiver, QMB, Medicare Extra Help, and SNAP.
+          SSI and Extra Help: by the 10th of the month after the change (a change in April is reported by May 10).
+          Medicaid, waiver, MAWD, and QMB: within 10 days. SSDI and DAC: promptly, with no fixed wage calendar. SNAP
+          simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month,
+          or gambling winnings are $4,500 or more. A raise that stays under 130% FPL waits for the semi-annual report.
         </span>
       </div>
 

@@ -19,5 +19,9 @@ describe("deadline kind playbooks", () => {
     expect(playbookIdForDeadlineKind("interview")).toBe("snap_interview");
     expect(playbookIdForDeadlineKind("verification")).toBe("verification_request");
     expect(playbookIdForDeadlineKind("premium")).toBe("mawd_transition");
+    expect(playbookIdForDeadlineKind("appeal")).toBe("appeal_continued_benefits");
+    expect(playbookIdForDeadlineKind("continued_benefits")).toBe("appeal_continued_benefits");
+    expect(playbookIdForDeadlineKind("deadline", "SSI")).toBe("calendar_notice");
+    expect(playbookIdForDeadlineKind("appointment", "SNAP")).toBe("calendar_notice");
   });
 });

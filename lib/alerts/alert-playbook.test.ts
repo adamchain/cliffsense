@@ -30,6 +30,9 @@ describe("alert playbooks", () => {
     expect(resolveAlertPlaybook({ program: "SNAP", thresholdType: "monthly_gross_income" }).id).toBe(
       "snap_gross_200_fpl",
     );
+    expect(playbookIdForThreshold("Medicaid", "monthly_gross_income")).toBe("generic_limit");
+    expect(playbookIdForThreshold("WIC", "monthly_gross_income")).toBe("wic_limit");
+    expect(playbookIdForThreshold("TANF", "asset_balance")).toBe("tanf_limit");
   });
 
   it("attaches six-step persona plans and SNAP/Medicaid closure-code notes", () => {
@@ -42,5 +45,15 @@ describe("alert playbooks", () => {
     expect(email).toMatch(/Threatened program/);
     expect(email).toMatch(/042/);
     expect(email).toContain(APPEAL_AND_CONTINUE.slice(0, 40));
+    expect(email).not.toMatch(/Informational only/);
+  });
+
+  it("keeps verification on the notice date and appeal clocks off the overpayment plan", () => {
+    expect(ALERT_PLAYBOOKS.verification_request?.effectiveDateNote).toMatch(/verification notice/i);
+    expect(ALERT_PLAYBOOKS.verification_request?.closureCodes).toBeUndefined();
+    expect(ALERT_PLAYBOOKS.verification_request?.programs).toEqual(
+      expect.arrayContaining(["MedicaidWaiver", "MAWD", "QMB"]),
+    );
+    expect(ALERT_PLAYBOOKS.appeal_continued_benefits?.title).toMatch(/continued benefits/i);
   });
 });

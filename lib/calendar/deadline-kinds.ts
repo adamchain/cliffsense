@@ -65,6 +65,7 @@ export function isCaseClockKind(kind: string | null | undefined): boolean {
 
 /** Playbook to attach when opening this clock. */
 export function playbookIdForDeadlineKind(kind: string, program?: string | null): string {
+  void program;
   switch (kind) {
     case "renewal":
     case "sar":
@@ -81,9 +82,8 @@ export function playbookIdForDeadlineKind(kind: string, program?: string | null)
       return "waiver_income_2982";
     case "appeal":
     case "continued_benefits":
-      return "overpayment_unreported_change";
+      return "appeal_continued_benefits";
     default:
-      if (program?.toUpperCase() === "SNAP") return "snap_gross_200_fpl";
-      return "generic_limit";
+      return "calendar_notice";
   }
 }

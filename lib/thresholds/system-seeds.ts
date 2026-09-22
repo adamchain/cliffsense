@@ -27,11 +27,12 @@ const FROM_2026 = new Date("2026-01-01T00:00:00.000Z");
 const END_2025 = new Date("2025-12-31T23:59:59.999Z");
 
 /**
- * Standard reporting reminder for Pennsylvania programs: most income, asset,
- * household, work, and marital-status changes must be reported within 10 days.
+ * Standard reporting reminder. Clocks differ: SSI and Extra Help use the 10th
+ * of the next month, Medicaid uses 10 days, SSDI is prompt, and SNAP simplified
+ * reporting has only three 10-day triggers.
  */
 const PA_REPORTING_NOTE =
-  " Pennsylvania requires most changes (income, assets, household, work, or marital status) to be reported within 10 days — by the 10th of the month after the month the change occurred.";
+  " Reporting clocks differ by program. SSI and Extra Help: by the 10th of the month after the change. Medicaid: within 10 days. SSDI and DAC: promptly. SNAP simplified reporting: within 10 days only when gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,500 or more.";
 
 /** Suffix appended to every estimated (non-determinative) limit description. */
 const ESTIMATE_NOTE =

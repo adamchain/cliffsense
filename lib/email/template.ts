@@ -24,7 +24,7 @@ export const BRAND = {
 } as const;
 
 const DISCLAIMER =
-  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
+  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
 
 export type EmailTone = "info" | "success" | "warning" | "danger";
 

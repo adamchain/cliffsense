@@ -122,7 +122,15 @@ export async function evaluateThresholdsForBeneficiary(input: {
 
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({ beneficiaryId: input.beneficiaryId })
-      .select({ date: 1, amountCents: 1, userCategory: 1, pending: 1, excludedFromThresholds: 1 })
+      .select({
+        date: 1,
+        amountCents: 1,
+        userCategory: 1,
+        pending: 1,
+        excludedFromThresholds: 1,
+        name: 1,
+        merchantName: 1,
+      })
       .lean(),
     RecurringStream.find({ beneficiaryId: input.beneficiaryId })
       .select({
@@ -328,6 +336,14 @@ export async function evaluateThresholdsForBeneficiary(input: {
     excludedFromThresholds: Boolean(t.excludedFromThresholds),
   }));
   const priorEarnedNet = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
+  const earnedDeposits = txRows.flatMap((t) => {
+    if (t.pending || t.excludedFromThresholds) return [];
+    if (t.userCategory !== "earned_income" || t.amountCents >= 0) return [];
+    const payerKey = String(t.merchantName || t.name || "")
+      .trim()
+      .toLowerCase();
+    return [{ date: String(t.date), amountCents: Math.abs(t.amountCents), payerKey }];
+  });
   const scenarioResult = await evaluateScenarioAlerts({
     beneficiaryId: input.beneficiaryId,
     ownerUserId: beneficiary.ownerUserId,
@@ -340,6 +356,10 @@ export async function evaluateThresholdsForBeneficiary(input: {
     grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
     otherInflowCents: breakdown.otherCents,
     monthPrefix: prefix,
+    earnedDeposits,
+    hasHistoryBeforeMonth: txRows.some((t) => String(t.date).slice(0, 7) < prefix),
+    householdSize: Math.max(1, beneficiary.householdSize ?? 1),
+    now,
   });
   alertsCreated += scenarioResult.alertsCreated;
   alertIdsCreated.push(...scenarioResult.alertIdsCreated);

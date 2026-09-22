@@ -1,5 +1,6 @@
-import { utcMonthPrefix } from "@/lib/thresholds/metrics";
-import { reportingDeadline, ruleForProgram, type ProgramRule } from "./program-rules";
+import { detectWageChange, programsThatMustReportWageChange, type WageDeposit } from "@/lib/alerts/wage-change";
+import { grossMonthlyIncomeCents, monthlyIncomeBreakdownCents, utcMonthPrefix } from "@/lib/thresholds/metrics";
+import { ruleForProgram, soonestReportingDue, type ProgramRule } from "./program-rules";
 
 /* ---------------------------------------------------------------------------
  * The Action Center engine. Given the beneficiary's enrolled programs, the
@@ -48,10 +49,6 @@ export type ReportingRow = {
   attached: boolean;
 };
 
-const MIN_NEW_PAYER_CENTS = 50_00;
-const INCOME_JUMP_FACTOR = 1.2;
-const INCOME_JUMP_MIN_DELTA_CENTS = 200_00;
-
 function payerName(t: ReportingTx): string {
   return (t.merchantName || t.name || "").trim();
 }
@@ -80,86 +77,63 @@ export function buildReportingActions(input: {
   rows: ReportingRow[];
   transactions: ReportingTx[];
   now: Date;
+  householdSize?: number;
 }): ReportingAction[] {
   const { programs, rows, transactions, now } = input;
+  const householdSize = input.householdSize ?? 1;
   const rules = programs.map(ruleForProgram).filter((r): r is ProgramRule => Boolean(r));
   if (rules.length === 0) return [];
 
   const { prefix } = utcMonthPrefix(now);
-  const deadlineISO = reportingDeadline(now).toISOString();
   const actions: ReportingAction[] = [];
+  const gross = grossMonthlyIncomeCents(
+    monthlyIncomeBreakdownCents(
+      transactions.map((t) => ({
+        date: t.date,
+        amountCents: t.amountCents,
+        userCategory: t.userCategory,
+        pending: Boolean(t.pending),
+        excludedFromThresholds: Boolean(t.excludedFromThresholds),
+      })),
+      prefix,
+    ),
+  );
 
-  // --- Signal 1: a new earned-income source (employer) this month ----------
-  const priorPayers = new Set<string>();
-  const currentPayers = new Map<string, number>();
+  const deposits: WageDeposit[] = [];
   for (const t of transactions) {
     if (t.pending || t.excludedFromThresholds) continue;
     if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
-    const key = payerName(t).toLowerCase();
-    if (!key) continue;
-    if (t.date.startsWith(prefix)) {
-      currentPayers.set(key, (currentPayers.get(key) ?? 0) + Math.abs(t.amountCents));
-    } else {
-      priorPayers.add(key);
-    }
-  }
-
-  const newWorkRules = rules.filter((r) => r.reportsNewWork);
-  const newPayerLabels: string[] = [];
-  for (const t of transactions) {
-    if (!t.date.startsWith(prefix)) continue;
-    if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
-    const key = payerName(t).toLowerCase();
-    if (!key || priorPayers.has(key)) continue;
-    if ((currentPayers.get(key) ?? 0) < MIN_NEW_PAYER_CENTS) continue;
-    const display = payerName(t);
-    if (!newPayerLabels.includes(display)) newPayerLabels.push(display);
-  }
-
-  if (newPayerLabels.length > 0 && newWorkRules.length > 0) {
-    const list = newPayerLabels.join(", ");
-    actions.push({
-      id: `new-work:${newPayerLabels.map((s) => s.toLowerCase()).sort().join("|")}`,
-      severity: "report",
-      title:
-        newPayerLabels.length === 1
-          ? `New income source detected: ${list}`
-          : `New income sources detected: ${list}`,
-      detail:
-        "We saw earned income from a payer that's new this month. Starting or changing work is usually a reportable change.",
-      deadlineISO,
-      programs: newWorkRules.map(guidance),
+    deposits.push({
+      date: t.date,
+      amountCents: Math.abs(t.amountCents),
+      payerKey: payerName(t).toLowerCase(),
     });
   }
-
-  // --- Signal 2: earned income jumped vs the trailing average --------------
-  if (newPayerLabels.length === 0) {
-    const byMonth = new Map<string, number>();
-    for (const t of transactions) {
-      if (t.pending || t.excludedFromThresholds) continue;
-      if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
-      const mp = t.date.slice(0, 7);
-      byMonth.set(mp, (byMonth.get(mp) ?? 0) + Math.abs(t.amountCents));
-    }
-    const current = byMonth.get(prefix) ?? 0;
-    const priorVals = [...byMonth.entries()].filter(([mp]) => mp !== prefix).map(([, v]) => v);
-    if (current > 0 && priorVals.length > 0) {
-      const avg = priorVals.reduce((a, b) => a + b, 0) / priorVals.length;
-      if (avg > 0 && current >= avg * INCOME_JUMP_FACTOR && current - avg >= INCOME_JUMP_MIN_DELTA_CENTS) {
-        const incomeRules = rules.filter((r) => r.reportsIncomeChange);
-        if (incomeRules.length > 0) {
-          actions.push({
-            id: `income-jump:${prefix}`,
-            severity: "report",
-            title: "Your earned income went up this month",
-            detail: `This month's earned income (${usd(current)}) is well above your recent average (${usd(
-              Math.round(avg),
-            )}). An income increase is usually reportable.`,
-            deadlineISO,
-            programs: incomeRules.map(guidance),
-          });
-        }
-      }
+  const hasHistoryBeforeMonth = transactions.some((t) => t.date.slice(0, 7) < prefix);
+  const wageKind = detectWageChange({ monthPrefix: prefix, deposits, now, hasHistoryBeforeMonth });
+  if (wageKind) {
+    const targets = programsThatMustReportWageChange(programs, wageKind, gross, householdSize);
+    const wageRules = targets.map(ruleForProgram).filter((r): r is ProgramRule => Boolean(r));
+    if (wageRules.length > 0) {
+      const titles: Record<typeof wageKind, string> = {
+        new_work: "New or restarted work",
+        increase: "Your earned income went up",
+        decrease: "Your earned income went down",
+        stopped: "Earned income stopped",
+      };
+      actions.push({
+        id: `wage-change:${wageKind}:${prefix}`,
+        severity: "report",
+        title: titles[wageKind],
+        detail:
+          "Compare gross pay stubs to this deposit, then report on each program's own clock. SNAP is listed only when gross income is over 130% FPL.",
+        deadlineISO: soonestReportingDue(
+          wageRules.map((r) => r.program),
+          now,
+        ),
+        programs: wageRules.map(guidance),
+        playbookId: "reporting_wage_change_10day",
+      });
     }
   }
 
@@ -189,7 +163,7 @@ export function buildReportingActions(input: {
       detail: `Your estimated activity is above: ${entry.labels.join(
         "; ",
       )}. Excludable assets (a home, one car, ABLE/SNT) aren't subtracted here — review, then report if it stands.`,
-      deadlineISO,
+      deadlineISO: soonestReportingDue([program], now),
       programs: [guidance(rule)],
     });
   }
@@ -227,7 +201,10 @@ export function buildReportingActions(input: {
             : `Non-wage inflows this month total ${usd(
                 unusualMonth,
               )}. Classify them (income vs resource vs reimbursement vs trust) before month-end. Spending later may not erase a receipt-month income event.`,
-        deadlineISO,
+        deadlineISO: soonestReportingDue(
+          means.map((r) => r.program),
+          now,
+        ),
         programs: means.map(guidance),
         playbookId: "reporting_lump_sum",
         classifyHref: "/transactions",

@@ -284,12 +284,12 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   // —— Cross-cutting reporting ——
   {
     id: "reporting_wage_change_10day",
-    title: "Wage change — 10-day reporting clock",
-    programs: ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidWaiver", "MAWD", "SNAP", "QMB"],
+    title: "Wage change — reporting clock",
+    programs: ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP", "QMB", "ExtraHelp"],
     trigger: "reporting",
     level: "warning",
-    risk: "Most PA/SSA income and work changes must be reported by the 10th of the month after the change month.",
-    action: "File with SSA and/or COMPASS/CAO. Keep gross pay stubs in Vault → Job & income.",
+    risk: "A new job, a raise, a pay cut, or stopped work can be reportable. SNAP simplified reporting does not require an ordinary raise that stays under 130% FPL.",
+    action: "File with the agency that requires this change. Keep gross pay stubs. Project SSI, SSDI, SNAP, and each Medicaid category separately before changing hours.",
     autoDetect: true,
   },
   {
@@ -305,11 +305,11 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "reporting_household_change",
     title: "Household composition change",
-    programs: ["SNAP", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "SSI"],
+    programs: ["SSI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "QMB", "ExtraHelp", "SNAP"],
     trigger: "reporting",
     level: "warning",
-    risk: "Someone moving in/out, a child turning 22, or a spouse joining can change SNAP/Medicaid household size and deeming.",
-    action: "Report household changes within 10 days where required (SNAP lists this as immediate).",
+    risk: "Someone moving in or out, a child turning 22, or a spouse joining can change Medicaid household size and SSI deeming. Under SNAP simplified reporting, a member moving in usually waits for the semi-annual report.",
+    action: "Report to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS within 10 days for Medicaid. For SNAP, report now only if the case is on change reporting.",
     autoDetect: false,
   },
   {
@@ -325,12 +325,12 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   {
     id: "overpayment_unreported_change",
     title: "Overpayment from late reporting",
-    programs: ["SSI", "SSDI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP"],
+    programs: ["SSI", "SSDI", "DAC", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "SNAP", "QMB", "ExtraHelp"],
     trigger: "reporting",
     level: "warning",
-    risk: "Late or missing reports commonly create overpayment demands even when the person remains eligible after recalculation.",
-    action: "When in doubt, report early. Keep dated proof of what was filed (Vault → Agency correspondence).",
-    autoDetect: false,
+    risk: "A reporting deadline on the calendar has passed and is still open. Late reports commonly create overpayment demands even when the person remains eligible after recalculation.",
+    action: "Report the change now and keep dated proof of what was filed. Appeal an incorrect overpayment and request waiver when the facts support it.",
+    autoDetect: true,
   },
   {
     id: "ssi_1619b_medicaid_while_zero",

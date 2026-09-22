@@ -87,7 +87,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 }
 
-const DISCLAIMER = "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, your county assistance office, or a qualified benefits counselor.";
+const DISCLAIMER =
+  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
 
 export function withDisclaimer(body: string): string {
   return `${body}\n\n— BeneWatch\n${DISCLAIMER}`;

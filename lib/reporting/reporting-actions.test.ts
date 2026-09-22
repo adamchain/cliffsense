@@ -16,18 +16,22 @@ describe("buildReportingActions", () => {
     expect(buildReportingActions({ programs: ["LIHEAP"], rows: [], transactions: [], now: NOW })).toEqual([]);
   });
 
-  it("flags a new income source this month and targets work-reporting programs", () => {
+  it("flags a new income source and skips SNAP while gross income is under 130% FPL", () => {
     const actions = buildReportingActions({
       programs: ["SSDI", "SNAP"],
       rows: [],
-      transactions: [tx("2026-06-03", -90000, "earned_income", "NEW EMPLOYER LLC")],
+      transactions: [
+        tx("2026-05-03", -80000, "benefit_deposit", "SSA"),
+        tx("2026-06-03", -90000, "earned_income", "NEW EMPLOYER LLC"),
+      ],
       now: NOW,
     });
-    const a = actions.find((x) => x.id.startsWith("new-work:"));
+    const a = actions.find((x) => x.id.includes("new_work"));
     expect(a).toBeTruthy();
     expect(a!.severity).toBe("report");
-    expect(a!.programs.map((p) => p.short).sort()).toEqual(["SNAP", "SSDI"]);
-    expect(a!.deadlineISO).toBe("2026-07-10T23:59:59.999Z"); // 10th of next month
+    expect(a!.programs.map((p) => p.short)).toEqual(["SSDI"]);
+    expect(a!.deadlineISO).toBeNull();
+    expect(a!.playbookId).toBe("reporting_wage_change_10day");
   });
 
   it("does not flag a payer seen in a prior month", () => {
@@ -43,18 +47,35 @@ describe("buildReportingActions", () => {
     expect(actions.find((x) => x.id.startsWith("new-work:"))).toBeUndefined();
   });
 
-  it("flags an income jump vs the trailing average (same employer)", () => {
+  it("flags a raise for SSI on the 10th of next month, not an ordinary SNAP raise", () => {
+    const raised = [
+      tx("2026-05-03", -50000, "earned_income", "ACME"),
+      tx("2026-06-03", -120000, "earned_income", "ACME"),
+    ];
+    const snap = buildReportingActions({ programs: ["SNAP"], rows: [], transactions: raised, now: NOW });
+    expect(snap.find((x) => x.id.includes("increase"))).toBeUndefined();
+
+    const ssi = buildReportingActions({ programs: ["SSI"], rows: [], transactions: raised, now: NOW });
+    const a = ssi.find((x) => x.id.includes("increase"));
+    expect(a).toBeTruthy();
+    expect(a!.deadlineISO).toBe("2026-07-10T23:59:59.999Z");
+    expect(a!.playbookId).toBe("reporting_wage_change_10day");
+  });
+
+  it("does not treat a third paycheck of the same size as a raise", () => {
     const actions = buildReportingActions({
-      programs: ["SNAP"],
+      programs: ["SSI"],
       rows: [],
       transactions: [
-        tx("2026-04-03", -50000, "earned_income", "ACME"),
-        tx("2026-05-03", -50000, "earned_income", "ACME"),
-        tx("2026-06-03", -120000, "earned_income", "ACME"),
+        tx("2026-05-01", -100000, "earned_income", "ACME"),
+        tx("2026-05-15", -100000, "earned_income", "ACME"),
+        tx("2026-06-01", -100000, "earned_income", "ACME"),
+        tx("2026-06-15", -100000, "earned_income", "ACME"),
+        tx("2026-06-29", -100000, "earned_income", "ACME"),
       ],
       now: NOW,
     });
-    expect(actions.find((x) => x.id.startsWith("income-jump:"))).toBeTruthy();
+    expect(actions.find((x) => x.id.includes("wage-change"))).toBeUndefined();
   });
 
   it("flags being over an attached limit for the right program", () => {

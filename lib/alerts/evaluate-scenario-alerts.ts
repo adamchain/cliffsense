@@ -6,6 +6,8 @@ import {
 } from "@/lib/alerts/eligibility-loss-scenarios";
 import Alert from "@/lib/db/models/Alert";
 import { SSI_FBR_INDIVIDUAL_CENTS } from "@/lib/benefits/ssi";
+import { detectWageChange, programsThatMustReportWageChange, type WageDeposit } from "@/lib/alerts/wage-change";
+import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import { enrolledMatchesProgram } from "@/lib/programs";
 
 /** 2026 non-blind SGA and TWP service-month triggers (cents). */
@@ -30,6 +32,11 @@ export type ScenarioEvalInput = {
   grossMonthlyCents: number;
   otherInflowCents?: number;
   monthPrefix: string;
+  earnedDeposits?: WageDeposit[];
+  /** Any transaction, wage or not, exists before monthPrefix. */
+  hasHistoryBeforeMonth?: boolean;
+  householdSize?: number;
+  now?: Date;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -130,52 +137,113 @@ export async function evaluateScenarioAlerts(
     consider("snap_gross_200_fpl");
   }
 
-  const prior = input.priorEarnedGrossCents ?? 0;
-  if (prior > 0 && earned > prior * 1.1 && earned - prior >= 100_00) {
+  const now = input.now ?? new Date();
+  const wageKind = detectWageChange({
+    monthPrefix: input.monthPrefix,
+    deposits: input.earnedDeposits ?? [],
+    now,
+    hasHistoryBeforeMonth: input.hasHistoryBeforeMonth,
+  });
+  if (
+    wageKind &&
+    programsThatMustReportWageChange(input.programs, wageKind, gross, input.householdSize ?? 1).length > 0
+  ) {
     consider("reporting_wage_change_10day");
   }
   const otherIn = input.otherInflowCents ?? 0;
   if (otherIn >= 1500_00) {
     consider("reporting_lump_sum");
   }
+  const overdue = await ReportingDeadline.exists({
+    beneficiaryId: input.beneficiaryId,
+    completedAt: null,
+    kind: "deadline",
+    dueDate: { $lt: now },
+  });
+  if (overdue) consider("overpayment_unreported_change");
 
   const alertIdsCreated: Types.ObjectId[] = [];
   let alertsCreated = 0;
 
   for (const s of candidates) {
     if (await recentlyAlerted(input.beneficiaryId, s.id)) continue;
-    const created = await Alert.create({
+    const createdId = await insertScenarioAlert({
       beneficiaryId: input.beneficiaryId,
-      userId: input.ownerUserId,
-      thresholdId: null,
-      level: s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning",
-      trigger: s.trigger,
-      message: alertMessage(s),
-      dataSnapshot: {
-        scenarioId: s.id,
-        playbookId: s.id,
-        title: s.title,
-        programs: s.programs,
-        monthPrefix: input.monthPrefix,
-        earnedGrossCents: earned,
-        ssiCountableCents: countable,
-        maxAssetCents: assets,
-        grossMonthlyCents: gross,
-      },
-      status: "new",
+      ownerUserId: input.ownerUserId,
+      actorUserId: input.actorUserId,
+      scenario: s,
+      monthPrefix: input.monthPrefix,
+      earnedGrossCents: earned,
+      ssiCountableCents: countable,
+      maxAssetCents: assets,
+      grossMonthlyCents: gross,
     });
     alertsCreated += 1;
-    alertIdsCreated.push(created._id as Types.ObjectId);
-    await logActivity({
-      userId: input.actorUserId,
-      beneficiaryId: input.beneficiaryId,
-      category: "alert",
-      action: "alert.created",
-      resourceType: "alert",
-      resourceId: created._id.toString(),
-      details: { scenarioId: s.id, level: s.level, trigger: s.trigger },
-    });
+    alertIdsCreated.push(createdId);
   }
 
   return { alertsCreated, alertIdsCreated };
+}
+
+/** Fired when household size or marital status actually changes. Not inferred from bank deposits. */
+export async function emitHouseholdChangeAlert(input: {
+  beneficiaryId: Types.ObjectId;
+  ownerUserId: Types.ObjectId | string;
+  actorUserId: string;
+  programs: string[];
+}): Promise<Types.ObjectId | null> {
+  const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "reporting_household_change");
+  if (!scenario || !enrolledFor(scenario, input.programs)) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id)) return null;
+  return insertScenarioAlert({
+    beneficiaryId: input.beneficiaryId,
+    ownerUserId: input.ownerUserId,
+    actorUserId: input.actorUserId,
+    scenario,
+    monthPrefix: new Date().toISOString().slice(0, 7),
+  });
+}
+
+async function insertScenarioAlert(input: {
+  beneficiaryId: Types.ObjectId;
+  ownerUserId: Types.ObjectId | string;
+  actorUserId: string;
+  scenario: EligibilityLossScenario;
+  monthPrefix: string;
+  earnedGrossCents?: number;
+  ssiCountableCents?: number;
+  maxAssetCents?: number;
+  grossMonthlyCents?: number;
+}): Promise<Types.ObjectId> {
+  const s = input.scenario;
+  const created = await Alert.create({
+    beneficiaryId: input.beneficiaryId,
+    userId: input.ownerUserId,
+    thresholdId: null,
+    level: s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning",
+    trigger: s.trigger,
+    message: alertMessage(s),
+    dataSnapshot: {
+      scenarioId: s.id,
+      playbookId: s.id,
+      title: s.title,
+      programs: s.programs,
+      monthPrefix: input.monthPrefix,
+      earnedGrossCents: input.earnedGrossCents ?? 0,
+      ssiCountableCents: input.ssiCountableCents ?? 0,
+      maxAssetCents: input.maxAssetCents ?? 0,
+      grossMonthlyCents: input.grossMonthlyCents ?? 0,
+    },
+    status: "new",
+  });
+  await logActivity({
+    userId: input.actorUserId,
+    beneficiaryId: input.beneficiaryId,
+    category: "alert",
+    action: "alert.created",
+    resourceType: "alert",
+    resourceId: created._id.toString(),
+    details: { scenarioId: s.id, level: s.level, trigger: s.trigger },
+  });
+  return created._id as Types.ObjectId;
 }

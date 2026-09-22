@@ -4,8 +4,9 @@
  * these rules to tell the user what to report, to whom, and by when — prompt +
  * how-to + deadline. Informational only; not legal advice or a determination.
  *
- * Pennsylvania-focused: PA DHS programs require reporting most changes within
- * 10 days (by the 10th of the month after the change).
+ * Pennsylvania-focused. Clocks are not interchangeable: SSI and Extra Help use
+ * the 10th of the next month, Medicaid uses 10 days, SSDI is prompt, and SNAP
+ * simplified reporting has only three 10-day triggers.
  */
 
 export type ProgramRule = {
@@ -68,7 +69,7 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportsAssetChange: false, // SSDI has no asset limit
     reportUrl: SSA_REPORT_WORK,
     phone: SSA_PHONE,
-    deadlineNote: "Report work and earnings to SSA promptly — generally within 10 days of the change.",
+    deadlineNote: "Report work and earnings to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar.",
     howTo: [
       "Report wages in the my Social Security portal or the SSA mobile wage-reporting app.",
       `Or call SSA at ${SSA_PHONE}, or visit your local Social Security office.`,
@@ -100,11 +101,28 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportsAssetChange: false, // most PA SNAP households have no asset test
     reportUrl: COMPASS,
     phone: PA_DHS_PHONE,
-    deadlineNote: "PA requires reporting within 10 days — by the 10th of the month after the change.",
+    deadlineNote:
+      "Simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,500 or more. A raise under 130% FPL waits for the semi-annual report.",
     howTo: [
       "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
       `Or call the Statewide Customer Service Center at ${PA_DHS_PHONE}, or your County Assistance Office.`,
       "Have recent pay stubs or an offer letter ready.",
+    ],
+  },
+  {
+    program: "DAC",
+    short: "DAC",
+    agency: "Social Security Administration",
+    reportsNewWork: true,
+    reportsIncomeChange: true,
+    reportsAssetChange: false,
+    reportUrl: SSA_REPORT_WORK,
+    phone: SSA_PHONE,
+    deadlineNote: "Report work and earnings to SSA promptly. Marriage can also end DAC.",
+    howTo: [
+      "Report wages in the my Social Security portal or by phone.",
+      `Or call SSA at ${SSA_PHONE}, or visit your local Social Security office.`,
+      "Keep pay stubs and medical evidence. Do not assume marriage or wages are ignored.",
     ],
   },
   compassRule("Medicaid", "Medicaid", true),
@@ -136,10 +154,33 @@ export function ruleForProgram(program: string): ProgramRule | undefined {
   return PROGRAM_RULES.find((r) => r.program.toUpperCase() === p);
 }
 
+function endOfUtcDaysAfter(changeDate: Date, days: number): Date {
+  const d = new Date(changeDate.getTime());
+  d.setUTCDate(d.getUTCDate() + days);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
 /**
- * PA-style reporting deadline for a change that happened in the current month:
- * the 10th of the following month. Returned as a UTC date.
+ * Concrete due date for a change observed on `changeDate`, or null when the
+ * program has no fixed calendar date (report promptly, or there is no wage clock).
  */
-export function reportingDeadline(now: Date): Date {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 10, 23, 59, 59, 999));
+export function reportingDueDate(program: string, changeDate: Date): Date | null {
+  const p = program.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (p === "SSI" || p === "LIS" || p.includes("EXTRA")) {
+    return new Date(Date.UTC(changeDate.getUTCFullYear(), changeDate.getUTCMonth() + 1, 10, 23, 59, 59, 999));
+  }
+  if (p === "SSDI" || p === "DAC" || p === "WIC" || p === "LIHEAP" || p === "VA") return null;
+  if (p === "ACA") return endOfUtcDaysAfter(changeDate, 30);
+  return endOfUtcDaysAfter(changeDate, 10);
+}
+
+/** Earliest concrete deadline among the programs that have one. */
+export function soonestReportingDue(programs: string[], changeDate: Date): string | null {
+  const dates = programs
+    .map((p) => reportingDueDate(p, changeDate))
+    .filter((d): d is Date => d != null);
+  if (dates.length === 0) return null;
+  dates.sort((a, b) => a.getTime() - b.getTime());
+  return dates[0]!.toISOString();
 }

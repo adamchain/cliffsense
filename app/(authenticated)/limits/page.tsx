@@ -51,7 +51,7 @@ export default async function LimitsPage() {
           excludedFromThresholds: 1,
         })
         .lean(),
-      Beneficiary.findById(primary._id).select("twpMonthsUsed policyScreen dateOfBirth").lean(),
+      Beneficiary.findById(primary._id).select("twpMonthsUsed policyScreen dateOfBirth householdSize").lean(),
     ]);
     reportingActions = buildReportingActions({
       programs: payload.programsEnrolled,
@@ -72,6 +72,7 @@ export default async function LimitsPage() {
         excludedFromThresholds: Boolean(t.excludedFromThresholds),
       })),
       now,
+      householdSize: Number(twpDoc?.householdSize ?? 1),
     });
     twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
     const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
