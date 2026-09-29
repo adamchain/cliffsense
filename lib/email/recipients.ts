@@ -1,5 +1,5 @@
 /**
- * Resolves who an alert/digest email goes to and whether a given alert type is
+ * Resolves who an alert email goes to and whether a given alert type is
  * opted in, from a user's notificationPrefs. The primary recipient is the
  * notify-email override if set, else the sign-in email; `additionalEmails` are
  * always copied on top.

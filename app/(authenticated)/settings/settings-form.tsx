@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { US_STATES } from "@/lib/constants/us-states";
 
-type Frequency = "realtime" | "daily" | "weekly";
 type AlertTypes = {
   predictive: boolean;
   breach: boolean;
@@ -43,7 +42,6 @@ const ALERT_TYPE_LABELS: { key: keyof AlertTypes; label: string; desc: string }[
 
 export function SettingsForm({
   initialName,
-  initialFrequency,
   initialNotifyEmail,
   initialAlertTypes,
   initialAdditionalEmails,
@@ -51,7 +49,6 @@ export function SettingsForm({
   initialHouseholdSize,
 }: {
   initialName: string;
-  initialFrequency: Frequency;
   initialNotifyEmail: string;
   initialAlertTypes: AlertTypes;
   initialAdditionalEmails: string[];
@@ -60,7 +57,6 @@ export function SettingsForm({
 }) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
-  const [frequency, setFrequency] = useState<Frequency>(initialFrequency);
   const [notifyEmail, setNotifyEmail] = useState(initialNotifyEmail);
   const [alertTypes, setAlertTypes] = useState<AlertTypes>(initialAlertTypes);
   const [additionalEmails, setAdditionalEmails] = useState<string[]>(initialAdditionalEmails);
@@ -100,7 +96,6 @@ export function SettingsForm({
       body: JSON.stringify({
         name,
         notificationPrefs: {
-          frequency,
           email: notifyEmail,
           alertTypes,
           additionalEmails,
@@ -160,34 +155,27 @@ export function SettingsForm({
         </div>
       </div>
 
-      <div className="border-t border-[var(--color-cs-sep)] pt-4" data-tour="settings-email" id="notifications">
-        <h3 className="mb-3 text-[15px] font-semibold text-[var(--color-cs-text)]">
+      <div
+        className="border-t border-[var(--color-cs-sep)] pt-4"
+        data-tour="settings-notifications"
+        id="notifications"
+      >
+        <h3 className="mb-1 text-[15px] font-semibold text-[var(--color-cs-text)]">
           Email notifications
         </h3>
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <label className="block">
-            <span className="cs-label">Email frequency</span>
-            <select
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as Frequency)}
-              className="cs-input mt-1.5"
-            >
-              <option value="realtime">Real-time</option>
-              <option value="daily">Daily digest</option>
-              <option value="weekly">Weekly digest</option>
-            </select>
-          </label>
-          <label className="block">
-            <span className="cs-label">Send to email</span>
-            <input
-              type="email"
-              value={notifyEmail}
-              onChange={(e) => setNotifyEmail(e.target.value)}
-              placeholder="Leave blank to use sign-in email"
-              className="cs-input mt-1.5"
-            />
-          </label>
-        </div>
+        <p className="mb-3 text-[12.5px] text-[var(--color-cs-text-secondary)]">
+          An email goes out when an alert is created.
+        </p>
+        <label className="block">
+          <span className="cs-label">Send to email</span>
+          <input
+            type="email"
+            value={notifyEmail}
+            onChange={(e) => setNotifyEmail(e.target.value)}
+            placeholder="Leave blank to use sign-in email"
+            className="cs-input mt-1.5"
+          />
+        </label>
 
         <div className="mt-4">
           <span className="cs-label">Which alerts to email</span>

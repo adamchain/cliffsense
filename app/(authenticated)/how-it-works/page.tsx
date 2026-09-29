@@ -255,13 +255,12 @@ export default function HowItWorksPage() {
             When a limit moves into Watch or Over, the final stage raises an{" "}
             <Link href="/limits#alerts" className={linkCls}>alert</Link>. Crucially, it de-duplicates:
             you&apos;re pinged when something <span className="font-semibold text-[var(--color-cs-text)]">changes or escalates</span>,
-            not for the same issue on every daily sync.
+            not for the same issue on every sync.
           </p>
-          <p>Alerts reach you three ways, each configurable in <Link href="/settings#notifications" className={linkCls}>Settings</Link>:</p>
+          <p>Alerts show up in the app, and the ones you turn on in <Link href="/settings#notifications" className={linkCls}>Settings</Link> also email you when they are created:</p>
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the Alerts page.</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a real-time note on a breach, plus optional digests.</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]">Push</span> — once you install the app to your home screen.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a note as soon as an alert you opted into is created.</li>
           </ul>
         </Section>
 

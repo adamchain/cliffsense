@@ -7,7 +7,6 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import { SettingsForm } from "./settings-form";
 import { SignOutButton } from "./sign-out-button";
 import { DeleteAccountButton } from "./delete-account-button";
-import { PushToggle } from "@/components/push/push-toggle";
 import { LegacySettingsHashRedirect } from "@/components/settings/legacy-hash-redirect";
 
 export default async function SettingsPage() {
@@ -70,7 +69,6 @@ export default async function SettingsPage() {
           <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
             <SettingsForm
               initialName={user.name ?? ""}
-              initialFrequency={user.notificationPrefs?.frequency ?? "daily"}
               initialNotifyEmail={user.notificationPrefs?.email ?? ""}
               initialAlertTypes={{
                 predictive: user.notificationPrefs?.alertTypes?.predictive ?? true,
@@ -85,18 +83,6 @@ export default async function SettingsPage() {
               initialState={ownerBen?.state ?? ""}
               initialHouseholdSize={ownerBen?.householdSize ?? 1}
             />
-          </div>
-        </section>
-
-        <section data-tour="settings-notifications" className="scroll-mt-28">
-          <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-            <h3 className="text-[15px] font-semibold text-[var(--color-cs-text)]">
-              Push on this device
-            </h3>
-            <p className="mb-3 mt-1 text-[12.5px] text-[var(--color-cs-text-secondary)]">
-              Get alerts the moment a threshold changes — in addition to email.
-            </p>
-            <PushToggle />
           </div>
         </section>
 

@@ -5,7 +5,7 @@ import BeneficiaryAccess from "@/lib/db/models/BeneficiaryAccess";
 /**
  * Count of unread ("new") alerts across every beneficiary the user actively has
  * access to — the number shown on the topbar bell badge. Mirrors the access
- * scoping used by the digest so the badge and the /alerts page agree.
+ * scoping used by the alerts page so the badge and that page agree.
  */
 export async function countUnreadAlertsForUser(userId: string): Promise<number> {
   await connectDB();

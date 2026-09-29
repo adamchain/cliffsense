@@ -29,7 +29,6 @@ const patchSchema = z.object({
     .optional(),
   notificationPrefs: z
     .object({
-      frequency: z.enum(["realtime", "daily", "weekly"]).optional(),
       email: z.string().email().optional().or(z.literal("")),
       alertTypes: z
         .object({
@@ -87,9 +86,9 @@ export async function PATCH(req: Request) {
   } else if (walkthroughCompleted === false) {
     user.walkthroughCompletedAt = null;
   }
-  if (notificationPrefs?.frequency) {
+  if (notificationPrefs) {
     user.notificationPrefs = user.notificationPrefs ?? {};
-    user.notificationPrefs.frequency = notificationPrefs.frequency;
+    user.notificationPrefs.frequency = "realtime";
   }
   if (notificationPrefs?.email !== undefined) {
     user.notificationPrefs = user.notificationPrefs ?? {};

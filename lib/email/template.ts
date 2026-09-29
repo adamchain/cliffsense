@@ -39,7 +39,7 @@ export type RenderEmailOptions = {
   cta?: { label: string; url: string };
   /** Large monospace code block (e.g. a one-time sign-in code). */
   code?: string;
-  /** Raw inner HTML for richer bodies (e.g. digest groups). Rendered after paragraphs. */
+  /** Raw inner HTML for richer bodies. Rendered after paragraphs. */
   bodyHtml?: string;
   /** Plain-text body used when `bodyHtml` is supplied (keeps text/html in sync). */
   bodyText?: string;

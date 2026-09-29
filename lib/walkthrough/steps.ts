@@ -68,14 +68,14 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     href: "/limits",
     target: "alerts-page",
     title: "Early alerts",
-    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here. Email and push are configured in Settings.",
+    body: "When activity approaches or crosses a limit, you get a Watch or Over-limit alert here. Which of those emails you get is set in Settings.",
   },
   {
     id: "settings",
     href: "/settings",
     target: "settings-notifications",
     title: "Turn on notifications",
-    body: "Choose email digests and push so you hear about risks before month-end. You can change these anytime.",
+    body: "Choose which alerts email you when they are created. You can change these anytime.",
   },
   {
     id: "done",

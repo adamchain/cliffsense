@@ -15,7 +15,7 @@ export default async function OnboardingNotificationsPage() {
       currentStepId="notifications"
       eyebrow="Notifications"
       title="Email preferences"
-      subtitle="Alerts use a calm tone — we focus on facts and next steps, not alarmist language."
+      subtitle="We'll email you when an alert is created. The note stays factual: what changed, and what to do next."
     >
       <NotificationsForm defaultEmail={session.user.email ?? ""} />
     </OnboardingShell>

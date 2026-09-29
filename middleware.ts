@@ -20,10 +20,9 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/plaid/webhook") ||
-    pathname.startsWith("/api/cron")
+    pathname.startsWith("/api/plaid/webhook")
   ) {
-    // These endpoints authenticate themselves (NextAuth, Plaid JWT, CRON_SECRET).
+    // These endpoints authenticate themselves (NextAuth, Plaid JWT).
     return NextResponse.next();
   }
 

@@ -2,10 +2,12 @@ import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
 const notificationPrefsSchema = new Schema(
   {
+    // Kept so older accounts still load. Emails always send as alerts are created;
+    // daily and weekly are no longer offered and are ignored by the mailer.
     frequency: {
       type: String,
       enum: ["realtime", "daily", "weekly"],
-      default: "daily",
+      default: "realtime",
     },
     alertTypes: {
       predictive: { type: Boolean, default: true },
@@ -17,7 +19,7 @@ const notificationPrefsSchema = new Schema(
       able: { type: Boolean, default: true },
     },
     email: { type: String, default: "" },
-    // Extra recipients copied on every alert/digest, in addition to the primary address.
+    // Extra recipients copied on every alert email, in addition to the primary address.
     additionalEmails: { type: [String], default: [] },
   },
   { _id: false },

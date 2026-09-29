@@ -1,7 +1,7 @@
 /**
  * Single email entry point. Uses Mailgun when `MAILGUN_API_KEY` is set; otherwise
  * logs to the console so local/dev flows (verification, login codes, invites,
- * digests, alerts) are observable without a provider. Never throws — returns a
+ * alerts) are observable without a provider. Never throws — returns a
  * result the caller can branch on.
  */
 export type SendEmailInput = {

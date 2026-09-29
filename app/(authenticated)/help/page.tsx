@@ -192,7 +192,7 @@ export default function HelpPage() {
               </>,
               <>
                 <span className="font-semibold text-[var(--color-cs-text)]">Choose alert email.</span>{" "}
-                Daily digest by default; you can switch to realtime or weekly.
+                An email goes out when an alert is created.
               </>,
             ]}
           />
@@ -360,11 +360,10 @@ export default function HelpPage() {
             <li><span className="font-semibold text-[var(--color-cs-text)]">Watch</span> — you&apos;ve reached a limit&apos;s warning line, or a projection suggests you&apos;ll approach it by month-end.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Over limit</span> — current activity meets or exceeds the cap.</li>
           </ul>
-          <p>You can receive them three ways:</p>
+          <p>You see them in the app, and you can get an email as soon as one is created:</p>
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/limits#alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — a real-time note on a breach, plus optional daily or weekly digests.</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]">Push</span> — install the app to your home screen and enable push in <Link href="/settings" className={linkCls}>Settings</Link>.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — choose which alerts to receive in <Link href="/settings#notifications" className={linkCls}>Settings</Link>. A note goes out when that alert is created.</li>
           </ul>
           <Tip>
             Repeat alerts are de-duplicated, so you won&apos;t be pinged for the same issue every sync —

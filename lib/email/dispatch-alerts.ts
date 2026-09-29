@@ -8,10 +8,8 @@ import { renderEmail } from "@/lib/email/template";
 import { playbookEmailParagraphs, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 
 /**
- * Sends one realtime email per new alert. Users on the "realtime" cadence get
- * every alert; daily/weekly users are batched into a digest (see digest.ts) and
- * only receive an immediate email for `breach`-level alerts. Marks
- * `emailSent` / `emailSentAt` so digests don't double-send.
+ * Sends one email per new alert, as soon as the alert is created. Marks
+ * `emailSent` / `emailSentAt` so a later sync of the same alert does not send again.
  */
 export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<number> {
   if (alertIds.length === 0) {
@@ -40,13 +38,8 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
     if (!wantsAlertType(user?.notificationPrefs, String(a.trigger ?? ""))) {
       continue;
     }
-    const frequency = String(user?.notificationPrefs?.frequency ?? "daily");
     const level = String(a.level ?? "info");
     const trigger = String(a.trigger ?? "");
-    if (frequency !== "realtime" && level !== "breach") {
-      // Batched into the user's daily/weekly digest instead.
-      continue;
-    }
 
     const snap = (a.dataSnapshot ?? {}) as {
       playbookId?: string;

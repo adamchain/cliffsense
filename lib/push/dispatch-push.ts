@@ -9,9 +9,8 @@ import User from "@/lib/db/models/User";
 
 /**
  * Sends a Web Push notification for each new alert, honoring the user's per-type
- * opt-outs. Push is inherently realtime, so (unlike email) it fires for every
- * enabled alert regardless of digest cadence. Marks `pushSent` so retries of a
- * sync don't double-notify. Returns the number of alerts pushed.
+ * opt-outs. Marks `pushSent` so retries of a sync don't double-notify. Returns
+ * the number of alerts pushed.
  */
 export async function sendAlertPushForNewAlerts(alertIds: string[]): Promise<number> {
   if (alertIds.length === 0 || !pushConfigured()) {
