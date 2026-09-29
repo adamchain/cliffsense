@@ -118,7 +118,7 @@ export function AppShell({
     <div className="flex min-h-screen bg-[var(--color-cs-surface)] font-sans text-[15px] text-[var(--color-cs-text)]">
       {/* ---------- Desktop sidebar (macOS style) ---------- */}
       <nav className="cs-macos-sidebar hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:self-start" aria-label="Main">
-        <Link href="/dashboard" className="cs-macos-sidebar-brand" aria-label="BeneWatch home">
+        <Link href="/dashboard" className="cs-macos-sidebar-brand" aria-label="Bene-Watch home">
           <BrandLogo className="h-7 w-auto" />
         </Link>
 

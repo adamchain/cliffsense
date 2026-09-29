@@ -99,7 +99,7 @@ export type MonthlyIncomeBreakdown = {
 };
 
 /**
- * Sum this month's countable inflows by BeneWatch `userCategory`. Transfers,
+ * Sum this month's countable inflows by Bene-Watch `userCategory`. Transfers,
  * expenses, unclear, pending, and threshold-excluded rows are ignored — so the
  * categorization the user has already done is what drives the income estimate.
  */

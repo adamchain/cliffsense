@@ -20,9 +20,9 @@ import {
 import { StartWalkthroughButton } from "@/components/walkthrough/start-walkthrough-button";
 
 export const metadata: Metadata = {
-  title: "Help & Guide · BeneWatch",
+  title: "Help & Guide · Bene-Watch",
   description:
-    "Quick start, step-by-step how-tos, and details on how BeneWatch tracks your benefit limits.",
+    "Quick start, step-by-step how-tos, and details on how Bene-Watch tracks your benefit limits.",
 };
 
 /* ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export default function HelpPage() {
         Help &amp; Guide
       </h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        BeneWatch links your bank activity to your benefit programs and gives you a calm,
+        Bene-Watch links your bank activity to your benefit programs and gives you a calm,
         early heads-up before you approach an income or asset limit. Here&apos;s how to set it up
         and get the most from it.
       </p>
@@ -220,7 +220,7 @@ export default function HelpPage() {
             </Term>
             <Term name="Limit (threshold)">
               A dollar line a program watches — a monthly income cap or an asset/resource cap.
-              BeneWatch compares your estimated activity to each one.
+              Bene-Watch compares your estimated activity to each one.
             </Term>
             <Term name="Estimate, not a decision">
               Numbers are estimated from your categorized bank activity. Real eligibility involves
@@ -235,7 +235,7 @@ export default function HelpPage() {
           <Steps
             items={[
               <>Go to <Link href="/transactions" className={linkCls}>Money</Link> and choose <span className="font-semibold text-[var(--color-cs-text)]">Connect bank</span>.</>,
-              <>Find your bank and sign in <span className="font-semibold text-[var(--color-cs-text)]">on Plaid&apos;s secure screen</span>. BeneWatch never sees your banking username or password.</>,
+              <>Find your bank and sign in <span className="font-semibold text-[var(--color-cs-text)]">on Plaid&apos;s secure screen</span>. Bene-Watch never sees your banking username or password.</>,
               <>Pick the checking/savings accounts to link. Deposits and balances begin importing within a minute or two.</>,
               <>Return to <Link href="/transactions" className={linkCls}>Banking</Link> to review and categorize the imported activity.</>,
             ]}
@@ -248,7 +248,7 @@ export default function HelpPage() {
             <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--color-cs-text)]">
               <IconLock size={14} stroke={1.8} aria-hidden /> Access is read-only.
             </span>{" "}
-            BeneWatch can see transactions and balances to do the math — it can never move money.
+            Bene-Watch can see transactions and balances to do the math — it can never move money.
             Access tokens are encrypted at rest.
           </Tip>
         </Section>
@@ -280,7 +280,7 @@ export default function HelpPage() {
         <Section id="recurring" icon={<IconRepeat size={18} stroke={1.8} />} title="Recurring income">
           <p>
             The <Link href="/recurring" className={linkCls}>Recurring</Link> screen detects repeating
-            deposits like a paycheck or monthly benefit. Confirm a stream and BeneWatch can{" "}
+            deposits like a paycheck or monthly benefit. Confirm a stream and Bene-Watch can{" "}
             <span className="font-semibold text-[var(--color-cs-text)]">project the rest of the month</span>{" "}
             — so you get a heads-up before a limit is crossed, not after.
           </p>
@@ -355,7 +355,7 @@ export default function HelpPage() {
 
         {/* ALERTS */}
         <Section id="alerts" icon={<IconBell size={18} stroke={1.8} />} title="Alerts & notifications">
-          <p>When activity approaches or crosses a limit, BeneWatch raises an alert:</p>
+          <p>When activity approaches or crosses a limit, Bene-Watch raises an alert:</p>
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]">Watch</span> — you&apos;ve reached a limit&apos;s warning line, or a projection suggests you&apos;ll approach it by month-end.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Over limit</span> — current activity meets or exceeds the cap.</li>
@@ -403,7 +403,7 @@ export default function HelpPage() {
         {/* FAQ */}
         <Section id="faq" icon={<IconCircleCheck size={18} stroke={1.8} />} title="FAQ">
           <dl className="space-y-3">
-            <Term name="Will BeneWatch report my income to anyone?">
+            <Term name="Will Bene-Watch report my income to anyone?">
               No. It&apos;s a private tool for you. Nothing is shared with SSA, your county office, or any
               agency. You decide what to do with the information.
             </Term>
@@ -449,12 +449,12 @@ export default function HelpPage() {
         <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
           Still stuck? We&apos;re happy to help.
         </p>
-        <a href="mailto:support@mybenefitspa.com" className="cs-btn cs-btn-primary">
+        <a href="mailto:support@bene-watch.com" className="cs-btn cs-btn-primary">
           Contact support
         </a>
       </div>
       <p className="mt-4 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-        BeneWatch is an informational tool, not legal, tax, or benefits advice, and not a
+        Bene-Watch is an informational tool, not legal, tax, or benefits advice, and not a
         determination of eligibility. See our{" "}
         <Link href="/legal/privacy" className="underline hover:text-[var(--color-cs-text-secondary)]">Privacy Policy</Link>,{" "}
         <Link href="/legal/terms" className="underline hover:text-[var(--color-cs-text-secondary)]">Terms</Link>, and{" "}

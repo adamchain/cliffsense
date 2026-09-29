@@ -12,7 +12,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "BeneWatch",
+  title: "Bene-Watch",
   description: "Compare bank activity to benefit-program thresholds and get calm email reminders before limits.",
   icons: {
     icon: "/benewatch-icon.png",

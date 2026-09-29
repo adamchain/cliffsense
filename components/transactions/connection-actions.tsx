@@ -41,7 +41,7 @@ export function AccountConnectionActions({
   }
 
   async function disconnect() {
-    if (!confirm(`Disconnect ${institutionName}? This removes its transactions from BeneWatch.`)) {
+    if (!confirm(`Disconnect ${institutionName}? This removes its transactions from Bene-Watch.`)) {
       return;
     }
     setBusy("disconnect");

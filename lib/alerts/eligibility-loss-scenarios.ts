@@ -66,7 +66,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     programs: ["DAC"],
     trigger: "reporting",
     level: "warning",
-    risk: "Marriage generally ends DAC unless the spouse is also a Title II beneficiary. BeneWatch cannot see the spouse's benefit.",
+    risk: "Marriage generally ends DAC unless the spouse is also a Title II beneficiary. Bene-Watch cannot see the spouse's benefit.",
     action: "Report the marriage to SSA promptly. DAC has no fixed 10th-of-the-month calendar. Screen other cash and medical pathways before relying on DAC continuing.",
     autoDetect: false,
   },

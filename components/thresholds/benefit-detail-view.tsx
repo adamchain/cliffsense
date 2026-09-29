@@ -604,7 +604,7 @@ export function BenefitDetailView({
           )}
 
           <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
-            BeneWatch counts these against the {title} threshold from your linked accounts.
+            Bene-Watch counts these against the {title} threshold from your linked accounts.
             Nothing here is shared with any agency. Figures are informational — not an eligibility
             determination.
           </p>

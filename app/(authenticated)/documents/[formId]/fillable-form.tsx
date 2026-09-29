@@ -159,10 +159,10 @@ export function FormExperience({
       const data = (await res.json().catch(() => ({}))) as { details?: string };
       setOfficialMsg(
         data.details ??
-          "Couldn't auto-fill the official PDF right now — use the BeneWatch summary instead.",
+          "Couldn't auto-fill the official PDF right now — use the Bene-Watch summary instead.",
       );
     } catch {
-      setOfficialMsg("Network error fetching the official PDF — try the BeneWatch summary.");
+      setOfficialMsg("Network error fetching the official PDF — try the Bene-Watch summary.");
     } finally {
       setDownloadingOfficial(false);
     }
@@ -274,7 +274,7 @@ export function FormExperience({
               className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-cs-border)] px-3 py-2 text-[13px] font-semibold text-[var(--color-cs-text)] hover:bg-[var(--color-cs-nav-hover)] disabled:opacity-50"
             >
               <IconDownload size={16} stroke={1.8} aria-hidden />
-              {downloading ? "Preparing…" : officialAvailable ? "BeneWatch summary" : "Download PDF"}
+              {downloading ? "Preparing…" : officialAvailable ? "Bene-Watch summary" : "Download PDF"}
             </button>
             <button
               type="button"
@@ -316,7 +316,7 @@ export function FormExperience({
 
       {/* ---------- Print/PDF document view (print only) ---------- */}
       <div className="hidden print:block">
-        <div className="mb-1 text-[11px] font-bold text-[#0f2a4c]">BeneWatch</div>
+        <div className="mb-1 text-[11px] font-bold text-[#0f2a4c]">Bene-Watch</div>
         <h2 className="text-[18px] font-bold text-[#0f2a4c]">{form.title}</h2>
         <p className="text-[11px] text-[#566175]">
           {form.agency}

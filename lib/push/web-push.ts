@@ -21,7 +21,7 @@ function ensureConfigured(): boolean {
   if (configured) return true;
   if (!pushConfigured()) return false;
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT?.trim() || "mailto:alerts@mybenefitspa.com",
+    process.env.VAPID_SUBJECT?.trim() || "mailto:alerts@bene-watch.com",
     process.env.VAPID_PUBLIC_KEY!.trim(),
     process.env.VAPID_PRIVATE_KEY!.trim(),
   );

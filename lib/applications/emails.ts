@@ -18,16 +18,16 @@ export async function sendApplicationReceivedEmail({ to, statusToken }: Recipien
   const url = statusUrl(statusToken);
   const { html, text } = renderEmail({
     heading: "We received your application",
-    preheader: "Your BeneWatch application is under review.",
+    preheader: "Your Bene-Watch application is under review.",
     tone: "info",
     paragraphs: [
-      "Thanks for applying to BeneWatch. Because you're signing up to help manage benefits for someone else, our team reviews each application before granting access.",
+      "Thanks for applying to Bene-Watch. Because you're signing up to help manage benefits for someone else, our team reviews each application before granting access.",
       "Next step: sign in and upload one authorization document — a Representative Payee letter (SSA) or a Power of Attorney for financial affairs. We'll review it and email you when a decision is made.",
       "You can check your status any time using the link below — bookmark it.",
     ],
     cta: { label: "Check application status", url },
   });
-  await sendEmail({ to, subject: "Your BeneWatch application", html, text });
+  await sendEmail({ to, subject: "Your Bene-Watch application", html, text });
 }
 
 export async function sendDocumentReceivedEmail({ to, statusToken }: Recipient): Promise<void> {
@@ -41,23 +41,23 @@ export async function sendDocumentReceivedEmail({ to, statusToken }: Recipient):
     ],
     cta: { label: "Check application status", url },
   });
-  await sendEmail({ to, subject: "BeneWatch — document received", html, text });
+  await sendEmail({ to, subject: "Bene-Watch — document received", html, text });
 }
 
 export async function sendApplicationApprovedEmail({ to, statusToken }: Recipient): Promise<void> {
   const url = statusUrl(statusToken);
   const { html, text } = renderEmail({
     heading: "You're approved",
-    preheader: "Your BeneWatch application was approved.",
+    preheader: "Your Bene-Watch application was approved.",
     tone: "success",
     paragraphs: [
-      "Good news — your application was approved. You now have full access to BeneWatch.",
+      "Good news — your application was approved. You now have full access to Bene-Watch.",
       "Sign in to finish setting up: add the person you're helping, link accounts (read-only — money never moves), and choose the benefit programs to track.",
     ],
     cta: { label: "Sign in and continue", url: `${appUrl()}/auth/signin` },
     bodyText: `You can also review your application status here: ${url}`,
   });
-  await sendEmail({ to, subject: "Your BeneWatch application was approved", html, text });
+  await sendEmail({ to, subject: "Your Bene-Watch application was approved", html, text });
 }
 
 export async function sendApplicationRejectedEmail({
@@ -75,12 +75,12 @@ export async function sendApplicationRejectedEmail({
   );
   const { html, text } = renderEmail({
     heading: "Update on your application",
-    preheader: "A decision has been made on your BeneWatch application.",
+    preheader: "A decision has been made on your Bene-Watch application.",
     tone: "danger",
     paragraphs,
     cta: { label: "View status", url },
   });
-  await sendEmail({ to, subject: "Update on your BeneWatch application", html, text });
+  await sendEmail({ to, subject: "Update on your Bene-Watch application", html, text });
 }
 
 export async function sendWaitlistConfirmEmail({
@@ -92,14 +92,14 @@ export async function sendWaitlistConfirmEmail({
 }): Promise<void> {
   const { html, text } = renderEmail({
     heading: "You're on the list",
-    preheader: "Thanks for your interest in BeneWatch.",
+    preheader: "Thanks for your interest in Bene-Watch.",
     tone: "info",
     paragraphs: [
-      `Hi ${name} — thanks for signing up. We'll reach out as soon as BeneWatch is ready for you.`,
+      `Hi ${name} — thanks for signing up. We'll reach out as soon as Bene-Watch is ready for you.`,
       "We're building a tool to help caregivers and advocates manage government benefits for the people they support. Stay tuned.",
     ],
   });
-  await sendEmail({ to, subject: "You're on the BeneWatch waitlist", html, text });
+  await sendEmail({ to, subject: "You're on the Bene-Watch waitlist", html, text });
 }
 
 export async function sendApplicationInfoRequestedEmail({
@@ -113,10 +113,10 @@ export async function sendApplicationInfoRequestedEmail({
   paragraphs.push("Please sign in and upload the requested document or reply to this email.");
   const { html, text } = renderEmail({
     heading: "We need a little more information",
-    preheader: "Action needed on your BeneWatch application.",
+    preheader: "Action needed on your Bene-Watch application.",
     tone: "warning",
     paragraphs,
     cta: { label: "Check application status", url },
   });
-  await sendEmail({ to, subject: "BeneWatch — more information needed", html, text });
+  await sendEmail({ to, subject: "Bene-Watch — more information needed", html, text });
 }

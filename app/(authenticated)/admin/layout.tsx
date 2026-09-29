@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { AdminNav } from "./admin-nav";
 
-export const metadata = { title: "Admin · BeneWatch" };
+export const metadata = { title: "Admin · Bene-Watch" };
 
 /**
  * Gates the entire admin surface once (real, non-impersonating admin only) and

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Bullets, DocHeader, Section, Sub, Table } from "../_components";
 
 export const metadata: Metadata = {
-  title: "Data Retention and Deletion Policy — BeneWatch",
+  title: "Data Retention and Deletion Policy — Bene-Watch",
   description:
-    "How BeneWatch retains, archives, deletes, de-identifies, and disposes of personal information and records.",
+    "How Bene-Watch retains, archives, deletes, de-identifies, and disposes of personal information and records.",
 };
 
 export default function DataRetentionPage() {
@@ -24,7 +24,7 @@ export default function DataRetentionPage() {
 
       <Section title="1. Purpose and Scope">
         <p>
-          This Data Retention and Deletion Policy explains how BeneWatch retains, archives, deletes,
+          This Data Retention and Deletion Policy explains how Bene-Watch retains, archives, deletes,
           de-identifies, and disposes of personal information, Financial Data, documents, AI
           interactions, audit logs, and operational records. It applies to data collected directly from
           users, obtained through Plaid or similar integrations, uploaded by users or advisors,
@@ -193,7 +193,7 @@ export default function DataRetentionPage() {
           <p>
             Income, resource, household, disability, and program records may be relevant to reporting
             obligations, renewal disputes, overpayment allegations, appeals, and agency correspondence.
-            BeneWatch generally archives these records up to 7 years after account closure, subject
+            Bene-Watch generally archives these records up to 7 years after account closure, subject
             to deletion rights and lawful exceptions.
           </p>
         </Sub>
@@ -210,8 +210,8 @@ export default function DataRetentionPage() {
 
       <Section title="5. User-Initiated Deletion and Account Closure">
         <p>
-          Users may request deletion by contacting support@mybenefitspa.com or using account settings
-          where available. BeneWatch will verify identity and authority before deleting or exporting
+          Users may request deletion by contacting support@bene-watch.com or using account settings
+          where available. Bene-Watch will verify identity and authority before deleting or exporting
           sensitive information.
         </p>
         <Table
@@ -248,7 +248,7 @@ export default function DataRetentionPage() {
 
       <Section title="6. Advisor Revocation">
         <p>
-          When advisor or caregiver authority is revoked, disputed, expired, or terminated, BeneWatch
+          When advisor or caregiver authority is revoked, disputed, expired, or terminated, Bene-Watch
           will disable or restrict advisor access after verification. Records of advisor access,
           invitations, authority documents, data exports, and revocation events may be retained for
           audit, legal defense, and privacy compliance. Revoking advisor access does not delete the
@@ -268,7 +268,7 @@ export default function DataRetentionPage() {
         <Bullets
           items={[
             "Records may also be retained beyond standard periods when required by contract, business associate agreement, tax/accounting duty, audit duty, security incident remediation, or user-requested case preservation.",
-            "BeneWatch will restrict access to held data and preserve only what is reasonably necessary for the hold purpose.",
+            "Bene-Watch will restrict access to held data and preserve only what is reasonably necessary for the hold purpose.",
             "Users will be notified of legal-hold limits on deletion where legally permitted.",
           ]}
         />
@@ -326,7 +326,7 @@ export default function DataRetentionPage() {
         <p>
           Users may request a copy of personal information in a portable format where required by law
           and technically feasible. Export files may include sensitive documents, financial records,
-          benefit records, and advisor-access history. BeneWatch verifies the requester before
+          benefit records, and advisor-access history. Bene-Watch verifies the requester before
           providing exports and may provide secure download links with expiration and audit logging.
         </p>
       </Section>
@@ -341,7 +341,7 @@ export default function DataRetentionPage() {
         </p>
         <p>
           Retention and deletion requests, security incidents, and general support:
-          support@mybenefitspa.com.
+          support@bene-watch.com.
         </p>
       </Section>
     </article>

@@ -36,7 +36,7 @@ export const VERIFY_FUTURE_POLICY =
   "First confirm the rule is in effect for this person, category, and certification period. 2026–2027 policy dates, Pennsylvania waivers, exemptions, and delayed starts must be verified before treating a projected rule as current law.";
 
 export const INFORMATIONAL_ONLY =
-  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
+  "Informational only — Bene-Watch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
 
 const DEFAULT_DOCS = [
   "Current pay stubs or benefit award letters",
@@ -75,7 +75,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "generic_limit",
     "A stored benefit limit needs review",
     [],
-    "Linked account activity is near a reference limit stored in BeneWatch. Confirm which program the limit belongs to before treating it as an SSI, Medicaid, or SNAP rule.",
+    "Linked account activity is near a reference limit stored in Bene-Watch. Confirm which program the limit belongs to before treating it as an SSI, Medicaid, or SNAP rule.",
     "Open the program page, confirm the figures, and report a real change only to the agency that administers that program. Do not change work or spending solely on this alert.",
     {
       effectiveDateNote:
@@ -189,7 +189,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "dac_marriage",
     "Marriage can end DAC",
     ["DAC"],
-    "Marriage generally ends DAC unless the spouse is also a Title II beneficiary. BeneWatch cannot see the spouse's benefit.",
+    "Marriage generally ends DAC unless the spouse is also a Title II beneficiary. Bene-Watch cannot see the spouse's benefit.",
     "Report the marriage to SSA promptly. DAC has no fixed 10th-of-the-month calendar. Screen other cash and medical pathways before relying on DAC continuing.",
     { personaId: "denise_marriage_deeming" },
   ),

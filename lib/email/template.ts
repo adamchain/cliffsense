@@ -8,7 +8,7 @@
 import { appUrl } from "@/lib/email/mailer";
 
 export const BRAND = {
-  name: "BeneWatch",
+  name: "Bene-Watch",
   blue: "#1b6cc4",
   blueHover: "#15579e",
   navy: "#0f2a4c",
@@ -24,7 +24,7 @@ export const BRAND = {
 } as const;
 
 const DISCLAIMER =
-  "Informational only — BeneWatch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
+  "Informational only — Bene-Watch does not determine eligibility. Confirm with SSA, the County Assistance Office, COMPASS, or a qualified benefits counselor.";
 
 export type EmailTone = "info" | "success" | "warning" | "danger";
 
@@ -146,7 +146,7 @@ ${preheader}
         )}</p>
         <p style="margin:0;font-size:12px;line-height:1.5;color:${BRAND.textMuted};">
           <a href="${base}" target="_blank" style="color:${BRAND.blue};text-decoration:none;">${BRAND.name}</a>
-          &nbsp;·&nbsp; You're receiving this because you have a BeneWatch account.
+          &nbsp;·&nbsp; You're receiving this because you have a Bene-Watch account.
         </p>
       </td></tr>
     </table>

@@ -116,7 +116,7 @@ export default async function SettingsPage() {
             <DeleteAccountButton />
           </div>
           <p className="pt-1 text-center text-[12px] text-[var(--color-cs-text-muted)]">
-            BeneWatch 1.0
+            Bene-Watch 1.0
           </p>
         </section>
       </div>

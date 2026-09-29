@@ -34,14 +34,14 @@ export async function POST(req: Request) {
     const link = `${appUrl()}/auth/reset?token=${encodeURIComponent(token)}`;
     const { html, text } = renderEmail({
       heading: "Reset your password",
-      preheader: "Set a new BeneWatch password.",
+      preheader: "Set a new Bene-Watch password.",
       paragraphs: [
-        "We received a request to reset the password on your BeneWatch account. Click below to choose a new one.",
+        "We received a request to reset the password on your Bene-Watch account. Click below to choose a new one.",
         "This link expires in 1 hour. If you didn't request this, you can safely ignore this email — your password won't change.",
       ],
       cta: { label: "Reset password", url: link },
     });
-    await sendEmail({ to: user.email, subject: "Reset your BeneWatch password", html, text });
+    await sendEmail({ to: user.email, subject: "Reset your Bene-Watch password", html, text });
   } catch (e) {
     console.warn("forgot-password email failed", e);
   }

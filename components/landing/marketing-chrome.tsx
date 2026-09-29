@@ -17,7 +17,7 @@ export function MarketingHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-[rgba(248,248,250,0.82)] backdrop-blur-[22px] backdrop-saturate-150">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 sm:px-6">
-        <Link href="/" className="flex items-center" aria-label="BeneWatch home">
+        <Link href="/" className="flex items-center" aria-label="Bene-Watch home">
           <BrandLogo priority className="h-8 w-auto" />
         </Link>
         <nav className="hidden items-center gap-7 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] md:flex">
@@ -63,7 +63,7 @@ const FOOTER_GROUPS: { heading: string; links: { label: string; href: string }[]
       { label: "About us", href: "/about" },
       { label: "A father's perspective", href: "/about#perspective" },
       { label: "Sign in", href: "/#sign-in" },
-      { label: "Support", href: "mailto:support@mybenefitspa.com" },
+      { label: "Support", href: "mailto:support@bene-watch.com" },
     ],
   },
   {
@@ -113,14 +113,14 @@ export function MarketingFooter() {
         <div className="mt-12 border-t border-[var(--color-cs-border)] pt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[12px] text-[var(--color-cs-text-muted)]">
-              © {new Date().getFullYear()} BeneWatch. All rights reserved.
+              © {new Date().getFullYear()} Bene-Watch. All rights reserved.
             </p>
             <p className="text-[12px] text-[var(--color-cs-text-muted)]">
               Not a government agency — does not determine eligibility.
             </p>
           </div>
           <p className="mt-4 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            BeneWatch does not determine or guarantee eligibility, benefit amounts, continued
+            Bene-Watch does not determine or guarantee eligibility, benefit amounts, continued
             coverage, or the outcome of any agency proceeding. It does not replace official agency
             instructions or individualized legal, tax, financial, medical, or benefits advice.
           </p>

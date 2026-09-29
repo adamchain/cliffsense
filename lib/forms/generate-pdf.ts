@@ -73,7 +73,7 @@ export async function generateFormPdf(
   };
 
   // ---------- Header ----------
-  page.drawText("BeneWatch", { x: MARGIN, y: y - 12, size: 12, font: bold, color: NAVY });
+  page.drawText("Bene-Watch", { x: MARGIN, y: y - 12, size: 12, font: bold, color: NAVY });
   y -= 24;
   drawWrapped(form.title, bold, 18, NAVY, 5);
   y -= 2;

@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-/** Horizontal BeneWatch wordmark (name + state-and-check). */
+/** Horizontal Bene-Watch wordmark (name + state-and-check). */
 export function BrandLogo({
   className = "h-8 w-auto",
   priority = false,
@@ -11,7 +11,7 @@ export function BrandLogo({
   return (
     <Image
       src="/benewatch-logo.png"
-      alt="BeneWatch"
+      alt="Bene-Watch"
       width={640}
       height={121}
       priority={priority}
@@ -20,7 +20,7 @@ export function BrandLogo({
   );
 }
 
-/** Stacked BeneWatch mark (state-and-check above the wordmark). */
+/** Stacked Bene-Watch mark (state-and-check above the wordmark). */
 export function BrandStackedMark({
   className = "h-16 w-auto",
   priority = false,
@@ -31,7 +31,7 @@ export function BrandStackedMark({
   return (
     <Image
       src="/benewatch-mark.png"
-      alt="BeneWatch"
+      alt="Bene-Watch"
       width={503}
       height={387}
       priority={priority}

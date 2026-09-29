@@ -7,8 +7,8 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "BeneWatch",
-    short_name: "BeneWatch",
+    name: "Bene-Watch",
+    short_name: "Bene-Watch",
     description:
       "Track benefit thresholds, get alerts before you cross an eligibility limit, and stay on top of your benefits.",
     start_url: "/dashboard",

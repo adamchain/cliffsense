@@ -413,7 +413,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
 
           <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
             Due {longDeadline(event.date)}. Nothing you prepare here is shared with any agency —
-            BeneWatch only helps you organize before you file.
+            Bene-Watch only helps you organize before you file.
           </p>
         </div>
 

@@ -17,9 +17,9 @@ import {
 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-  title: "How it works · BeneWatch",
+  title: "How it works · Bene-Watch",
   description:
-    "A look under the hood: how BeneWatch turns raw bank activity into income estimates, limit checks, and early alerts.",
+    "A look under the hood: how Bene-Watch turns raw bank activity into income estimates, limit checks, and early alerts.",
 };
 
 /* ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ export default function HowItWorksPage() {
         How it works
       </h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        A look inside the brain of BeneWatch. Every bar, status, and alert you see is the end of
+        A look inside the brain of Bene-Watch. Every bar, status, and alert you see is the end of
         a six-stage pipeline that turns raw bank activity into a plain-English picture of where you
         stand against each benefit limit. Here&apos;s each stage, in order.
       </p>
@@ -290,7 +290,7 @@ export default function HowItWorksPage() {
       </div>
 
       <p className="mt-6 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-        BeneWatch is an informational tool, not legal, tax, or benefits advice, and not a
+        Bene-Watch is an informational tool, not legal, tax, or benefits advice, and not a
         determination of eligibility. See our{" "}
         <Link href="/legal/privacy" className="underline hover:text-[var(--color-cs-text-secondary)]">Privacy Policy</Link>,{" "}
         <Link href="/legal/terms" className="underline hover:text-[var(--color-cs-text-secondary)]">Terms</Link>, and{" "}

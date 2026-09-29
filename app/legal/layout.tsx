@@ -15,7 +15,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-          <Link href="/landing" className="flex items-center" aria-label="BeneWatch home">
+          <Link href="/landing" className="flex items-center" aria-label="Bene-Watch home">
             <BrandLogo priority className="h-8 w-auto" />
           </Link>
           <Link
@@ -46,8 +46,8 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             ))}
           </nav>
           <p className="mt-6 text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            © {new Date().getFullYear()} BeneWatch Inc. Informational tool only. Not legal, tax, or
-            benefits advice. Questions: support@mybenefitspa.com.
+            © {new Date().getFullYear()} Bene-Watch Inc. Informational tool only. Not legal, tax, or
+            benefits advice. Questions: support@bene-watch.com.
           </p>
         </div>
       </footer>

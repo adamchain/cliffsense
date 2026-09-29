@@ -6,7 +6,7 @@ import { ApplicationStatusBadge, ApplicationTimeline } from "@/components/applic
 import { relationshipLabel } from "@/lib/applications/labels";
 import { BrandLogo } from "@/components/brand/brand-logo";
 
-export const metadata = { title: "Application status · BeneWatch" };
+export const metadata = { title: "Application status · Bene-Watch" };
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (

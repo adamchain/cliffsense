@@ -60,7 +60,7 @@ export function RoleOnboardingForm() {
             required
           />
           <span>
-            I understand BeneWatch does not determine eligibility and that I must identify the
+            I understand Bene-Watch does not determine eligibility and that I must identify the
             exact program and category before treating someone as over income or over assets.
           </span>
         </label>

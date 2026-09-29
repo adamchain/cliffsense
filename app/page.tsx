@@ -24,7 +24,7 @@ export default function HomePage() {
               Act Before an Avoidable Lapse Becomes a Loss of Care
             </h1>
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-              BeneWatch gives beneficiaries and authorized caregivers an active system for
+              Bene-Watch gives beneficiaries and authorized caregivers an active system for
               recognizing approaching benefit risks, organizing required evidence, tracking
               critical deadlines, and maintaining a clear record of what has been submitted.
             </p>

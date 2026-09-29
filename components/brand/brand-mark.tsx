@@ -9,7 +9,7 @@ const PX: Record<"sm" | "md" | "lg" | "xl", number> = {
 };
 
 /**
- * The BeneWatch state-and-check icon. Its navy outline is invisible on the
+ * The Bene-Watch state-and-check icon. Its navy outline is invisible on the
  * brand-colored header/aside, so pass `onDark` to seat it on a white chip.
  */
 export function BrandMark({
