@@ -3,9 +3,15 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { connectDB } from "@/lib/db/mongodb";
+import Beneficiary from "@/lib/db/models/Beneficiary";
 import VaultDocument from "@/lib/db/models/Document";
-import { VAULT_CATEGORIES, vaultSectionId } from "@/lib/vault/categories";
-import { VaultUpload } from "./vault-upload";
+import {
+  VAULT_FOLDERS,
+  effectiveVaultSlot,
+  folderIdForDocument,
+  slotAttention,
+  vaultCaseContext,
+} from "@/lib/vault/categories";
 import { VaultBrowser } from "./vault-browser";
 
 function formatSize(bytes: number): string {
@@ -22,54 +28,94 @@ export default async function VaultPage() {
   const primary = await getActiveBeneficiaryForUser(session.user.id);
   const beneficiaryId = primary?._id.toString() ?? null;
 
-  let docsBySection = new Map<
-    string,
-    { id: string; filename: string; sizeBytes: number; createdAt: Date; mimeType: string }[]
-  >();
+  let folders: {
+    id: string;
+    label: string;
+    hint: string;
+    tint: string;
+    slots: { id: string; label: string; hint: string; attention: "needed" | "review" | "optional" | "keep" }[];
+    docs: { id: string; filename: string; sizeLabel: string; uploadedLabel: string; slotId: string | null }[];
+  }[] = [];
+  let proofFiled = 0;
+  let proofNeeded = 0;
+  let screened = false;
 
   if (beneficiaryId) {
     await connectDB();
-    const rows = await VaultDocument.find({ beneficiaryId })
-      .select("filename mimeType sizeBytes category createdAt")
-      .sort({ createdAt: -1 })
-      .lean();
-    docsBySection = new Map();
-    for (const r of rows) {
-      const section = vaultSectionId(r.category);
-      const list = docsBySection.get(section) ?? [];
-      list.push({
-        id: r._id.toString(),
-        filename: r.filename,
-        sizeBytes: r.sizeBytes,
-        createdAt: r.createdAt,
-        mimeType: r.mimeType,
-      });
-      docsBySection.set(section, list);
-    }
-  }
+    const [rows, ben] = await Promise.all([
+      VaultDocument.find({ beneficiaryId })
+        .select("filename mimeType sizeBytes category slot createdAt")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Beneficiary.findById(beneficiaryId).select("opening benefitsEnrolled").lean(),
+    ]);
 
-  const folders = VAULT_CATEGORIES.map((c) => {
-    const docs = docsBySection.get(c.id) ?? [];
-    return {
-      id: c.id,
-      label: c.label,
-      hint: c.hint,
-      docs: docs.map((d) => ({
-        id: d.id,
-        filename: d.filename,
-        sizeLabel: formatSize(d.sizeBytes),
-        uploadedLabel: new Date(d.createdAt).toLocaleDateString(),
-      })),
-    };
-  });
+    const opening = (ben?.opening ?? null) as {
+      benefitScreening?: Record<string, string>;
+      authorities?: string[];
+    } | null;
+    const enrolled = (ben?.benefitsEnrolled ?? []) as {
+      program?: string;
+      contextData?: { workersWithJobSuccess?: boolean };
+    }[];
+    const ctx = vaultCaseContext({
+      screening: opening?.benefitScreening,
+      enrolled: enrolled.map((row) => String(row.program ?? "")).filter(Boolean),
+      authorities: opening?.authorities,
+      extraActive: enrolled.some((row) => row.contextData?.workersWithJobSuccess) ? ["wjs"] : [],
+    });
+    screened = ctx.active.size > 0 || ctx.review.size > 0;
+
+    const docsByFolder = new Map<string, (typeof folders)[number]["docs"]>();
+    for (const row of rows) {
+      const slotId = effectiveVaultSlot(row.category, row.slot);
+      const folderId = folderIdForDocument(row.category, row.slot);
+      const list = docsByFolder.get(folderId) ?? [];
+      list.push({
+        id: row._id.toString(),
+        filename: row.filename,
+        sizeLabel: formatSize(row.sizeBytes),
+        uploadedLabel: new Date(row.createdAt).toLocaleDateString(),
+        slotId,
+      });
+      docsByFolder.set(folderId, list);
+    }
+
+    folders = VAULT_FOLDERS.map((folder) => {
+      const docs = docsByFolder.get(folder.id) ?? [];
+      const slots = folder.slots.map((slot) => ({
+        id: slot.id,
+        label: slot.label,
+        hint: slot.hint,
+        attention: slotAttention(slot, ctx),
+      }));
+      for (const slot of slots) {
+        if (slot.attention !== "needed") continue;
+        proofNeeded += 1;
+        if (docs.some((doc) => doc.slotId === slot.id)) proofFiled += 1;
+      }
+      return {
+        id: folder.id,
+        label: folder.label,
+        hint: folder.hint,
+        tint: folder.tint,
+        slots,
+        docs,
+      };
+    });
+  }
 
   return (
     <>
       <div className="mb-1 text-xs text-[var(--color-cs-text-secondary)]">Home › Vault</div>
       <h1 className="cs-big-title mb-2">Vault</h1>
-      <p className="mb-4 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Organized folders for medical records, disability proof, income, expenses, and work paperwork.
-        Max 10 MB per file.
+      <p className="mb-2 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Preset folders for the opening file: identity and authority, each benefit, income and
+        resources, trusts and ABLE, and the notice trail. Add a file on the row it belongs to.
+      </p>
+      <p className="mb-4 max-w-2xl text-[12.5px] text-[var(--color-cs-text-secondary)]">
+        Keep passwords, login codes, and full Social Security or account numbers out of these files.
+        Max 10 MB each.
       </p>
 
       {!beneficiaryId ? (
@@ -82,13 +128,25 @@ export default async function VaultPage() {
         </p>
       ) : (
         <>
-          <VaultUpload beneficiaryId={beneficiaryId} categories={VAULT_CATEGORIES} />
-
-          <VaultBrowser folders={folders} />
-
-          <p className="mt-3 text-[11px] text-[var(--color-cs-text-muted)]">
-            Files are owner-scoped and only downloadable via authenticated session — no public URLs.
-          </p>
+          {!screened && (
+            <p className="mb-3 text-[13px] text-[var(--color-cs-text-secondary)]">
+              <Link href="/onboarding/benefits" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                Screen benefits
+              </Link>{" "}
+              and{" "}
+              <Link href="/onboarding/authority" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                record authority
+              </Link>{" "}
+              so empty rows show up only for this case.
+            </p>
+          )}
+          <VaultBrowser
+            beneficiaryId={beneficiaryId}
+            folders={folders}
+            proofFiled={proofFiled}
+            proofNeeded={proofNeeded}
+            screened={screened}
+          />
         </>
       )}
     </>

@@ -1,4 +1,5 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import { VAULT_CATEGORY_IDS } from "@/lib/vault/categories";
 
 const documentSchema = new Schema(
   {
@@ -6,26 +7,11 @@ const documentSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     category: {
       type: String,
-      enum: [
-        // Current organization
-        "medical_records",
-        "disability_proof",
-        "job_income",
-        "expenses",
-        "work_activity",
-        "able_snt",
-        "title_deed",
-        "correspondence",
-        "other",
-        // Legacy (kept so older uploads still validate)
-        "receipts",
-        "award_letter",
-        "income_verification",
-        "renewal",
-        "asset_statement",
-      ],
+      enum: [...VAULT_CATEGORY_IDS],
       default: "other",
     },
+    /** Checklist row inside the folder, when the file fills a preset document type. */
+    slot: { type: String, default: "", trim: true },
     /** When this document is a receipt paired to a bank transaction. */
     transactionId: { type: Schema.Types.ObjectId, ref: "Transaction", default: null, index: true },
     filename: { type: String, required: true, trim: true },
@@ -49,8 +35,11 @@ export type DocumentDoc = InferSchemaType<typeof documentSchema> & {
   updatedAt: Date;
 };
 
-const VaultDocument: Model<DocumentDoc> =
-  mongoose.models?.VaultDocument ??
-  mongoose.model<DocumentDoc>("VaultDocument", documentSchema);
+const MODEL_NAME = "VaultDocument";
+if (mongoose.models[MODEL_NAME]) {
+  mongoose.deleteModel(MODEL_NAME);
+}
+
+const VaultDocument: Model<DocumentDoc> = mongoose.model<DocumentDoc>(MODEL_NAME, documentSchema);
 
 export default VaultDocument;

@@ -5,7 +5,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { IconDownload } from "@tabler/icons-react";
-import { vaultCategoryLabel } from "@/lib/vault/categories";
+import { vaultCategoryLabel, vaultSlotLabel } from "@/lib/vault/categories";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -26,7 +26,7 @@ export default async function VaultDetailPage({
 
   await connectDB();
   const doc = await VaultDocument.findById(id)
-    .select("beneficiaryId filename mimeType sizeBytes category scanStatus createdAt")
+    .select("beneficiaryId filename mimeType sizeBytes category slot scanStatus createdAt")
     .lean();
   if (!doc) notFound();
 
@@ -93,11 +93,17 @@ export default async function VaultDetailPage({
               </dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt className="text-[var(--color-cs-text-secondary)]">Category</dt>
+              <dt className="text-[var(--color-cs-text-secondary)]">Folder</dt>
               <dd className="text-[var(--color-cs-text)]">
                 {vaultCategoryLabel(doc.category)}
               </dd>
             </div>
+            {vaultSlotLabel(doc.slot) && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-[var(--color-cs-text-secondary)]">Document</dt>
+                <dd className="text-right text-[var(--color-cs-text)]">{vaultSlotLabel(doc.slot)}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-3">
               <dt className="text-[var(--color-cs-text-secondary)]">Type</dt>
               <dd className="text-[var(--color-cs-text)]">{doc.mimeType}</dd>

@@ -376,7 +376,7 @@ export default function HelpPage() {
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/documents" className={linkCls}>Reports &amp; Docs</Link></span> — summaries you can review or hand to a counselor.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/reports" className={linkCls}>Exports</Link></span> — download your activity and limit history (e.g. for a redetermination packet).</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/vault" className={linkCls}>Vault</Link></span> — medical records, disability proof, income, expenses, work paperwork, ABLE/SNT statements, and titles in one place.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/vault" className={linkCls}>Vault</Link></span> — preset folders for identity and authority, Social Security, Medicare, Medicaid, SNAP, income, SNT/ABLE, and notices. Each row is a document the opening file asks for.</li>
           </ul>
         </Section>
 

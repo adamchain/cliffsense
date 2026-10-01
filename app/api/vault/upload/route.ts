@@ -5,7 +5,7 @@ import { connectDB } from "@/lib/db/mongodb";
 import VaultDocument from "@/lib/db/models/Document";
 import Transaction from "@/lib/db/models/Transaction";
 import { logActivity } from "@/lib/activity/log-activity";
-import { VAULT_CATEGORY_IDS } from "@/lib/vault/categories";
+import { VAULT_CATEGORY_IDS, folderIdForSlot, slotBelongsToFolder } from "@/lib/vault/categories";
 
 export const runtime = "nodejs";
 
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
   }
   const beneficiaryId = form.get("beneficiaryId");
   const category = form.get("category");
+  const slotField = form.get("slot");
   const file = form.get("file");
   const transactionId = form.get("transactionId");
 
@@ -41,7 +42,18 @@ export async function POST(req: Request) {
       { status: 413 },
     );
   }
-  const cat = typeof category === "string" && ALLOWED_CATEGORIES.has(category) ? category : "other";
+  const requestedSlot = typeof slotField === "string" ? slotField.trim() : "";
+  let cat = typeof category === "string" && ALLOWED_CATEGORIES.has(category) ? category : "other";
+  if (requestedSlot) {
+    const slotFolder = folderIdForSlot(requestedSlot);
+    if (!slotFolder) {
+      return NextResponse.json({ error: "Unknown document type" }, { status: 400 });
+    }
+    if (typeof category === "string" && category && !slotBelongsToFolder(category, requestedSlot)) {
+      return NextResponse.json({ error: "That document type is in a different folder" }, { status: 400 });
+    }
+    cat = slotFolder;
+  }
 
   const ok = await assertBeneficiaryWriteAccess(session.user.id, beneficiaryId);
   if (!ok) {
@@ -67,6 +79,7 @@ export async function POST(req: Request) {
     beneficiaryId,
     userId: session.user.id,
     category: cat,
+    slot: requestedSlot,
     transactionId: linkedTxId,
     filename: file.name || "upload",
     mimeType: file.type || "application/octet-stream",
@@ -96,6 +109,7 @@ export async function POST(req: Request) {
       mimeType: doc.mimeType,
       sizeBytes: doc.sizeBytes,
       category: doc.category,
+      slot: doc.slot,
     },
   });
 }

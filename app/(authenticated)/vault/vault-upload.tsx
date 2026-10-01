@@ -1,110 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconCloudUpload } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 
-type Category = { id: string; label: string };
-
-export function VaultUpload({
+export function VaultAddFile({
   beneficiaryId,
-  categories,
+  category,
+  slot,
+  label = "Add",
+  documentLabel,
 }: {
   beneficiaryId: string;
-  categories: Category[];
+  category: string;
+  slot?: string;
+  label?: string;
+  documentLabel?: string;
 }) {
   const router = useRouter();
-  const [category, setCategory] = useState(categories[0]?.id ?? "other");
-  const [file, setFile] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [status, setStatus] = useState<{ kind: "ok" | "err" | "info"; text: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function upload(e: React.FormEvent) {
-    e.preventDefault();
-    if (!file) {
-      setStatus({ kind: "err", text: "Choose a file first." });
-      return;
-    }
+  async function onFile(file: File | null) {
+    if (!file) return;
     setUploading(true);
-    setStatus(null);
+    setError(null);
     const form = new FormData();
     form.append("file", file);
     form.append("beneficiaryId", beneficiaryId);
     form.append("category", category);
+    if (slot) form.append("slot", slot);
     const res = await fetch("/api/vault/upload", { method: "POST", body: form }).catch(() => null);
     setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
     if (!res) {
-      setStatus({ kind: "err", text: "Network error" });
+      setError("Network error");
       return;
     }
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setStatus({ kind: "err", text: data.error ?? "Upload failed" });
+      setError(data.error ?? "Upload failed");
       return;
     }
-    setStatus({ kind: "ok", text: `Uploaded ${file.name}.` });
-    setFile(null);
-    const input = (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>(
-      'input[type="file"]',
-    );
-    if (input) input.value = "";
     router.refresh();
   }
 
   return (
-    <form
-      onSubmit={upload}
-      className="rounded border border-dashed border-[var(--color-cs-border)] bg-white p-4"
-    >
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex-1 min-w-[180px]">
-          <span className="mb-1 block text-[11px] uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-            File
-          </span>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-[12px] file:mr-3 file:rounded-sm file:border file:border-[var(--color-cs-border)] file:bg-white file:px-3 file:py-1.5 file:text-[12px]"
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-[11px] uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-            Category
-          </span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="h-9 rounded-sm border border-[var(--color-cs-border)] bg-white px-2 text-[13px]"
-          >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="submit"
-          disabled={uploading}
-          className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-[var(--color-cs-brand)] px-3 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
-        >
-          <IconCloudUpload size={14} stroke={1.5} aria-hidden />
-          {uploading ? "Uploading…" : "Upload"}
-        </button>
-      </div>
-      {status && (
-        <p
-          className={`mt-2 text-[11px] ${
-            status.kind === "ok"
-              ? "text-[var(--color-cs-success)]"
-              : status.kind === "err"
-                ? "text-[var(--color-cs-danger)]"
-                : "text-[var(--color-cs-info)]"
-          }`}
-        >
-          {status.text}
-        </p>
-      )}
-    </form>
+    <div className="shrink-0">
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--color-cs-brand-soft)] px-3 text-[12.5px] font-semibold text-[var(--color-cs-brand)] disabled:opacity-50"
+      >
+        <IconPlus size={14} stroke={2.2} aria-hidden />
+        {uploading ? "Adding…" : label}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        className="sr-only"
+        aria-label={documentLabel ? `Add ${documentLabel}` : "Add a file"}
+        onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+      />
+      {error && <p className="mt-1 max-w-[12rem] text-right text-[11px] text-[var(--color-cs-danger)]">{error}</p>}
+    </div>
   );
 }
