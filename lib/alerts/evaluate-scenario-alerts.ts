@@ -1,5 +1,5 @@
 import type { Types } from "mongoose";
-import { logActivity } from "@/lib/activity/log-activity";
+import { createContinuityAlert } from "@/lib/alerts/create-continuity-alert";
 import {
   ELIGIBILITY_LOSS_SCENARIOS,
   type EligibilityLossScenario,
@@ -99,7 +99,13 @@ function alertMessage(s: EligibilityLossScenario): string {
   return `${s.title}: ${s.risk}`;
 }
 
-async function recentlyAlerted(beneficiaryId: Types.ObjectId, scenarioId: string): Promise<boolean> {
+const LEVEL_RANK: Record<string, number> = { info: 0, warning: 1, breach: 2 };
+
+async function recentlyAlerted(
+  beneficiaryId: Types.ObjectId,
+  scenarioId: string,
+  level: string,
+): Promise<boolean> {
   const since = new Date(Date.now() - 7 * 86400000);
   const recent = await Alert.findOne({
     beneficiaryId,
@@ -107,9 +113,12 @@ async function recentlyAlerted(beneficiaryId: Types.ObjectId, scenarioId: string
     status: { $in: ["new", "acknowledged"] },
     createdAt: { $gte: since },
   })
-    .select({ _id: 1 })
+    .select({ _id: 1, level: 1 })
     .lean();
-  return Boolean(recent);
+  if (!recent) return false;
+  // A higher severity is a material change and opens a new alert.
+  if ((LEVEL_RANK[level] ?? 0) > (LEVEL_RANK[String(recent.level)] ?? 0)) return false;
+  return true;
 }
 
 /**
@@ -318,7 +327,7 @@ export async function evaluateScenarioAlerts(
   let alertsCreated = 0;
 
   for (const pending of candidates) {
-    if (await recentlyAlerted(input.beneficiaryId, pending.scenario.id)) continue;
+    if (await recentlyAlerted(input.beneficiaryId, pending.scenario.id, pending.level)) continue;
     const createdId = await insertScenarioAlert({
       beneficiaryId: input.beneficiaryId,
       ownerUserId: input.ownerUserId,
@@ -352,13 +361,14 @@ export async function emitDacMarriageAlert(input: {
   if (!input.programs.some((p) => p.toUpperCase() === "DAC")) return null;
   const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "dac_marriage");
   if (!scenario) return null;
-  if (await recentlyAlerted(input.beneficiaryId, scenario.id)) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level)) return null;
   return insertScenarioAlert({
     beneficiaryId: input.beneficiaryId,
     ownerUserId: input.ownerUserId,
     actorUserId: input.actorUserId,
     scenario,
     monthPrefix: new Date().toISOString().slice(0, 7),
+    changeConfidence: "confirmed",
   });
 }
 
@@ -371,13 +381,14 @@ export async function emitHouseholdChangeAlert(input: {
 }): Promise<Types.ObjectId | null> {
   const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "reporting_household_change");
   if (!scenario || !enrolledFor(scenario, input.programs)) return null;
-  if (await recentlyAlerted(input.beneficiaryId, scenario.id)) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level)) return null;
   return insertScenarioAlert({
     beneficiaryId: input.beneficiaryId,
     ownerUserId: input.ownerUserId,
     actorUserId: input.actorUserId,
     scenario,
     monthPrefix: new Date().toISOString().slice(0, 7),
+    changeConfidence: "confirmed",
   });
 }
 
@@ -392,13 +403,14 @@ async function insertScenarioAlert(input: {
   ssiCountableCents?: number;
   maxAssetCents?: number;
   grossMonthlyCents?: number;
+  changeConfidence?: "confirmed" | "inferred";
 }): Promise<Types.ObjectId> {
   const s = input.scenario;
   const level = input.level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
-  const created = await Alert.create({
+  return createContinuityAlert({
     beneficiaryId: input.beneficiaryId,
-    userId: input.ownerUserId,
-    thresholdId: null,
+    ownerUserId: input.ownerUserId,
+    actorUserId: input.actorUserId,
     level,
     trigger: s.trigger,
     message: alertMessage(s),
@@ -413,16 +425,9 @@ async function insertScenarioAlert(input: {
       maxAssetCents: input.maxAssetCents ?? 0,
       grossMonthlyCents: input.grossMonthlyCents ?? 0,
     },
-    status: "new",
+    playbookId: s.id,
+    eventSummary: s.risk,
+    changeConfidence: input.changeConfidence ?? "inferred",
+    activityDetails: { scenarioId: s.id, level, trigger: s.trigger },
   });
-  await logActivity({
-    userId: input.actorUserId,
-    beneficiaryId: input.beneficiaryId,
-    category: "alert",
-    action: "alert.created",
-    resourceType: "alert",
-    resourceId: created._id.toString(),
-    details: { scenarioId: s.id, level, trigger: s.trigger },
-  });
-  return created._id as Types.ObjectId;
 }

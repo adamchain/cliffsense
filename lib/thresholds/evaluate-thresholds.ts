@@ -1,5 +1,5 @@
 import type { Types } from "mongoose";
-import { logActivity } from "@/lib/activity/log-activity";
+import { createContinuityAlert } from "@/lib/alerts/create-continuity-alert";
 import Alert from "@/lib/db/models/Alert";
 import BankConnection from "@/lib/db/models/BankConnection";
 import Beneficiary from "@/lib/db/models/Beneficiary";
@@ -386,41 +386,36 @@ export async function evaluateThresholdsForBeneficiary(input: {
     for (const c of candidates) {
       if (await shouldSkipAlert(input.beneficiaryId, th._id, c.trigger, c.level)) continue;
 
-      const created = await Alert.create({
+      const playbookId = playbookIdForThreshold(String(th.program), String(th.thresholdType));
+      const createdId = await createContinuityAlert({
         beneficiaryId: input.beneficiaryId,
-        userId: beneficiary.ownerUserId,
-        thresholdId: th._id,
+        ownerUserId: beneficiary.ownerUserId,
+        actorUserId: input.actorUserId,
         level: c.level,
         trigger: c.trigger,
         message: c.message,
+        thresholdId: th._id,
         dataSnapshot: {
           thresholdLabel: th.label,
           thresholdType: th.thresholdType,
           program: th.program,
-          playbookId: playbookIdForThreshold(String(th.program), String(th.thresholdType)),
+          playbookId,
           limitCents,
           currentValueCents: currentValue,
           projectedValueCents: projectedValue,
           monthPrefix: prefix,
         },
-        status: "new",
-      });
-      alertsCreated += 1;
-      alertIdsCreated.push(created._id as Types.ObjectId);
-
-      await logActivity({
-        userId: input.actorUserId,
-        beneficiaryId: input.beneficiaryId,
-        category: "alert",
-        action: "alert.created",
-        resourceType: "alert",
-        resourceId: created._id.toString(),
-        details: {
+        playbookId,
+        eventSummary: c.message,
+        changeConfidence: "inferred",
+        activityDetails: {
           thresholdId: th._id.toString(),
           level: c.level,
           trigger: c.trigger,
         },
       });
+      alertsCreated += 1;
+      alertIdsCreated.push(createdId);
     }
   }
 

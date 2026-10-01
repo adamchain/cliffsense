@@ -9,6 +9,9 @@ const alertSchema = new Schema(
     trigger: { type: String, enum: ["predictive", "breach", "trend", "cliff", "reporting", "snt", "able"], required: true },
     message: { type: String, required: true },
     dataSnapshot: { type: Schema.Types.Mixed, default: {} },
+    /** Ten-part alert content. Null on alerts created before this field existed. */
+    parts: { type: Schema.Types.Mixed, default: null },
+    caseId: { type: Schema.Types.ObjectId, ref: "ContinuityCase", default: null },
     status: {
       type: String,
       enum: ["new", "acknowledged", "resolved", "dismissed"],
@@ -31,6 +34,11 @@ export type AlertDoc = InferSchemaType<typeof alertSchema> & {
   createdAt: Date;
 };
 
-const Alert: Model<AlertDoc> = mongoose.models?.Alert ?? mongoose.model<AlertDoc>("Alert", alertSchema);
+const MODEL_NAME = "Alert";
+if (mongoose.models[MODEL_NAME]) {
+  mongoose.deleteModel(MODEL_NAME);
+}
+
+const Alert: Model<AlertDoc> = mongoose.model<AlertDoc>(MODEL_NAME, alertSchema);
 
 export default Alert;

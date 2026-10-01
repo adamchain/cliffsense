@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 import { auth } from "@/auth";
 import { assertBeneficiaryAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
+import { serializeContinuityCase } from "@/lib/alerts/serialize-case";
 import Alert from "@/lib/db/models/Alert";
+import ContinuityCase from "@/lib/db/models/ContinuityCase";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -30,5 +32,14 @@ export async function GET(req: Request) {
   }
 
   const alerts = await Alert.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-  return NextResponse.json({ alerts });
+  const cases = await ContinuityCase.find({
+    alertId: { $in: alerts.map((alert) => alert._id) },
+  }).lean();
+  const caseByAlert = new Map(cases.map((row) => [String(row.alertId), serializeContinuityCase(row)]));
+  return NextResponse.json({
+    alerts: alerts.map((alert) => ({
+      ...alert,
+      continuityCase: caseByAlert.get(String(alert._id)) ?? null,
+    })),
+  });
 }

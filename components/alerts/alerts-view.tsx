@@ -18,7 +18,10 @@ import { ActionCenter } from "@/components/actions/action-center";
 import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
 import { CaseClocksStrip } from "@/components/alerts/case-clocks-strip";
 import { CategoryHandoffPanel } from "@/components/alerts/category-handoff-panel";
+import { ContinuityCasePanel } from "@/components/alerts/continuity-case-panel";
+import { ReportEventForm } from "@/components/alerts/report-event-form";
 import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
+import type { ContinuityCaseView } from "@/lib/alerts/serialize-case";
 import type { ReportingAction } from "@/lib/reporting/reporting-actions";
 
 type AlertRow = {
@@ -39,6 +42,7 @@ type AlertRow = {
     limitCents?: number;
     currentValueCents?: number;
   };
+  continuityCase?: ContinuityCaseView | null;
 };
 
 function triggerLabel(trigger: string): string {
@@ -246,6 +250,8 @@ export function AlertsView({
 
       <CaseClocksStrip beneficiaryId={beneficiaryId} />
 
+      <ReportEventForm beneficiaryId={beneficiaryId} onCreated={() => void load()} />
+
       <p className="mb-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
         Each alert is an action plan: program, rule, deadline, documents, next coverage, and appeal
         dates. A DHS closure code is a recorded case action — codes 042 and 440 are procedural labels,
@@ -298,6 +304,13 @@ export function AlertsView({
                   <div className="cs-acard-title">{title}</div>
                   <p className="cs-acard-body">{playbook.cureAction}</p>
                   <AlertPlaybookPanel playbook={playbook} />
+                  {a.continuityCase && (
+                    <ContinuityCasePanel
+                      beneficiaryId={beneficiaryId}
+                      continuityCase={a.continuityCase}
+                      onUpdated={() => void load()}
+                    />
+                  )}
                   <CategoryHandoffPanel programs={snap?.programs ?? playbook.programs} />
 
                   <div className="cs-acard-actions">
