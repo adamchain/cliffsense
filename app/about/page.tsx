@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing-chrome";
+import {
+  CAREGIVER_DESCRIPTION,
+  CORE_POSITIONING,
+  EVIDENCE_NEED,
+  GOVERNMENT_BODY,
+  PARTNER_BODY,
+  PARTNER_CTA,
+  PARTNER_INTRO,
+  POSITIONING_SHIFT,
+  SITE_DISCLAIMER,
+} from "@/components/landing/claims";
 import { continueDestination } from "@/lib/auth/continue-destination";
 
 export const metadata: Metadata = {
   title: "About Us — Bene-Watch",
-  description:
-    "Preserving access. Strengthening caregiver capacity. Reducing avoidable benefit loss. Learn why Bene-Watch is being built for Pennsylvania beneficiaries and authorized caregivers.",
+  description: CAREGIVER_DESCRIPTION,
 };
 
 const PROBLEM_GAPS = [
@@ -30,8 +40,8 @@ const CAPABILITIES = [
     body: "Preserve notices, supporting documents, submission confirmations, work records, financial records, and the history needed for renewals, corrections, reconsiderations, and appeals.",
   },
   {
-    title: "Anticipate Financial and Reporting Risks",
-    body: "Identify income, asset, work-activity, household, and other changes that may affect several programs differently before an official adverse action occurs.",
+    title: "Flag changes for review",
+    body: "With the household's consent, surface income, asset, work-activity, and household changes that may affect more than one program. A flag asks for review. It is not an eligibility decision.",
   },
   {
     title: "Support Authorized Caregivers",
@@ -42,8 +52,8 @@ const CAPABILITIES = [
     body: "Maintain separate rules, deadlines, and action histories for Medicaid, Medicare Savings Programs, SNAP, SSI, SSDI, DAC benefits, MAWD, waiver services, Medicare Extra Help, and related programs.",
   },
   {
-    title: "Identify Corrective and Alternative Pathways",
-    body: "Help users recognize when coverage or assistance may be preserved through additional evidence, cure procedures, reconsideration, reinstatement, an appeal, continued-benefit rights, or another potential eligibility category.",
+    title: "Keep appeal and cure materials together",
+    body: "Organize notices, extra documents, and follow-up so a household or representative can pursue correction, reconsideration, reinstatement, or an appeal through official channels.",
   },
 ];
 
@@ -90,24 +100,12 @@ export default async function AboutPage() {
           <div className="mx-auto max-w-3xl px-5 sm:px-6">
             <p className="cs-eyebrow text-[var(--color-cs-brand)]">About Bene-Watch</p>
             <h1 className="mt-2 text-[32px] font-bold leading-tight tracking-[-0.5px] text-[var(--color-cs-text)] sm:text-[40px]">
-              Preserving Access. Strengthening Caregiver Capacity. Reducing Avoidable Benefit Loss.
+              A benefit-continuity system for beneficiaries and caregivers
             </h1>
             <div className="mt-6 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              <p>
-                Bene-Watch is a Pennsylvania-first benefits continuity and renewal compliance
-                platform being developed for beneficiaries, families, and authorized caregivers.
-              </p>
-              <p>
-                It is designed to organize the documents, notices, deadlines, income, assets, work
-                activity, premiums, reassessments, and reporting obligations involved in maintaining
-                Medicaid and other public benefits.
-              </p>
-              <p>
-                Bene-Watch does not replace Pennsylvania&apos;s eligibility infrastructure. It
-                fills a different need: helping households manage the continuous responsibilities
-                that arise between applications, renewals, agency decisions, and other official
-                transactions.
-              </p>
+              <p>{CAREGIVER_DESCRIPTION}</p>
+              <p>{CORE_POSITIONING}</p>
+              <p>{POSITIONING_SHIFT}</p>
             </div>
           </div>
         </section>
@@ -146,11 +144,7 @@ export default async function AboutPage() {
               ))}
             </ul>
             <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              Pennsylvania&apos;s own records show that closures associated with missing information,
-              expired certification periods, unmet reporting obligations, and financial changes recur
-              at substantial scale. Bene-Watch is designed around prevention: readiness, deadlines,
-              evidence, accountability, and follow-up before an avoidable interruption becomes a loss
-              of care.
+              {EVIDENCE_NEED}
             </p>
           </div>
         </section>
@@ -243,6 +237,34 @@ export default async function AboutPage() {
           </div>
         </section>
 
+        {/* Organizations — separate from the family description */}
+        <section
+          id="organizations"
+          className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20"
+        >
+          <div className="mx-auto max-w-3xl px-5 sm:px-6">
+            <h2 className="text-[26px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[32px]">
+              For MCOs, nonprofits, and special-needs lawyers
+            </h2>
+            <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              <p>{PARTNER_INTRO}</p>
+              <p>{PARTNER_BODY}</p>
+              <p>{PARTNER_CTA}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl px-5 sm:px-6">
+            <h2 className="text-[26px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[32px]">
+              For government and elected officials
+            </h2>
+            <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              {GOVERNMENT_BODY}
+            </p>
+          </div>
+        </section>
+
         {/* Mission */}
         <section className="border-b border-[var(--color-cs-border)] bg-[#0b1426] py-16 text-white sm:py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-6">
@@ -250,23 +272,19 @@ export default async function AboutPage() {
               Our mission
             </p>
             <h2 className="mt-3 text-[26px] font-bold leading-tight tracking-[-0.4px] sm:text-[32px]">
-              Reduce avoidable benefit loss
+              Foresight, records, and continuity
             </h2>
             <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-white/70">
+              <p>{POSITIONING_SHIFT}</p>
               <p>
-                Our mission is to reduce avoidable benefit loss by giving eligible Pennsylvanians and
-                their authorized caregivers the records, warnings, accountability, and workflows
-                needed to act accurately and on time.
+                Bene-Watch is meant to help households keep a record of deadlines, changes, proof,
+                and follow-up. That purpose does not promise fewer benefit interruptions, continued
+                eligibility, or a measured result.
               </p>
               <p>
-                We believe access to healthcare, nutrition assistance, disability support, premium
-                assistance, and home- and community-based services should not be interrupted merely
-                because a household lacked an organized record, missed a fragmented notice, submitted
-                incomplete evidence, or could not prove what it had already provided.
-              </p>
-              <p>
-                Bene-Watch bridges the operational gap between official benefit systems and the
-                people who must manage their requirements every day.
+                Official systems still make eligibility decisions. Bene-Watch works alongside them
+                so families can see what is due, what could put benefits at risk, and what still
+                needs to be done.
               </p>
             </div>
           </div>
@@ -294,11 +312,7 @@ export default async function AboutPage() {
               ))}
             </ul>
             <p className="mt-8 text-[13px] leading-relaxed text-[var(--color-cs-text-muted)]">
-              Important notice: Bene-Watch is not a government agency and does not determine or
-              guarantee eligibility, continued coverage, benefit amounts, or the outcome of any
-              application, renewal, reconsideration, or appeal. Information provided through
-              Bene-Watch does not replace official agency instructions or individualized legal,
-              tax, financial, medical, or benefits advice.
+              {SITE_DISCLAIMER}
             </p>
           </div>
         </section>

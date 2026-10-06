@@ -15,11 +15,27 @@ import {
 } from "@tabler/icons-react";
 import { HeroVideo } from "@/components/landing/hero-video";
 import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing-chrome";
+import {
+  CAMPAIGN_THEME,
+  CAREGIVER_DESCRIPTION,
+  CORE_POSITIONING,
+  EVIDENCE_NEED,
+  GOVERNMENT_BODY,
+  HERO_BODY,
+  HERO_DESCRIPTOR,
+  HERO_HEADLINE,
+  HERO_TAGLINE,
+  PARTNER_BODY,
+  PARTNER_CTA,
+  PARTNER_INTRO,
+  POSITIONING_SHIFT,
+  SITE_DISCLAIMER,
+  SUBMISSION_LIMIT,
+} from "@/components/landing/claims";
 
 export const metadata: Metadata = {
-  title: "Bene-Watch — Act Before an Avoidable Lapse Becomes a Loss of Care",
-  description:
-    "Bene-Watch gives beneficiaries and authorized caregivers an active system for recognizing approaching benefit risks, organizing required evidence, tracking critical deadlines, and maintaining a clear record of what has been submitted — working alongside Pennsylvania and federal benefit systems.",
+  title: "Bene-Watch — Keep benefits on track",
+  description: HERO_BODY,
 };
 
 type Icon = ComponentType<{ size?: number; stroke?: number; className?: string }>;
@@ -79,27 +95,27 @@ const STEP2 = [
     body: "Track renewals, interviews, premiums, semiannual reports, work-reporting periods, medical reviews, waiver reassessments, and appeal deadlines separately.",
   },
   {
-    title: "Financial and Work-Activity Monitoring",
-    body: "With the beneficiary's consent, monitor wages, work activity, balances, deposits, and other changes that may require review under one or more benefit programs.",
+    title: "Changes flagged for review",
+    body: "With the beneficiary's consent and control, flag pay increases, reduced hours, deposits, inheritances, trust distributions, address changes, and work-reporting duties for the household to review.",
   },
   {
-    title: "Program-by-Program Impact Review",
-    body: "Evaluate the same raise, extra paycheck, Social Security adjustment, gift, inheritance, marriage, move, or employment change separately under the rules of each affected program.",
+    title: "Program-by-program record",
+    body: "Keep the same raise, extra paycheck, Social Security adjustment, gift, inheritance, marriage, move, or employment change visible against each program the household is tracking. Bene-Watch flags the event. It does not decide whether income or resources count.",
   },
 ];
 
 const STEP3 = [
   {
-    title: "Notice-to-Action Guidance",
-    body: "Convert notices and approaching deadlines into clear action steps identifying the affected program, required proof, responsible person, due date, and available follow-up.",
+    title: "Notice-to-action checklist",
+    body: "Turn notices and approaching deadlines into a checklist of the affected program, proof to gather, person responsible, due date, and follow-up still open. The household reviews the list and acts through official channels.",
   },
   {
     title: "Submission and Evidence History",
     body: "Preserve what was required, what was submitted, when it was submitted, how it was transmitted, and what confirmation was received.",
   },
   {
-    title: "Correction, Cure, and Appeal Support",
-    body: "Identify when a threatened benefit may still be preserved through additional documentation, correction, reconsideration, reinstatement, continued-benefit rights, an appeal, or another potential eligibility pathway.",
+    title: "Appeal and cure materials",
+    body: "Organize notices, extra documents, and follow-up for correction, reconsideration, reinstatement, or appeal. Bene-Watch keeps the record. It does not decide eligibility or give legal advice.",
   },
   {
     title: "Caregiver Coordination",
@@ -115,13 +131,13 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   },
   {
     icon: IconBell,
-    title: "Financial-Change and Benefit-Risk Alerts",
-    body: "Identify wages, deposits, balances, gifts, inheritances, work activity, and other changes that may require review before they result in an overpayment, reduction, or closure.",
+    title: "Financial-change alerts",
+    body: "With consent, flag wages, deposits, balances, gifts, inheritances, trust distributions, and work activity that may need review. An alert is a prompt to look, not a finding that benefits will change.",
   },
   {
     icon: IconArrowsShuffle,
-    title: "Cross-Program Coordination",
-    body: "See how one event may affect Medicaid, QMB, SNAP, SSI, SSDI, DAC benefits, MAWD, Medicare Extra Help, waiver services, and other programs differently.",
+    title: "Cross-program record",
+    body: "Keep deadlines and notes separate for Medicaid, QMB, SNAP, SSI, SSDI, DAC, MAWD, Medicare Extra Help, waiver services, and other programs, so one event stays visible across the household record.",
   },
   {
     icon: IconUsers,
@@ -130,8 +146,8 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   },
   {
     icon: IconFileText,
-    title: "Notice, Correction, and Appeal Readiness",
-    body: "Preserve notices, deadlines, evidence, and submission records needed to correct an administrative problem, request reconsideration, protect continued-benefit rights, or pursue an appeal.",
+    title: "Notice, correction, and appeal records",
+    body: "Keep notices, deadlines, evidence, and submission records together so a household or representative can follow up on a correction, reconsideration, or appeal.",
   },
   {
     icon: IconFolder,
@@ -155,17 +171,17 @@ export default function LandingPage() {
                 Coming soon
               </span>
               <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#9ecbff]">
-                A Pennsylvania-first benefits continuity &amp; renewal compliance platform
+                {HERO_TAGLINE}
               </p>
             </div>
             <h1 className="mt-3 text-[34px] font-bold leading-[1.05] tracking-[-0.6px] text-white [text-shadow:0_2px_18px_rgba(0,0,0,0.45)] sm:text-[46px] md:text-[54px]">
-              Act Before an Avoidable Lapse Becomes a Loss of Care
+              {HERO_HEADLINE}
             </h1>
+            <p className="mt-3 max-w-xl text-[14px] font-semibold leading-snug text-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
+              {HERO_DESCRIPTOR}
+            </p>
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
-              Bene-Watch gives beneficiaries and authorized caregivers an active system for
-              recognizing approaching benefit risks, organizing required evidence, tracking
-              critical deadlines, and maintaining a clear record of what has been submitted, what
-              remains outstanding, and what follow-up is required.
+              {HERO_BODY}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a
@@ -193,8 +209,8 @@ export default function LandingPage() {
             and user-controlled
           </span>
           <span className="inline-flex items-center gap-2">
-            <IconShieldLock size={17} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Built
-            for beneficiaries and authorized caregivers
+            <IconShieldLock size={17} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Watch
+            stays with the household: consent, user control, and benefit obligations
           </span>
           <span className="inline-flex items-center gap-2">
             <IconShieldCheck size={17} stroke={1.8} className="text-[var(--color-cs-brand)]" /> Secure
@@ -202,9 +218,39 @@ export default function LandingPage() {
           </span>
         </div>
         <p className="mx-auto mt-5 max-w-3xl px-6 text-center text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-          Important: Bene-Watch is not a government agency and does not determine or guarantee
-          eligibility.
+          {SITE_DISCLAIMER}
         </p>
+      </section>
+
+      {/* What Bene-Watch is */}
+      <section className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6">
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">What Bene-Watch is</p>
+          <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+            A household-side operating record for public benefits
+          </h2>
+          <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            {CORE_POSITIONING}
+          </p>
+          <ul className="mt-6 space-y-3">
+            {[
+              "A place to organize notices, evidence, submissions, confirmations, deadlines, and appeal or cure materials.",
+              "A tool that flags events for review: pay increases, reduced hours, deposits, inheritances, trust distributions, address changes, renewals, work-reporting duties, and caregiver transitions.",
+              "A platform for beneficiaries, caregivers, fiduciaries, nonprofits, law firms, MCOs, health systems, and other partners focused on continuity.",
+            ].map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-3 text-[15px] leading-relaxed text-[var(--color-cs-text)]"
+              >
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-cs-brand)]" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 text-[15px] leading-relaxed text-[var(--color-cs-text-muted)]">
+            {SUBMISSION_LIMIT}
+          </p>
+        </div>
       </section>
 
       {/* Father's Perspective teaser */}
@@ -222,10 +268,9 @@ export default function LandingPage() {
           </blockquote>
           <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
             Frank, one of Bene-Watch&apos;s founders, is the father of an adult son with special
-            needs. He helped create Bene-Watch to give families something official benefit systems
-            do not provide: a durable, individualized operating record that identifies what is due,
-            what proof is required, what risk is approaching, who is responsible, and what action
-            remains available.
+            needs. He helped create Bene-Watch so a household can keep a continuing record of what
+            is due, what proof is needed, what was submitted, and what follow-up remains — including
+            for the caregiver who may someday take over.
           </p>
           <Link
             href="/about#perspective"
@@ -239,14 +284,17 @@ export default function LandingPage() {
       {/* Why needed */}
       <section id="why" className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-5 sm:px-6">
-          <p className="cs-eyebrow text-[var(--color-cs-brand)]">The gap between transactions</p>
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">Why a household record matters</p>
           <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
             Why Bene-Watch Is Needed
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Pennsylvania&apos;s official systems process applications, renewals, reported changes,
-            documents, and eligibility decisions. But households and caregivers are still left to
-            manage what happens between those transactions. They must:
+            {EVIDENCE_NEED}
+          </p>
+          <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Official systems process applications, renewals, reported changes, documents, and
+            eligibility decisions. Households and caregivers still manage what happens between those
+            transactions. They must:
           </p>
           <ul className="mt-6 space-y-3">
             {NEED_ITEMS.map((item) => (
@@ -260,7 +308,7 @@ export default function LandingPage() {
             ))}
           </ul>
           <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Bene-Watch is being developed to address that operational gap.
+            {POSITIONING_SHIFT}
           </p>
         </div>
       </section>
@@ -384,8 +432,8 @@ export default function LandingPage() {
               report changes, submit evidence, and pursue appeals.
             </p>
             <p>
-              Bene-Watch prepares the household to complete those responsibilities accurately and
-              on time.
+              {SUBMISSION_LIMIT} Bene-Watch is designed to help the household organize what those
+              responsibilities require.
             </p>
           </div>
         </div>
@@ -397,11 +445,14 @@ export default function LandingPage() {
         className="bg-gradient-to-b from-[#e8faef] to-[var(--color-cs-surface)] py-16 sm:py-20"
       >
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <p className="cs-eyebrow text-[var(--color-cs-brand)]">Key tools</p>
             <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
-              For Beneficiaries and Caregivers
+              For beneficiaries and caregivers
             </h2>
+            <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              {CAREGIVER_DESCRIPTION}
+            </p>
           </div>
           <div id="tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TOOLS.map((f) => (
@@ -459,26 +510,64 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Organizations */}
+      <section id="partners" className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6">
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">For organizations</p>
+          <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+            MCOs, nonprofits, and special-needs lawyers
+          </h2>
+          <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            <p>{PARTNER_INTRO}</p>
+            <p>{PARTNER_BODY}</p>
+            <p>{PARTNER_CTA}</p>
+          </div>
+          <p className="mt-6 text-[14px] leading-relaxed text-[var(--color-cs-text-muted)]">
+            A demonstration or pilot describes intended use. It is not a measured result, and it
+            does not promise fewer benefit interruptions, lower cost, or less staff effort.
+          </p>
+          <a
+            href="mailto:support@bene-watch.com?subject=Bene-Watch%20demonstration"
+            className="mt-6 inline-flex items-center justify-center rounded-sm bg-[var(--color-cs-navy)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Arrange a demonstration
+          </a>
+        </div>
+      </section>
+
+      {/* Government */}
+      <section id="government" className="border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6">
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">For government and elected officials</p>
+          <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+            Better-prepared households, official decisions unchanged
+          </h2>
+          <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            {GOVERNMENT_BODY}
+          </p>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--color-cs-text-muted)]">
+            Government engagement is a later opportunity. It is not a prerequisite to launch, and
+            Bene-Watch is not endorsed by or affiliated with any agency.
+          </p>
+        </div>
+      </section>
+
       {/* Get started CTA */}
       <section className="bg-gradient-to-b from-[#fff4e6] to-[var(--color-cs-surface)] py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-5 text-center sm:px-6">
           <p className="cs-eyebrow text-[var(--color-cs-brand)]">Get started</p>
           <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
-            Build the Record Behind Your Benefits
+            {CAMPAIGN_THEME}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            A preventable benefit loss may begin with a missed notice, incomplete evidence, an
-            unexplained deposit, a reporting deadline, or a document that cannot later be proven to
-            have been submitted. Bene-Watch is designed to help households recognize those risks
-            while action is still possible.
+            {POSITIONING_SHIFT} That theme states the purpose of Bene-Watch. It does not promise
+            continued eligibility or a measured result.
           </p>
           <p className="mt-8 text-[15px] font-semibold tracking-wide text-[var(--color-cs-text)]">
             Coming soon
           </p>
           <p className="mx-auto mt-8 max-w-2xl text-[12px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Important notice: Bene-Watch is not a government agency and does not determine or
-            guarantee eligibility, benefit amounts, continued coverage, or the outcome of any agency
-            proceeding.
+            {SITE_DISCLAIMER}
           </p>
         </div>
       </section>

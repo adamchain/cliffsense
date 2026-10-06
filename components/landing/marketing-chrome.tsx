@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { BRAND_LINE, FOOTER_LIMITS, HERO_DESCRIPTOR, SITE_DISCLAIMER } from "@/components/landing/claims";
 
 const NAV = [
   { label: "Features", href: "/#features" },
@@ -62,6 +63,7 @@ const FOOTER_GROUPS: { heading: string; links: { label: string; href: string }[]
     links: [
       { label: "About us", href: "/about" },
       { label: "A father's perspective", href: "/about#perspective" },
+      { label: "For organizations", href: "/about#organizations" },
       { label: "Sign in", href: "/#sign-in" },
       { label: "Support", href: "mailto:support@bene-watch.com" },
     ],
@@ -85,8 +87,7 @@ export function MarketingFooter() {
           <div>
             <BrandLogo className="h-8 w-auto" />
             <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              A Pennsylvania-first, user-controlled benefits continuity and renewal compliance
-              platform.
+              {HERO_DESCRIPTOR}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -113,16 +114,12 @@ export function MarketingFooter() {
         <div className="mt-12 border-t border-[var(--color-cs-border)] pt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[12px] text-[var(--color-cs-text-muted)]">
-              © {new Date().getFullYear()} Bene-Watch. All rights reserved.
+              © {new Date().getFullYear()} {BRAND_LINE}. Bene-Watch.com
             </p>
-            <p className="text-[12px] text-[var(--color-cs-text-muted)]">
-              Not a government agency — does not determine eligibility.
-            </p>
+            <p className="text-[12px] text-[var(--color-cs-text-muted)]">{FOOTER_LIMITS}</p>
           </div>
           <p className="mt-4 text-[11px] leading-relaxed text-[var(--color-cs-text-muted)]">
-            Bene-Watch does not determine or guarantee eligibility, benefit amounts, continued
-            coverage, or the outcome of any agency proceeding. It does not replace official agency
-            instructions or individualized legal, tax, financial, medical, or benefits advice.
+            {SITE_DISCLAIMER}
           </p>
         </div>
       </div>

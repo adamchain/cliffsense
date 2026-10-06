@@ -18,7 +18,8 @@ const jakarta = localFont({
 
 export const metadata: Metadata = {
   title: "Bene-Watch",
-  description: "Compare bank activity to benefit-program thresholds and get calm email reminders before limits.",
+  description:
+    "Bene-Watch helps families keep benefits on track. The benefit-continuity watchdog for households, caregivers, and the organizations that support them.",
   icons: {
     icon: "/benewatch-icon.png",
     shortcut: "/benewatch-icon.png",
