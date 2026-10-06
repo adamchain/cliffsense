@@ -23,12 +23,12 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [county, setCounty] = useState("");
   const [householdSize, setHouseholdSize] = useState(1);
   const [maritalStatus, setMaritalStatus] = useState("");
   const [disabilityStatus, setDisabilityStatus] = useState("");
-  const [preferredCommunications, setPreferredCommunications] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,9 +50,9 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
               householdSize?: number;
               opening?: {
                 address?: string;
+                city?: string;
                 maritalStatus?: string;
                 disabilityStatus?: string;
-                preferredCommunications?: string;
               };
             }[];
           }
@@ -66,9 +66,9 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
       setCounty(primary.county ?? "");
       setHouseholdSize(primary.householdSize ?? 1);
       setAddress(primary.opening?.address ?? "");
+      setCity(primary.opening?.city ?? "");
       setMaritalStatus(primary.opening?.maritalStatus ?? "");
       setDisabilityStatus(primary.opening?.disabilityStatus ?? "");
-      setPreferredCommunications(primary.opening?.preferredCommunications ?? "");
     })();
     return () => {
       cancelled = true;
@@ -95,9 +95,9 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
           householdSize,
           dateOfBirth,
           address: address.trim(),
+          city: city.trim(),
           maritalStatus,
           disabilityStatus,
-          preferredCommunications: preferredCommunications.trim(),
         },
       }),
     });
@@ -168,6 +168,19 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
           />
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="cs-label" htmlFor="city">
+              City
+            </label>
+            <input
+              id="city"
+              required
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="cs-input"
+              autoComplete="address-level2"
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <label className="cs-label" htmlFor="st">
               State
@@ -240,18 +253,6 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
               </option>
             ))}
           </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="cs-label" htmlFor="pref">
-            Preferred communications
-          </label>
-          <input
-            id="pref"
-            value={preferredCommunications}
-            onChange={(e) => setPreferredCommunications(e.target.value)}
-            className="cs-input"
-            placeholder="Email, phone, text, mail…"
-          />
         </div>
       </div>
       {error && <p className="text-[13px] text-[var(--color-cs-danger)]">{error}</p>}

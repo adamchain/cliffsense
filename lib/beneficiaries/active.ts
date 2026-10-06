@@ -22,7 +22,14 @@ export async function loadActiveBeneficiaryContext(userId: string): Promise<{
   const requested = await readRequestedBeneficiaryId();
   const ids = accounts.map((a) => a._id.toString());
   const primaryId = accounts.find((a) => a.isOwner)?._id.toString() ?? ids[0] ?? null;
-  const activeId = resolveActiveBeneficiaryId(requested, ids, primaryId);
+  let activeId = resolveActiveBeneficiaryId(requested, ids, primaryId);
+  if (!requested && activeId) {
+    const chosen = accounts.find((a) => a._id.toString() === activeId);
+    const withPrograms = accounts.filter((a) => a.enrolledCount > 0);
+    if (chosen && chosen.enrolledCount === 0 && withPrograms.length === 1) {
+      activeId = withPrograms[0]!._id.toString();
+    }
+  }
   const active = accounts.find((a) => a._id.toString() === activeId) ?? null;
   return { accounts, active };
 }

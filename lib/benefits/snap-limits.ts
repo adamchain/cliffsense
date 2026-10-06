@@ -39,6 +39,38 @@ export function snapGross130Cents(householdSize: number): number {
   return SNAP_GROSS_130_CENTS[SNAP_GROSS_130_CENTS.length - 1]! + (n - SNAP_GROSS_130_CENTS.length) * SNAP_GROSS_130_EXTRA_CENTS;
 }
 
+export type SnapGrossDisplay = {
+  status: "ok" | "watch" | "concern";
+  /** Gross income is over the 10-day simplified-reporting line and still under the 200% eligibility ceiling. */
+  reportingDue: boolean;
+};
+
+/**
+ * The in-app SNAP card uses the 200% eligibility ceiling. Alerts also fire when
+ * gross income crosses the lower 130% reporting line. That reporting duty has
+ * to show on the card, or the app says SNAP is fine while an alert goes out.
+ */
+export function snapGrossDisplayStatus(input: {
+  currentCents: number | null;
+  eligibilityLimitCents: number;
+  householdSize: number;
+  warnAt?: number;
+  attached?: boolean;
+}): SnapGrossDisplay {
+  if (input.attached === false || input.currentCents == null) {
+    return { status: "ok", reportingDue: false };
+  }
+  const value = input.currentCents;
+  const limit = input.eligibilityLimitCents;
+  const warnAt = input.warnAt ?? 0.9;
+  const overEligibility = value >= limit;
+  const nearEligibility = value >= Math.floor(limit * warnAt);
+  const reportingDue = value > snapGross130Cents(input.householdSize) && !overEligibility;
+  if (overEligibility) return { status: "concern", reportingDue: false };
+  if (reportingDue || nearEligibility) return { status: "watch", reportingDue };
+  return { status: "ok", reportingDue: false };
+}
+
 /** Households of 9 or more use the 8-person seed plus $918 for each extra person. */
 export function snapStoredGrossLimitCents(
   systemKey: string | undefined,

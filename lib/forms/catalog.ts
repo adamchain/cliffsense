@@ -1,4 +1,4 @@
-import { isMedicaidFamilyProgram, type Program } from "@/lib/programs";
+import { isMedicaidFamilyProgram } from "@/lib/programs";
 import type { CatalogForm } from "@/lib/forms/types";
 
 /* ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ export const FORMS_CATALOG: CatalogForm[] = [
 ];
 
 /** All forms for a program, or for several. */
-export function formsForPrograms(programs: Program[]): CatalogForm[] {
+export function formsForPrograms(programs: readonly string[]): CatalogForm[] {
   const set = new Set(programs);
   const includeMedicaidForms = programs.some((p) => isMedicaidFamilyProgram(p));
   return FORMS_CATALOG.filter(
@@ -285,7 +285,7 @@ export function formsForPrograms(programs: Program[]): CatalogForm[] {
 }
 
 /** Friendly program labels for headings. */
-export const PROGRAM_LABELS: Record<Program, string> = {
+export const PROGRAM_LABELS: Record<string, string> = {
   SSI: "SSI — Supplemental Security Income",
   SSDI: "SSDI — Social Security Disability Insurance",
   DAC: "DAC / CDB — Childhood Disability Benefits",

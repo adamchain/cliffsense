@@ -22,17 +22,13 @@ export default async function LimitsPage() {
     redirect("/auth/signin");
   }
   await connectDB();
-  const [ownerBen, primary] = await Promise.all([
-    Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
-      .select("benefitsEnrolled")
-      .lean(),
-    getActiveBeneficiaryForUser(session.user.id),
-  ]);
+  const primary = await getActiveBeneficiaryForUser(session.user.id);
 
   const beneficiaryId = primary?._id.toString() ?? null;
   let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
   let twpMonthsUsed = 0;
   let policyScreenInitial = coercePolicyScreen(null);
+  let programRows: { program: string; nextRenewalDate?: Date | null }[] = [];
   if (primary?._id) {
     const now = new Date();
     const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
@@ -51,7 +47,9 @@ export default async function LimitsPage() {
           excludedFromThresholds: 1,
         })
         .lean(),
-      Beneficiary.findById(primary._id).select("twpMonthsUsed policyScreen dateOfBirth householdSize").lean(),
+      Beneficiary.findById(primary._id)
+        .select("twpMonthsUsed policyScreen dateOfBirth householdSize benefitsEnrolled")
+        .lean(),
     ]);
     reportingActions = buildReportingActions({
       programs: payload.programsEnrolled,
@@ -75,6 +73,10 @@ export default async function LimitsPage() {
       householdSize: Number(twpDoc?.householdSize ?? 1),
     });
     twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
+    programRows = (twpDoc?.benefitsEnrolled ?? []).map((b) => ({
+      program: String(b.program),
+      nextRenewalDate: b.nextRenewalDate as Date | null | undefined,
+    }));
     const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
     policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
   }
@@ -109,7 +111,7 @@ export default async function LimitsPage() {
           <PolicyScreen beneficiaryId={beneficiaryId} initial={policyScreenInitial} />
         </section>
 
-        {ownerBen && (
+        {beneficiaryId && (
           <section id="programs" className={sectionCls}>
             <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">
               Programs
@@ -119,13 +121,13 @@ export default async function LimitsPage() {
             </p>
             <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
               <ProgramsForm
-                beneficiaryId={ownerBen._id.toString()}
-                initialPrograms={(ownerBen.benefitsEnrolled ?? []).map((b) => b.program)}
+                beneficiaryId={beneficiaryId}
+                initialPrograms={programRows.map((b) => b.program)}
                 initialRenewals={Object.fromEntries(
-                  (ownerBen.benefitsEnrolled ?? []).map((b) => [
+                  programRows.map((b) => [
                     b.program,
                     b.nextRenewalDate
-                      ? new Date(b.nextRenewalDate as Date).toISOString().slice(0, 10)
+                      ? new Date(b.nextRenewalDate).toISOString().slice(0, 10)
                       : null,
                   ]),
                 )}

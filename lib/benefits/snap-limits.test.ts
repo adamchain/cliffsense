@@ -4,6 +4,7 @@ import {
   oneTimeOtherIncomeCents,
   snapGross130Cents,
   snapGross200Cents,
+  snapGrossDisplayStatus,
   snapStoredGrossLimitCents,
 } from "./snap-limits";
 
@@ -15,6 +16,30 @@ describe("SNAP income limits (Oct 2025–Oct 2026)", () => {
     expect(snapGross200Cents(6)).toBe(7192_00);
     expect(snapGross200Cents(7)).toBe(8110_00);
     expect(snapGross200Cents(9)).toBe(9026_00 + 918_00);
+  });
+
+  it("marks income between the 130% reporting line and the 200% ceiling as a reporting duty", () => {
+    expect(
+      snapGrossDisplayStatus({
+        currentCents: 2077_60,
+        eligibilityLimitCents: 2610_00,
+        householdSize: 1,
+      }),
+    ).toEqual({ status: "watch", reportingDue: true });
+    expect(
+      snapGrossDisplayStatus({
+        currentCents: 1696_00,
+        eligibilityLimitCents: 2610_00,
+        householdSize: 1,
+      }),
+    ).toEqual({ status: "ok", reportingDue: false });
+    expect(
+      snapGrossDisplayStatus({
+        currentCents: 2706_27,
+        eligibilityLimitCents: 2610_00,
+        householdSize: 1,
+      }).status,
+    ).toBe("concern");
   });
 
   it("uses the federal 130% table and fires only when income is over the line", () => {

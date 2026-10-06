@@ -107,8 +107,14 @@ export function composeTenPart(input: {
   /** YYYY-MM-DD taken from a notice or typed by the user. */
   noticeDeadline?: string | null;
   userNote?: string | null;
+  /** When set, only these programs are treated as affected. Otherwise the playbook catalog is used. */
+  programs?: string[];
 }): TenPartAlert {
-  const programs = input.playbook.programs.length ? input.playbook.programs : ["Unspecified"];
+  const programs = input.programs?.length
+    ? input.programs
+    : input.playbook.programs.length
+      ? input.playbook.programs
+      : ["Unspecified"];
   const observed = dateOnly(input.observedAt.toISOString());
   const confidenceLine =
     input.changeConfidence === "confirmed"

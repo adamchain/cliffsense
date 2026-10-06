@@ -53,6 +53,7 @@ const patchSchema = z.object({
       householdSize: z.coerce.number().min(1),
       dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
       address: z.string().max(200).optional(),
+      city: z.string().max(80).optional(),
       maritalStatus: z.string().max(40).optional(),
       disabilityStatus: z.string().max(40).optional(),
       preferredCommunications: z.string().max(120).optional(),
@@ -133,9 +134,10 @@ export async function PATCH(req: Request) {
         : undefined;
     const openingPatch = {
       address: ownerProfile.address ?? "",
+      city: ownerProfile.city ?? "",
       maritalStatus: ownerProfile.maritalStatus ?? "",
       disabilityStatus: ownerProfile.disabilityStatus ?? "",
-      preferredCommunications: ownerProfile.preferredCommunications ?? "",
+      preferredCommunications: ownerProfile.preferredCommunications ?? "email",
     };
     let ben = await Beneficiary.findOne(filter);
     const priorHouseholdSize = ben?.householdSize;

@@ -58,6 +58,7 @@ type Row = {
   currentValueCents: number | null;
   projectedValueCents: number | null;
   status: "ok" | "watch" | "concern";
+  statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
 };
 
 type Payload = {
@@ -172,7 +173,15 @@ function LimitCard({
                 : "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]"
           }`}
         >
-          {sc === "crit" ? "Over limit" : sc === "warn" ? "Near limit" : "On track"}
+          {row.statusNote === "reference"
+            ? "Reference"
+            : sc === "crit"
+              ? "Over limit"
+              : row.statusNote === "snap_report_130" || row.statusNote === "wage_report"
+                ? "Report due"
+                : sc === "warn"
+                  ? "Near limit"
+                  : "On track"}
         </span>
       </div>
       <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-[var(--color-cs-text-secondary)]">

@@ -109,9 +109,16 @@ describe("programsThatMustReportWageChange", () => {
     expect(programsThatMustReportWageChange(["SNAP", "SSDI"], "decrease", 300_000, 1)).toEqual(["SSDI"]);
   });
 
-  it("includes MAGI and Extra Help", () => {
+  it("includes Extra Help on its own, and drops it when Medicaid already provides it", () => {
+    expect(programsThatMustReportWageChange(["ExtraHelp"], "new_work", 50_000, 1)).toEqual(["ExtraHelp"]);
     expect(
       programsThatMustReportWageChange(["MedicaidMAGI", "ExtraHelp"], "new_work", 50_000, 1),
-    ).toEqual(["MedicaidMAGI", "ExtraHelp"]);
+    ).toEqual(["MedicaidMAGI"]);
+  });
+
+  it("leaves Extra Help off the list when QMB, SSI, or Medicaid already provides it", () => {
+    expect(
+      programsThatMustReportWageChange(["QMB", "ExtraHelp", "SSDI"], "increase", 50_000, 1),
+    ).toEqual(["QMB", "SSDI"]);
   });
 });

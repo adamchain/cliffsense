@@ -299,6 +299,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     // Healthy Horizons income and resources depend on household size, waiver enrollment, and age.
     // The scenario owns those alerts so a couple is not tested against the one-person seed.
     if (sk === "pa_medicaid_abd_income_2026" || sk === "pa_medicaid_abd_resources_2026") continue;
+    // $425 is the medically needy reference floor, not a coverage cliff. Being above it sets a spend-down. It must not email.
+    if (sk === "pa_medicaid_mnil_2026") continue;
     // Waiver income is a gross test, and neither limit applies while the person receives SSI.
     // A married waiver resource share is set at assessment, so the $8,000 seed must not alert on its own.
     if (sk === "pa_waiver_income_2026" || sk === "pa_waiver_resources_2026") continue;

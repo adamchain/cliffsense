@@ -22,8 +22,10 @@ export async function createContinuityAlert(input: {
   noticeDeadline?: string | null;
   userNote?: string | null;
   activityDetails?: Record<string, unknown>;
+  programs?: string[];
 }): Promise<Types.ObjectId> {
   const playbook = playbookById(input.playbookId) ?? resolveAlertPlaybook({ playbookId: input.playbookId });
+  const programs = input.programs ?? (Array.isArray(input.dataSnapshot.programs) ? (input.dataSnapshot.programs as string[]) : undefined);
   const parts = composeTenPart({
     playbook,
     eventSummary: input.eventSummary,
@@ -31,6 +33,7 @@ export async function createContinuityAlert(input: {
     observedAt: input.observedAt ?? new Date(),
     noticeDeadline: input.noticeDeadline,
     userNote: input.userNote,
+    programs,
   });
   const workflow = initialCaseWorkflow(parts);
   const created = await Alert.create({

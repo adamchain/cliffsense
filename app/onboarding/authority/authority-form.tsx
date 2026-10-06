@@ -3,7 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { VaultAddFile } from "@/app/(authenticated)/vault/vault-upload";
 import { AUTHORITY_OPTIONS, MANAGER_FIELDS } from "@/lib/onboarding/opening";
+
+const DOC_FOR_AUTHORITY: Record<string, { slot: string; label: string }> = {
+  consent: { slot: "consent", label: "Upload Bene-Watch authorization" },
+  poa: { slot: "poa", label: "Upload power of attorney" },
+  ssa_payee: { slot: "payee", label: "Upload SSA payee appointment" },
+  program_rep: { slot: "auth_rep", label: "Upload authorized-representative letter" },
+  guardianship: { slot: "guardianship", label: "Upload guardianship order" },
+  trustee: { slot: "account_authority", label: "Upload trustee authority" },
+  able: { slot: "account_authority", label: "Upload ABLE authority" },
+};
 
 type Inner = 1 | 2;
 
@@ -111,33 +122,66 @@ export function AuthorityOnboardingForm({ accountType }: { accountType: string }
   return (
     <div className="space-y-4">
       {inner === 1 ? (
-        <div className="cs-card space-y-3 p-6 md:p-7">
+        <div className="cs-card space-y-4 p-6 md:p-7">
+          {beneficiaryId ? (
+            <div className="space-y-3 rounded-xl border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)] p-4">
+              <div>
+                <p className="text-[15px] font-semibold text-[var(--color-cs-text)]">
+                  Upload the authorization document
+                </p>
+                <p className="mt-1 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
+                  Add the signed consent first. If another role applies, its upload appears here too.
+                </p>
+              </div>
+              {[...authorities].flatMap((id) => {
+                const doc = DOC_FOR_AUTHORITY[id];
+                if (!doc) return [];
+                const earlier = [...authorities].find((other) => DOC_FOR_AUTHORITY[other]?.slot === doc.slot);
+                if (earlier !== id) return [];
+                return [
+                  <VaultAddFile
+                    key={id}
+                    beneficiaryId={beneficiaryId}
+                    category="identity"
+                    slot={doc.slot}
+                    label={doc.label}
+                    documentLabel={doc.label}
+                    variant="prominent"
+                  />,
+                ];
+              })}
+            </div>
+          ) : null}
           <p className="text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Select every authority that actually applies. Do not assume one instrument covers SSA,
-            DHS, a bank, a trustee, and an ABLE account.
+            Check every authority that actually applies. One document does not cover SSA, DHS, a bank, a trustee, and an ABLE account.
           </p>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {AUTHORITY_OPTIONS.map((opt) => {
               const on = authorities.has(opt.id);
+              const locked = opt.id === "consent";
               return (
-                <button
+                <label
                   key={opt.id}
-                  type="button"
-                  onClick={() => toggleAuthority(opt.id)}
-                  className={`w-full rounded-xl border p-3 text-left transition-colors ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 touch-manipulation ${
                     on
                       ? "border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)]"
-                      : "border-[var(--color-cs-border)] bg-white hover:border-[var(--color-cs-brand)]/55"
+                      : "border-[var(--color-cs-border)] bg-white"
                   }`}
                 >
-                  <p className="text-[13px] font-semibold text-[var(--color-cs-text)]">{opt.label}</p>
-                  <p className="mt-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
-                    {opt.permits}
-                  </p>
-                  <p className="mt-1 text-[11px] leading-snug text-[var(--color-cs-text-muted)]">
-                    {opt.doesNot}
-                  </p>
-                </button>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-cs-brand)]"
+                    checked={on}
+                    disabled={locked}
+                    onChange={() => toggleAuthority(opt.id)}
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-[14px] font-semibold text-[var(--color-cs-text)]">{opt.label}</span>
+                    <span className="mt-1 block text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
+                      {opt.permits}
+                    </span>
+                  </span>
+                </label>
               );
             })}
           </div>

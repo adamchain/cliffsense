@@ -10,12 +10,14 @@ export function VaultAddFile({
   slot,
   label = "Add",
   documentLabel,
+  variant = "inline",
 }: {
   beneficiaryId: string;
   category: string;
   slot?: string;
   label?: string;
   documentLabel?: string;
+  variant?: "inline" | "prominent";
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,16 +48,28 @@ export function VaultAddFile({
     router.refresh();
   }
 
+  const buttonClass =
+    variant === "prominent"
+      ? "flex w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[var(--color-cs-brand)] bg-white px-4 py-5 text-center text-[var(--color-cs-brand)] disabled:opacity-50"
+      : "inline-flex h-8 items-center gap-1 rounded-full bg-[var(--color-cs-brand-soft)] px-3 text-[12.5px] font-semibold text-[var(--color-cs-brand)] disabled:opacity-50";
+
   return (
-    <div className="shrink-0">
+    <div className={variant === "prominent" ? "w-full" : "shrink-0"}>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="inline-flex h-8 items-center gap-1 rounded-full bg-[var(--color-cs-brand-soft)] px-3 text-[12.5px] font-semibold text-[var(--color-cs-brand)] disabled:opacity-50"
+        className={buttonClass}
       >
-        <IconPlus size={14} stroke={2.2} aria-hidden />
-        {uploading ? "Adding…" : label}
+        <span className="inline-flex items-center gap-1 font-semibold">
+          <IconPlus size={variant === "prominent" ? 18 : 14} stroke={2.2} aria-hidden />
+          {uploading ? "Adding…" : label}
+        </span>
+        {variant === "prominent" ? (
+          <span className="text-[12px] font-medium text-[var(--color-cs-text-secondary)]">
+            PDF, photo, or scan
+          </span>
+        ) : null}
       </button>
       <input
         ref={inputRef}

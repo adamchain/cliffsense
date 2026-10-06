@@ -5,6 +5,7 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
+import { detectWageChange, programsThatMustReportWageChange } from "@/lib/alerts/wage-change";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import {
   enrolledWorkersWithJobSuccess,
@@ -27,7 +28,12 @@ import {
   studentEarnedIncomeExclusionCents,
 } from "@/lib/benefits/ssi";
 import { ageFromDateOfBirth } from "@/lib/policy/screen";
-import { oneTimeOtherIncomeCents, passesSnapHouseholdRule, snapStoredGrossLimitCents } from "@/lib/benefits/snap-limits";
+import {
+  oneTimeOtherIncomeCents,
+  passesSnapHouseholdRule,
+  snapGrossDisplayStatus,
+  snapStoredGrossLimitCents,
+} from "@/lib/benefits/snap-limits";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
@@ -99,6 +105,8 @@ export type ThresholdDashboardRow = {
   currentValueCents: number | null;
   projectedValueCents: number | null;
   status: ThresholdUiStatus;
+  /** Why a watch status is not simply "near the eligibility limit". */
+  statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
 };
 
 export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectId): Promise<{
@@ -285,6 +293,28 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     deposits: benefitDeposits,
   });
 
+  const earnedDeposits = txMapped.flatMap((t) => {
+    if (t.pending || t.excludedFromThresholds) return [];
+    if (t.userCategory !== "earned_income" || t.amountCents >= 0) return [];
+    const payerKey = String(t.merchantName || t.name || "")
+      .trim()
+      .toLowerCase();
+    return [{ date: String(t.date), amountCents: Math.abs(t.amountCents), payerKey }];
+  });
+  const wageKind = detectWageChange({
+    monthPrefix: prefix,
+    deposits: earnedDeposits,
+    now,
+    hasHistoryBeforeMonth: txMapped.some((t) => String(t.date).slice(0, 7) < prefix),
+  });
+  const snapGrossForReport = Math.max(0, grossMonthlyIncomeCents(breakdown) - oneTimeOtherIncomeCents(txMapped, prefix));
+  const wageReportKeys = new Set(
+    (wageKind
+      ? programsThatMustReportWageChange(programs, wageKind, snapGrossForReport, householdSize)
+      : []
+    ).map((program) => program.toUpperCase().replace(/[^A-Z0-9]/g, "")),
+  );
+
   const rows: ThresholdDashboardRow[] = [];
 
   for (const th of thresholdRows) {
@@ -437,9 +467,44 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     }
 
     let status: ThresholdUiStatus = "ok";
+    let statusNote: "snap_report_130" | "wage_report" | "reference" | null = null;
+    if (sk === "pa_medicaid_mnil_2026") {
+      statusNote = "reference";
+    }
     if (!attached) status = "ok"; // detached limits are not evaluated
     else if (breachNow) status = "concern";
     else if (predictive || warnNow) status = "watch";
+
+    if (
+      attached &&
+      String(th.program ?? "").toUpperCase() === "SNAP" &&
+      th.thresholdType === "monthly_gross_income"
+    ) {
+      const snap = snapGrossDisplayStatus({
+        currentCents: currentValue,
+        eligibilityLimitCents: limitCents,
+        householdSize,
+        warnAt,
+        attached,
+      });
+      if (snap.status === "concern") status = "concern";
+      else if (snap.reportingDue) {
+        status = "watch";
+        statusNote = "snap_report_130";
+      } else if (snap.status === "watch" && status === "ok") {
+        status = "watch";
+      }
+    }
+
+    const programKey = String(th.program ?? "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+    if (statusNote === "reference") {
+      status = "ok";
+    } else if (attached && status === "ok" && wageReportKeys.has(programKey)) {
+      status = "watch";
+      statusNote = "wage_report";
+    }
 
     rows.push({
       _id: String(th._id),
@@ -458,6 +523,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       currentValueCents: currentValue,
       projectedValueCents: projectedValue,
       status,
+      statusNote,
     });
   }
 

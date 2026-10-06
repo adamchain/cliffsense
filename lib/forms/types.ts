@@ -1,4 +1,4 @@
-import type { Program } from "@/lib/programs";
+import type { StoredProgram } from "@/lib/programs";
 
 /* ---------------------------------------------------------------------------
  * Shared types for the Reports & Docs feature: a catalog of the official
@@ -13,7 +13,7 @@ export type FormCategory = "reporting" | "reapply";
 /** A catalog entry: an official agency form or online process we point users to. */
 export type CatalogForm = {
   id: string;
-  program: Program;
+  program: StoredProgram;
   category: FormCategory;
   /** Agency form number, where one exists (e.g. "SSA-821", "PA 600 R"). */
   formNumber?: string;

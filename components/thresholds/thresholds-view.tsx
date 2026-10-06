@@ -23,6 +23,7 @@ type Row = {
   currentValueCents: number | null;
   projectedValueCents: number | null;
   status: "ok" | "watch" | "concern";
+  statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
 };
 
 type Payload = {
@@ -335,7 +336,12 @@ export function ThresholdsView({
             )}
             {!loading &&
               data?.rows.map((r) => {
-                const st = STATUS[r.status] ?? STATUS.ok;
+                const st =
+                  r.statusNote === "snap_report_130" || r.statusNote === "wage_report"
+                    ? { label: "Report due", className: STATUS.watch.className }
+                    : r.statusNote === "reference"
+                      ? { label: "Reference", className: "bg-[var(--color-cs-surface)] text-[var(--color-cs-text-secondary)]" }
+                      : (STATUS[r.status] ?? STATUS.ok);
                 const isSystem = r.scope !== "user";
                 const cur =
                   r.currentValueCents != null ? formatPlainUsdFromCents(r.currentValueCents) : "—";

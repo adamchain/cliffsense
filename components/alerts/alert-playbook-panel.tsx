@@ -6,10 +6,18 @@ import {
   type AlertPlaybook,
 } from "@/lib/alerts/alert-playbook";
 
-export function AlertPlaybookPanel({ playbook }: { playbook: AlertPlaybook }) {
+export function AlertPlaybookPanel({
+  playbook,
+  programs: programsOverride,
+}: {
+  playbook: AlertPlaybook;
+  /** Enrolled programs this alert applies to. The playbook list is the full catalog. */
+  programs?: string[];
+}) {
   const steps = playbookPersonaSteps(playbook);
   const codes = closureCodeNotes(playbook);
-  const programs = playbook.programs.length ? playbook.programs.join(", ") : "Enrolled programs";
+  const named = programsOverride?.length ? programsOverride : playbook.programs;
+  const programs = named.length ? named.join(", ") : "Enrolled programs";
 
   return (
     <details className="group mt-3 rounded-xl border border-[var(--color-cs-border)] bg-white/70 px-3 py-2">

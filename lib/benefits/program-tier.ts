@@ -37,9 +37,15 @@ export function statusWord(sc: LimitStatus, okWord = "On track"): string {
 /** Plain-language reassurance — answers "Am I okay?" before the numbers. */
 export function statusReassurance(
   status: LimitStatus,
-  opts?: { hasLimit?: boolean; code?: string },
+  opts?: { hasLimit?: boolean; code?: string; reportingDue?: boolean; wageReport?: boolean },
 ): string {
   const hasLimit = opts?.hasLimit ?? true;
+  if (status === "warn" && opts?.reportingDue && opts.code === "SNAP") {
+    return "Gross income is over the 10-day reporting line";
+  }
+  if (status === "warn" && opts?.wageReport) {
+    return "A wage change needs to be reported";
+  }
   if (status === "crit") {
     return hasLimit
       ? "You're over the monthly limit — review needed"
@@ -88,6 +94,10 @@ export type ProgramCardModel = {
   concern: number;
   watch: number;
   total: number;
+  /** SNAP is under the 200% line and over the 10-day reporting line. */
+  reportingDue?: boolean;
+  /** A wage change is reportable even though this program is still under its limit. */
+  wageReport?: boolean;
 };
 
 type RowLike = {
@@ -96,6 +106,7 @@ type RowLike = {
   status: "ok" | "watch" | "concern";
   currentValueCents: number | null;
   limitCents: number;
+  statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
 };
 
 /** Collapse threshold rows into one wallet card per program. */
@@ -108,11 +119,13 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
     metricStatus: LimitStatus;
     currentCents: number | null;
     limitCents: number | null;
+    reportingDue: boolean;
+    wageReport: boolean;
   };
   const groups = new Map<string, Acc>();
 
   for (const r of rows) {
-    if (!r.program || !r.attached) continue;
+    if (!r.program || !r.attached || r.statusNote === "reference") continue;
     const code = programCodeKey(r.program);
     const g = groups.get(code) ?? {
       code,
@@ -122,10 +135,14 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
       metricStatus: "ok" as LimitStatus,
       currentCents: null,
       limitCents: null,
+      reportingDue: false,
+      wageReport: false,
     };
     g.total += 1;
     if (r.status === "concern") g.concern += 1;
     else if (r.status === "watch") g.watch += 1;
+    if (r.statusNote === "snap_report_130") g.reportingDue = true;
+    if (r.statusNote === "wage_report") g.wageReport = true;
 
     const sc = statusFromRow(r.status);
     if (r.currentValueCents != null) {
@@ -147,6 +164,8 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
           : null;
       const status: LimitStatus =
         g.concern > 0 ? "crit" : g.watch > 0 ? "warn" : "ok";
+      const reportingDue = status === "warn" && g.reportingDue;
+      const wageReport = status === "warn" && g.wageReport && !reportingDue;
       const meta = programMetaFor(g.code);
       return {
         code: g.code,
@@ -154,7 +173,9 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
         tier: programTier(g.code),
         tag: programAgencyTag(g.code),
         status,
-        word: statusWord(status, meta ? "On track" : "On track"),
+        word: reportingDue ? "Report income" : wageReport ? "Report change" : statusWord(status, meta ? "On track" : "On track"),
+        reportingDue,
+        wageReport,
         currentCents: g.currentCents,
         limitCents: g.limitCents,
         pct,

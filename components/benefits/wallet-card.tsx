@@ -57,6 +57,8 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
   const reassurance = statusReassurance(card.status, {
     hasLimit: card.limitCents != null,
     code: card.code,
+    reportingDue: card.reportingDue,
+    wageReport: card.wageReport,
   });
   const mark = card.status === "ok" ? "✓" : card.status === "warn" ? "!" : "✕";
 

@@ -297,10 +297,10 @@ export async function evaluateScenarioAlerts(
     now,
     hasHistoryBeforeMonth: input.hasHistoryBeforeMonth,
   });
-  if (
-    wageKind &&
-    programsThatMustReportWageChange(input.programs, wageKind, input.snapGrossCents ?? gross, householdSize).length > 0
-  ) {
+  const wageReportPrograms = wageKind
+    ? programsThatMustReportWageChange(input.programs, wageKind, input.snapGrossCents ?? gross, householdSize)
+    : [];
+  if (wageReportPrograms.length > 0) {
     consider("reporting_wage_change_10day");
   }
   const otherIn = input.otherInflowCents ?? 0;
@@ -339,6 +339,10 @@ export async function evaluateScenarioAlerts(
       ssiCountableCents: input.ssiAdjustedCountableCents ?? countable,
       maxAssetCents: assets,
       grossMonthlyCents: gross,
+      programs:
+        pending.scenario.id === "reporting_wage_change_10day"
+          ? wageReportPrograms
+          : pending.scenario.programs.filter((program) => enrolledMatchesProgram(programSet, program)),
     });
     alertsCreated += 1;
     alertIdsCreated.push(createdId);
@@ -404,6 +408,8 @@ async function insertScenarioAlert(input: {
   maxAssetCents?: number;
   grossMonthlyCents?: number;
   changeConfidence?: "confirmed" | "inferred";
+  /** Enrolled programs this alert actually applies to. The playbook list is the full catalog. */
+  programs?: string[];
 }): Promise<Types.ObjectId> {
   const s = input.scenario;
   const level = input.level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
@@ -418,7 +424,7 @@ async function insertScenarioAlert(input: {
       scenarioId: s.id,
       playbookId: s.id,
       title: s.title,
-      programs: s.programs,
+      programs: input.programs?.length ? input.programs : s.programs,
       monthPrefix: input.monthPrefix,
       earnedGrossCents: input.earnedGrossCents ?? 0,
       ssiCountableCents: input.ssiCountableCents ?? 0,

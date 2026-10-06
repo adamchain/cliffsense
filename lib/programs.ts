@@ -11,18 +11,15 @@ export const PROGRAMS = [
   "QMB",
   "ExtraHelp",
   "TANF",
-  "WIC",
   "LIHEAP",
   "ACA",
-  "VA",
   "ABLE",
 ] as const;
 
 export type Program = (typeof PROGRAMS)[number];
 
-/** Older enrollment value kept so existing beneficiary records still load. */
-/** Older enrollment values kept so existing beneficiary records still load. */
-export const LEGACY_PROGRAMS = ["Medicaid", "Section8"] as const;
+/** Older enrollment values kept so existing records still load. WIC and VA are no longer offered. */
+export const LEGACY_PROGRAMS = ["Medicaid", "Section8", "WIC", "VA"] as const;
 export type LegacyProgram = (typeof LEGACY_PROGRAMS)[number];
 
 export const STORED_PROGRAMS = [...PROGRAMS, ...LEGACY_PROGRAMS] as const;

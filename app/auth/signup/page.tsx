@@ -12,59 +12,16 @@ import {
 } from "@/components/auth/auth-field-classes";
 import { AuthPageShell } from "@/components/layout/auth-page-shell";
 import { BETA_SESSION_KEY, isValidBetaAccessCode } from "@/lib/auth/beta-access";
-import {
-  IconCheck,
-  IconUser,
-  IconUsers,
-  IconBriefcase,
-  IconHeartHandshake,
-} from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
 
-const types = [
-  {
-    id: "beneficiary" as const,
-    name: "Beneficiary",
-    desc: "I’m managing my own benefits and bank activity.",
-    icon: IconUser,
-    tone: "a",
-  },
-  {
-    id: "family" as const,
-    name: "Family / caregiver",
-    desc: "I help a loved one stay within their limits.",
-    icon: IconUsers,
-    tone: "b",
-  },
-  {
-    id: "fiduciary" as const,
-    name: "Professional fiduciary",
-    desc: "I manage accounts for multiple clients or trusts.",
-    icon: IconBriefcase,
-    tone: "c",
-  },
-  {
-    id: "nonprofit" as const,
-    name: "Nonprofit / caseworker",
-    desc: "I support a caseload with reporting needs.",
-    icon: IconHeartHandshake,
-    tone: "d",
-  },
-];
-
-const toneBg: Record<string, string> = {
-  a: "bg-[var(--color-cs-info-bg)] text-[var(--color-cs-brand)]",
-  b: "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]",
-  c: "bg-[var(--color-cs-warning-bg)] text-[var(--color-cs-warning)]",
-  d: "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]",
-};
+const accountType = "beneficiary";
 
 const stepsMeta = [
-  { n: 1 as const, label: "Account type" },
-  { n: 2 as const, label: "Your info" },
-  { n: 3 as const, label: "Verify" },
+  { n: 1 as const, label: "Your info" },
+  { n: 2 as const, label: "Verify" },
 ];
 
-function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
+function SignupStepper({ step }: { step: 1 | 2 }) {
   return (
     <nav aria-label="Sign-up progress" className="mt-5">
       <ol className="flex items-center gap-1 sm:gap-2">
@@ -108,17 +65,12 @@ function SignupStepper({ step }: { step: 1 | 2 | 3 }) {
   );
 }
 
-const stepHeadings: Record<1 | 2 | 3, { title: string; intro: React.ReactNode }> = {
+const stepHeadings: Record<1 | 2, { title: string; intro: React.ReactNode }> = {
   1: {
-    title: "Create your account",
-    intro:
-      "Tell us how you’ll be using Bene-Watch. This shapes your setup and the features you’ll see first.",
-  },
-  2: {
     title: "Your details",
     intro: "We’ll use this on your dashboard and in alert emails.",
   },
-  3: {
+  2: {
     title: "Review & create",
     intro: null,
   },
@@ -130,8 +82,7 @@ export default function SignUpPage() {
   const [needsBeta, setNeedsBeta] = useState(true);
   const [betaCode, setBetaCode] = useState("");
   const [betaError, setBetaError] = useState<string | null>(null);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [accountType, setAccountType] = useState<(typeof types)[number]["id"]>("beneficiary");
+  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -339,66 +290,6 @@ export default function SignUpPage() {
         <div className="mt-8 rounded-lg border border-[var(--color-cs-border)] bg-white p-6 sm:p-7">
           {step === 1 && (
             <>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {types.map((t) => {
-                  const Icon = t.icon;
-                  const selected = accountType === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setAccountType(t.id)}
-                      className={`rounded-xl border bg-white p-4 text-left shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] ${
-                        selected
-                          ? "border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-info-bg)] p-[15px] shadow-[0_1px_0_rgba(0,0,0,0.06)] ring-1 ring-[var(--color-cs-brand)]/15"
-                          : "border-[var(--color-cs-border)] hover:border-[var(--color-cs-brand)]/55 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${toneBg[t.tone]}`}
-                        >
-                          <Icon size={20} stroke={1.5} aria-hidden />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold text-[var(--color-cs-text)]">{t.name}</div>
-                          <p className="mt-0.5 text-xs leading-snug text-[var(--color-cs-text-secondary)]">{t.desc}</p>
-                        </div>
-                        <span
-                          className={`relative mt-0.5 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${
-                            selected ? "border-[var(--color-cs-brand)]" : "border-[var(--color-cs-text-muted)]"
-                          }`}
-                          aria-hidden
-                        >
-                          {selected ? (
-                            <span className="absolute inset-[3px] rounded-full bg-[var(--color-cs-brand)]" />
-                          ) : null}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[var(--color-cs-text-secondary)]">
-                  Already have an account?{" "}
-                  <Link href="/auth/signin" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
-                    Sign in
-                  </Link>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[120px]`}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className={authLabelClass} htmlFor="name">
@@ -451,17 +342,16 @@ export default function SignUpPage() {
                   </p>
                 ) : null}
               </div>
-              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
+              <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-[var(--color-cs-text-secondary)]">
+                  Already have an account?{" "}
+                  <Link href="/auth/signin" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                    Sign in
+                  </Link>
+                </p>
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(2)}
                   disabled={!name || !email || password.length < 8}
                   className={`${authPrimaryButtonClass} w-full sm:w-auto sm:min-w-[120px]`}
                 >
@@ -471,18 +361,16 @@ export default function SignUpPage() {
             </>
           )}
 
-          {step === 3 && !codeSent && (
+          {step === 2 && !codeSent && (
             <>
               <ul className="space-y-0 overflow-hidden rounded-xl border border-[var(--color-cs-border)] bg-white text-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
                 <li className="flex justify-between gap-4 border-b border-[var(--color-cs-border)] px-4 py-3">
-                  <span className="text-[var(--color-cs-text-muted)]">Account type</span>
-                  <span className="font-medium text-[var(--color-cs-text)] text-right">
-                    {types.find((t) => t.id === accountType)?.name}
-                  </span>
-                </li>
-                <li className="flex justify-between gap-4 px-4 py-3">
                   <span className="text-[var(--color-cs-text-muted)]">Name</span>
                   <span className="max-w-[60%] truncate font-medium text-[var(--color-cs-text)] text-right">{name}</span>
+                </li>
+                <li className="flex justify-between gap-4 px-4 py-3">
+                  <span className="text-[var(--color-cs-text-muted)]">Email</span>
+                  <span className="max-w-[60%] truncate font-medium text-[var(--color-cs-text)] text-right">{email}</span>
                 </li>
               </ul>
               {error ? (
@@ -507,7 +395,7 @@ export default function SignUpPage() {
               <div className="mt-7 flex flex-col-reverse gap-3 border-t border-[var(--color-cs-border)] pt-6 sm:flex-row sm:justify-between">
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline sm:self-center"
                 >
                   Back
@@ -524,7 +412,7 @@ export default function SignUpPage() {
             </>
           )}
 
-          {step === 3 && codeSent && (
+          {step === 2 && codeSent && (
             <>
               <p className="text-sm leading-relaxed text-[var(--color-cs-text-secondary)]">
                 We emailed a 6-digit code to{" "}

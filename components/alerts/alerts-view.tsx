@@ -303,7 +303,7 @@ export function AlertsView({
                   {sensitive && <div className="cs-acard-badge">Time Sensitive</div>}
                   <div className="cs-acard-title">{title}</div>
                   <p className="cs-acard-body">{playbook.cureAction}</p>
-                  <AlertPlaybookPanel playbook={playbook} />
+                  <AlertPlaybookPanel playbook={playbook} programs={snap?.programs} />
                   {a.continuityCase && (
                     <ContinuityCasePanel
                       beneficiaryId={beneficiaryId}

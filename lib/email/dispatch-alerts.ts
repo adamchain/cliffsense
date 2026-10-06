@@ -47,6 +47,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       program?: string;
       thresholdType?: string;
       title?: string;
+      programs?: unknown;
     };
     const playbook = resolveAlertPlaybook({
       playbookId: snap.playbookId,
@@ -56,7 +57,10 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       trigger,
       title: snap.title,
     });
-    const paragraphs = playbookEmailParagraphs(playbook);
+    const namedPrograms = Array.isArray(snap.programs)
+      ? snap.programs.filter((program): program is string => typeof program === "string" && program.length > 0)
+      : undefined;
+    const paragraphs = playbookEmailParagraphs(playbook, namedPrograms);
     const subject = `Bene-Watch: ${
       level === "breach" ? "Important" : trigger === "cliff" || trigger === "snt" || trigger === "able"
         ? "Eligibility warning"

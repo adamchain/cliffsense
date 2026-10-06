@@ -14,8 +14,8 @@ export default async function OnboardingAuthorityPage() {
       accountType={session.user.accountType}
       currentStepId="authority"
       eyebrow="Authority"
-      title="Document who may act"
-      subtitle="Capture the Monitor’s real authority and who already manages benefits, money, plans, trusts, and ABLE funds."
+      title="Upload the authorization"
+      subtitle="The document upload is at the top of this step. Then check every role that document actually covers."
     >
       <AuthorityOnboardingForm accountType={session.user.accountType} />
     </OnboardingShell>

@@ -727,12 +727,13 @@ export function closureCodeNotes(playbook: AlertPlaybook): { code: ClosureCode; 
   return (playbook.closureCodes ?? []).map((code) => ({ code, note: CLOSURE_CODE_NOTES[code] }));
 }
 
-export function playbookEmailParagraphs(playbook: AlertPlaybook): string[] {
-  const programs = playbook.programs.length ? playbook.programs.join(", ") : "See enrolled programs";
+export function playbookEmailParagraphs(playbook: AlertPlaybook, programs?: string[]): string[] {
+  const named = programs?.length ? programs : playbook.programs;
+  const programLine = named.length ? named.join(", ") : "See enrolled programs";
   const docs = playbook.documents.join("; ");
   const paras = [
     `${playbook.title}`,
-    `Threatened program: ${programs}`,
+    `Threatened program: ${programLine}`,
     `Triggering rule: ${playbook.triggeringRule}`,
     `Deadline: ${playbook.effectiveDateNote}`,
     `What to do: ${playbook.cureAction}`,

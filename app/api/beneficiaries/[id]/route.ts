@@ -46,6 +46,7 @@ const patchSchema = z.object({
       authorities: z.array(z.string()).optional(),
       managers: z.record(z.string(), z.string()).optional(),
       address: z.string().optional(),
+      city: z.string().optional(),
       maritalStatus: z.string().optional(),
       disabilityStatus: z.string().optional(),
       preferredCommunications: z.string().optional(),

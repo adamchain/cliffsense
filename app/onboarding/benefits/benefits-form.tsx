@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { programLabel } from "@/lib/benefits/program-meta";
 import {
   enrollmentsFromScreening,
   isChoiceComplete,
@@ -36,6 +37,8 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
   const [answers, setAnswers] = useState<Record<string, ScreeningChoice>>({});
   const [medicaidCategory, setMedicaidCategory] = useState<MedicaidCategory | "">("");
   const [beneficiaryId, setBeneficiaryId] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"screen" | "renewals">("screen");
+  const [renewals, setRenewals] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,9 +88,22 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
     };
   }, [accountType]);
 
-  async function persist(nextAnswers: Record<string, ScreeningChoice>, category: MedicaidCategory | "", enroll: boolean) {
-    if (!beneficiaryId) return false;
+  function enrolledRows(nextAnswers: Record<string, ScreeningChoice>, category: MedicaidCategory | "") {
     const screening: BenefitScreeningState = { answers: nextAnswers, medicaidCategory: category };
+    return enrollmentsFromScreening(screening);
+  }
+
+  async function persist(
+    nextAnswers: Record<string, ScreeningChoice>,
+    category: MedicaidCategory | "",
+    enroll: boolean,
+    renewalDates?: Record<string, string>,
+  ) {
+    if (!beneficiaryId) return false;
+    const rows = enrolledRows(nextAnswers, category).map((row) => ({
+      ...row,
+      nextRenewalDate: renewalDates?.[row.program] || null,
+    }));
     const res = await fetch(`/api/beneficiaries/${beneficiaryId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -96,26 +112,19 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
           benefitScreening: nextAnswers,
           medicaidCategory: category,
         },
-        ...(enroll ? { benefitsEnrolled: enrollmentsFromScreening(screening) } : {}),
+        ...(enroll ? { benefitsEnrolled: rows } : {}),
       }),
     });
     return res.ok;
   }
 
-  async function goNext() {
-    if (!item || !canContinue) return;
-    setSaving(true);
-    setError(null);
-    const ok = await persist(answers, medicaidCategory, isLast);
-    if (!ok) {
-      setError("Could not save this answer.");
-      setSaving(false);
-      return;
-    }
-    if (!isLast) {
-      setIndex((i) => i + 1);
-      setSaving(false);
-      return;
+  async function activateAndAdvance() {
+    if (beneficiaryId) {
+      await fetch("/api/beneficiaries/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ beneficiaryId }),
+      });
     }
     const me = await fetch("/api/me", {
       method: "PATCH",
@@ -133,8 +142,100 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
     setSaving(false);
   }
 
+  async function goNext() {
+    if (!item || !canContinue) return;
+    setSaving(true);
+    setError(null);
+    const rows = enrolledRows(answers, medicaidCategory);
+    const ok = await persist(answers, medicaidCategory, false);
+    if (!ok) {
+      setError("Could not save this answer.");
+      setSaving(false);
+      return;
+    }
+    if (!isLast) {
+      setIndex((i) => i + 1);
+      setSaving(false);
+      return;
+    }
+    if (rows.length > 0) {
+      setPhase("renewals");
+      setSaving(false);
+      return;
+    }
+    const enrolled = await persist(answers, medicaidCategory, true);
+    if (!enrolled) {
+      setError("Could not save programs.");
+      setSaving(false);
+      return;
+    }
+    await activateAndAdvance();
+  }
+
+  async function saveRenewals() {
+    setSaving(true);
+    setError(null);
+    const ok = await persist(answers, medicaidCategory, true, renewals);
+    if (!ok) {
+      setError("Could not save renewal dates.");
+      setSaving(false);
+      return;
+    }
+    await activateAndAdvance();
+  }
+
   if (loading) {
     return <p className="mt-8 text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>;
+  }
+
+  if (phase === "renewals") {
+    const rows = enrolledRows(answers, medicaidCategory);
+    return (
+      <div className="space-y-4">
+        <div className="cs-card space-y-4 p-6 md:p-7">
+          <div>
+            <h2 className="text-[18px] font-bold tracking-tight text-[var(--color-cs-text)]">Renewal dates</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              Enter the next renewal or recertification date from each notice. Leave a date blank if you do not have it yet.
+            </p>
+          </div>
+          {rows.map((row) => (
+            <div key={row.program} className="flex flex-col gap-1.5">
+              <label className="cs-label" htmlFor={`renew-${row.program}`}>
+                {programLabel(row.program)}
+              </label>
+              <input
+                id={`renew-${row.program}`}
+                type="date"
+                value={renewals[row.program] ?? ""}
+                onChange={(e) =>
+                  setRenewals((prev) => ({ ...prev, [row.program]: e.target.value }))
+                }
+                className="cs-input"
+              />
+            </div>
+          ))}
+        </div>
+        {error && <p className="text-[13px] text-[var(--color-cs-danger)]">{error}</p>}
+        <div className="flex justify-between">
+          <button
+            type="button"
+            className="text-sm font-semibold text-[var(--color-cs-brand)] hover:underline"
+            onClick={() => setPhase("screen")}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            className="cs-btn cs-btn-primary"
+            onClick={() => void saveRenewals()}
+          >
+            {saving ? "Saving…" : "Continue to bank"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!item) return null;
@@ -160,17 +261,19 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
         </div>
         <div>
           <h2 className="text-[18px] font-bold tracking-tight text-[var(--color-cs-text)]">{item.program}</h2>
-          <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+          <div className="mt-3 rounded-xl border-2 border-[var(--color-cs-brand)] bg-[var(--color-cs-brand-soft)] px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-brand)]">
+              Document to keep
+            </p>
+            <p className="mt-1 text-[14px] font-semibold leading-snug text-[var(--color-cs-text)]">{item.vault}</p>
+          </div>
+          <p className="mt-3 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
             <span className="font-semibold text-[var(--color-cs-text)]">Who to screen. </span>
             {item.who}
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
             <span className="font-semibold text-[var(--color-cs-text)]">What confirms it. </span>
             {item.confirms}
-          </p>
-          <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            <span className="font-semibold text-[var(--color-cs-text)]">Vault item. </span>
-            {item.vault}
           </p>
           {item.note ? (
             <p className="mt-3 rounded-xl border border-[var(--color-cs-warning)]/30 bg-[var(--color-cs-warning-bg)] px-3 py-2 text-[12px] leading-relaxed text-[var(--color-cs-text)]">
@@ -240,7 +343,13 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
           className="cs-btn cs-btn-primary"
           onClick={() => void goNext()}
         >
-          {saving ? "Saving…" : isLast ? "Continue to bank" : "Continue"}
+          {saving
+            ? "Saving…"
+            : isLast && enrolledRows(answers, medicaidCategory).length > 0
+              ? "Renewal dates"
+              : isLast
+                ? "Continue to bank"
+                : "Continue"}
         </button>
       </div>
     </div>

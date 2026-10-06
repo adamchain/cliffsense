@@ -101,6 +101,7 @@ export type AccessibleBeneficiary = {
   lastName: string;
   isOwner: boolean;
   roleLabel: string;
+  enrolledCount: number;
 };
 
 export function displayNameForBeneficiary(b: {
@@ -128,7 +129,7 @@ export async function listAccessibleBeneficiariesForUser(
     ],
   })
     .sort({ isOwner: -1, createdAt: 1 })
-    .select("firstName lastName isOwner ownerUserId")
+    .select("firstName lastName isOwner ownerUserId benefitsEnrolled")
     .lean();
 
   return list.map((b) => {
@@ -139,6 +140,7 @@ export async function listAccessibleBeneficiariesForUser(
       firstName: b.firstName,
       lastName: b.lastName,
       isOwner: Boolean(b.isOwner),
+      enrolledCount: Array.isArray(b.benefitsEnrolled) ? b.benefitsEnrolled.length : 0,
       roleLabel: b.isOwner
         ? "You"
         : !isOwned && roleByBen.get(id) === "viewer"

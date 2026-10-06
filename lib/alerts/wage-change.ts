@@ -1,3 +1,4 @@
+import { extraHelpIsAutomatic } from "@/lib/benefits/extra-help-limits";
 import { snapGross130Cents } from "@/lib/benefits/snap-limits";
 import { utcMonthPrefix } from "@/lib/thresholds/metrics";
 
@@ -105,6 +106,9 @@ export function programsThatMustReportWageChange(
     if (!key || key === "SECTION8") continue;
     if (key === "SNAP") {
       if ((kind === "new_work" || kind === "increase") && overSnapLine) out.push(program);
+      continue;
+    }
+    if ((key === "EXTRAHELP" || key === "LIS" || key.includes("EXTRA")) && extraHelpIsAutomatic(programs)) {
       continue;
     }
     if (WAGE_REPORT_KEYS.has(key) || key.includes("EXTRA")) out.push(program);
