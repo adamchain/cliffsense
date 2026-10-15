@@ -62,10 +62,16 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
         deadline: "By the 6th of each month",
       },
       {
-        title: "Redetermination",
+        title: "Financial redetermination",
         detail:
-          "Periodic review of income, resources, and living arrangement — by mail, every 1–6 years depending on your case.",
+          "Periodic review of income, resources, and living arrangement — usually every 1–6 years depending on your case. This is separate from the disability review.",
         deadline: "On the date in your mailed packet",
+      },
+      {
+        title: "Disability review (CDR)",
+        detail:
+          "A separate medical review. Improvement expected: first review generally 6–18 months after disability began. Possible: about every 3 years. Not expected: about every 5–7 years.",
+        deadline: "When SSA schedules it (by mail)",
       },
     ],
     eventTriggered: [
@@ -96,7 +102,8 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
     scheduled: [
       {
         title: "Continuing Disability Review (CDR)",
-        detail: "Periodic medical review — there is no monthly or annual paperwork to file.",
+        detail:
+          "Periodic medical review. Improvement expected: first review generally 6–18 months after disability began. Possible: about every 3 years. Not expected: about every 5–7 years. There is no monthly or annual paperwork to file.",
         deadline: "When SSA schedules it (by mail)",
       },
     ],
@@ -127,13 +134,13 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
       {
         title: "Semi-Annual Report (SAR)",
         detail:
-          "A short update around month 6 — no interview. Miss it and benefits are suspended until you submit. (The 'pink envelope' is the SAR — don't ignore it.)",
+          "A short update between recertifications — no interview. Miss it and benefits are suspended until you submit. (The 'pink envelope' is the SAR — don't ignore it.) Whether and when it is due depends on the household's reporting category; follow the date on the form.",
         deadline: "By the date printed on the form",
       },
       {
         title: "Recertification",
         detail:
-          "Full recert at 12 months (up to 24 months if every household member is 60+ or disabled with no earned income). Packets are mailed automatically.",
+          "Most households recertify every 12 months. Households where every adult is 60+ or disabled and someone works: 24 months, with semi-annual reports in between. ESAP households (everyone 60+ or disabled, no earned income): 36 months. Disability alone does not exempt a household from reporting. Packets are mailed automatically.",
         deadline: "By the date printed on the renewal packet",
       },
     ],
@@ -203,9 +210,15 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
     code: "MEDICAIDWAIVER",
     scheduled: [
       {
-        title: "Annual waiver / Medicaid renewal",
+        title: "Annual Medicaid financial renewal",
         detail: "Keep waiver approval letters. Renewal packets can end both waiver services and deemed full Medicaid if missed.",
         deadline: "By the date on the renewal packet",
+      },
+      {
+        title: "Waiver service and functional review",
+        detail:
+          "Level-of-care and service-plan review, scheduled by the waiver program or supports coordinator. Separate from the financial renewal — finishing one does not complete the other.",
+        deadline: "On the date the waiver program or coordinator sets",
       },
     ],
     eventTriggered: [
@@ -261,7 +274,14 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
   },
   EXTRAHELP: {
     code: "EXTRAHELP",
-    scheduled: [],
+    scheduled: [
+      {
+        title: "Extra Help review",
+        detail:
+          "SSA may mail a review form. People who get Extra Help automatically through Medicaid, QMB, or SSI are re-checked each year — watch for a fall notice if that status ends.",
+        deadline: "By the date on the SSA notice",
+      },
+    ],
     eventTriggered: [
       {
         title: "Income, resources, household & marital-status changes",

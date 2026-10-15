@@ -26,6 +26,11 @@ import { DEADLINE_KIND_LABEL, isDeadlineKind, playbookIdForDeadlineKind } from "
 import { playbookById } from "@/lib/alerts/alert-playbook";
 import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
 import { CategoryHandoffPanel } from "@/components/alerts/category-handoff-panel";
+import {
+  ObligationProgress,
+  type ObligationProgressModel,
+} from "@/components/calendar/obligation-progress";
+import { ConfidenceBadge } from "@/components/benefits/obligations-card";
 
 export type EventDetailModel = {
   title: string;
@@ -43,6 +48,8 @@ export type EventDetailModel = {
   howToFile?: string | null;
   source: "user" | "generated";
   deadlineId?: string | null;
+  /** Present for saved obligations: confidence, source notice, and progress. */
+  progress?: ObligationProgressModel | null;
 };
 
 function todayIso(): string {
@@ -410,6 +417,16 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
               </>
             )}
           </div>
+
+          {event.progress ? (
+            <ObligationProgress initial={event.progress} />
+          ) : (
+            <div className="mt-4 rounded-[18px] bg-white p-4 text-[13px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+              <ConfidenceBadge confidence="estimated" /> This date comes from the program&apos;s
+              published schedule. If a notice gives a different date, add the notice date on the
+              Calendar — the notice wins.
+            </div>
+          )}
 
           <p className="mt-3 px-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
             Due {longDeadline(event.date)}. Nothing you prepare here is shared with any agency —

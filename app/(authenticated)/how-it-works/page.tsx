@@ -7,6 +7,7 @@ import {
   IconBell,
   IconBrain,
   IconBuildingBank,
+  IconCalendarEvent,
   IconCalculator,
   IconListDetails,
   IconLock,
@@ -15,6 +16,7 @@ import {
   IconTarget,
   IconTrendingUp,
 } from "@tabler/icons-react";
+import { RENEWAL_IS_ONE_DEADLINE } from "@/lib/reporting/obligations";
 
 export const metadata: Metadata = {
   title: "How it works · Bene-Watch",
@@ -272,6 +274,30 @@ export default function HowItWorksPage() {
             shifts?&rdquo; — it reads the same estimates, projections, and limit states the pipeline
             produced and answers in context. It&apos;s a helper drawing on your real numbers, not a
             caseworker: confirm anything consequential with an official source.
+          </p>
+        </Section>
+
+        {/* DEADLINES */}
+        <Section
+          id="deadlines"
+          icon={<IconCalendarEvent size={18} stroke={1.8} />}
+          title="Renewals are only one deadline"
+        >
+          <p>{RENEWAL_IS_ONE_DEADLINE}</p>
+          <p>
+            Each benefit keeps its own dates: the next renewal or review (including SSI financial
+            redeterminations, disability reviews, and waiver service reviews), the next interim
+            report such as a SNAP SAR, the changes you must report and how fast, and any documents
+            the agency asked for. The soonest of these is shown first, so a renewal months away
+            never hides a report due next week.
+          </p>
+          <p>
+            Every date is labeled <em>Confirmed by agency notice</em>, <em>Estimated from verified
+            rules</em>, or <em>Needs confirmation</em>, with the source notice kept beside it. A
+            report date is never worked out from a renewal date, and when a notice disagrees with
+            the expected schedule, the notice date stays on the calendar and the mismatch is
+            flagged. Each obligation tracks its own preparation, submission, proof, agency
+            acknowledgment, and follow-up — finishing one never marks another done.
           </p>
         </Section>
 

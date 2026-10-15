@@ -1,6 +1,8 @@
 export const DEADLINE_KINDS = [
   "renewal",
+  "redetermination",
   "deadline",
+  "change_report",
   "sar",
   "appointment",
   "interview",
@@ -27,11 +29,13 @@ export const CASE_CLOCK_KINDS: DeadlineKind[] = [
 
 export const DEADLINE_KIND_LABEL: Record<DeadlineKind, string> = {
   renewal: "Renewal",
+  redetermination: "Financial redetermination",
   deadline: "Reporting deadline",
-  sar: "Semi-annual report",
+  change_report: "Change report",
+  sar: "Interim report (SAR)",
   appointment: "Appointment",
   interview: "SNAP / DHS interview",
-  verification: "Verification due",
+  verification: "Documents requested",
   premium: "MAWD premium",
   cdr: "SSA medical review (CDR)",
   assessment: "Waiver reassessment",
@@ -42,11 +46,13 @@ export const DEADLINE_KIND_LABEL: Record<DeadlineKind, string> = {
 
 export const DEADLINE_KIND_DEFAULT_TITLE: Record<DeadlineKind, string> = {
   renewal: "Renewal due",
+  redetermination: "Financial redetermination due",
   deadline: "Reporting deadline",
-  sar: "Semi-annual report due",
+  change_report: "Report a change",
+  sar: "Interim report due",
   appointment: "Appointment",
   interview: "Interview",
-  verification: "Verification due",
+  verification: "Documents requested by the agency",
   premium: "MAWD premium due",
   cdr: "Continuing disability review due",
   assessment: "Waiver functional reassessment",
@@ -68,6 +74,7 @@ export function playbookIdForDeadlineKind(kind: string, program?: string | null)
   const programKey = (program ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   switch (kind) {
     case "renewal":
+    case "redetermination":
     case "sar":
       return programKey === "SNAP" ? "snap_sar_renewal" : "medicaid_renewal_packet";
     case "interview":

@@ -29,6 +29,13 @@ const benefitEnrollmentSchema = new Schema(
     enrolledSince: { type: Date, default: null },
     /** Next agency renewal / recert / redetermination date (vital). */
     nextRenewalDate: { type: Date, default: null },
+    /** "confirmed" (from a notice), "estimated", or "needs_confirmation". */
+    renewalConfidence: { type: String, default: "needs_confirmation" },
+    /** Next scheduled interim report (e.g. SNAP SAR) — never derived from the renewal date. */
+    nextInterimReportDate: { type: Date, default: null },
+    interimConfidence: { type: String, default: "needs_confirmation" },
+    /** SNAP reporting category: sar | elderly_disabled_earned | esap | unknown. */
+    reportingCategory: { type: String, default: null },
     contextData: { type: Schema.Types.Mixed, default: {} },
   },
   { _id: false },

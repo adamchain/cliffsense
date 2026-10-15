@@ -49,7 +49,7 @@ const CAPABILITIES = [
   },
   {
     title: "Coordinate Multiple Programs",
-    body: "Maintain separate rules, deadlines, and action histories for Medicaid, Medicare Savings Programs, SNAP, SSI, SSDI, DAC benefits, MAWD, waiver services, Medicare Extra Help, and related programs.",
+    body: "Maintain separate rules, deadlines, and action histories for Medicaid, Medicare Savings Programs, SNAP, SSI, SSDI, DAC benefits, MAWD, waiver services, Medicare Extra Help, and related programs. A renewal date is only one deadline: interim reports, reportable changes, disability and eligibility reviews, and requests for proof are each tracked on their own.",
   },
   {
     title: "Keep appeal and cure materials together",

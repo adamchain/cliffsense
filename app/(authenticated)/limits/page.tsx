@@ -13,6 +13,11 @@ import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { buildReportingActions } from "@/lib/reporting/reporting-actions";
 import { coercePolicyScreen, ageFromDateOfBirth } from "@/lib/policy/screen";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
+import { isSnapReportingCategory, normalizeConfidence } from "@/lib/reporting/obligations";
+
+function isoDay(d: Date | null | undefined): string | null {
+  return d ? new Date(d).toISOString().slice(0, 10) : null;
+}
 
 const sectionCls = "scroll-mt-28";
 
@@ -28,7 +33,14 @@ export default async function LimitsPage() {
   let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
   let twpMonthsUsed = 0;
   let policyScreenInitial = coercePolicyScreen(null);
-  let programRows: { program: string; nextRenewalDate?: Date | null }[] = [];
+  let programRows: {
+    program: string;
+    nextRenewalDate?: Date | null;
+    renewalConfidence?: string | null;
+    nextInterimReportDate?: Date | null;
+    interimConfidence?: string | null;
+    reportingCategory?: string | null;
+  }[] = [];
   if (primary?._id) {
     const now = new Date();
     const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
@@ -76,6 +88,10 @@ export default async function LimitsPage() {
     programRows = (twpDoc?.benefitsEnrolled ?? []).map((b) => ({
       program: String(b.program),
       nextRenewalDate: b.nextRenewalDate as Date | null | undefined,
+      renewalConfidence: (b as { renewalConfidence?: string }).renewalConfidence ?? null,
+      nextInterimReportDate: (b as { nextInterimReportDate?: Date | null }).nextInterimReportDate,
+      interimConfidence: (b as { interimConfidence?: string }).interimConfidence ?? null,
+      reportingCategory: (b as { reportingCategory?: string | null }).reportingCategory ?? null,
     }));
     const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
     policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
@@ -123,12 +139,18 @@ export default async function LimitsPage() {
               <ProgramsForm
                 beneficiaryId={beneficiaryId}
                 initialPrograms={programRows.map((b) => b.program)}
-                initialRenewals={Object.fromEntries(
+                initialDates={Object.fromEntries(
                   programRows.map((b) => [
                     b.program,
-                    b.nextRenewalDate
-                      ? new Date(b.nextRenewalDate).toISOString().slice(0, 10)
-                      : null,
+                    {
+                      renewal: isoDay(b.nextRenewalDate),
+                      renewalConfidence: normalizeConfidence(b.renewalConfidence),
+                      interim: isoDay(b.nextInterimReportDate),
+                      interimConfidence: normalizeConfidence(b.interimConfidence),
+                      reportingCategory: isSnapReportingCategory(b.reportingCategory)
+                        ? b.reportingCategory
+                        : null,
+                    },
                   ]),
                 )}
               />

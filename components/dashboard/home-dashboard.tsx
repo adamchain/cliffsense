@@ -10,6 +10,7 @@ import {
 import { WalletCardGroup } from "@/components/benefits/wallet-card";
 import { PlaidConnectModal } from "@/components/plaid/plaid-connect-modal";
 import type { ProgramCardModel } from "@/lib/benefits/program-tier";
+import { obligationCategoryForKind } from "@/lib/reporting/obligations";
 
 type UpcomingItem = {
   id: string;
@@ -26,7 +27,15 @@ type DashboardPulse = {
   lastSyncAt: string | null;
   newDepositCount: number;
   nextRenewalDays: number | null;
+  /** Earliest open obligation of any kind — not just renewals. */
+  nextDeadline?: { title: string; days: number; beforeRenewal: boolean } | null;
 };
+
+function inDays(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
 
 function formatSyncTime(iso: string | null): string {
   if (!iso) return "Not synced yet";
@@ -37,9 +46,11 @@ function formatSyncTime(iso: string | null): string {
 function HealthSummary({
   cards,
   nextRenewalDays,
+  nextDeadline,
 }: {
   cards: ProgramCardModel[];
   nextRenewalDays: number | null;
+  nextDeadline?: DashboardPulse["nextDeadline"];
 }) {
   const issues = cards.filter((c) => c.status !== "ok").length;
   const crit = cards.filter((c) => c.status === "crit").length;
@@ -60,13 +71,19 @@ function HealthSummary({
             ? "No issues detected"
             : `${issues} benefit${issues === 1 ? "" : "s"} need${issues === 1 ? "s" : ""} a closer look`}
         </li>
+        {nextDeadline && (
+          <li>
+            Next deadline {inDays(nextDeadline.days)}: {nextDeadline.title}
+            {nextDeadline.beforeRenewal ? " — due before your renewal" : ""}
+          </li>
+        )}
         {nextRenewalDays != null && (
           <li>
             {nextRenewalDays === 0
-              ? "Renewal due today"
+              ? "Renewal or review due today"
               : nextRenewalDays === 1
-                ? "Next renewal tomorrow"
-                : `Next renewal in ${nextRenewalDays} days`}
+                ? "Next renewal or review tomorrow"
+                : `Next renewal or review in ${nextRenewalDays} days`}
           </li>
         )}
       </ul>
@@ -101,12 +118,18 @@ function WhatsChanged({
             : `${issues} eligibility item${issues === 1 ? "" : "s"} to review`}
         </li>
         <li>
-          <span aria-hidden>✓</span>
-          {pulse.nextRenewalDays != null && pulse.nextRenewalDays <= 14
-            ? pulse.nextRenewalDays <= 3
-              ? "Renewal coming up soon"
-              : "Renewal unchanged"
-            : "Renewal unchanged"}
+          {(() => {
+            // Based on the soonest obligation of any kind, not only the renewal.
+            const soon = pulse.nextDeadline && pulse.nextDeadline.days <= 14;
+            return (
+              <>
+                <span aria-hidden>{soon ? "!" : "✓"}</span>
+                {soon
+                  ? `${pulse.nextDeadline!.title} due ${inDays(pulse.nextDeadline!.days)}`
+                  : "No deadlines in the next 2 weeks"}
+              </>
+            );
+          })()}
         </li>
       </ul>
       <div className="cs-pulse-meta">
@@ -208,7 +231,11 @@ export function HomeDashboard({
               <WalletCardGroup title="State" countLabel="Pennsylvania" cards={state} />
             </div>
             <div className="cs-pulse-stack">
-              <HealthSummary cards={allCards} nextRenewalDays={pulse.nextRenewalDays} />
+              <HealthSummary
+                cards={allCards}
+                nextRenewalDays={pulse.nextRenewalDays}
+                nextDeadline={pulse.nextDeadline}
+              />
               <WhatsChanged cards={allCards} pulse={pulse} />
             </div>
           </div>
@@ -226,16 +253,22 @@ export function HomeDashboard({
                 </Link>
               </div>
               {(() => {
-                const renewals = upcoming.filter((e) => e.kind === "renewal");
+                const isReview = (e: UpcomingItem) =>
+                  obligationCategoryForKind(e.kind) === "renewal_review";
+                const renewals = upcoming.filter(isReview);
                 const appointments = upcoming.filter((e) => e.kind === "appointment");
                 const deadlines = upcoming.filter(
-                  (e) => e.kind !== "renewal" && e.kind !== "appointment",
+                  (e) => !isReview(e) && e.kind !== "appointment",
                 );
+                // Items arrive date-sorted, so ordering sections by their first
+                // item keeps the soonest obligation on top whatever its kind.
                 const sections: { label: string; items: UpcomingItem[] }[] = [
-                  { label: "Renewals", items: renewals },
+                  { label: "Reports & documents", items: deadlines },
                   { label: "Appointments", items: appointments },
-                  { label: "Deadlines", items: deadlines },
-                ].filter((s) => s.items.length > 0);
+                  { label: "Renewals & reviews", items: renewals },
+                ]
+                  .filter((s) => s.items.length > 0)
+                  .sort((a, b) => upcoming.indexOf(a.items[0]!) - upcoming.indexOf(b.items[0]!));
 
                 const renderList = (items: UpcomingItem[]) => (
                   <div className="cs-ios-list">

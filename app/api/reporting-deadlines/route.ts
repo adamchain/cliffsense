@@ -7,6 +7,11 @@ import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import ReportingDeadline from "@/lib/db/models/ReportingDeadline";
 import { DEADLINE_KINDS } from "@/lib/calendar/deadline-kinds";
+import { DATE_CONFIDENCES, normalizeConfidence } from "@/lib/reporting/obligations";
+
+function isoOrNull(d: unknown): string | null {
+  return d instanceof Date ? d.toISOString() : null;
+}
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -36,6 +41,14 @@ export async function GET(req: Request) {
     sourceKey: ((r as { sourceKey?: string | null }).sourceKey as string | null) ?? null,
     title: r.title as string,
     note: (r.note as string) ?? "",
+    confidence: normalizeConfidence((r as { confidence?: string }).confidence),
+    sourceNote: ((r as { sourceNote?: string }).sourceNote as string) ?? "",
+    sourceDocumentId: r.sourceDocumentId ? String(r.sourceDocumentId) : null,
+    preparedAt: isoOrNull(r.preparedAt),
+    submittedAt: isoOrNull(r.submittedAt),
+    proofDocumentId: r.proofDocumentId ? String(r.proofDocumentId) : null,
+    acknowledgedAt: isoOrNull(r.acknowledgedAt),
+    followUp: ((r as { followUp?: string }).followUp as string) ?? "",
     completedAt: r.completedAt ? (r.completedAt as Date).toISOString() : null,
   }));
   return NextResponse.json({ deadlines });
@@ -49,6 +62,8 @@ const postSchema = z.object({
   kind: z.enum(DEADLINE_KINDS).optional(),
   title: z.string().min(1).max(200),
   note: z.string().max(1000).optional(),
+  confidence: z.enum(DATE_CONFIDENCES).optional(),
+  sourceNote: z.string().max(500).optional(),
   continuedBenefitsDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
@@ -79,6 +94,8 @@ export async function POST(req: Request) {
     kind: parsed.data.kind ?? "deadline",
     title: parsed.data.title,
     note: parsed.data.note ?? "",
+    confidence: parsed.data.confidence ?? "needs_confirmation",
+    sourceNote: parsed.data.sourceNote ?? "",
   });
 
   let continuedId: string | null = null;
@@ -92,6 +109,8 @@ export async function POST(req: Request) {
       kind: "continued_benefits",
       title: "Request continued benefits",
       note: "Often earlier than the appeal deadline. Use the date on the adverse notice.",
+      confidence: parsed.data.confidence ?? "needs_confirmation",
+      sourceNote: parsed.data.sourceNote ?? "",
     });
     continuedId = continued._id.toString();
   }

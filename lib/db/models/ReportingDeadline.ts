@@ -1,9 +1,12 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import { DEADLINE_KINDS } from "@/lib/calendar/deadline-kinds";
+import { DATE_CONFIDENCES } from "@/lib/reporting/obligations";
 
 /**
- * A dated reporting deadline — SAR / renewal / recert dates printed on a mailed
- * form, plus user-entered appointments. Renewals set in Settings use
- * kind="renewal" and a stable sourceKey (`renewal:SSI`) for upserts.
+ * A dated obligation — renewal / review, interim report (SAR), change report,
+ * or an agency request for documents — plus user-entered appointments. Each row
+ * is its own obligation with its own completion tracking. Dates set in Settings
+ * use a stable sourceKey (`renewal:SSI`, `interim:SNAP`) for upserts.
  */
 const reportingDeadlineSchema = new Schema(
   {
@@ -17,20 +20,7 @@ const reportingDeadlineSchema = new Schema(
     /** Distinguishes vital renewals from ad-hoc deadlines. */
     kind: {
       type: String,
-      enum: [
-        "renewal",
-        "deadline",
-        "sar",
-        "appointment",
-        "interview",
-        "verification",
-        "premium",
-        "cdr",
-        "assessment",
-        "appeal",
-        "continued_benefits",
-        "other",
-      ],
+      enum: [...DEADLINE_KINDS],
       default: "deadline",
       index: true,
     },
@@ -41,6 +31,29 @@ const reportingDeadlineSchema = new Schema(
     sourceKey: { type: String, default: null, trim: true, index: true },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     note: { type: String, default: "", trim: true, maxlength: 1000 },
+    /**
+     * How sure we are of this date. Only a date read off an agency notice is
+     * "confirmed"; a date worked out from program rules is "estimated"; anything
+     * else (including dates typed in without a notice) is "needs_confirmation".
+     */
+    confidence: {
+      type: String,
+      enum: [...DATE_CONFIDENCES],
+      default: "needs_confirmation",
+    },
+    /** The notice this date came from (Vault document), kept beside the deadline. */
+    sourceDocumentId: { type: Schema.Types.ObjectId, ref: "Document", default: null },
+    /** Plain-text source, e.g. "PA 600 notice dated 9/14" or an official rule URL. */
+    sourceNote: { type: String, default: "", trim: true, maxlength: 500 },
+    /**
+     * Completion tracking for this one obligation. Completing it never marks a
+     * different obligation (another program, or the renewal vs. an interim report) done.
+     */
+    preparedAt: { type: Date, default: null },
+    submittedAt: { type: Date, default: null },
+    proofDocumentId: { type: Schema.Types.ObjectId, ref: "Document", default: null },
+    acknowledgedAt: { type: Date, default: null },
+    followUp: { type: String, default: "", trim: true, maxlength: 1000 },
     completedAt: { type: Date, default: null },
   },
   { timestamps: true },

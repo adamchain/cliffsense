@@ -29,6 +29,7 @@ import {
   PARTNER_CTA,
   PARTNER_INTRO,
   POSITIONING_SHIFT,
+  RENEWAL_VS_REPORTING,
   SITE_DISCLAIMER,
   SUBMISSION_LIMIT,
 } from "@/components/landing/claims";
@@ -92,7 +93,7 @@ const STEP1 = [
 const STEP2 = [
   {
     title: "Deadline and Notice Tracking",
-    body: "Track renewals, interviews, premiums, semiannual reports, work-reporting periods, medical reviews, waiver reassessments, and appeal deadlines separately.",
+    body: "Track renewals, interim reports, reportable changes, disability and eligibility reviews, requests for proof, interviews, premiums, waiver reassessments, and appeal deadlines separately — so a distant renewal never hides an earlier report.",
   },
   {
     title: "Changes flagged for review",
@@ -483,6 +484,10 @@ export default function LandingPage() {
             <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               Renewals, reporting periods, premiums, reassessments, and appeal deadlines — tracked
               separately so nothing is collapsed into a single generic reminder.
+            </p>
+            <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              {RENEWAL_VS_REPORTING} Each date is labeled confirmed by agency notice, estimated
+              from verified rules, or needs confirmation, with the source notice kept beside it.
             </p>
             <div className="mt-6 rounded-[22px] border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-2 shadow-[var(--shadow-cs-float)]">
               <Shot

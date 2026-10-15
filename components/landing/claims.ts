@@ -1,5 +1,7 @@
 /** Approved public copy from the October 5, 2026 claims control. */
 
+import { RENEWAL_IS_ONE_DEADLINE } from "@/lib/reporting/obligations";
+
 export const HERO_HEADLINE = "Bene-Watch helps families keep benefits on track.";
 
 export const HERO_DESCRIPTOR =
@@ -33,6 +35,12 @@ export const PARTNER_CTA =
 
 export const GOVERNMENT_BODY =
   "For government agencies and elected officials seeking greater administrative efficiency and less avoidable churn, Bene-Watch offers a complementary household support approach: better-prepared submissions, clearer records, and more timely responses to agency requests. Official agencies retain responsibility for eligibility determinations; Bene-Watch helps families manage the continuing responsibilities those determinations require.";
+
+/** Renewal vs. reporting (October 7, 2026 direction). */
+export const OBLIGATIONS_TRACKED =
+  "Bene-Watch helps families track renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof.";
+
+export const RENEWAL_VS_REPORTING = RENEWAL_IS_ONE_DEADLINE;
 
 export const CAMPAIGN_THEME = "Keep the Benefits. Protect the Care.";
 
