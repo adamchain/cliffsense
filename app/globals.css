@@ -482,6 +482,13 @@ body {
   .cs-wcard--state .cs-wcard-reassure[data-status="crit"] {
     color: #ff8a80;
   }
+  .cs-wcard-next {
+    margin: 4px 0 0;
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.85);
+  }
   .cs-wcard-bot {
     margin-top: auto;
     padding-top: 14px;

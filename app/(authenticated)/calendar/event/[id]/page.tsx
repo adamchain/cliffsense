@@ -11,10 +11,15 @@ import { decodeCalendarEventId } from "@/lib/calendar/event-id";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 import { grossUpEarnedCents } from "@/lib/thresholds/metrics";
 import { programCodeKey } from "@/lib/benefits/program-meta";
+import { normalizeConfidence } from "@/lib/reporting/obligations";
 import {
   EventDetailView,
   type EventDetailModel,
 } from "@/components/calendar/event-detail-view";
+
+function isoOrNull(d: unknown): string | null {
+  return d instanceof Date ? d.toISOString() : null;
+}
 
 export default async function CalendarEventPage({
   params,
@@ -63,6 +68,19 @@ export default async function CalendarEventPage({
       channelUrl: ch?.url ?? null,
       source: "user",
       deadlineId: String(row._id),
+      progress: {
+        deadlineId: String(row._id),
+        beneficiaryId: String(beneficiaryId),
+        confidence: normalizeConfidence(row.confidence),
+        sourceNote: String(row.sourceNote ?? ""),
+        sourceDocumentId: row.sourceDocumentId ? String(row.sourceDocumentId) : null,
+        preparedAt: isoOrNull(row.preparedAt),
+        submittedAt: isoOrNull(row.submittedAt),
+        proofDocumentId: row.proofDocumentId ? String(row.proofDocumentId) : null,
+        acknowledgedAt: isoOrNull(row.acknowledgedAt),
+        followUp: String(row.followUp ?? ""),
+        completedAt: isoOrNull(row.completedAt),
+      },
     };
   } else {
     await connectDB();

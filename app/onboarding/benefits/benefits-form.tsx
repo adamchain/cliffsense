@@ -15,6 +15,13 @@ import {
   type MedicaidCategory,
   type ScreeningChoice,
 } from "@/lib/onboarding/screening";
+import {
+  RENEWAL_IS_ONE_DEADLINE,
+  SNAP_CATEGORY_RULES,
+  SNAP_REPORTING_CATEGORIES,
+  obligationRuleFor,
+  type SnapReportingCategory,
+} from "@/lib/reporting/obligations";
 
 const BENEFIT_LABEL: Record<(typeof SCREEN_STATUSES)[number], string> = {
   current: "Current",
@@ -39,6 +46,9 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
   const [beneficiaryId, setBeneficiaryId] = useState<string | null>(null);
   const [phase, setPhase] = useState<"screen" | "renewals">("screen");
   const [renewals, setRenewals] = useState<Record<string, string>>({});
+  const [interims, setInterims] = useState<Record<string, string>>({});
+  const [snapCategory, setSnapCategory] = useState<SnapReportingCategory>("unknown");
+  const [datesFromNotices, setDatesFromNotices] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,9 +110,18 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
     renewalDates?: Record<string, string>,
   ) {
     if (!beneficiaryId) return false;
+    const confidence = datesFromNotices ? "confirmed" : "needs_confirmation";
     const rows = enrolledRows(nextAnswers, category).map((row) => ({
       ...row,
       nextRenewalDate: renewalDates?.[row.program] || null,
+      ...(renewalDates
+        ? {
+            renewalConfidence: confidence,
+            nextInterimReportDate: interims[row.program] || null,
+            interimConfidence: confidence,
+            ...(row.program === "SNAP" ? { reportingCategory: snapCategory } : {}),
+          }
+        : {}),
     }));
     const res = await fetch(`/api/beneficiaries/${beneficiaryId}`, {
       method: "PATCH",
@@ -194,27 +213,86 @@ export function BenefitsForm({ accountType }: { accountType: string; programs?: 
       <div className="space-y-4">
         <div className="cs-card space-y-4 p-6 md:p-7">
           <div>
-            <h2 className="text-[18px] font-bold tracking-tight text-[var(--color-cs-text)]">Renewal dates</h2>
+            <h2 className="text-[18px] font-bold tracking-tight text-[var(--color-cs-text)]">
+              Renewal and report dates
+            </h2>
             <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-              Enter the next renewal or recertification date from each notice. Leave a date blank if you do not have it yet.
+              {RENEWAL_IS_ONE_DEADLINE}
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              Enter the next renewal or recertification date and, where a program has one, the next
+              interim report date from each notice. Leave a date blank if you do not have it yet.
             </p>
           </div>
-          {rows.map((row) => (
-            <div key={row.program} className="flex flex-col gap-1.5">
-              <label className="cs-label" htmlFor={`renew-${row.program}`}>
-                {programLabel(row.program)}
-              </label>
-              <input
-                id={`renew-${row.program}`}
-                type="date"
-                value={renewals[row.program] ?? ""}
-                onChange={(e) =>
-                  setRenewals((prev) => ({ ...prev, [row.program]: e.target.value }))
-                }
-                className="cs-input"
-              />
-            </div>
-          ))}
+          {rows.map((row) => {
+            const rule = obligationRuleFor(row.program);
+            return (
+              <div key={row.program} className="flex flex-col gap-1.5">
+                <label className="cs-label" htmlFor={`renew-${row.program}`}>
+                  {programLabel(row.program)} — {rule?.reviews[0]?.label ?? "next renewal"}
+                </label>
+                <input
+                  id={`renew-${row.program}`}
+                  type="date"
+                  value={renewals[row.program] ?? ""}
+                  onChange={(e) =>
+                    setRenewals((prev) => ({ ...prev, [row.program]: e.target.value }))
+                  }
+                  className="cs-input"
+                />
+                {row.program === "SNAP" && (
+                  <>
+                    <label className="cs-label mt-1" htmlFor="snap-category">
+                      SNAP reporting category
+                    </label>
+                    <select
+                      id="snap-category"
+                      className="cs-input"
+                      value={snapCategory}
+                      onChange={(e) => setSnapCategory(e.target.value as SnapReportingCategory)}
+                    >
+                      {SNAP_REPORTING_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {SNAP_CATEGORY_RULES[c].label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
+                      {SNAP_CATEGORY_RULES[snapCategory].interimNote}
+                    </p>
+                  </>
+                )}
+                {rule?.interim && (
+                  <>
+                    <label className="cs-label mt-1" htmlFor={`interim-${row.program}`}>
+                      {programLabel(row.program)} — next {rule.interim.label}
+                    </label>
+                    <input
+                      id={`interim-${row.program}`}
+                      type="date"
+                      value={interims[row.program] ?? ""}
+                      onChange={(e) =>
+                        setInterims((prev) => ({ ...prev, [row.program]: e.target.value }))
+                      }
+                      className="cs-input"
+                    />
+                  </>
+                )}
+              </div>
+            );
+          })}
+          <label className="flex items-start gap-2 text-[13px] text-[var(--color-cs-text)]">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={datesFromNotices}
+              onChange={(e) => setDatesFromNotices(e.target.checked)}
+            />
+            <span>
+              I copied these dates from agency notices. Leave unchecked if any date is a guess — it
+              will be marked &ldquo;Needs confirmation.&rdquo;
+            </span>
+          </label>
         </div>
         {error && <p className="text-[13px] text-[var(--color-cs-danger)]">{error}</p>}
         <div className="flex justify-between">

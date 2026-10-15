@@ -23,10 +23,18 @@ import {
   DEADLINE_KIND_DEFAULT_TITLE,
   DEADLINE_KIND_LABEL,
   DEADLINE_KINDS,
-  isCaseClockKind,
   type DeadlineKind,
 } from "@/lib/calendar/deadline-kinds";
 import { calendarEventHref } from "@/lib/calendar/event-id";
+import { ConfidenceBadge } from "@/components/benefits/obligations-card";
+import {
+  DATE_CONFIDENCES,
+  DATE_CONFIDENCE_LABEL,
+  RENEWAL_IS_ONE_DEADLINE,
+  normalizeConfidence,
+  obligationCategoryForKind,
+  type DateConfidence,
+} from "@/lib/reporting/obligations";
 
 type UserDeadline = {
   _id: string;
@@ -37,6 +45,8 @@ type UserDeadline = {
   sourceKey?: string | null;
   title: string;
   note: string;
+  confidence?: string;
+  sourceNote?: string;
   completedAt: string | null;
 };
 
@@ -58,6 +68,8 @@ type AgendaItem = {
   channelUrl?: string;
   source: "generated" | "user";
   completed: boolean;
+  /** Only user/notice dates carry a confidence; rule-generated windows are estimates. */
+  confidence: DateConfidence;
 };
 
 function todayIso(): string {
@@ -116,6 +128,8 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     title: "",
     note: "",
     continuedBenefitsDate: "",
+    confidence: "needs_confirmation" as DateConfidence,
+    sourceNote: "",
   });
 
   const load = useCallback(async () => {
@@ -154,6 +168,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
       channelUrl: g.channelUrl,
       source: "generated",
       completed: false,
+      confidence: "estimated",
     }));
     const userItems = deadlines.map<AgendaItem>((d) => {
       const ch = d.program ? scheduleFor(d.program)?.channel : null;
@@ -169,21 +184,21 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         channelUrl: ch?.url,
         source: "user",
         completed: Boolean(d.completedAt),
+        confidence: normalizeConfidence(d.confidence),
       };
     });
     return [...generated, ...userItems].sort((a, b) => a.date.localeCompare(b.date));
   }, [programs, deadlines]);
 
   const upcoming = agenda.filter((a) => !a.completed);
-  const renewals = upcoming
-    .filter((a) => a.kind === "renewal")
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const caseClocks = upcoming
-    .filter((a) => isCaseClockKind(a.kind))
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const otherDeadlines = upcoming
-    .filter((a) => a.kind !== "renewal" && !isCaseClockKind(a.kind))
-    .sort((a, b) => a.date.localeCompare(b.date));
+  // Separate blocks per obligation type, ordered by each block's soonest date
+  // so a far-off renewal never sits above an earlier report or document request.
+  const category = (a: AgendaItem) => obligationCategoryForKind(a.kind);
+  const renewals = upcoming.filter((a) => category(a) === "renewal_review");
+  const reports = upcoming.filter((a) =>
+    ["interim_report", "change_report", "document_request"].includes(category(a)),
+  );
+  const otherClocks = upcoming.filter((a) => category(a) === "other");
 
   const itemsByDate = useMemo(() => {
     const map = new Map<string, AgendaItem[]>();
@@ -195,15 +210,40 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
     return map;
   }, [upcoming]);
 
-  const visibleRenewals = selectedDate
-    ? renewals.filter((a) => a.date === selectedDate)
-    : renewals;
-  const visibleClocks = selectedDate
-    ? caseClocks.filter((a) => a.date === selectedDate)
-    : caseClocks;
-  const visibleOthers = selectedDate
-    ? otherDeadlines.filter((a) => a.date === selectedDate)
-    : otherDeadlines;
+  const onDay = (items: AgendaItem[]) =>
+    selectedDate ? items.filter((a) => a.date === selectedDate) : items;
+  const blocks = [
+    {
+      key: "reports",
+      label: "Reports & documents",
+      hint: "Interim reports, change reports, and agency requests",
+      items: onDay(reports),
+      empty: selectedDate
+        ? "No reports or document requests on this day."
+        : "No report or document dates yet. Tap + to add an interim report, a change report, or documents the agency asked for.",
+      first: reports[0]?.date ?? "9999",
+    },
+    {
+      key: "renewals",
+      label: "Renewals & reviews",
+      hint: "Vital · renewals, redeterminations, CDRs, waiver reviews",
+      items: onDay(renewals),
+      empty: selectedDate
+        ? "No renewals or reviews on this day."
+        : "No renewal dates yet — set them in Limits.",
+      first: renewals[0]?.date ?? "9999",
+    },
+    {
+      key: "clocks",
+      label: "Appointments & case clocks",
+      hint: "From the notice",
+      items: onDay(otherClocks),
+      empty: selectedDate
+        ? "No appointments, interviews, premiums, or appeals on this day."
+        : "No appointments or case clocks yet. Tap + to add an interview, premium, or appeal.",
+      first: otherClocks[0]?.date ?? "9999",
+    },
+  ].sort((a, b) => a.first.localeCompare(b.first));
 
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -224,6 +264,8 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
         continuedBenefitsDate: form.kind === "appeal" && form.continuedBenefitsDate
           ? form.continuedBenefitsDate
           : undefined,
+        confidence: form.confidence,
+        sourceNote: form.sourceNote.trim() || undefined,
       }),
     });
     setSaving(false);
@@ -240,6 +282,8 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
       title: "",
       note: "",
       continuedBenefitsDate: "",
+      confidence: "needs_confirmation",
+      sourceNote: "",
     });
     setShowAdd(false);
     await load();
@@ -376,6 +420,37 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
                 ))}
               </select>
             </label>
+            <label className="block">
+              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
+                Where this date came from
+              </span>
+              <select
+                className="cs-input text-base sm:text-[15px]"
+                value={form.confidence}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, confidence: e.target.value as DateConfidence }))
+                }
+              >
+                {DATE_CONFIDENCES.map((c) => (
+                  <option key={c} value={c}>
+                    {DATE_CONFIDENCE_LABEL[c]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
+                Source notice (optional)
+              </span>
+              <input
+                type="text"
+                className="cs-input text-base sm:text-[15px]"
+                placeholder="e.g. PA 600 notice dated 9/14"
+                maxLength={500}
+                value={form.sourceNote}
+                onChange={(e) => setForm((f) => ({ ...f, sourceNote: e.target.value }))}
+              />
+            </label>
             {form.kind === "appeal" && (
               <label className="block">
                 <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">
@@ -500,41 +575,20 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
             <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>
           ) : (
             <>
-              <AgendaBlock
-                label="Renewals"
-                hint="Vital · from Settings"
-                items={visibleRenewals}
-                empty={
-                  selectedDate
-                    ? "No renewals on this day."
-                    : "No renewal dates yet — set them in Settings."
-                }
-                onDone={(id) => void setCompleted(id, true)}
-                onRemove={(id) => void remove(id)}
-              />
-              <AgendaBlock
-                label="Case clocks"
-                hint="From the notice"
-                items={visibleClocks}
-                empty={
-                  selectedDate
-                    ? "No interviews, premiums, CDRs, or appeals on this day."
-                    : "No case clocks yet. Tap + to add an interview, verification, premium, CDR, assessment, or appeal."
-                }
-                onDone={(id) => void setCompleted(id, true)}
-                onRemove={(id) => void remove(id)}
-              />
-              <AgendaBlock
-                label="Reporting deadlines"
-                items={visibleOthers}
-                empty={
-                  selectedDate
-                    ? "No reporting items on this day."
-                    : "No other deadlines yet. Tap + to add one."
-                }
-                onDone={(id) => void setCompleted(id, true)}
-                onRemove={(id) => void remove(id)}
-              />
+              <p className="mb-3 px-0.5 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
+                {RENEWAL_IS_ONE_DEADLINE}
+              </p>
+              {blocks.map((b) => (
+                <AgendaBlock
+                  key={b.key}
+                  label={b.label}
+                  hint={b.hint}
+                  items={b.items}
+                  empty={b.empty}
+                  onDone={(id) => void setCompleted(id, true)}
+                  onRemove={(id) => void remove(id)}
+                />
+              ))}
               <TipsCard />
             </>
           )}
@@ -643,6 +697,9 @@ function AgendaBlock({
                         <div className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
                           {meta?.label ?? "General"} · {parts.full}
                           {item.detail ? ` · ${item.detail}` : ""}
+                        </div>
+                        <div className="mt-1">
+                          <ConfidenceBadge confidence={item.confidence} />
                         </div>
                       </div>
                       <div

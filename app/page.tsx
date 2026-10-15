@@ -9,6 +9,8 @@ import {
   HERO_DESCRIPTOR,
   HERO_HEADLINE,
   HERO_TAGLINE,
+  OBLIGATIONS_TRACKED,
+  RENEWAL_VS_REPORTING,
   SITE_DISCLAIMER,
 } from "@/components/landing/claims";
 
@@ -38,6 +40,9 @@ export default function HomePage() {
             </p>
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] sm:text-lg">
               {HERO_BODY}
+            </p>
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/85 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
+              {RENEWAL_VS_REPORTING} {OBLIGATIONS_TRACKED}
             </p>
             <Link
               href="/about"

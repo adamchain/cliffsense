@@ -12,6 +12,7 @@ import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
 import { syncRenewalDeadlines } from "@/lib/reporting/sync-renewal-deadlines";
 import { STORED_PROGRAMS } from "@/lib/programs";
+import { DATE_CONFIDENCES, SNAP_REPORTING_CATEGORIES } from "@/lib/reporting/obligations";
 
 const programEnum = z.enum(STORED_PROGRAMS);
 
@@ -22,6 +23,13 @@ const enrollmentSchema = z.object({
     .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.coerce.date(), z.null()])
     .optional()
     .nullable(),
+  renewalConfidence: z.enum(DATE_CONFIDENCES).optional(),
+  nextInterimReportDate: z
+    .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.coerce.date(), z.null()])
+    .optional()
+    .nullable(),
+  interimConfidence: z.enum(DATE_CONFIDENCES).optional(),
+  reportingCategory: z.enum(SNAP_REPORTING_CATEGORIES).optional().nullable(),
   contextData: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -145,6 +153,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     program: string;
     enrolledSince: Date;
     nextRenewalDate: Date | null;
+    renewalConfidence: string;
+    nextInterimReportDate: Date | null;
+    interimConfidence: string;
+    reportingCategory: string | null;
     contextData: Record<string, unknown>;
   }[] | null = null;
   if (parsed.data.benefitsEnrolled) {
@@ -153,13 +165,30 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     );
     nextEnrolled = parsed.data.benefitsEnrolled.map((b) => {
       const prior = priorByProgram.get(b.program);
-      const renewalProvided = Object.prototype.hasOwnProperty.call(b, "nextRenewalDate");
+      const has = (k: string) => Object.prototype.hasOwnProperty.call(b, k);
+      const renewalProvided = has("nextRenewalDate");
+      const p = prior as
+        | {
+            renewalConfidence?: string;
+            nextInterimReportDate?: Date | null;
+            interimConfidence?: string;
+            reportingCategory?: string | null;
+          }
+        | undefined;
       return {
         program: b.program,
         enrolledSince: (b.enrolledSince ?? prior?.enrolledSince ?? new Date()) as Date,
         nextRenewalDate: renewalProvided
           ? toRenewalDate(b.nextRenewalDate)
           : (prior?.nextRenewalDate as Date | null | undefined) ?? null,
+        renewalConfidence: b.renewalConfidence ?? p?.renewalConfidence ?? "needs_confirmation",
+        nextInterimReportDate: has("nextInterimReportDate")
+          ? toRenewalDate(b.nextInterimReportDate)
+          : (p?.nextInterimReportDate ?? null),
+        interimConfidence: b.interimConfidence ?? p?.interimConfidence ?? "needs_confirmation",
+        reportingCategory: has("reportingCategory")
+          ? (b.reportingCategory ?? null)
+          : (p?.reportingCategory ?? null),
         contextData: (b.contextData ?? prior?.contextData ?? {}) as Record<string, unknown>,
       };
     });
@@ -256,7 +285,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const ben = await Beneficiary.findById(id)
-    .select("firstName lastName dateOfBirth state county householdSize twpMonthsUsed policyScreen isOwner")
+    .select(
+      "firstName lastName dateOfBirth state county householdSize twpMonthsUsed policyScreen isOwner benefitsEnrolled",
+    )
     .lean();
   if (!ben) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

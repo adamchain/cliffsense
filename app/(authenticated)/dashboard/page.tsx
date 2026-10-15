@@ -11,7 +11,12 @@ import { countVisibleBankConnections } from "@/lib/banks/linked-connections";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
 import { buildProgramCards } from "@/lib/benefits/program-tier";
 import { calendarEventHref } from "@/lib/calendar/event-id";
-import { isCaseClockKind } from "@/lib/calendar/deadline-kinds";
+import {
+  DATE_CONFIDENCE_LABEL,
+  normalizeConfidence,
+  obligationCategoryForKind,
+} from "@/lib/reporting/obligations";
+import { programCodeKey } from "@/lib/benefits/program-meta";
 
 function relativeLabel(isoDate: string): string {
   const today = new Date();
@@ -60,6 +65,7 @@ export default async function DashboardPage() {
     kind: string;
   }[] = [];
   let nextRenewalDays: number | null = null;
+  let nextDeadline: { title: string; days: number; beforeRenewal: boolean } | null = null;
 
   if (oid) {
     await connectDB();
@@ -85,7 +91,7 @@ export default async function DashboardPage() {
       })
         .sort({ dueDate: 1 })
         .limit(24)
-        .select({ title: 1, dueDate: 1, program: 1, kind: 1 })
+        .select({ title: 1, dueDate: 1, program: 1, kind: 1, confidence: 1 })
         .lean(),
       Transaction.countDocuments({
         beneficiaryId: oid,
@@ -100,6 +106,21 @@ export default async function DashboardPage() {
       lastSyncAt = new Date(latestBank.lastSyncAt as Date).toISOString();
     }
     cards = buildProgramCards(p.rows);
+    // Each benefit card shows its own soonest obligation, whatever the kind.
+    for (const card of cards) {
+      const mine = deadlines
+        .filter((d) => d.program && programCodeKey(String(d.program)) === card.code)
+        .sort((a, b) => (a.dueDate as Date).getTime() - (b.dueDate as Date).getTime());
+      const d = mine[0];
+      if (!d) continue;
+      card.nextDue = {
+        title: String(d.title ?? "Deadline"),
+        date: (d.dueDate as Date).toISOString().slice(0, 10),
+        confidenceLabel:
+          DATE_CONFIDENCE_LABEL[normalizeConfidence((d as { confidence?: string }).confidence)],
+        category: obligationCategoryForKind(String((d as { kind?: string }).kind ?? "deadline")),
+      };
+    }
     const mapped = deadlines.map((d) => {
       const dt = new Date(d.dueDate as Date);
       const due = dt.toISOString().slice(0, 10);
@@ -118,28 +139,33 @@ export default async function DashboardPage() {
         due,
       };
     });
-    const renewals = mapped
-      .filter((m) => m.kind === "renewal")
-      .sort((a, b) => a.due.localeCompare(b.due));
-    const clocks = mapped
-      .filter((m) => isCaseClockKind(m.kind))
-      .sort((a, b) => a.due.localeCompare(b.due));
-    const others = mapped
-      .filter((m) => m.kind !== "renewal" && !isCaseClockKind(m.kind))
-      .sort((a, b) => a.due.localeCompare(b.due));
-    if (renewals[0]) nextRenewalDays = daysUntil(renewals[0].due);
-    upcoming = [...renewals, ...clocks, ...others].slice(0, 8).map(
-      ({ id, title, subtitle, mon, day, rel, href, kind }) => ({
-        id,
-        title,
-        subtitle,
-        mon,
-        day,
-        rel,
-        href,
-        kind,
-      }),
-    );
+    // One date-ordered list: a distant renewal must never push an earlier
+    // interim report, change report, or document request out of view.
+    const byDue = mapped.slice().sort((a, b) => a.due.localeCompare(b.due));
+    const firstRenewal = byDue.find((m) => obligationCategoryForKind(m.kind) === "renewal_review");
+    if (firstRenewal) nextRenewalDays = daysUntil(firstRenewal.due);
+    const first = byDue[0];
+    if (first) {
+      nextDeadline = {
+        title: first.title,
+        days: daysUntil(first.due),
+        beforeRenewal: Boolean(
+          firstRenewal &&
+            obligationCategoryForKind(first.kind) !== "renewal_review" &&
+            first.due < firstRenewal.due,
+        ),
+      };
+    }
+    upcoming = byDue.slice(0, 8).map(({ id, title, subtitle, mon, day, rel, href, kind }) => ({
+      id,
+      title,
+      subtitle,
+      mon,
+      day,
+      rel,
+      href,
+      kind,
+    }));
   }
 
   const federal = cards.filter((c) => c.tier === "federal");
@@ -162,6 +188,7 @@ export default async function DashboardPage() {
         lastSyncAt,
         newDepositCount,
         nextRenewalDays,
+        nextDeadline,
       }}
     />
   );

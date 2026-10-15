@@ -35,6 +35,13 @@ import {
 import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
 import { fixedScheduleEventsForPrograms } from "@/lib/benefits/reporting-schedules";
 import { calendarEventHref } from "@/lib/calendar/event-id";
+import { ObligationsCard } from "@/components/benefits/obligations-card";
+import {
+  isSnapReportingCategory,
+  normalizeConfidence,
+  type ObligationRow,
+  type SnapReportingCategory,
+} from "@/lib/reporting/obligations";
 
 type RelatedDate = {
   id: string;
@@ -280,6 +287,8 @@ export function BenefitDetailView({
   const tag = programAgencyTag(code);
   const [data, setData] = useState<Payload | null>(null);
   const [relatedDates, setRelatedDates] = useState<RelatedDate[]>([]);
+  const [obligationRows, setObligationRows] = useState<ObligationRow[]>([]);
+  const [snapCategory, setSnapCategory] = useState<SnapReportingCategory | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -287,12 +296,21 @@ export function BenefitDetailView({
     if (!beneficiaryId) return;
     setLoading(true);
     setError(null);
-    const [tRes, dRes] = await Promise.all([
+    const [tRes, dRes, bRes] = await Promise.all([
       fetch(`/api/thresholds?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
       fetch(`/api/reporting-deadlines?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
+      fetch(`/api/beneficiaries/${encodeURIComponent(beneficiaryId)}`),
     ]);
     const tJson = await tRes.json().catch(() => ({}));
     const dJson = await dRes.json().catch(() => ({}));
+    const bJson = await bRes.json().catch(() => ({}));
+    const enrollment = (
+      (bJson as { beneficiary?: { benefitsEnrolled?: { program: string; reportingCategory?: string | null }[] } })
+        .beneficiary?.benefitsEnrolled ?? []
+    ).find((e) => programCodeKey(e.program) === code);
+    setSnapCategory(
+      isSnapReportingCategory(enrollment?.reportingCategory) ? enrollment.reportingCategory : null,
+    );
     setLoading(false);
     if (!tRes.ok) {
       setError((tJson as { error?: string }).error ?? "Failed to load");
@@ -320,7 +338,24 @@ export function BenefitDetailView({
       kind?: string;
       completedAt?: string | null;
       sourceKey?: string | null;
+      confidence?: string;
+      sourceNote?: string;
+      sourceDocumentId?: string | null;
     };
+    const allDeadlines = (dJson as { deadlines?: Dl[] }).deadlines ?? [];
+    setObligationRows(
+      allDeadlines.map((d) => ({
+        id: d._id,
+        program: d.program,
+        dueDate: d.dueDate,
+        kind: d.kind ?? "deadline",
+        title: d.title,
+        confidence: normalizeConfidence(d.confidence),
+        sourceNote: d.sourceNote ?? null,
+        hasSourceDocument: Boolean(d.sourceDocumentId),
+        completedAt: d.completedAt ?? null,
+      })),
+    );
     const userDates = ((dJson as { deadlines?: Dl[] }).deadlines ?? [])
       .filter((d) => {
         if (d.completedAt) return false;
@@ -422,6 +457,8 @@ export function BenefitDetailView({
       </div>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
+
+      <ObligationsCard program={code} rows={obligationRows} snapCategory={snapCategory} />
 
       {/* Related dates — relative labels, same card style as Limits / Home upcoming */}
       <div className="mb-5">

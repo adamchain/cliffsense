@@ -95,6 +95,16 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
         >
           <span aria-hidden>{mark}</span> {reassurance}
         </p>
+        {card.nextDue && (
+          <p className="cs-wcard-next">
+            Next due{" "}
+            {new Date(`${card.nextDue.date}T12:00:00`).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}{" "}
+            · {card.nextDue.title} · {card.nextDue.confidenceLabel}
+          </p>
+        )}
         <div className="cs-wcard-bot">
           <div className="cs-wcard-num">
             {big}

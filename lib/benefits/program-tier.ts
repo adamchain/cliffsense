@@ -98,6 +98,17 @@ export type ProgramCardModel = {
   reportingDue?: boolean;
   /** A wage change is reportable even though this program is still under its limit. */
   wageReport?: boolean;
+  /**
+   * Soonest open obligation for this benefit of any kind (renewal, review,
+   * interim report, change report, or document request).
+   */
+  nextDue?: {
+    title: string;
+    /** YYYY-MM-DD */
+    date: string;
+    confidenceLabel: string;
+    category: string;
+  } | null;
 };
 
 type RowLike = {
