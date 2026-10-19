@@ -66,7 +66,7 @@ function pick(ids: string[]): CategoryHandoff[] {
 /** Next-category options to start before the current one closes. */
 export function categoryHandoffsFor(programs: string[]): CategoryHandoff[] {
   const set = new Set(programs.map((p) => p.toUpperCase().replace(/[^A-Z0-9]/g, "")));
-  if (set.size === 0) return ALL;
+  if (set.size === 0) return [];
   const ids: string[] = [];
   if (set.has("SSI") || set.has("MEDICAIDABD") || set.has("MEDICAID")) {
     ids.push("1619b", "mawd", "waiver");

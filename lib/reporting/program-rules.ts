@@ -102,7 +102,7 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportUrl: COMPASS,
     phone: PA_DHS_PHONE,
     deadlineNote:
-      "Simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,750 or more. A raise under 130% FPL waits for the semi-annual report.",
+      "Depends on the SNAP reporting category. SAR households report within 10 days when gross income exceeds the household reporting line, someone moves in or out, or work-rule hours drop below 80 a month. A PA 564 is a separate deadline from recertification. ESAP households with no earned income do not file PA 564. Disability alone is not an exemption.",
     howTo: [
       "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
       `Or call the Statewide Customer Service Center at ${PA_DHS_PHONE}, or your County Assistance Office.`,
@@ -128,9 +128,15 @@ export const PROGRAM_RULES: ProgramRule[] = [
   compassRule("Medicaid", "Medicaid", true),
   compassRule("MedicaidABD", "ABD Medicaid", true),
   compassRule("MedicaidMAGI", "MAGI Medicaid", false),
-  compassRule("MedicaidWaiver", "HCBS Waiver", true),
+  compassRule("MedicaidWaiver", "HCBS Waiver", true, [
+    "The financial renewal does not complete the annual service or level-of-care review.",
+    "SSI can establish Medicaid financial eligibility and still leave that service review in place.",
+  ]),
   compassRule("MAWD", "MAWD", true, ["Paid employment is required; the premium is usually 5% of countable income."]),
-  compassRule("QMB", "QMB", true),
+  compassRule("QMB", "QMB", true, [
+    "QMB is a Medicare Savings Program. It is not full Medicaid and it is not the waiver.",
+    "Keeping QMB can deem Extra Help. Losing QMB can create a separate Extra Help application.",
+  ]),
   {
     program: "ExtraHelp",
     short: "Extra Help",
@@ -140,7 +146,8 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportsAssetChange: true,
     reportUrl: SSA_REPORT_WORK,
     phone: SSA_PHONE,
-    deadlineNote: "Report Extra Help changes to SSA by the 10th of the month after the change.",
+    deadlineNote:
+      "If Medicaid, SSI, or QMB, SLMB, or QI deems Extra Help, do not file a separate Extra Help application. An Extra Help-only case reports income, resource, and household changes to SSA. That report does not renew Medicaid or QMB.",
     howTo: [
       "Report income, resource, and household changes to SSA.",
       `Call SSA at ${SSA_PHONE} or use your my Social Security account.`,

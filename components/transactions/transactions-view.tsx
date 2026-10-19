@@ -2,16 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
-  IconBriefcase,
+  IconArrowsLeftRight,
   IconBuildingBank,
   IconChevronLeft,
   IconChevronRight,
+  IconCreditCard,
   IconDownload,
-  IconHelpCircle,
+  IconGasStation,
   IconPaperclip,
   IconReceipt,
   IconRefresh,
-  IconShieldCheck,
+  IconShoppingCart,
   IconTag,
   IconX,
 } from "@tabler/icons-react";
@@ -83,13 +84,6 @@ function badgeClass(cat: UserCategory): string {
   }
 }
 
-function CategoryIcon({ cat }: { cat: UserCategory }) {
-  if (cat === "earned_income") return <IconBriefcase size={12} aria-hidden />;
-  if (cat === "benefit_deposit") return <IconShieldCheck size={12} aria-hidden />;
-  if (cat === "unclear") return <IconHelpCircle size={12} aria-hidden />;
-  return null;
-}
-
 function RowReceipt({
   docId,
   onAdd,
@@ -103,9 +97,11 @@ function RowReceipt({
     return (
       <a
         href={`/vault/${docId}`}
-        className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-success-bg)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-cs-success)]"
+        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--color-cs-success)] hover:bg-[var(--color-cs-success-bg)]"
+        aria-label="View receipt"
+        title="View receipt"
       >
-        <IconReceipt size={12} stroke={1.8} aria-hidden /> Receipt
+        <IconReceipt size={14} stroke={1.8} aria-hidden />
       </a>
     );
   }
@@ -114,10 +110,75 @@ function RowReceipt({
       type="button"
       onClick={onAdd}
       disabled={disabled}
-      className="inline-flex items-center gap-1 rounded-full bg-[var(--color-cs-fill)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-cs-text-secondary)] disabled:opacity-50"
+      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--color-cs-text-muted)] hover:bg-[var(--color-cs-fill)] disabled:opacity-50"
+      aria-label="Add receipt"
+      title="Add receipt"
     >
-      <IconPaperclip size={12} stroke={1.8} aria-hidden /> Add receipt
+      <IconPaperclip size={14} stroke={1.8} aria-hidden />
     </button>
+  );
+}
+
+const TITLE_LEADS = [
+  "Recurring Withdrawal",
+  "Withdrawal Debit Card",
+  "Debit Card Purchase",
+  "Point of Sale",
+  "Direct Deposit",
+  "ACH Deposit",
+  "Check Deposit",
+  "Purchase",
+  "Deposit",
+  "Transfer",
+];
+
+function shortTitle(name: string, merchant: string): string {
+  const cleaned = name.replace(/\s+/g, " ").trim();
+  const lower = cleaned.toLowerCase();
+  for (const lead of TITLE_LEADS) {
+    if (lower.startsWith(lead.toLowerCase())) return lead;
+  }
+  const beforeDate = cleaned.split(/\s+date\s+/i)[0]?.trim() ?? cleaned;
+  if (beforeDate && beforeDate.length <= 32) return beforeDate;
+  if (merchant && merchant.length <= 28) return merchant;
+  return (beforeDate || merchant || "—").slice(0, 32).trim();
+}
+
+function rowSubtitle(row: TxRow): string {
+  const merchant = (row.merchantName ?? "").trim();
+  const cats = (row.category ?? "")
+    .split(/›|·/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return [merchant, ...cats].filter(Boolean).join(" · ");
+}
+
+function CategoryMark({ row }: { row: TxRow }) {
+  const blob = `${row.pfcPrimary ?? ""} ${row.pfcDetailed ?? ""} ${row.category}`.toUpperCase();
+  let bg = "bg-[#f2f2f4] text-[#8e8e93]";
+  let Icon = IconCreditCard;
+  if (blob.includes("GOVERNMENT") || row.userCategory === "benefit_deposit") {
+    bg = "bg-[#e7f8ee] text-[#34a853]";
+    Icon = IconBuildingBank;
+  } else if (blob.includes("TRANSPORT") || blob.includes("GAS")) {
+    bg = "bg-[#fff4dc] text-[#c48a12]";
+    Icon = IconGasStation;
+  } else if (blob.includes("GROCERY")) {
+    bg = "bg-[#f3eefe] text-[#7b61c9]";
+    Icon = IconShoppingCart;
+  } else if (blob.includes("FOOD") || blob.includes("MERCHANDISE") || blob.includes("CONVENIENCE")) {
+    bg = "bg-[#e8f1ff] text-[#3b82c4]";
+    Icon = IconShoppingCart;
+  } else if (row.userCategory === "earned_income" || row.userCategory === "other_income") {
+    bg = "bg-[#e7f8ee] text-[#34a853]";
+    Icon = IconBuildingBank;
+  } else if (row.userCategory === "transfer") {
+    Icon = IconArrowsLeftRight;
+  }
+  return (
+    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${bg}`} aria-hidden>
+      <Icon size={16} stroke={1.8} />
+    </span>
   );
 }
 
@@ -523,14 +584,14 @@ export function TransactionsView({
         </span>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
         {loading && rows.length === 0 && (
-          <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-8 text-center text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+          <div className="px-4 py-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
             Loading…
           </div>
         )}
         {!loading && rows.length === 0 && (
-          <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-8 text-center text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+          <div className="px-4 py-6 text-center text-[13px] text-[var(--color-cs-text-secondary)]">
             No transactions yet. Connect a bank and tap sync, or widen your filters.
           </div>
         )}
@@ -541,87 +602,81 @@ export function TransactionsView({
           const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
           const showApply = applyPrompt?.sourceId === r._id;
           return (
-            <div key={r._id} className="space-y-2">
+            <div key={r._id} className="border-b border-[var(--color-cs-sep)] last:border-b-0">
             <article
-              className={`rounded-[18px] bg-[var(--color-cs-card)] p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)] ${
-                highlightUnclear ? "ring-1 ring-[var(--color-cs-warning)]/35" : ""
-              } ${excluded && countsTowardEarned ? "opacity-80" : ""}`}
+              className={`flex items-start gap-3 px-3 py-2.5 ${
+                highlightUnclear ? "bg-[var(--color-cs-warning-bg)]" : ""
+              } ${excluded && countsTowardEarned ? "opacity-70" : ""}`}
+              title={r.name}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
-                    {r.name || "—"}
+              <CategoryMark row={r} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-[14px] font-semibold leading-tight text-[var(--color-cs-text)]">
+                      {shortTitle(r.name ?? "", r.merchantName ?? "")}
+                    </div>
+                    {rowSubtitle(r) ? (
+                      <div className="mt-0.5 truncate text-[12px] leading-tight text-[var(--color-cs-text-secondary)]">
+                        {rowSubtitle(r)}
+                      </div>
+                    ) : null}
+                    <div className="mt-0.5 text-[12px] leading-tight text-[var(--color-cs-text-muted)]">
+                      {formatShortDate(r.date)}
+                      {r.pending ? " · Pending" : ""}
+                    </div>
                   </div>
-                  <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">
-                    {[r.merchantName, r.category].filter(Boolean).join(" · ") || "—"}
-                  </div>
-                  <div className="mt-1 text-[12px] text-[var(--color-cs-text-muted)]">
-                    {formatShortDate(r.date)}
-                    {r.pending ? " · Pending" : ""}
-                  </div>
-                </div>
-                <div
-                  className={`shrink-0 text-right text-[16px] font-semibold tabular-nums ${
-                    inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
-                  }`}
-                >
-                  {formatSignedUsd(r.amountCents)}
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeClass(r.userCategory)}`}
-                >
-                  <CategoryIcon cat={r.userCategory} />
-                  {CATEGORY_LABEL[r.userCategory]}
-                </span>
-                <select
-                  aria-label="Change category"
-                  className="cs-input !h-8 !w-auto !min-w-[9.5rem] !py-0 text-[12px]"
-                  value={r.userCategory}
-                  onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
-                >
-                  {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
-                    <option key={k} value={k}>
-                      {CATEGORY_LABEL[k]}
-                    </option>
-                  ))}
-                </select>
-                <RowReceipt
-                  docId={r.receiptDocumentId}
-                  onAdd={() => pickReceipt(r._id)}
-                  disabled={uploadingReceipt}
-                />
-              </div>
-
-              {r.suggestedUserCategory &&
-              r.suggestedUserCategory !== r.userCategory &&
-              r.suggestedUserCategory !== "unclear" ? (
-                <p className="mt-2 text-[11.5px] text-[var(--color-cs-text-muted)]">
-                  Suggested:{" "}
-                  <button
-                    type="button"
-                    className="font-semibold text-[var(--color-cs-brand)]"
-                    onClick={() => void patchCategory(r._id, r.suggestedUserCategory!)}
+                  <div
+                    className={`flex shrink-0 items-center gap-0.5 text-[14px] font-semibold leading-tight tabular-nums ${
+                      inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
+                    }`}
                   >
-                    {CATEGORY_LABEL[r.suggestedUserCategory]}
-                  </button>
-                </p>
-              ) : null}
-
-              {countsTowardEarned && (
-                <label className="mt-2 flex cursor-pointer items-center gap-2 text-[12.5px] text-[var(--color-cs-text-secondary)]">
-                  <input
-                    type="checkbox"
-                    checked={!excluded}
-                    onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
-                    aria-label="Count this transaction toward earned-income limits"
+                    {formatSignedUsd(r.amountCents)}
+                    <IconChevronRight size={14} stroke={2} className="text-[var(--color-cs-text-muted)]" />
+                  </div>
+                </div>
+                <div className="mt-1 flex items-center justify-end gap-1">
+                  {countsTowardEarned && (
+                    <input
+                      type="checkbox"
+                      className="h-3.5 w-3.5 shrink-0"
+                      checked={!excluded}
+                      onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
+                      aria-label="Count this transaction toward earned-income limits"
+                      title="Count toward limits"
+                    />
+                  )}
+                  <select
+                    aria-label="Change category"
+                    className={`h-6 max-w-[7.5rem] shrink-0 truncate rounded-full border-0 px-2 text-[11px] font-medium ${badgeClass(r.userCategory)}`}
+                    value={r.userCategory}
+                    onChange={(e) => void patchCategory(r._id, e.target.value as UserCategory)}
+                  >
+                    {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
+                      <option key={k} value={k}>
+                        {CATEGORY_LABEL[k]}
+                      </option>
+                    ))}
+                  </select>
+                  <RowReceipt
+                    docId={r.receiptDocumentId}
+                    onAdd={() => pickReceipt(r._id)}
+                    disabled={uploadingReceipt}
                   />
-                  <span>Count toward limits</span>
-                </label>
-              )}
+                </div>
+              </div>
             </article>
+            {r.suggestedUserCategory &&
+            r.suggestedUserCategory !== r.userCategory &&
+            r.suggestedUserCategory !== "unclear" ? (
+              <button
+                type="button"
+                className="block w-full truncate px-3 pb-1 text-left text-[11px] text-[var(--color-cs-brand)]"
+                onClick={() => void patchCategory(r._id, r.suggestedUserCategory!)}
+              >
+                Use suggested: {CATEGORY_LABEL[r.suggestedUserCategory]}
+              </button>
+            ) : null}
 
             {showApply && applyPrompt && (
               <div

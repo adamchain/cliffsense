@@ -26,5 +26,8 @@ describe("deadline kind playbooks", () => {
     expect(playbookIdForDeadlineKind("continued_benefits")).toBe("appeal_continued_benefits");
     expect(playbookIdForDeadlineKind("deadline", "SSI")).toBe("calendar_notice");
     expect(playbookIdForDeadlineKind("appointment", "SNAP")).toBe("calendar_notice");
+    expect(playbookIdForDeadlineKind("renewal", "QMB")).toBe("qmb_income_resources");
+    expect(playbookIdForDeadlineKind("deadline", "QMB")).toBe("qmb_income_resources");
+    expect(playbookIdForDeadlineKind("assessment", "QMB")).toBe("qmb_income_resources");
   });
 });

@@ -7,6 +7,13 @@ import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { WalletCardGroup } from "@/components/benefits/wallet-card";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
 import { buildProgramCards } from "@/lib/benefits/program-tier";
+import { programCodeKey } from "@/lib/benefits/program-meta";
+import {
+  cardObligationSummaries,
+  isSnapCategory,
+  obligationsForProgram,
+  type StoredObligation,
+} from "@/lib/reporting/obligations";
 
 type Row = {
   _id: string;
@@ -51,6 +58,10 @@ export function ThresholdsView({
   embedded?: boolean;
 }) {
   const [data, setData] = useState<Payload | null>(null);
+  const [obligationPacket, setObligationPacket] = useState<{
+    stored: StoredObligation[];
+    enrollments: { program: string; snapReportingCategory?: string | null }[];
+  }>({ stored: [], enrollments: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -66,14 +77,37 @@ export function ThresholdsView({
     if (!beneficiaryId) return;
     setLoading(true);
     setError(null);
-    const res = await fetch(`/api/thresholds?beneficiaryId=${encodeURIComponent(beneficiaryId)}`);
+    const [res, dRes] = await Promise.all([
+      fetch(`/api/thresholds?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
+      fetch(`/api/reporting-deadlines?beneficiaryId=${encodeURIComponent(beneficiaryId)}`),
+    ]);
     const json = await res.json().catch(() => ({}));
+    const dJson = await dRes.json().catch(() => ({}));
     setLoading(false);
     if (!res.ok) {
       setError((json as { error?: string }).error ?? "Failed to load");
       return;
     }
     setData(json as Payload);
+    const packet = dJson as {
+      deadlines?: (StoredObligation & { _id: string; completedAt?: string | null })[];
+      enrollments?: { program: string; snapReportingCategory?: string | null }[];
+    };
+    setObligationPacket({
+      enrollments: packet.enrollments ?? [],
+      stored: (packet.deadlines ?? []).map((d) => ({
+        id: d._id,
+        program: d.program,
+        dueDate: d.dueDate,
+        kind: d.kind,
+        title: d.title,
+        sourceKey: d.sourceKey,
+        confidence: d.confidence,
+        noticeRef: d.noticeRef,
+        discrepancy: d.discrepancy,
+        completed: Boolean(d.completedAt),
+      })),
+    });
   }, [beneficiaryId]);
 
   useEffect(() => {
@@ -207,7 +241,7 @@ export function ThresholdsView({
       {data && data.programsEnrolled.length === 0 && (
         <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
           Select enrolled programs in{" "}
-          <Link href="/limits#programs" className="text-[var(--color-cs-brand)] hover:underline">
+          <Link href="/limits/programs" className="text-[var(--color-cs-brand)] hover:underline">
             Programs
           </Link>{" "}
           to attach system reference limits.
@@ -310,7 +344,11 @@ export function ThresholdsView({
       )}
 
       {data && data.rows.length > 0 && (
-        <ProgramCards rows={data.rows} />
+        <ProgramCards
+          rows={data.rows}
+          stored={obligationPacket.stored}
+          enrollments={obligationPacket.enrollments}
+        />
       )}
 
       <div className="overflow-x-auto rounded border border-[var(--color-cs-border)] bg-white">
@@ -432,8 +470,28 @@ export function ThresholdsView({
   );
 }
 
-function ProgramCards({ rows }: { rows: Row[] }) {
-  const cards = buildProgramCards(rows);
+function ProgramCards({
+  rows,
+  stored,
+  enrollments,
+}: {
+  rows: Row[];
+  stored: StoredObligation[];
+  enrollments: { program: string; snapReportingCategory?: string | null }[];
+}) {
+  const enrolledPrograms = enrollments.map((row) => row.program);
+  const cards = buildProgramCards(rows).map((card) => {
+    const enrollment = enrollments.find((row) => programCodeKey(row.program) === card.code);
+    const view = obligationsForProgram({
+      program: card.code,
+      snapCategory: isSnapCategory(enrollment?.snapReportingCategory)
+        ? enrollment.snapReportingCategory
+        : null,
+      stored,
+      enrolledPrograms,
+    });
+    return { ...card, obligations: cardObligationSummaries(view) };
+  });
   if (cards.length === 0) return null;
   const federal = cards.filter((c) => c.tier === "federal");
   const state = cards.filter((c) => c.tier === "state");

@@ -5,13 +5,14 @@ import {
   IconAlertCircle,
   IconChevronLeft,
   IconCircleCheck,
+  IconFileWord,
   IconInbox,
   IconLayoutGrid,
   IconList,
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { VaultDocumentRow } from "./document-row";
+import { VaultDocumentRow, VaultFileCard } from "./document-row";
 import { VaultAddFile } from "./vault-upload";
 
 export type VaultDocView = {
@@ -20,6 +21,8 @@ export type VaultDocView = {
   sizeLabel: string;
   uploadedLabel: string;
   slotId: string | null;
+  kind: "docx" | "file";
+  preview: string | null;
 };
 
 export type VaultSlotView = {
@@ -56,6 +59,14 @@ function FolderIcon({ tint, className }: { tint: string; className?: string }) {
         opacity="0.82"
       />
     </svg>
+  );
+}
+
+function folderDocx(folder: VaultFolderView): VaultDocView | null {
+  return (
+    folder.docs.find((doc) => doc.kind === "docx" && doc.preview) ??
+    folder.docs.find((doc) => doc.kind === "docx") ??
+    null
   );
 }
 
@@ -177,19 +188,36 @@ export function VaultBrowser({
                   <p className="mt-0.5 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
                     {slot.hint}
                   </p>
-                  {docs.length > 0 && (
-                    <ul className="mt-2 space-y-1.5">
-                      {docs.map((doc) => (
-                        <VaultDocumentRow
-                          key={doc.id}
-                          id={doc.id}
-                          filename={doc.filename}
-                          sizeLabel={doc.sizeLabel}
-                          uploadedLabel={doc.uploadedLabel}
-                        />
-                      ))}
-                    </ul>
-                  )}
+                  {docs.length > 0 &&
+                    (view === "cards" ? (
+                      <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                        {docs.map((doc) => (
+                          <VaultFileCard
+                            key={doc.id}
+                            id={doc.id}
+                            filename={doc.filename}
+                            sizeLabel={doc.sizeLabel}
+                            uploadedLabel={doc.uploadedLabel}
+                            docx={doc.kind === "docx"}
+                            preview={doc.preview}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <ul className="mt-2 space-y-1.5">
+                        {docs.map((doc) => (
+                          <VaultDocumentRow
+                            key={doc.id}
+                            id={doc.id}
+                            filename={doc.filename}
+                            sizeLabel={doc.sizeLabel}
+                            uploadedLabel={doc.uploadedLabel}
+                            docx={doc.kind === "docx"}
+                            preview={doc.preview}
+                          />
+                        ))}
+                      </ul>
+                    ))}
                 </div>
                 <VaultAddFile
                   beneficiaryId={beneficiaryId}
@@ -212,6 +240,20 @@ export function VaultBrowser({
             </div>
             {loose.length === 0 ? (
               <p className="text-[13px] text-[var(--color-cs-text-secondary)]">No extra files.</p>
+            ) : view === "cards" ? (
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {loose.map((doc) => (
+                  <VaultFileCard
+                    key={doc.id}
+                    id={doc.id}
+                    filename={doc.filename}
+                    sizeLabel={doc.sizeLabel}
+                    uploadedLabel={doc.uploadedLabel}
+                    docx={doc.kind === "docx"}
+                    preview={doc.preview}
+                  />
+                ))}
+              </div>
             ) : (
               <ul className="space-y-1.5">
                 {loose.map((doc) => (
@@ -221,6 +263,8 @@ export function VaultBrowser({
                     filename={doc.filename}
                     sizeLabel={doc.sizeLabel}
                     uploadedLabel={doc.uploadedLabel}
+                    docx={doc.kind === "docx"}
+                    preview={doc.preview}
                   />
                 ))}
               </ul>
@@ -317,12 +361,33 @@ export function VaultBrowser({
         <p className="text-[13px] text-[var(--color-cs-text-secondary)]">No document types match that search.</p>
       ) : view === "cards" ? (
         <>
+          {(() => {
+            const wordDocs = visible.flatMap(({ folder }) => folder.docs.filter((doc) => doc.kind === "docx"));
+            if (open || wordDocs.length === 0) return null;
+            return (
+              <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {wordDocs.map((doc) => (
+                  <VaultFileCard
+                    key={doc.id}
+                    id={doc.id}
+                    filename={doc.filename}
+                    sizeLabel={doc.sizeLabel}
+                    uploadedLabel={doc.uploadedLabel}
+                    docx
+                    preview={doc.preview}
+                  />
+                ))}
+              </div>
+            );
+          })()}
+
           <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 ${open ? "hidden sm:grid" : ""}`}>
             {visible.map(({ folder }) => {
               const neededOpen = folder.slots.filter(
                 (slot) => slot.attention === "needed" && !folder.docs.some((doc) => doc.slotId === slot.id),
               ).length;
               const selected = openId === folder.id;
+              const docx = folderDocx(folder);
               return (
                 <button
                   key={folder.id}
@@ -334,7 +399,17 @@ export function VaultBrowser({
                       : "bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:bg-[var(--color-cs-surface)]"
                   }`}
                 >
-                  <FolderIcon tint={folder.tint} className="h-14 w-[4.25rem] drop-shadow-sm transition group-hover:scale-[1.03]" />
+                  <span className="relative">
+                    <FolderIcon tint={folder.tint} className="h-14 w-[4.25rem] drop-shadow-sm transition group-hover:scale-[1.03]" />
+                    {docx ? (
+                      <IconFileWord
+                        size={16}
+                        stroke={1.7}
+                        className="absolute -bottom-0.5 -right-1 text-[#2b579a]"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </span>
                   <div className="mt-2 w-full text-[13.5px] font-semibold leading-tight text-[var(--color-cs-text)]">
                     {folder.label}
                   </div>
@@ -343,6 +418,11 @@ export function VaultBrowser({
                       ? `${neededOpen} missing`
                       : `${folder.docs.length} file${folder.docs.length === 1 ? "" : "s"}`}
                   </div>
+                  {docx?.preview ? (
+                    <p className="mt-1 line-clamp-2 w-full text-left text-[11px] leading-snug text-[var(--color-cs-text-secondary)]">
+                      {docx.preview}
+                    </p>
+                  ) : null}
                 </button>
               );
             })}
@@ -373,17 +453,34 @@ export function VaultBrowser({
         </>
       ) : (
         <div className="overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          {visible.map(({ folder, slots, loose }) => (
+          {visible.map(({ folder, slots, loose }) => {
+            const docx = folderDocx(folder);
+            return (
             <div key={folder.id} className="border-b border-[var(--color-cs-sep)] last:border-b-0">
               <button
                 type="button"
                 onClick={() => setOpenId((cur) => (cur === folder.id ? null : folder.id))}
                 className="flex w-full items-center gap-3 px-4 py-3 text-left"
               >
-                <FolderIcon tint={folder.tint} className="h-8 w-10 shrink-0" />
+                <span className="relative shrink-0">
+                  <FolderIcon tint={folder.tint} className="h-8 w-10" />
+                  {docx ? (
+                    <IconFileWord
+                      size={14}
+                      stroke={1.7}
+                      className="absolute -bottom-0.5 -right-1 text-[#2b579a]"
+                      aria-hidden
+                    />
+                  ) : null}
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[16px] font-medium">{folder.label}</div>
                   <div className="truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">{folder.hint}</div>
+                  {docx?.preview ? (
+                    <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap text-[12px] leading-snug text-[var(--color-cs-text)]">
+                      {docx.preview}
+                    </p>
+                  ) : null}
                 </div>
               </button>
               {openId === folder.id && (
@@ -392,7 +489,8 @@ export function VaultBrowser({
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

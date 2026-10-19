@@ -118,14 +118,14 @@ export async function GET(req: Request) {
     const alertItems = alerts.map((a) => ({
       label: String(a.message ?? "").slice(0, 80),
       sublabel: String(a.level ?? ""),
-      href: "/limits#alerts",
+      href: "/limits/alerts",
     }));
     if (alertItems.length) groups.push({ type: "Alerts", items: alertItems });
 
     const thItems = thresholds.map((t) => ({
       label: String(t.label ?? "Limit"),
       sublabel: t.program ? String(t.program) : undefined,
-      href: t.program ? `/thresholds/${String(t.program)}` : "/limits#limits",
+      href: t.program ? `/thresholds/${String(t.program)}` : "/limits",
     }));
     if (thItems.length) groups.push({ type: "Limits", items: thItems });
   }

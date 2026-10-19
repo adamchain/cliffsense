@@ -141,14 +141,8 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
   }
 
   return (
-    <section className="flex h-[calc(100dvh-140px)] min-h-[420px] w-full flex-col overflow-hidden lg:h-[calc(100vh-180px)]">
-      <div className="border-b border-[var(--color-cs-sep)] px-5 pb-3 pt-2 text-center">
-        <div className="text-[17px] font-semibold text-[var(--color-cs-text)]">Advisor</div>
-        <div className="text-[12px] text-[var(--color-cs-text-secondary)]">
-          Powered by Claude · Not legal advice
-        </div>
-      </div>
-      <div ref={scrollRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-4 text-[15px]">
+    <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto rounded-[18px] bg-[var(--color-cs-card)] px-4 py-4 text-[15px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
         {messages.length === 0 && (
           <div>
             <div className="mb-3 max-w-[80%] self-start rounded-[20px] rounded-bl-md bg-[#e9e9eb] px-3.5 py-2.5 text-[15px] leading-snug text-black">
@@ -208,13 +202,18 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
         )}
         {error && <p className="text-[12px] text-[var(--color-cs-danger)]">{error}</p>}
       </div>
-      <div className="flex justify-center border-t border-[var(--color-cs-sep)] bg-[rgba(248,248,250,0.92)] px-3.5 py-2.5 backdrop-blur">
-        <AskComposer
-          value={input}
-          onChange={setInput}
-          onSubmit={() => void send(input)}
-          disabled={sending}
-        />
+      <div className="shrink-0 bg-[rgba(248,248,250,0.92)] px-3.5 pb-2 pt-2.5 backdrop-blur">
+        <div className="flex justify-center">
+          <AskComposer
+            value={input}
+            onChange={setInput}
+            onSubmit={() => void send(input)}
+            disabled={sending}
+          />
+        </div>
+        <p className="mt-1.5 text-center text-[11px] leading-snug text-[var(--color-cs-text-muted)]">
+          Advisor is AI and can make mistakes. Not legal advice.
+        </p>
       </div>
     </section>
   );

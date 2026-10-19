@@ -82,7 +82,7 @@ export async function middleware(req: NextRequest) {
 
   if (!isLoggedIn) {
     const signIn = new URL("/auth/signin", req.url);
-    signIn.searchParams.set("callbackUrl", pathname);
+    signIn.searchParams.set("callbackUrl", `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(signIn);
   }
 

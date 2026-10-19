@@ -39,7 +39,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     id: "upcoming",
     href: "/dashboard",
     target: "home-upcoming",
-    title: "Upcoming deadlines",
+    title: "Calendar",
     body: "Renewals, wage reports, and appointments land here. Open Calendar for the full schedule and 'do I need to report this?' guidance.",
   },
   {
@@ -54,7 +54,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     href: "/limits",
     target: "limits-page",
     title: "Limits",
-    body: "Every reference limit for your programs lives here, on the same page as alerts and programs. Attach or detach system limits, add custom ones, and watch warning lines before a hard cap.",
+    body: "Reference limits for your programs live here. Alerts, 2026–27 policy, and programs are separate pages in this section.",
   },
   {
     id: "calendar",

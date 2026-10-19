@@ -23,6 +23,8 @@ import { ReportEventForm } from "@/components/alerts/report-event-form";
 import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 import type { ContinuityCaseView } from "@/lib/alerts/serialize-case";
 import type { ReportingAction } from "@/lib/reporting/reporting-actions";
+import { LimitSourceList } from "@/components/thresholds/limit-source-list";
+import type { LimitSources } from "@/lib/thresholds/limit-sources";
 
 type AlertRow = {
   _id: string;
@@ -118,15 +120,19 @@ export function AlertsView({
   beneficiaryId,
   reportingActions = [],
   embedded = false,
+  limitSources = null,
+  focusAlertId = null,
 }: {
   beneficiaryId: string | null;
   reportingActions?: ReportingAction[];
   embedded?: boolean;
+  limitSources?: LimitSources | null;
+  focusAlertId?: string | null;
 }) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "new">("new");
+  const [filter, setFilter] = useState<"all" | "new">(focusAlertId ? "all" : "new");
 
   const load = useCallback(async () => {
     if (!beneficiaryId) return;
@@ -149,6 +155,11 @@ export function AlertsView({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!focusAlertId || loading) return;
+    document.getElementById(`alert-${focusAlertId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusAlertId, loading, rows]);
 
   async function patchStatus(id: string, status: "acknowledged" | "dismissed") {
     const res = await fetch(`/api/alerts/${id}`, {
@@ -286,11 +297,20 @@ export function AlertsView({
             const source = progMeta?.label ?? playbook.programs[0] ?? "Bene-Watch";
             const title = snap?.thresholdLabel ?? playbook.title ?? triggerLabel(a.trigger);
             const sensitive = isTimeSensitive(a.level, a.trigger) && a.status === "new";
+            const scopedPrograms = snap?.program
+              ? [String(snap.program)]
+              : snap?.programs?.length
+                ? snap.programs
+                : playbook.programs;
+            const focused = focusAlertId === a._id;
 
             return (
               <div
                 key={a._id}
-                className={`cs-acard ${a.status !== "new" ? "read" : ""}`}
+                id={`alert-${a._id}`}
+                className={`cs-acard ${a.status !== "new" ? "read" : ""} ${
+                  focused ? "ring-2 ring-[var(--color-cs-brand)]" : ""
+                }`}
               >
                 <div className={`cs-acard-icon ${iconBg(a.level)}`} aria-hidden>
                   <Icon size={20} stroke={1.8} />
@@ -303,7 +323,14 @@ export function AlertsView({
                   {sensitive && <div className="cs-acard-badge">Time Sensitive</div>}
                   <div className="cs-acard-title">{title}</div>
                   <p className="cs-acard-body">{playbook.cureAction}</p>
-                  <AlertPlaybookPanel playbook={playbook} programs={snap?.programs} />
+                  {(snap?.currentValueCents != null || snap?.thresholdType) && (
+                    <LimitSourceList
+                      sources={limitSources}
+                      thresholdType={snap?.thresholdType}
+                      program={snap?.program}
+                    />
+                  )}
+                  <AlertPlaybookPanel playbook={playbook} programs={scopedPrograms} />
                   {a.continuityCase && (
                     <ContinuityCasePanel
                       beneficiaryId={beneficiaryId}
@@ -311,7 +338,7 @@ export function AlertsView({
                       onUpdated={() => void load()}
                     />
                   )}
-                  <CategoryHandoffPanel programs={snap?.programs ?? playbook.programs} />
+                  <CategoryHandoffPanel programs={scopedPrograms} />
 
                   <div className="cs-acard-actions">
                     <Link

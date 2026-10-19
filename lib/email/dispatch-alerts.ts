@@ -73,7 +73,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       preheader: playbook.cureAction.slice(0, 110),
       tone: level === "breach" ? "danger" : level === "warning" ? "warning" : "info",
       paragraphs,
-      cta: { label: "View in Bene-Watch", url: `${appUrl()}/alerts` },
+      cta: { label: "View this alert", url: `${appUrl()}/limits/alerts?alert=${String(a._id)}` },
     });
     const res = await sendEmail({ to: recipients, subject, html, text });
     if (!res.ok) {

@@ -1,4 +1,8 @@
 /** Approved public copy from the October 5, 2026 claims control. */
+export {
+  OBLIGATION_EXPLANATION,
+  TRACKING_SCOPE,
+} from "@/lib/reporting/obligations";
 
 import { RENEWAL_IS_ONE_DEADLINE } from "@/lib/reporting/obligations";
 

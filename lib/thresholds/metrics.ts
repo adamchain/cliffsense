@@ -308,6 +308,23 @@ function isExcludedResourceAccount(a: ResourceAccount): boolean {
   return false;
 }
 
+/** Why a linked account is in, or left out of, a resource-limit total. */
+export function resourceCountNote(account: ResourceAccount): { included: boolean; note: string | null } {
+  if (isExcludedResourceAccount(account)) {
+    const t = (account.type ?? "").toLowerCase();
+    const st = (account.subtype ?? "").toLowerCase();
+    if (t === "credit" || t === "loan" || st.includes("credit")) {
+      return { included: false, note: "Credit and loans are left out." };
+    }
+    if (isAbleAccount(account)) return { included: false, note: "ABLE balances are left out of this resource total." };
+    return { included: false, note: "Special needs trust balances are left out." };
+  }
+  if ((account.currentBalanceCents ?? 0) <= 0) {
+    return { included: false, note: "A zero or negative balance is not added." };
+  }
+  return { included: true, note: null };
+}
+
 /**
  * Sum of linked balances that count toward an SSI/ABD-style resource test.
  * Credit, loans, ABLE, and special-needs-trust accounts are left out.

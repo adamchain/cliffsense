@@ -42,10 +42,13 @@ export default function ResourcesPage() {
       <div className="mt-6 rounded border border-[var(--color-cs-brand)] bg-[var(--color-cs-nav-hover)] px-4 py-3 text-[13px]">
         <span className="font-medium text-[var(--color-cs-text)]">Reporting clocks differ by program.</span>{" "}
         <span className="text-[var(--color-cs-text-secondary)]">
-          SSI and Extra Help: by the 10th of the month after the change (a change in April is reported by May 10).
-          Medicaid, waiver, MAWD, and QMB: within 10 days. SSDI and DAC: promptly, with no fixed wage calendar. SNAP
-          simplified reporting: within 10 days only if gross income exceeds 130% FPL, ABAWD hours drop below 80 a month,
-          or gambling winnings are $4,750 or more. A raise that stays under 130% FPL waits for the semi-annual report.
+          Your renewal date is only one deadline. Some benefits also require reports between renewals or prompt
+          notice when your circumstances change. Bene-Watch helps you track each obligation separately. SSI financial
+          changes are due by the 10th of the next month, and a disability review is a different notice. SSDI and DAC
+          work reports are prompt. Medicaid financial renewals, waiver service reviews, and QMB renewals are separate.
+          Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP ordinary SAR households file PA 564 between
+          recertifications. Elderly or disabled households with earned income still have interim reports on a 24-month
+          certification. ESAP households with no earned income do not file PA 564. Disability alone is not an exemption.
         </span>
       </div>
 

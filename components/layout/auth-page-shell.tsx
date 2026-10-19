@@ -37,11 +37,11 @@ export function AuthPageShell({
       {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-50 border-b border-[var(--color-cs-border)] bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-          <Link href="/landing" className="flex items-center" aria-label="Bene-Watch home">
+          <Link href="/" className="flex items-center" aria-label="Bene-Watch home">
             <BrandLogo priority className="h-8 w-auto" />
           </Link>
           <Link
-            href="/landing"
+            href="/"
             className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--color-cs-brand)] hover:underline"
           >
             <IconArrowLeft size={16} stroke={2.2} /> Back to home

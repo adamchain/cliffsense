@@ -50,6 +50,7 @@ import {
   sumEarnedInflowTransactionsCents,
   utcMonthPrefix,
 } from "@/lib/thresholds/metrics";
+import { buildLimitSources, emptyLimitSources, type LimitSources } from "@/lib/thresholds/limit-sources";
 
 function matchesState(thresholdState: string | null | undefined, beneficiaryState: string): boolean {
   const s = (thresholdState ?? "").trim();
@@ -119,6 +120,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     priorMonthEarnedIncomeCents: number;
     maxDepositoryBalanceCents: number;
   };
+  limitSources: LimitSources;
   rows: ThresholdDashboardRow[];
 }> {
   await ensureSystemThresholdsSeeded();
@@ -137,6 +139,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       monthPrefix: "",
       priorMonthPrefix: "",
       metrics: emptyMetrics,
+      limitSources: emptyLimitSources(),
       rows: [],
     };
   }
@@ -159,6 +162,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       monthPrefix: prefix,
       priorMonthPrefix: priorPrefix,
       metrics: emptyMetrics,
+      limitSources: emptyLimitSources(),
       rows: [],
     };
   }
@@ -256,6 +260,20 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     }
   }
   const maxAsset = countableResourceBalanceCents(accountsFlat);
+  const limitSources = buildLimitSources(
+    txRows.map((t) => ({
+      id: String(t._id),
+      date: String(t.date),
+      amountCents: Number(t.amountCents),
+      userCategory: String(t.userCategory ?? ""),
+      pending: Boolean(t.pending),
+      excludedFromThresholds: Boolean(t.excludedFromThresholds),
+      name: t.name ? String(t.name) : "",
+      merchantName: t.merchantName ? String(t.merchantName) : "",
+    })),
+    accountsFlat,
+    prefix,
+  );
   const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
   const benefitDeposits = benefitDepositsInMonth(txMapped, prefix);
   const ytdEarnedBefore = grossUpEarnedCents(earnedNetBeforeMonthInYearCents(txMapped, prefix));
@@ -537,6 +555,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       priorMonthEarnedIncomeCents: priorMonthEarned,
       maxDepositoryBalanceCents: maxAsset,
     },
+    limitSources,
     rows,
   };
 }

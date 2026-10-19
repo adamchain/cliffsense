@@ -33,7 +33,7 @@ function SidebarGroup({
   const hasChildren = !!section.children?.length;
   const Icon = section.icon;
   const parentActive = !hasChildren && active;
-  const containsAlerts = section.href === "/limits";
+  const containsAlerts = section.children?.some((c) => c.href === "/limits/alerts") ?? false;
 
   return (
     <div>
@@ -62,7 +62,7 @@ function SidebarGroup({
               >
                 <ChildIcon size={14} stroke={childActive ? 2 : 1.75} aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{label}</span>
-                {href === "/limits" && alertCount > 0 && (
+                {href === "/limits/alerts" && alertCount > 0 && (
                   <span className="cs-macos-sidebar-badge">
                     {alertCount > 9 ? "9+" : alertCount}
                   </span>
@@ -99,7 +99,8 @@ export function AppShell({
     activeHref.startsWith("/reports/") ||
     activeHref === "/documents" ||
     activeHref.startsWith("/documents/");
-  const showAskBar = !(activeHref === "/advisor" || activeHref.startsWith("/advisor/"));
+  const isAdvisor = activeHref === "/advisor" || activeHref.startsWith("/advisor/");
+  const showAskBar = !isAdvisor;
   const settingsActive = isHrefActive(activeHref, "/settings");
 
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
@@ -153,14 +154,18 @@ export function AppShell({
       </nav>
 
       {/* ---------- Main column ---------- */}
-      <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-cs-surface)]">
+      <div
+        className={`flex min-w-0 flex-1 flex-col bg-[var(--color-cs-surface)] ${
+          isAdvisor ? "h-dvh max-h-dvh overflow-hidden" : ""
+        }`}
+      >
         {/* Desktop / tablet topbar; mobile pages own their headers */}
         <header className="sticky top-0 z-30 hidden h-16 shrink-0 items-center gap-2 border-b border-[var(--color-cs-border)] bg-[var(--color-cs-surface)]/90 px-4 backdrop-blur sm:gap-3 sm:px-6 lg:flex">
           <TopbarControls hideSearch={hideTopSearch} />
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
-              href="/limits#alerts"
+              href="/limits/alerts"
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
               aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
             >
@@ -200,7 +205,7 @@ export function AppShell({
           )}
           <div className={`flex shrink-0 items-center gap-2 ${hideTopSearch ? "ml-auto" : ""}`}>
             <Link
-              href="/limits#alerts"
+              href="/limits/alerts"
               className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-cs-text)] shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)]"
               aria-label={alertCount > 0 ? `Alerts, ${alertCount} unread` : "Alerts"}
             >
@@ -227,9 +232,13 @@ export function AppShell({
         <SectionTabs />
 
         <div
-          className={`min-w-0 flex-1 px-4 pt-2 sm:px-5 lg:p-6 ${
-            showAskBar ? "pb-36 lg:pb-24" : "pb-28 lg:pb-6"
-          }`}
+          className={
+            isAdvisor
+              ? "flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-2 sm:px-5 lg:px-6 lg:pb-4 lg:pt-4"
+              : `min-w-0 flex-1 px-4 pt-2 sm:px-5 lg:p-6 ${
+                  showAskBar ? "pb-36 lg:pb-24" : "pb-28 lg:pb-6"
+                }`
+          }
         >
           {children}
         </div>

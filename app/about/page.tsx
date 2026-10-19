@@ -6,6 +6,7 @@ import {
   CORE_POSITIONING,
   EVIDENCE_NEED,
   GOVERNMENT_BODY,
+  OBLIGATION_EXPLANATION,
   PARTNER_BODY,
   PARTNER_CTA,
   PARTNER_INTRO,
@@ -163,9 +164,10 @@ export default async function AboutPage() {
               <p>
                 One of our founders, Frank, is the father of an adult son with special needs. Frank
                 experienced firsthand the continuing demands of maintaining multiple public benefits:
-                tracking renewal dates, retaining notices, organizing financial records, monitoring
+                tracking renewals, interim reports, reportable changes, disability and eligibility reviews,
+                and requests for proof, retaining notices, organizing financial records, monitoring
                 work and income, and understanding how different programs may respond to the same
-                event.
+                event. {OBLIGATION_EXPLANATION}
               </p>
               <p>
                 He also understood that the system he had developed existed largely in one

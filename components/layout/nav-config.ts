@@ -1,7 +1,9 @@
 import type { ComponentType } from "react";
 import {
+  IconBell,
   IconBrain,
   IconCalendarEvent,
+  IconClipboardList,
   IconFileExport,
   IconFileText,
   IconFolder,
@@ -10,6 +12,7 @@ import {
   IconMessageCircle,
   IconPresentation,
   IconTarget,
+  IconUsers,
   IconWallet,
 } from "@tabler/icons-react";
 
@@ -27,13 +30,23 @@ export type NavItem = { href: string; label: string; icon: IconCmp };
 export type NavSection = { label: string; icon: IconCmp; href: string; children?: NavItem[] };
 
 /* ---------------------------------------------------------------------------
- * Sidebar order: Home → Calendar → Limits, then the rest.
+ * Sidebar order: Home → Calendar → Programs, then the rest.
  * ------------------------------------------------------------------------- */
 
 export const PRIMARY_SECTIONS: NavSection[] = [
   { label: "Home", icon: IconHome, href: "/dashboard" },
   { label: "Calendar", icon: IconCalendarEvent, href: "/calendar" },
-  { label: "Limits", icon: IconTarget, href: "/limits" },
+  {
+    label: "Programs",
+    icon: IconUsers,
+    href: "/limits/programs",
+    children: [
+      { label: "Programs", icon: IconUsers, href: "/limits/programs" },
+      { label: "Alerts", icon: IconBell, href: "/limits/alerts" },
+      { label: "Limits", icon: IconTarget, href: "/limits" },
+      { label: "2026–27 policy", icon: IconClipboardList, href: "/limits/policy" },
+    ],
+  },
   { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
   { label: "Forms", icon: IconFileText, href: "/documents" },
   { label: "Money", icon: IconWallet, href: "/transactions" },
@@ -63,9 +76,13 @@ export function isHrefActive(activeHref: string, href: string): boolean {
   if (href === "/limits") {
     return (
       activeHref === "/limits" ||
-      activeHref.startsWith("/limits/") ||
       activeHref === "/thresholds" ||
-      activeHref.startsWith("/thresholds/") ||
+      activeHref.startsWith("/thresholds/")
+    );
+  }
+  if (href === "/limits/alerts") {
+    return (
+      activeHref === "/limits/alerts" ||
       activeHref === "/alerts" ||
       activeHref.startsWith("/alerts/")
     );

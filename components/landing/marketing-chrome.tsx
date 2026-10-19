@@ -31,14 +31,14 @@ export function MarketingHeader({
         {continueHref ? (
           <Link
             href={continueHref}
-            className="text-[13px] font-semibold text-[var(--color-cs-brand)] hover:text-[var(--color-cs-brand-hover)]"
+            className="inline-flex h-9 items-center justify-center rounded-sm bg-[var(--color-cs-navy)] px-4 text-[13px] font-semibold text-white hover:opacity-90"
           >
             Continue
           </Link>
         ) : (
           <Link
-            href="/#sign-in"
-            className="text-[13px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-text)]"
+            href="/auth/signin"
+            className="inline-flex h-9 items-center justify-center rounded-sm bg-[var(--color-cs-navy)] px-4 text-[13px] font-semibold text-white hover:opacity-90"
           >
             Sign in
           </Link>
@@ -64,7 +64,7 @@ const FOOTER_GROUPS: { heading: string; links: { label: string; href: string }[]
       { label: "About us", href: "/about" },
       { label: "A father's perspective", href: "/about#perspective" },
       { label: "For organizations", href: "/about#organizations" },
-      { label: "Sign in", href: "/#sign-in" },
+      { label: "Sign in", href: "/auth/signin" },
       { label: "Support", href: "mailto:support@bene-watch.com" },
     ],
   },

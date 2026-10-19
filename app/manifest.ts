@@ -17,9 +17,8 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#f0f2f7",
     theme_color: "#4b63f0",
     icons: [
-      { src: "/benewatch-icon.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/benewatch-icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/benewatch-icon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/favicon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/favicon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

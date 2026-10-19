@@ -1,163 +1,18 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { connectDB } from "@/lib/db/mongodb";
-import Beneficiary from "@/lib/db/models/Beneficiary";
-import Transaction from "@/lib/db/models/Transaction";
-import { ProgramsForm } from "@/app/(authenticated)/settings/programs-form";
-import { AlertsView } from "@/components/alerts/alerts-view";
 import { ThresholdsView } from "@/components/thresholds/thresholds-view";
 import { WorkPlanner } from "@/components/benefits/work-planner";
-import { PolicyScreen } from "@/components/policy/policy-screen";
-import { BenefitsHubNav } from "@/components/settings/benefits-hub-nav";
-import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
-import { buildReportingActions } from "@/lib/reporting/reporting-actions";
-import { coercePolicyScreen, ageFromDateOfBirth } from "@/lib/policy/screen";
-import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
-import { isSnapReportingCategory, normalizeConfidence } from "@/lib/reporting/obligations";
-
-function isoDay(d: Date | null | undefined): string | null {
-  return d ? new Date(d).toISOString().slice(0, 10) : null;
-}
-
-const sectionCls = "scroll-mt-28";
+import { loadLimitsHub } from "@/lib/limits/load-hub";
 
 export default async function LimitsPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
-  await connectDB();
-  const primary = await getActiveBeneficiaryForUser(session.user.id);
-
-  const beneficiaryId = primary?._id.toString() ?? null;
-  let reportingActions: Awaited<ReturnType<typeof buildReportingActions>> = [];
-  let twpMonthsUsed = 0;
-  let policyScreenInitial = coercePolicyScreen(null);
-  let programRows: {
-    program: string;
-    nextRenewalDate?: Date | null;
-    renewalConfidence?: string | null;
-    nextInterimReportDate?: Date | null;
-    interimConfidence?: string | null;
-    reportingCategory?: string | null;
-  }[] = [];
-  if (primary?._id) {
-    const now = new Date();
-    const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, 1))
-      .toISOString()
-      .slice(0, 10);
-    const [payload, txns, twpDoc] = await Promise.all([
-      loadThresholdDashboardPayload(primary._id),
-      Transaction.find({ beneficiaryId: primary._id, date: { $gte: sixMonthsAgo } })
-        .select({
-          date: 1,
-          amountCents: 1,
-          userCategory: 1,
-          name: 1,
-          merchantName: 1,
-          pending: 1,
-          excludedFromThresholds: 1,
-        })
-        .lean(),
-      Beneficiary.findById(primary._id)
-        .select("twpMonthsUsed policyScreen dateOfBirth householdSize benefitsEnrolled")
-        .lean(),
-    ]);
-    reportingActions = buildReportingActions({
-      programs: payload.programsEnrolled,
-      rows: payload.rows.map((r) => ({
-        thresholdType: r.thresholdType,
-        label: r.label,
-        program: r.program,
-        status: r.status,
-        attached: r.attached,
-      })),
-      transactions: txns.map((t) => ({
-        date: String(t.date),
-        amountCents: Number(t.amountCents),
-        userCategory: String(t.userCategory ?? ""),
-        name: t.name ? String(t.name) : undefined,
-        merchantName: t.merchantName ? String(t.merchantName) : undefined,
-        pending: Boolean(t.pending),
-        excludedFromThresholds: Boolean(t.excludedFromThresholds),
-      })),
-      now,
-      householdSize: Number(twpDoc?.householdSize ?? 1),
-    });
-    twpMonthsUsed = Number(twpDoc?.twpMonthsUsed ?? 0);
-    programRows = (twpDoc?.benefitsEnrolled ?? []).map((b) => ({
-      program: String(b.program),
-      nextRenewalDate: b.nextRenewalDate as Date | null | undefined,
-      renewalConfidence: (b as { renewalConfidence?: string }).renewalConfidence ?? null,
-      nextInterimReportDate: (b as { nextInterimReportDate?: Date | null }).nextInterimReportDate,
-      interimConfidence: (b as { interimConfidence?: string }).interimConfidence ?? null,
-      reportingCategory: (b as { reportingCategory?: string | null }).reportingCategory ?? null,
-    }));
-    const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
-    policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
-  }
+  const hub = await loadLimitsHub();
 
   return (
     <div>
-      <h1 className="cs-big-title mb-1">Limits &amp; alerts</h1>
-      <p className="mb-3 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Watch limits, review alerts, choose programs, and check 2026–27 policy — all in one place.
+      <h1 className="cs-big-title mb-1">Limits</h1>
+      <p className="mb-5 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+        Reference limits for the programs you receive. Alerts, 2026–27 policy, and programs each have their own page.
       </p>
-
-      <BenefitsHubNav />
-
-      <div className="space-y-10">
-        <section id="alerts" className={sectionCls}>
-          <AlertsView
-            beneficiaryId={beneficiaryId}
-            reportingActions={reportingActions}
-            embedded
-          />
-        </section>
-
-        <section id="limits" className={sectionCls}>
-          <ThresholdsView beneficiaryId={beneficiaryId} embedded />
-          <WorkPlanner
-            beneficiaryId={beneficiaryId}
-            initialTwpMonths={twpMonthsUsed}
-          />
-        </section>
-
-        <section id="policy" className={sectionCls}>
-          <PolicyScreen beneficiaryId={beneficiaryId} initial={policyScreenInitial} />
-        </section>
-
-        {beneficiaryId && (
-          <section id="programs" className={sectionCls}>
-            <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">
-              Programs
-            </h2>
-            <p className="mb-3 text-[13px] text-[var(--color-cs-text-secondary)]">
-              Choose what you receive so the right limits and alerts attach.
-            </p>
-            <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-              <ProgramsForm
-                beneficiaryId={beneficiaryId}
-                initialPrograms={programRows.map((b) => b.program)}
-                initialDates={Object.fromEntries(
-                  programRows.map((b) => [
-                    b.program,
-                    {
-                      renewal: isoDay(b.nextRenewalDate),
-                      renewalConfidence: normalizeConfidence(b.renewalConfidence),
-                      interim: isoDay(b.nextInterimReportDate),
-                      interimConfidence: normalizeConfidence(b.interimConfidence),
-                      reportingCategory: isSnapReportingCategory(b.reportingCategory)
-                        ? b.reportingCategory
-                        : null,
-                    },
-                  ]),
-                )}
-              />
-            </div>
-          </section>
-        )}
-      </div>
+      <ThresholdsView beneficiaryId={hub.beneficiaryId} embedded />
+      <WorkPlanner beneficiaryId={hub.beneficiaryId} initialTwpMonths={hub.twpMonthsUsed} />
     </div>
   );
 }

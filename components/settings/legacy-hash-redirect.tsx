@@ -3,16 +3,20 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const LIMITS_HASHES = new Set(["alerts", "limits", "policy", "programs"]);
+const LIMITS_HASHES: Record<string, string> = {
+  alerts: "/limits/alerts",
+  limits: "/limits",
+  policy: "/limits/policy",
+  programs: "/limits/programs",
+};
 
-/** Old /settings#alerts (etc.) bookmarks land on profile now — send them to Limits. */
+/** Old /settings#alerts (etc.) bookmarks land on profile now — send them to the matching page. */
 export function LegacySettingsHashRedirect() {
   const router = useRouter();
   useEffect(() => {
     const id = window.location.hash.replace(/^#/, "");
-    if (LIMITS_HASHES.has(id)) {
-      router.replace(`/limits#${id}`);
-    }
+    const href = LIMITS_HASHES[id];
+    if (href) router.replace(href);
   }, [router]);
   return null;
 }

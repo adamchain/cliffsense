@@ -17,10 +17,8 @@ export async function POST(req: Request) {
   if (limited) return limited;
 
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
-  // Always respond the same way to avoid leaking which emails are registered.
-  const generic = NextResponse.json({ ok: true });
   if (!parsed.success) {
-    return generic;
+    return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
   await connectDB();
@@ -32,7 +30,10 @@ export async function POST(req: Request) {
   }
   const user = await User.findOne({ email }).select("_id email").lean();
   if (!user) {
-    return generic;
+    return NextResponse.json(
+      { code: "no_account", error: "No account exists for that email." },
+      { status: 404 },
+    );
   }
 
   try {
@@ -66,5 +67,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return generic;
+  return NextResponse.json({ ok: true });
 }

@@ -6,6 +6,7 @@ import VaultDocument from "@/lib/db/models/Document";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { IconDownload } from "@tabler/icons-react";
 import { vaultCategoryLabel, vaultSlotLabel } from "@/lib/vault/categories";
+import { docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -26,7 +27,7 @@ export default async function VaultDetailPage({
 
   await connectDB();
   const doc = await VaultDocument.findById(id)
-    .select("beneficiaryId filename mimeType sizeBytes category slot scanStatus createdAt")
+    .select("beneficiaryId filename mimeType sizeBytes category slot scanStatus createdAt content")
     .lean();
   if (!doc) notFound();
 
@@ -40,6 +41,8 @@ export default async function VaultDetailPage({
 
   const isImage = doc.mimeType.startsWith("image/");
   const isPdf = doc.mimeType === "application/pdf";
+  const isDocx = isDocxFile(doc.filename, doc.mimeType);
+  const docxPreview = isDocx ? docxPlainText(Buffer.isBuffer(doc.content) ? doc.content : Buffer.from(doc.content)) : "";
 
   return (
     <>
@@ -77,6 +80,12 @@ export default async function VaultDetailPage({
                 Your browser cannot inline this PDF. Use the Download button above.
               </p>
             </object>
+          ) : isDocx && docxPreview ? (
+            <div className="max-h-[60vh] overflow-auto rounded border border-[var(--color-cs-border)] bg-white p-4">
+              <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-[var(--color-cs-text)]">
+                {docxPreview}
+              </p>
+            </div>
           ) : (
             <div className="flex h-72 items-center justify-center rounded border border-dashed border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] text-[12px] text-[var(--color-cs-text-secondary)]">
               No inline preview for {doc.mimeType}. Use Download.

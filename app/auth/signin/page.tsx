@@ -21,6 +21,7 @@ export default function SignInPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [accountMissing, setAccountMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +29,7 @@ export default function SignInPage() {
     e?.preventDefault();
     setError(null);
     setNotice(null);
+    setAccountMissing(false);
     if (!email.trim()) {
       setError("Enter your email address first.");
       return;
@@ -43,13 +45,18 @@ export default function SignInPage() {
         setError("Too many code requests. Please wait a few minutes and try again.");
         return;
       }
+      const j = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+      if (res.status === 404 && j.code === "no_account") {
+        setAccountMissing(true);
+        setCodeSent(false);
+        return;
+      }
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setError((j as { error?: string }).error ?? "Could not send a code. Please try again.");
+        setError(j.error ?? "Could not send a code. Please try again.");
         return;
       }
       setCodeSent(true);
-      setNotice(`If an account exists for ${email.trim()}, a 6-digit code is on its way.`);
+      setNotice(`A 6-digit code is on its way to ${email.trim()}.`);
     } catch {
       setError("Could not send a code. Please try again.");
     } finally {
@@ -148,7 +155,10 @@ export default function SignInPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setAccountMissing(false);
+                }}
                 placeholder="you@example.com"
                 className="cs-input"
               />
@@ -181,6 +191,18 @@ export default function SignInPage() {
               </div>
             )}
             {notice && <p className="text-[13px] font-medium text-[var(--color-cs-success)]">{notice}</p>}
+            {accountMissing && (
+              <p className="text-[13px] font-medium text-[var(--color-cs-danger)]">
+                No account exists for {email.trim()}.{" "}
+                <button
+                  type="button"
+                  onClick={handleCreateAccount}
+                  className="font-semibold text-[var(--color-cs-brand)] underline"
+                >
+                  Create account
+                </button>
+              </p>
+            )}
             {error && <p className="text-[13px] font-medium text-[var(--color-cs-danger)]">{error}</p>}
             <button
               type="submit"

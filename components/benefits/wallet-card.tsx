@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import type { ProgramCardModel } from "@/lib/benefits/program-tier";
 import { formatUsdCents, statusReassurance } from "@/lib/benefits/program-tier";
-import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "./wallet-seals";
+import { PaKeystoneMark, PaStateChip, SsaSeal, UsFlagMark } from "./wallet-seals";
 
 const BAR: Record<ProgramCardModel["status"], string> = {
   ok: "#34d15f",
@@ -76,7 +76,7 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
             {fed ? (
               <UsFlagMark className="cs-fed-flag" />
             ) : (
-              <PaKeystoneChip className="cs-pa-chip" />
+              <PaStateChip />
             )}
             <span>{card.tag}</span>
           </span>
@@ -110,6 +110,16 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
             {big}
             <span>{sub}</span>
           </div>
+          {card.obligations && card.obligations.length > 0 && (
+            <ul className="cs-wcard-obs">
+              {card.obligations.map((line) => (
+                <li key={line.label} className={line.sooner ? "is-sooner" : undefined}>
+                  <span className="cs-wcard-obs-k">{line.label}</span>
+                  {line.value}
+                </li>
+              ))}
+            </ul>
+          )}
           {card.pct != null && (
             <div
               className="cs-wcard-bar"

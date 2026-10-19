@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { OBLIGATION_EXPLANATION, TRACKING_SCOPE } from "@/lib/reporting/obligations";
 import {
   IconAlertTriangle,
   IconArrowDown,
@@ -21,7 +22,7 @@ import { RENEWAL_IS_ONE_DEADLINE } from "@/lib/reporting/obligations";
 export const metadata: Metadata = {
   title: "How it works · Bene-Watch",
   description:
-    "A look under the hood: how Bene-Watch turns raw bank activity into income estimates, limit checks, and early alerts.",
+    "Bene-Watch tracks renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof as separate obligations.",
 };
 
 /* ---------------------------------------------------------------------------
@@ -88,7 +89,7 @@ export default function HowItWorksPage() {
         How it works
       </h1>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-        A look inside the brain of Bene-Watch. Every bar, status, and alert you see is the end of
+        {TRACKING_SCOPE} {OBLIGATION_EXPLANATION} A look inside the brain of Bene-Watch. Every bar, status, and alert you see is the end of
         a six-stage pipeline that turns raw bank activity into a plain-English picture of where you
         stand against each benefit limit. Here&apos;s each stage, in order.
       </p>
@@ -235,7 +236,7 @@ export default function HowItWorksPage() {
           <p>
             With estimates and projections in hand, the brain compares them against each limit that
             applies to you. Which limits load is driven by your enrolled{" "}
-            <Link href="/limits#programs" className={linkCls}>programs</Link> plus any custom caps you add;
+            <Link href="/limits/programs" className={linkCls}>programs</Link> plus any custom caps you add;
             a limit you&apos;ve detached is simply skipped.
           </p>
           <p>Each evaluated limit lands in one of three states:</p>
@@ -255,7 +256,7 @@ export default function HowItWorksPage() {
         <Section id="stage-6" icon={<IconBell size={18} stroke={1.8} />} title="6 · Alert — telling you at the right moment">
           <p>
             When a limit moves into Watch or Over, the final stage raises an{" "}
-            <Link href="/limits#alerts" className={linkCls}>alert</Link>. Crucially, it de-duplicates:
+            <Link href="/limits/alerts" className={linkCls}>alert</Link>. Crucially, it de-duplicates:
             you&apos;re pinged when something <span className="font-semibold text-[var(--color-cs-text)]">changes or escalates</span>,
             not for the same issue on every sync.
           </p>

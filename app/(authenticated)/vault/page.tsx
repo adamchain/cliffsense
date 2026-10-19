@@ -12,6 +12,7 @@ import {
   slotAttention,
   vaultCaseContext,
 } from "@/lib/vault/categories";
+import { docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
 import { VaultBrowser } from "./vault-browser";
 
 function formatSize(bytes: number): string {
@@ -34,7 +35,15 @@ export default async function VaultPage() {
     hint: string;
     tint: string;
     slots: { id: string; label: string; hint: string; attention: "needed" | "review" | "optional" | "keep" }[];
-    docs: { id: string; filename: string; sizeLabel: string; uploadedLabel: string; slotId: string | null }[];
+    docs: {
+      id: string;
+      filename: string;
+      sizeLabel: string;
+      uploadedLabel: string;
+      slotId: string | null;
+      kind: "docx" | "file";
+      preview: string | null;
+    }[];
   }[] = [];
   let proofFiled = 0;
   let proofNeeded = 0;
@@ -66,17 +75,36 @@ export default async function VaultPage() {
     });
     screened = ctx.active.size > 0 || ctx.review.size > 0;
 
+    const docxIds = rows.filter((row) => isDocxFile(row.filename, row.mimeType)).map((row) => row._id);
+    const previewById = new Map<string, string>();
+    if (docxIds.length > 0) {
+      const bodies = await VaultDocument.find({ _id: { $in: docxIds } })
+        .select("content")
+        .lean();
+      for (const body of bodies) {
+        const raw = body.content;
+        if (!raw) continue;
+        const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
+        const text = docxPlainText(buf).trim();
+        if (text) previewById.set(body._id.toString(), text);
+      }
+    }
+
     const docsByFolder = new Map<string, (typeof folders)[number]["docs"]>();
     for (const row of rows) {
       const slotId = effectiveVaultSlot(row.category, row.slot);
       const folderId = folderIdForDocument(row.category, row.slot);
+      const id = row._id.toString();
+      const docx = isDocxFile(row.filename, row.mimeType);
       const list = docsByFolder.get(folderId) ?? [];
       list.push({
-        id: row._id.toString(),
+        id,
         filename: row.filename,
         sizeLabel: formatSize(row.sizeBytes),
         uploadedLabel: new Date(row.createdAt).toLocaleDateString(),
         slotId,
+        kind: docx ? "docx" : "file",
+        preview: previewById.get(id) ?? null,
       });
       docsByFolder.set(folderId, list);
     }

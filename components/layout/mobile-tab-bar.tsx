@@ -25,7 +25,19 @@ export function MobileTabBar({
 }) {
   const [open, setOpen] = useState(false);
   const badge = alertCount > 9 ? "9+" : String(alertCount);
-  const isActive = (href: string) => isHrefActive(activeHref, href);
+  const isActive = (href: string) => {
+    if (href === "/limits") {
+      return (
+        activeHref === "/limits" ||
+        activeHref.startsWith("/limits/") ||
+        activeHref === "/thresholds" ||
+        activeHref.startsWith("/thresholds/") ||
+        activeHref === "/alerts" ||
+        activeHref.startsWith("/alerts/")
+      );
+    }
+    return isHrefActive(activeHref, href);
+  };
   const moreActive = more.some((m) => isActive(m.href));
 
   return (

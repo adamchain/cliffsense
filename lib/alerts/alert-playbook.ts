@@ -27,7 +27,7 @@ export type AlertPlaybook = {
 };
 
 export const REPORT_BY_10TH =
-  "The reporting clock depends on the program. SSI and Extra Help: by the 10th of the month after the change month. Medicaid (ABD, MAGI, waiver, MAWD, and QMB): within 10 days. SSDI and DAC: promptly, with no fixed calendar date. SNAP simplified reporting: within 10 days only if gross income exceeds 130% FPL, an ABAWD's hours drop below 80 a month, or gambling winnings are $4,750 or more. A notice with its own due date controls.";
+  "The reporting clock depends on the program. SSI financial changes are due by the 10th of the month after the change. A disability review is a separate notice. SSDI and DAC work reports are prompt. Medicaid, waiver, MAWD, and QMB each have their own 10-day change report and their own renewal. Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP interim reports depend on the household category and are not calculated from the renewal. A notice with its own due date controls.";
 
 export const APPEAL_AND_CONTINUE =
   "If an adverse notice has already issued, appeal by the date on that notice. Request continued cash, medical coverage, or services by any shorter continuation deadline on the same notice — it is often earlier than the appeal deadline. File a new application in parallel if reopening is uncertain.";
@@ -445,9 +445,13 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "QMB income limit",
     ["QMB"],
     "The 2026 QMB income limit is $1,350 a month for one person and $1,824 for a couple. That figure already includes the $20 disregard. Income equal to the limit still qualifies. QMB pays Medicare premiums and cost-sharing and is separate from full Medicaid.",
-    "Report the change to the County Assistance Office within 10 days. A waiver enrollment does not block QMB.",
+    "Report this QMB change to the County Assistance Office within 10 days. This notice is about QMB only.",
     {
       personaId: "george_gift_qmb_lis",
+      effectiveDateNote:
+        "QMB income and resource changes are due within 10 days. Use the date on the QMB notice. This deadline is only for QMB.",
+      alternativePathway:
+        "If QMB cannot continue, ask the County Assistance Office about SLMB or QI. Keeping QMB can deem Extra Help. Losing QMB can mean a separate Extra Help application.",
       documents: [
         "Medicare card and premium notices",
         "Income and resource proof",
@@ -462,8 +466,14 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "QMB resource limit",
     ["QMB"],
     "The 2026 QMB resource limit is $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB.",
-    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
-    { personaId: "george_gift_qmb_lis" },
+    "Report a QMB resource change to the County Assistance Office within 10 days. Do not give assets away to get under the limit. This notice is about QMB only.",
+    {
+      personaId: "george_gift_qmb_lis",
+      effectiveDateNote:
+        "QMB resource changes are due within 10 days. Use the date on the QMB notice. This deadline is only for QMB.",
+      alternativePathway:
+        "If QMB cannot continue, ask the County Assistance Office about SLMB or QI. Keeping QMB can deem Extra Help. Losing QMB can mean a separate Extra Help application.",
+    },
   ),
 
   extra_help_income: pb(
@@ -519,10 +529,10 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
 
   snap_sar_renewal: pb(
     "snap_sar_renewal",
-    "SNAP semi-annual report or recertification",
+    "SNAP interim report or recertification",
     ["SNAP"],
-    "A missed semi-annual report (closure code 440) suspends SNAP until the form is submitted. The semi-annual report has no interview. Closure code 474 means the certification period ended.",
-    "Submit the semi-annual report or recertification by the date on the notice. Upload income, household, and shelter proof. Call the County Assistance Office to confirm the form was received.",
+    "A missed PA 564 (closure code 440) suspends SNAP until that form is submitted. Closure code 474 means the certification period ended. Submitting one does not complete the other. ESAP households with no earned income do not file PA 564.",
+    "Submit the form named on the notice by the date printed on that notice. Do not calculate a SAR due date from the renewal. Upload the proof that form asks for, then confirm the County Assistance Office received this obligation only.",
     {
       closureCodes: ["440", "474"],
       documents: [

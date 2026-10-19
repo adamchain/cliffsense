@@ -58,6 +58,8 @@ export function FeedbackWidget() {
     }
   }
 
+  if (pathname === "/advisor" || pathname.startsWith("/advisor/")) return null;
+
   return (
     <div className="pointer-events-none fixed bottom-24 right-4 z-[45] flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
       {open && (

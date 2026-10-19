@@ -32,7 +32,7 @@ const END_2025 = new Date("2025-12-31T23:59:59.999Z");
  * reporting has only three 10-day triggers.
  */
 const PA_REPORTING_NOTE =
-  " Reporting clocks differ by program. SSI and Extra Help: by the 10th of the month after the change. Medicaid: within 10 days. SSDI and DAC: promptly. SNAP simplified reporting: within 10 days only when gross income exceeds 130% FPL, ABAWD hours drop below 80 a month, or gambling winnings are $4,750 or more.";
+  " Reporting clocks differ by program. A renewal date is not the only deadline. SSI financial changes are due by the 10th of the next month; a disability review is a separate notice. SSDI and DAC work reports are prompt. Medicaid financial renewal, a waiver service review, and QMB are separate. Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP PA 564 applies to ordinary SAR households and to elderly or disabled households with earned income. ESAP households with no earned income do not file PA 564.";
 
 /** Suffix appended to every estimated (non-determinative) limit description. */
 const ESTIMATE_NOTE =

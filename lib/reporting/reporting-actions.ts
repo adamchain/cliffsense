@@ -126,7 +126,7 @@ export function buildReportingActions(input: {
         severity: "report",
         title: titles[wageKind],
         detail:
-          "Compare gross pay stubs to this deposit, then report on each program's own clock. SNAP is listed only when gross income is over 130% FPL.",
+          "Compare gross pay stubs to this deposit. Each program below has its own reporting requirement. Reporting to one agency does not complete the others. SNAP is listed only when gross income is over 130% of poverty.",
         deadlineISO: soonestReportingDue(
           wageRules.map((r) => r.program),
           now,

@@ -418,10 +418,11 @@ body {
     color: inherit;
   }
   .cs-pa-chip {
-    width: 14px;
-    height: 12px;
+    width: 19px;
+    height: 12.5px;
+    border-radius: 2px;
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.35);
     flex: 0 0 auto;
-    color: #e8c4a0;
   }
   .cs-wcard-label span {
     overflow: hidden;
@@ -512,6 +513,31 @@ body {
   .cs-wcard--state .cs-wcard-num span {
     opacity: 0.72;
     color: inherit;
+  }
+  .cs-wcard-obs {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .cs-wcard-obs-k {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .cs-wcard-obs .is-sooner {
+    color: #ffe08a;
+  }
+  .cs-wcard-obs .is-sooner .cs-wcard-obs-k {
+    color: #ffe08a;
   }
   .cs-wcard-bar {
     height: 10px;

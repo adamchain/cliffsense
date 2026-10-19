@@ -65,7 +65,7 @@ export function SsaSeal({ className }: { className?: string }) {
   );
 }
 
-/** Soft filled keystone — no red outline. Uses currentColor for card theming. */
+/** Soft filled keystone — watermark behind Pennsylvania program cards. */
 export function PaKeystoneMark({ className }: { className?: string }) {
   return (
     <svg
@@ -105,18 +105,20 @@ export function PaKeystoneMark({ className }: { className?: string }) {
   );
 }
 
-/** Compact keystone chip for card headers. */
-export function PaKeystoneChip({ className }: { className?: string }) {
+/** Top-left state mark, framed like the flag: white plate, filled silhouette. */
+export function PaStateChip({ className }: { className?: string }) {
   return (
     <svg
-      className={className}
-      viewBox="0 0 18 16"
+      className={className ? `cs-pa-chip ${className}` : "cs-pa-chip"}
+      viewBox="0 0 26 16"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
+      <rect width="26" height="16" rx="2" fill="#fff" />
       <path
-        d="M2.5 3.2 C6.5 1.2 11.5 1.2 15.5 3.2 L13.2 13.2 C10.2 14.4 7.8 14.4 4.8 13.2 Z"
-        fill="currentColor"
+        d="M8,8 L137,8 L138,90 L890,88 L905,100 L910,122 L935,130 L942,155 L945,190 L960,215 L985,228 L1005,242 L985,260 L970,290 L950,315 L935,335 L940,365 L925,390 L920,420 L940,440 L945,470 L965,495 L985,520 L1000,540 L980,550 L955,565 L935,580 L925,600 L895,610 L860,615 L840,625 L820,640 L8,640 Z"
+        fill="#123056"
+        transform="translate(3.06 1.7) scale(0.01994) translate(-8 -8)"
       />
     </svg>
   );

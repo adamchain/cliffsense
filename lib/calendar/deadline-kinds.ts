@@ -69,14 +69,20 @@ export function isCaseClockKind(kind: string | null | undefined): boolean {
   return CASE_CLOCK_KINDS.includes(kind as DeadlineKind);
 }
 
-/** Playbook to attach when opening this clock. */
+/** Playbook to attach when opening this clock. The plan follows this event's program. */
 export function playbookIdForDeadlineKind(kind: string, program?: string | null): string {
   const programKey = (program ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (programKey === "QMB") {
+    if (kind === "appeal" || kind === "continued_benefits") return "appeal_continued_benefits";
+    return "qmb_income_resources";
+  }
   switch (kind) {
     case "renewal":
     case "redetermination":
     case "sar":
-      return programKey === "SNAP" ? "snap_sar_renewal" : "medicaid_renewal_packet";
+      if (programKey === "SNAP") return "snap_sar_renewal";
+      if (programKey === "MEDICAIDWAIVER") return "waiver_income_2982";
+      return "medicaid_renewal_packet";
     case "interview":
       return "snap_interview";
     case "verification":
@@ -86,7 +92,7 @@ export function playbookIdForDeadlineKind(kind: string, program?: string | null)
     case "cdr":
       return "ssdi_medical_improvement";
     case "assessment":
-      return "waiver_income_2982";
+      return programKey === "MEDICAIDWAIVER" || !programKey ? "waiver_income_2982" : "calendar_notice";
     case "appeal":
     case "continued_benefits":
       return "appeal_continued_benefits";

@@ -19,11 +19,11 @@ const jakarta = localFont({
 export const metadata: Metadata = {
   title: "Bene-Watch",
   description:
-    "Bene-Watch helps families keep benefits on track. The benefit-continuity watchdog for households, caregivers, and the organizations that support them.",
+    "Bene-Watch helps families track renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof. Your renewal date is only one deadline.",
   icons: {
-    icon: "/benewatch-icon.png",
-    shortcut: "/benewatch-icon.png",
-    apple: "/benewatch-icon.png",
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

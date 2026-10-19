@@ -31,20 +31,28 @@ function isWageEvent(title: string, kind: string): boolean {
 }
 
 function isRenewalEvent(title: string, kind: string): boolean {
-  return kind === "renewal" || kind === "sar" || /\brenewal|redetermination|recert/i.test(title);
+  if (kind === "sar") return false;
+  return kind === "renewal" || /\brenewal|redetermination|recert/i.test(title);
 }
 
 function kindHeadline(kind: string, wage: boolean, renewal: boolean): { headline: string; summary: string } {
   switch (kind) {
+    case "sar":
+      return {
+        headline: "Prep the interim report",
+        summary:
+          "Use the date on this notice. Submitting this report does not complete the renewal, and the renewal date does not complete this report.",
+      };
+    case "verification":
+      return {
+        headline: "Prep the requested documents",
+        summary:
+          "This due date is on the document request. Sending the documents does not complete a renewal or interim report.",
+      };
     case "interview":
       return {
         headline: "Prep for the interview",
         summary: "Update the phone number on COMPASS, upload proofs first, and request a reschedule if the agency used an old number.",
-      };
-    case "verification":
-      return {
-        headline: "Prep the verification packet",
-        summary: "Send complete statements (every page), not screenshots. Call the CAO to confirm what is still missing.",
       };
     case "premium":
       return {
@@ -54,7 +62,8 @@ function kindHeadline(kind: string, wage: boolean, renewal: boolean): { headline
     case "cdr":
       return {
         headline: "Prep the medical review",
-        summary: "Return CDR forms by the deadline, list providers, and keep treating-source records for the whole review period.",
+        summary:
+          "Return the medical forms by the date on the CDR notice. Completing this review does not complete a financial redetermination.",
       };
     case "assessment":
       return {

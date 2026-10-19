@@ -199,7 +199,7 @@ export default function HelpPage() {
           <Tip>
             Already set up but the dashboard looks empty? Make sure at least one bank is{" "}
             <Link href="/transactions" className={linkCls}>connected</Link> and your{" "}
-            <Link href="/limits#programs" className={linkCls}>programs</Link> are confirmed — limits only
+            <Link href="/limits/programs" className={linkCls}>programs</Link> are confirmed — limits only
             appear once both are in place.
           </Tip>
         </Section>
@@ -296,7 +296,7 @@ export default function HelpPage() {
         {/* LIMITS */}
         <Section id="limits" icon={<IconTarget size={18} stroke={1.8} />} title="Limits">
           <p>
-            <Link href="/limits#limits" className={linkCls}>Limits</Link> lists the reference limits for
+            <Link href="/limits" className={linkCls}>Limits</Link> lists the reference limits for
             your enrolled programs, plus any you add yourself. Each shows its dollar cap, source, and
             current status.
           </p>
@@ -362,7 +362,7 @@ export default function HelpPage() {
           </ul>
           <p>You see them in the app, and you can get an email as soon as one is created:</p>
           <ul className="space-y-2">
-            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/limits#alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]">In-app</span> — the bell and the <Link href="/limits/alerts" className={linkCls}>Alerts</Link> section; acknowledge or resolve each one.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]">Email</span> — choose which alerts to receive in <Link href="/settings#notifications" className={linkCls}>Settings</Link>. A note goes out when that alert is created.</li>
           </ul>
           <Tip>

@@ -32,7 +32,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Needs-based federal cash for people who are 65+, blind, or disabled with very limited income and resources.",
     reporting:
-      "Report income, resource, living-arrangement, and household changes by the 10th of the month after the change. SSI recipients must also generally report monthly wages.",
+      "Report income, resources, living arrangements, and household changes by the 10th of the month after the change. Report wages by the 10th of each month. A financial redetermination and a continuing disability review are separate notices.",
     officialUrl: "https://www.ssa.gov/ssi/",
   },
   DAC: {
@@ -43,7 +43,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Title II benefits on a parent’s record for an adult whose disability began before age 22. Separate from own-record SSDI. Marriage and SGA can affect eligibility.",
     reporting:
-      "Report work, marital-status, and medical-improvement changes to SSA. DAC is not created by a POA.",
+      "Report work and marriage promptly. A continuing disability review is a separate notice. DAC is not created by a POA.",
     officialUrl: "https://www.ssa.gov/benefits/disability/",
   },
   SSDI: {
@@ -54,7 +54,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "An insurance benefit you earned through work. No income or asset limit to receive it — earnings limits (SGA, TWP) govern whether you're still considered disabled.",
     reporting:
-      "Report any work start/stop, wage changes, and changes in your condition. There's no asset test.",
+      "Report work and earnings promptly. There is no asset test and no monthly wage calendar. A continuing disability review arrives on its own notice.",
     officialUrl: "https://www.ssa.gov/disability/",
   },
   SNAP: {
@@ -65,7 +65,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Food assistance. PA uses Broad-Based Categorical Eligibility — a 200% FPL gross-income limit and no asset test for most households.",
     reporting:
-      "Report changes that push you over limits. Semi-Annual Reporting (SAR) every 6 months and annual recertification.",
+      "Ordinary households file PA 564 between recertifications. Elderly or disabled households with earned income still file that interim report on a 24-month certification. ESAP households with no earned income do not. Disability alone is not an exemption.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/SNAP.aspx",
   },
   MEDICAID: {
@@ -87,7 +87,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Full Medical Assistance for aged, blind, or disabled adults. SSI-related counting. 2026 income is $1,330 a month for one person and $1,804 for two. Resources are $2,000 for one person and $3,000 for two or more, or $8,000 when Medicaid was entered through a waiver.",
     reporting:
-      "Report income, assets, household, work, and disability/care-need changes to COMPASS/CAO within 10 days. Annual renewal packet.",
+      "Report income, resources, household, and coverage changes within 10 days. The annual financial renewal is not a waiver service review, a QMB renewal, or an Extra Help application.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MEDICAIDMAGI: {
@@ -109,7 +109,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Home- and community-based waiver (including CHC). 2026 gross income limit $2,982 a month. Income equal to that still qualifies. Resources are $8,000 for one person. Neither limit is used when the person receives SSI.",
     reporting:
-      "Report income, asset, employment, household, and care-need changes within 10 days.",
+      "Report financial and household changes within 10 days. The annual service or level-of-care review is a separate obligation from the financial renewal. SSI can establish financial eligibility and still leave that service review in place.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MAWD: {
@@ -131,7 +131,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Medicare Savings Program that pays Medicare Part A and Part B premiums and cost-sharing. Separate from full Medicaid. 2026 income is $1,350 a month for one person and $1,824 for a couple. Resources are $9,950 or $14,910.",
     reporting:
-      "Report income and resource changes within 10 days. Waiver enrollment does not block QMB.",
+      "Report QMB income and resource changes within 10 days. QMB renews on its own notice. It is not full Medicaid and it does not renew a waiver. Keeping QMB deems Extra Help.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   EXTRAHELP: {
@@ -142,7 +142,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Helps pay Medicare Part D prescription costs. 2026 income must be below $2,015 a month for one person and below $2,725 for a couple. Resources must be below $18,090 or $36,100. Automatic if you have Medicaid, QMB, or SSI.",
     reporting:
-      "Report income, resource, marital-status, address, and household changes to SSA by the 10th of the month after the change.",
+      "Medicaid, SSI, or QMB, SLMB, or QI deems Extra Help, so there is no separate application while that benefit continues. An Extra Help-only case reports its own changes to SSA. That report does not renew Medicaid or QMB.",
     officialUrl: "https://www.ssa.gov/medicare/part-d-extra-help",
   },
   TANF: {
