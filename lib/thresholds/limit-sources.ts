@@ -34,7 +34,7 @@ export function buildLimitSources(
     if (t.amountCents >= 0) continue;
     if (!INCOME_CATEGORIES.has(t.userCategory)) continue;
     const amountCents = Math.abs(t.amountCents);
-    let included = !t.pending && !t.excludedFromThresholds;
+    const included = !t.pending && !t.excludedFromThresholds;
     let note: string | null = null;
     if (t.pending) note = "Pending — not in the total yet.";
     else if (t.excludedFromThresholds) note = "Marked to leave out of limits.";
