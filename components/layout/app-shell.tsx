@@ -8,6 +8,8 @@ import { MobileNavDrawer } from "./mobile-nav-drawer";
 import { TopbarControls } from "./topbar-controls";
 import { SectionTabs } from "./section-tabs";
 import { GlobalAskBar } from "./global-ask-bar";
+import { SidebarAccount } from "./sidebar-account";
+import type { BeneficiarySwitcherAccount } from "@/components/dashboard/beneficiary-switcher";
 import {
   ALL_SECTIONS,
   PRIMARY_HREFS,
@@ -39,6 +41,8 @@ function SidebarGroup({
     <div>
       <Link
         href={section.href}
+        target={section.newTab ? "_blank" : undefined}
+        rel={section.newTab ? "noopener noreferrer" : undefined}
         className={`cs-macos-sidebar-item ${parentActive ? "cs-macos-sidebar-item--active" : ""}`}
       >
         <Icon size={16} stroke={parentActive ? 2 : 1.75} aria-hidden />
@@ -82,6 +86,9 @@ export function AppShell({
   children,
   userName,
   userInitials,
+  beneficiaryId = null,
+  beneficiaryName,
+  accounts = [],
   activeHref,
   alertCount = 0,
   isAdmin = false,
@@ -89,6 +96,9 @@ export function AppShell({
   children: ReactNode;
   userName: string;
   userInitials: string;
+  beneficiaryId?: string | null;
+  beneficiaryName?: string;
+  accounts?: BeneficiarySwitcherAccount[];
   activeHref: string;
   alertCount?: number;
   isAdmin?: boolean;
@@ -150,6 +160,14 @@ export function AppShell({
               alertCount={alertCount}
             />
           )}
+          <SidebarAccount
+            userName={userName}
+            initials={userInitials}
+            beneficiaryId={beneficiaryId}
+            beneficiaryName={beneficiaryName ?? userName}
+            accounts={accounts}
+            settingsActive={settingsActive}
+          />
         </div>
       </nav>
 
@@ -176,28 +194,26 @@ export function AppShell({
                 </span>
               )}
             </Link>
-            <Link
-              href="/settings"
-              className={`flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[var(--shadow-cs-card)] hover:text-[var(--color-cs-brand)] ${
-                settingsActive ? "text-[var(--color-cs-brand)]" : "text-[var(--color-cs-text)]"
-              }`}
-              aria-label="Settings"
-              aria-current={settingsActive ? "page" : undefined}
-            >
-              <IconSettings size={19} stroke={1.7} />
-            </Link>
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cs-avatar)] text-[13px] font-bold text-white"
-              title={userName}
-            >
-              {userInitials}
-            </div>
           </div>
         </header>
 
         {/* Compact mobile utility row (search + overflow nav) */}
         <div className="flex items-center gap-2 px-4 pt-3 lg:hidden">
-          <MobileNavDrawer nav={drawerNav} activeHref={activeHref} alertCount={alertCount} />
+          <MobileNavDrawer
+            nav={drawerNav}
+            activeHref={activeHref}
+            alertCount={alertCount}
+            footer={
+              <SidebarAccount
+                userName={userName}
+                initials={userInitials}
+                beneficiaryId={beneficiaryId}
+                beneficiaryName={beneficiaryName ?? userName}
+                accounts={accounts}
+                settingsActive={settingsActive}
+              />
+            }
+          />
           {hideTopSearch ? null : (
             <div className="min-w-0 flex-1">
               <TopbarControls />

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { BrandLogo } from "@/components/brand/brand-logo";
@@ -17,10 +17,12 @@ export function MobileNavDrawer({
   nav,
   activeHref,
   alertCount = 0,
+  footer,
 }: {
   nav: NavItem[];
   activeHref: string;
   alertCount?: number;
+  footer?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -55,14 +57,16 @@ export function MobileNavDrawer({
                 <IconX size={18} stroke={1.8} />
               </button>
             </div>
-            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-6" aria-label="Main">
-              {nav.map(({ href, label, icon: Icon }) => {
+            <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 pb-2" aria-label="Main">
+              {nav.map(({ href, label, icon: Icon, newTab }) => {
                 const active = isActive(href);
                 const showCount = href === "/limits" && alertCount > 0;
                 return (
                   <Link
                     key={href}
                     href={href}
+                    target={newTab ? "_blank" : undefined}
+                    rel={newTab ? "noopener noreferrer" : undefined}
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-[14px] font-semibold transition-colors ${
                       active
@@ -86,6 +90,7 @@ export function MobileNavDrawer({
                 );
               })}
             </nav>
+            {footer ? <div className="px-3 pb-4">{footer}</div> : null}
           </div>
     </div>
   );

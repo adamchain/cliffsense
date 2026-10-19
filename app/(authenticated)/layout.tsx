@@ -4,6 +4,8 @@ import { AuthenticatedShell } from "@/components/layout/authenticated-shell";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { WalkthroughProvider } from "@/components/walkthrough/walkthrough-provider";
 import { countUnreadAlertsForUser } from "@/lib/alerts/unread-count";
+import { displayNameForBeneficiary } from "@/lib/beneficiaries/access";
+import { loadActiveBeneficiaryContext } from "@/lib/beneficiaries/active";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 
@@ -43,6 +45,15 @@ export default async function AuthenticatedGroupLayout({
   const shouldAutoStart =
     onboardingDone && !walkthroughRow?.walkthroughCompletedAt && !session.user.impersonatorId;
 
+  const people = await loadActiveBeneficiaryContext(session.user.id).catch(() => null);
+  const accounts = (people?.accounts ?? []).map((a) => ({
+    id: a._id.toString(),
+    name: displayNameForBeneficiary(a) || "Beneficiary",
+    roleLabel: a.roleLabel,
+  }));
+  const active = people?.active ?? null;
+  const beneficiaryName = active ? displayNameForBeneficiary(active) || display : display;
+
   return (
     <>
       {session.user.impersonatorId && (
@@ -51,7 +62,10 @@ export default async function AuthenticatedGroupLayout({
       <WalkthroughProvider shouldAutoStart={shouldAutoStart}>
         <AuthenticatedShell
           userName={display}
-          userInitials={initials(display, session.user.email ?? "")}
+          userInitials={initials(beneficiaryName, session.user.email ?? "")}
+          beneficiaryId={active?._id.toString() ?? null}
+          beneficiaryName={beneficiaryName}
+          accounts={accounts}
           alertCount={alertCount}
           isAdmin={Boolean(session.user.isAdmin) && !session.user.impersonatorId}
         >

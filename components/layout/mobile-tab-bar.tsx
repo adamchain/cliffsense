@@ -7,7 +7,7 @@ import { IconDots, IconX } from "@tabler/icons-react";
 import { isHrefActive } from "./nav-config";
 
 type IconCmp = ComponentType<{ size?: number; stroke?: number; className?: string; fill?: string }>;
-export type NavItem = { href: string; label: string; icon: IconCmp };
+export type NavItem = { href: string; label: string; icon: IconCmp; newTab?: boolean };
 
 /**
  * iOS-style frosted tab bar: primary destinations + More sheet for the rest.

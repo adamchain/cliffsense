@@ -98,9 +98,16 @@ export default async function SettingsPage() {
                 { href: "/transactions", label: "Linked banks" },
                 { href: "/reports", label: "Data & exports" },
                 { href: "/how-it-works", label: "Help & how it works" },
+                { href: "/guides", label: "Guides", newTab: true },
               ] as const
             ).map((item) => (
-              <Link key={item.href} href={item.href} className="cs-ios-row">
+              <Link
+                key={item.href}
+                href={item.href}
+                target={"newTab" in item && item.newTab ? "_blank" : undefined}
+                rel={"newTab" in item && item.newTab ? "noopener noreferrer" : undefined}
+                className="cs-ios-row"
+              >
                 <span className="flex-1 text-[16px] font-medium">{item.label}</span>
                 <span className="text-[16px] text-[var(--color-cs-text-muted)]" aria-hidden>
                   ›

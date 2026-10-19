@@ -125,6 +125,15 @@ export default function HelpPage() {
         early heads-up before you approach an income or asset limit. Here&apos;s how to set it up
         and get the most from it.
       </p>
+      <a
+        href="/guides"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="cs-btn cs-btn-secondary mt-4"
+      >
+        Open Guides
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
 
       <div className="mt-4 flex items-start gap-2 rounded-xl border border-[var(--color-cs-warning)]/30 bg-[var(--color-cs-warning-bg)] px-4 py-3 text-[13px] text-[var(--color-cs-text)]">
         <IconAlertTriangle size={18} stroke={1.8} className="mt-0.5 shrink-0 text-[var(--color-cs-warning)]" aria-hidden />

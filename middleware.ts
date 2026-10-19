@@ -48,6 +48,7 @@ export async function middleware(req: NextRequest) {
     const allowed =
       pathname === "/" ||
       pathname.startsWith("/about") ||
+      pathname.startsWith("/guides") ||
       pathname.startsWith("/resources") ||
       pathname.startsWith("/legal") ||
       pathname.startsWith("/application") ||

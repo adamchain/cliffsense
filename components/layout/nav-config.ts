@@ -1,16 +1,14 @@
 import type { ComponentType } from "react";
 import {
   IconBell,
-  IconBrain,
+  IconBook,
   IconCalendarEvent,
   IconClipboardList,
   IconFileExport,
   IconFileText,
   IconFolder,
-  IconHelpCircle,
   IconHome,
   IconMessageCircle,
-  IconPresentation,
   IconTarget,
   IconUsers,
   IconWallet,
@@ -24,10 +22,17 @@ type IconCmp = ComponentType<{
   "aria-hidden"?: boolean;
 }>;
 
-export type NavItem = { href: string; label: string; icon: IconCmp };
+export type NavItem = { href: string; label: string; icon: IconCmp; newTab?: boolean };
 /** A top-level nav group. `href` is where the group label links (its first/home
  *  child). `children`, when present, surface as a sub-tab strip (SectionTabs). */
-export type NavSection = { label: string; icon: IconCmp; href: string; children?: NavItem[] };
+export type NavSection = {
+  label: string;
+  icon: IconCmp;
+  href: string;
+  children?: NavItem[];
+  /** Open this destination in a new browser tab. */
+  newTab?: boolean;
+};
 
 /* ---------------------------------------------------------------------------
  * Sidebar order: Home → Calendar → Programs, then the rest.
@@ -56,9 +61,7 @@ export const PRIMARY_SECTIONS: NavSection[] = [
 export const UTILITY_SECTIONS: NavSection[] = [
   { label: "Vault", icon: IconFolder, href: "/vault" },
   { label: "Exports", icon: IconFileExport, href: "/reports" },
-  { label: "How it works", icon: IconBrain, href: "/how-it-works" },
-  { label: "Help", icon: IconHelpCircle, href: "/help" },
-  { label: "Site preview", icon: IconPresentation, href: "/landing" },
+  { label: "Guides", icon: IconBook, href: "/guides", newTab: true },
 ];
 
 export const ALL_SECTIONS: NavSection[] = [...PRIMARY_SECTIONS, ...UTILITY_SECTIONS];
@@ -100,7 +103,7 @@ export function flattenSections(sections: NavSection[]): NavItem[] {
   const out: NavItem[] = [];
   for (const s of sections) {
     if (s.children && s.children.length > 0) out.push(...s.children);
-    else out.push({ href: s.href, label: s.label, icon: s.icon });
+    else out.push({ href: s.href, label: s.label, icon: s.icon, newTab: s.newTab });
   }
   return out;
 }
