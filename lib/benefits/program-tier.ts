@@ -109,6 +109,7 @@ export type ProgramCardModel = {
     confidenceLabel: string;
     category: string;
   } | null;
+  obligations?: { label: string; value: string; sooner: boolean }[];
 };
 
 type RowLike = {

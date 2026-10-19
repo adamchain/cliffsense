@@ -124,6 +124,9 @@ export function PaStateChip({ className }: { className?: string }) {
   );
 }
 
+/** Name still used by the calendar and benefit detail headers. */
+export const PaKeystoneChip = PaStateChip;
+
 export function UsFlagMark({ className }: { className?: string }) {
   return (
     <svg

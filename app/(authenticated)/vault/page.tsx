@@ -12,7 +12,7 @@ import {
   slotAttention,
   vaultCaseContext,
 } from "@/lib/vault/categories";
-import { docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
+import { bufferFromStored, docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
 import { VaultBrowser } from "./vault-browser";
 
 function formatSize(bytes: number): string {
@@ -84,7 +84,7 @@ export default async function VaultPage() {
       for (const body of bodies) {
         const raw = body.content;
         if (!raw) continue;
-        const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
+        const buf = bufferFromStored(raw);
         const text = docxPlainText(buf).trim();
         if (text) previewById.set(body._id.toString(), text);
       }

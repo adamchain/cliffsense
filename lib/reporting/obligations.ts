@@ -37,6 +37,12 @@ export function normalizeConfidence(value: unknown): DateConfidence {
 export const RENEWAL_IS_ONE_DEADLINE =
   "Your renewal date is only one deadline. Some benefits also require reports between renewals or prompt notice when your circumstances change. Bene-Watch helps you track each obligation separately.";
 
+/** Same sentence, kept under the name older pages import. */
+export const OBLIGATION_EXPLANATION = RENEWAL_IS_ONE_DEADLINE;
+
+export const TRACKING_SCOPE =
+  "Bene-Watch helps families track renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof.";
+
 // ---------------------------------------------------------------------------
 // Obligation categories
 // ---------------------------------------------------------------------------
@@ -369,6 +375,11 @@ export function isSnapReportingCategory(value: unknown): value is SnapReportingC
   );
 }
 
+/** Alias used by the limits cards and the limits hub. */
+export function isSnapCategory(value: unknown): value is SnapReportingCategory {
+  return isSnapReportingCategory(value);
+}
+
 export type SnapCategoryRule = {
   label: string;
   who: string;
@@ -587,6 +598,124 @@ export function stageDone(stage: ObligationStage, s: StageState): boolean {
     case "acknowledged":
       return Boolean(s.acknowledgedAt);
   }
+}
+
+/** A saved reporting deadline, shaped the way the limits cards receive it. */
+export type StoredObligation = {
+  id: string;
+  program: string | null;
+  dueDate: string;
+  kind: string;
+  title: string;
+  sourceKey?: string | null;
+  confidence?: DateConfidence | null;
+  noticeRef?: string | null;
+  discrepancy?: string | null;
+  completed?: boolean;
+};
+
+export type CardObligationLine = {
+  label: string;
+  value: string;
+  sooner: boolean;
+};
+
+function formatObligationDay(iso: string): string {
+  return new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function datedObligation(noun: string, row: ObligationRow | null): string {
+  if (!row) return "";
+  return `${noun} · ${formatObligationDay(row.dueDate)} · ${DATE_CONFIDENCE_LABEL[row.confidence]}.`;
+}
+
+function interimFallback(code: string, snapCategory: SnapReportingCategory | null): string {
+  if (code === "SNAP") return SNAP_CATEGORY_RULES[snapCategory ?? "unknown"].interimNote;
+  const interim = obligationRuleFor(code)?.interim;
+  if (interim) return `${interim.label}. ${interim.frequency}`;
+  return "No interim report on file.";
+}
+
+/**
+ * Four short lines for one program card: renewal, interim report, change
+ * reporting, and document requests. Dates come only from saved obligations.
+ */
+export function obligationsForProgram(input: {
+  program: string;
+  snapCategory?: SnapReportingCategory | null;
+  stored: StoredObligation[];
+  enrolledPrograms?: string[];
+}): { lines: CardObligationLine[] } {
+  const code = programCodeKey(input.program);
+  const rows: ObligationRow[] = input.stored
+    .filter((row) => !row.completed)
+    .map((row) => ({
+      id: row.id,
+      program: row.program,
+      dueDate: row.dueDate.slice(0, 10),
+      kind: row.kind,
+      title: row.title,
+      confidence: normalizeConfidence(row.confidence),
+      sourceNote: row.noticeRef ?? row.discrepancy ?? null,
+      completedAt: null,
+    }));
+  const view = summarizeProgramObligations(code, rows, {
+    snapCategory: input.snapCategory ?? null,
+  });
+  const rule = view.rule;
+  const renewalDate = view.nextRenewal?.dueDate ?? null;
+  const interimDate = view.nextInterim?.dueDate ?? null;
+  const documentDate = view.documentsDue[0]?.dueDate ?? null;
+
+  return {
+    lines: [
+      {
+        label: OBLIGATION_CATEGORY_LABEL.renewal_review,
+        value: view.nextRenewal
+          ? datedObligation(
+              view.nextRenewal.kind === "cdr" ? "Disability review" : "Renewal",
+              view.nextRenewal,
+            )
+          : "None on file.",
+        sooner: false,
+      },
+      {
+        label: OBLIGATION_CATEGORY_LABEL.interim_report,
+        value: view.nextInterim
+          ? datedObligation("Interim report", view.nextInterim)
+          : interimFallback(code, input.snapCategory ?? null),
+        sooner: Boolean(interimDate && renewalDate && interimDate < renewalDate),
+      },
+      {
+        label: "Changes you must report and when",
+        value: rule
+          ? `${rule.changeReporting.deadline}. ${rule.changeReporting.what}`
+          : "Check the notice for what this program requires you to report.",
+        sooner: false,
+      },
+      {
+        label: OBLIGATION_CATEGORY_LABEL.document_request,
+        value: view.documentsDue[0]
+          ? datedObligation("Documents", view.documentsDue[0])
+          : "No document request on file.",
+        sooner: Boolean(documentDate && renewalDate && documentDate < renewalDate),
+      },
+    ],
+  };
+}
+
+export function cardObligationSummaries(view: {
+  lines: CardObligationLine[];
+}): CardObligationLine[] {
+  return view.lines.map((line) => {
+    const sentence = line.value.split(/(?<=\.)\s/)[0] ?? line.value;
+    const value = sentence.length > 170 ? `${sentence.slice(0, 167)}…` : sentence;
+    return { label: line.label, value, sooner: line.sooner };
+  });
 }
 
 /** One-line status for a single obligation. */

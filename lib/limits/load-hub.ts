@@ -20,8 +20,10 @@ export type LimitsHubData = {
   programRows: {
     program: string;
     nextRenewalDate?: Date | null;
-    nextReviewDate?: Date | null;
-    snapReportingCategory?: string | null;
+    renewalConfidence?: string | null;
+    nextInterimReportDate?: Date | null;
+    interimConfidence?: string | null;
+    reportingCategory?: string | null;
   }[];
   snapCategory: SnapReportingCategory | null;
 };
@@ -88,15 +90,17 @@ export async function loadLimitsHub(): Promise<LimitsHubData> {
     limitSources = payload.limitSources;
     programRows = (twpDoc?.benefitsEnrolled ?? []).map((b) => ({
       program: String(b.program),
-      nextRenewalDate: b.nextRenewalDate as Date | null | undefined,
-      nextReviewDate: b.nextReviewDate as Date | null | undefined,
-      snapReportingCategory: (b.snapReportingCategory as string | null | undefined) ?? null,
+      nextRenewalDate: b.nextRenewalDate ?? null,
+      renewalConfidence: b.renewalConfidence ?? null,
+      nextInterimReportDate: b.nextInterimReportDate ?? null,
+      interimConfidence: b.interimConfidence ?? null,
+      reportingCategory: b.reportingCategory ?? null,
     }));
     const ageFromDob = ageFromDateOfBirth(twpDoc?.dateOfBirth as Date | undefined);
     policyScreenInitial = coercePolicyScreen(twpDoc?.policyScreen, ageFromDob);
   }
 
-  const category = programRows.find((b) => b.program === "SNAP")?.snapReportingCategory;
+  const category = programRows.find((b) => b.program === "SNAP")?.reportingCategory;
   return {
     beneficiaryId,
     reportingActions,

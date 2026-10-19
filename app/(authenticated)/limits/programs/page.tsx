@@ -1,5 +1,13 @@
-import { ProgramsForm } from "@/app/(authenticated)/settings/programs-form";
+import { ProgramsForm, type EnrollmentDates } from "@/app/(authenticated)/settings/programs-form";
 import { loadLimitsHub } from "@/lib/limits/load-hub";
+import { isSnapCategory, normalizeConfidence } from "@/lib/reporting/obligations";
+
+function isoDate(value: Date | null | undefined): string | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 10);
+}
 
 export default async function LimitsProgramsPage() {
   const hub = await loadLimitsHub();
@@ -15,19 +23,18 @@ export default async function LimitsProgramsPage() {
           <ProgramsForm
             beneficiaryId={hub.beneficiaryId}
             initialPrograms={hub.programRows.map((b) => b.program)}
-            initialRenewals={Object.fromEntries(
+            initialDates={Object.fromEntries(
               hub.programRows.map((b) => [
                 b.program,
-                b.nextRenewalDate ? new Date(b.nextRenewalDate).toISOString().slice(0, 10) : null,
+                {
+                  renewal: isoDate(b.nextRenewalDate),
+                  renewalConfidence: normalizeConfidence(b.renewalConfidence),
+                  interim: isoDate(b.nextInterimReportDate),
+                  interimConfidence: normalizeConfidence(b.interimConfidence),
+                  reportingCategory: isSnapCategory(b.reportingCategory) ? b.reportingCategory : null,
+                } satisfies EnrollmentDates,
               ]),
             )}
-            initialReviews={Object.fromEntries(
-              hub.programRows.map((b) => [
-                b.program,
-                b.nextReviewDate ? new Date(b.nextReviewDate).toISOString().slice(0, 10) : null,
-              ]),
-            )}
-            initialSnapCategory={hub.snapCategory}
           />
         </div>
       ) : (

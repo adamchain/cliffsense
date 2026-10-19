@@ -6,6 +6,23 @@ export function isDocxFile(filename: string, mimeType: string): boolean {
   return filename.toLowerCase().endsWith(".docx") || mimeType === DOCX_MIME;
 }
 
+/** Turn a stored file body into a Node buffer. Mongoose lean() can return a BSON Binary. */
+export function bufferFromStored(content: unknown): Buffer {
+  if (Buffer.isBuffer(content)) return content;
+  if (content instanceof Uint8Array) return Buffer.from(content);
+  if (content && typeof content === "object") {
+    const record = content as { value?: unknown; buffer?: unknown; data?: unknown };
+    if (typeof record.value === "function") {
+      const bytes = (record.value as (asRaw?: boolean) => Uint8Array | string)(true);
+      return typeof bytes === "string" ? Buffer.from(bytes, "binary") : Buffer.from(bytes);
+    }
+    if (Buffer.isBuffer(record.buffer)) return record.buffer;
+    if (record.buffer instanceof Uint8Array) return Buffer.from(record.buffer);
+    if (Array.isArray(record.data)) return Buffer.from(record.data);
+  }
+  return Buffer.alloc(0);
+}
+
 /** First plain-text lines of a .docx, for the vault card preview. */
 export function docxPlainText(buf: Buffer, maxChars = 420): string {
   const xml = readZipEntry(buf, "word/document.xml");

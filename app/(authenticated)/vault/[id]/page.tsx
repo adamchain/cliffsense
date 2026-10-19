@@ -6,7 +6,7 @@ import VaultDocument from "@/lib/db/models/Document";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import { IconDownload } from "@tabler/icons-react";
 import { vaultCategoryLabel, vaultSlotLabel } from "@/lib/vault/categories";
-import { docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
+import { bufferFromStored, docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -42,7 +42,7 @@ export default async function VaultDetailPage({
   const isImage = doc.mimeType.startsWith("image/");
   const isPdf = doc.mimeType === "application/pdf";
   const isDocx = isDocxFile(doc.filename, doc.mimeType);
-  const docxPreview = isDocx ? docxPlainText(Buffer.isBuffer(doc.content) ? doc.content : Buffer.from(doc.content)) : "";
+  const docxPreview = isDocx ? docxPlainText(bufferFromStored(doc.content)) : "";
 
   return (
     <>
