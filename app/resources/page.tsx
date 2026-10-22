@@ -135,7 +135,7 @@ export default function ResourcesPage() {
           {
             label: "SNT cash into a personal bank account",
             value: "Counts",
-            note: "Money inside a qualifying SNT is usually excluded. Cash deposited to checking/savings is unearned income that month and a resource if kept into the next month. Prefer trustee-to-vendor payment.",
+            note: "For SSI, money inside a qualifying SNT is usually excluded as a resource. Cash deposited to checking or savings is generally unearned income that month. This SSI treatment is not a rule for every other program.",
           },
           {
             label: "Shelter paid to a vendor (ISM)",
@@ -145,7 +145,7 @@ export default function ResourcesPage() {
           {
             label: "Food / non-shelter paid to a vendor",
             value: "$0 impact",
-            note: "Groceries, internet, phone, cable, tuition, clothing. Fully excluded — SSA removed food from In-Kind Support & Maintenance effective Sept 30, 2024 (89 FR 21246).",
+            note: "For SSI, food and many non-shelter vendor payments have been outside in-kind support since Sept 30, 2024 (89 FR 21246). That does not decide Medicaid or other programs, and it does not make every vendor payment benefit-safe.",
           },
         ]}
       />
@@ -154,9 +154,10 @@ export default function ResourcesPage() {
 
       <p className="mt-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
         Remember the formula, not the figure: <span className="font-medium text-[var(--color-cs-text)]">PMV = (⅓ × FBR) + $20</span>.
-        Only the FBR changes each January with the COLA, and the cap follows from it. The rule of thumb: an SNT should pay
-        vendors directly (never the beneficiary in cash), which limits any hit to the capped shelter reduction and makes
-        food and non-shelter payments cost nothing in benefits.
+        Only the FBR changes each January with the COLA, and the cap follows from it. These figures illustrate SSI only.
+        Cash paid to the beneficiary is generally treated differently from many direct vendor payments, and some direct
+        shelter payments can still reduce the SSI check. Other programs follow their own rules. Bene-Watch does not
+        decide whether a trust payment is permissible or whether it affects eligibility.
       </p>
 
       <p className="mt-3 text-[12px] text-[var(--color-cs-text-secondary)]">
@@ -166,6 +167,10 @@ export default function ResourcesPage() {
 
       <PolicyScreen />
 
+      <p className="mt-8 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+        The salary and trust examples below are SSI illustrations. They are not a determination, and they do not apply
+        automatically to Medicaid, SNAP, or another program.
+      </p>
       <SalarySntScenarios />
 
       <WorkPlanner />

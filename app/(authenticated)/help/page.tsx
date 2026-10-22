@@ -385,7 +385,7 @@ export default function HelpPage() {
           <ul className="space-y-2">
             <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/documents" className={linkCls}>Reports &amp; Docs</Link></span> — summaries you can review or hand to a counselor.</li>
             <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/reports" className={linkCls}>Exports</Link></span> — download your activity and limit history (e.g. for a redetermination packet).</li>
-            <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/vault" className={linkCls}>Vault</Link></span> — preset folders for identity and authority, Social Security, Medicare, Medicaid, SNAP, income, SNT/ABLE, and notices. Each row is a document the opening file asks for.</li>
+            <li><span className="font-semibold text-[var(--color-cs-text)]"><Link href="/vault" className={linkCls}>Vault</Link></span> — preset folders for identity and authority, Social Security, Medicare, Medicaid, SNAP, income, SNT/ABLE, and notices. The SNT folder includes a manual disbursement register. Each row is a document the opening file asks for.</li>
           </ul>
         </Section>
 
@@ -405,7 +405,8 @@ export default function HelpPage() {
             Managing benefits for a family member? From{" "}
             <Link href="/beneficiaries" className={linkCls}>Beneficiaries</Link> you can invite someone
             to view or help manage a beneficiary&apos;s information. Invites are sent by email and access
-            can be revoked at any time.
+            can be revoked at any time. A Benefit Monitor who can see a Special Needs Trust record still
+            does not become the trustee, and cannot start a trust payment from Bene-Watch.
           </p>
         </Section>
 
@@ -445,7 +446,7 @@ export default function HelpPage() {
             <Term name="QMB">A Medicare Savings Program that helps pay Medicare premiums and cost-sharing.</Term>
             <Term name="Waiver (HCBS / CHC)">Home- and community-based Medicaid that can confer full coverage above standard income limits.</Term>
             <Term name="FBR (Federal Benefit Rate)">The base SSI monthly payment — $994 for an individual in 2026. SSI pays the FBR minus your countable income.</Term>
-            <Term name="SNT (Special Needs Trust)">A trust that holds assets for a person with a disability without counting toward resource limits. How it <em>pays out</em> still matters — see ISM.</Term>
+            <Term name="SNT (Special Needs Trust)">A trust that holds assets for a person with a disability without counting toward resource limits. How it pays out can still matter. The Vault register records requests, approvals, payments, and proof. Bene-Watch does not hold the funds, serve as trustee, or decide eligibility. Cash paid to the beneficiary and a vendor payment are not the same thing, and one program&apos;s rule does not automatically apply to another.</Term>
             <Term name="ISM (In-Kind Support &amp; Maintenance)">Food or shelter someone else pays for. Shelter paid by a trust counts as income but is capped at the Presumed Maximum Value; food paid to a vendor no longer counts (since Sept 30, 2024). Cash to the beneficiary counts dollar-for-dollar.</Term>
             <Term name="PMV (Presumed Maximum Value)">The cap on how much ISM can reduce SSI: ⅓ of the FBR + $20 (≈ $351.33 in 2026). So a large rent payment from a trust lowers the check by only ~$331.33.</Term>
             <Term name="Plaid">The secure service that links your bank so balances and deposits can be read.</Term>

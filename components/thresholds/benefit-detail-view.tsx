@@ -661,8 +661,9 @@ export function BenefitDetailView({
                 Effect of payments coming from an SNT
               </h2>
               <p className="mb-2 text-[12.5px] text-[var(--color-cs-text-secondary)]">
-                How a Special Needs Trust pays out changes the SSI check differently. Use the
-                estimator before a distribution.
+                An SSI-only estimate of how a trust payment might change the check. It does not approve
+                a distribution or decide Medicaid or other programs. Cash to the beneficiary and a
+                vendor payment are not treated the same way, and some shelter payments can still affect SSI.
               </p>
               <SntEstimator compact />
             </div>

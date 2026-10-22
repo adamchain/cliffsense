@@ -44,6 +44,13 @@ export function RoleOnboardingForm() {
           instrument, an agency appointment, or another recognized authorization. One authorization
           does not cover every agency or account.
         </p>
+        <p className="text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+          If the person has a Special Needs Trust, a Benefit Monitor may help keep the disbursement
+          record: which trustee controls the trust, payment requests and decisions, proof of completed
+          payments, missing receipts, and follow-up that may need benefit review. Using Bene-Watch does
+          not make the Monitor the trustee, does not authorize a payment, and does not authorize
+          representation before a benefits agency.
+        </p>
         <div className="rounded-xl border border-[var(--color-cs-warning)]/35 bg-[var(--color-cs-warning-bg)] px-4 py-3">
           <p className="text-[13px] font-semibold text-[var(--color-cs-text)]">Critical SSA rule</p>
           <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">

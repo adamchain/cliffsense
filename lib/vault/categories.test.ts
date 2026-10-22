@@ -61,4 +61,18 @@ describe("vault folders", () => {
     expect(slotAttention(notice, ctx)).toBe("keep");
     expect(slotAttention(id, vaultCaseContext({}))).toBe("needed");
   });
+
+  it("keeps the legal trustee separate from the trust's financial institution", () => {
+    const folder = VAULT_FOLDERS.find((f) => f.id === "snt_able")!;
+    const trustee = folder.slots.find((s) => s.id === "trustee_record")!;
+    const bank = folder.slots.find((s) => s.id === "financial_institution")!;
+    const request = folder.slots.find((s) => s.id === "proposed_distribution")!;
+    const withTrust = vaultCaseContext({ screening: { snt: "exists" } });
+    const without = vaultCaseContext({});
+
+    expect(trustee.id).not.toBe(bank.id);
+    expect(slotAttention(request, withTrust)).toBe("keep");
+    expect(slotAttention(request, without)).toBe("optional");
+    expect(slotAttention(trustee, withTrust)).toBe("needed");
+  });
 });

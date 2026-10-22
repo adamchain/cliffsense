@@ -12,6 +12,11 @@ import {
   PARTNER_INTRO,
   POSITIONING_SHIFT,
   SITE_DISCLAIMER,
+  SNT_CORE_MESSAGE,
+  SNT_GAP,
+  SNT_MONITOR,
+  SNT_POINTS,
+  SNT_PROFESSIONAL,
 } from "@/components/landing/claims";
 import { continueDestination } from "@/lib/auth/continue-destination";
 
@@ -46,7 +51,11 @@ const CAPABILITIES = [
   },
   {
     title: "Support Authorized Caregivers",
-    body: "Give authorized parents, siblings, guardians, trustees, fiduciaries, and other representatives a structured way to manage benefits for another person.",
+    body: "Give authorized parents, siblings, guardians, trustees, fiduciaries, Benefit Monitors, and other representatives a structured way to keep the benefit record, including trust-payment history when caregiving or trustee responsibility changes.",
+  },
+  {
+    title: "Special Needs Trust records",
+    body: "An optional record of trust disbursements that may never appear in a personal bank account: requests, approvals, payments, payees, purposes, and supporting proof, with a flag when a distribution may need benefit review.",
   },
   {
     title: "Coordinate Multiple Programs",
@@ -67,6 +76,7 @@ const AUDIENCES = [
   "MAWD participants managing employment, premiums, and continued Medicaid.",
   "SNAP households managing interviews, recertifications, work rules, and evidence.",
   "Guardians, trustees, fiduciaries, authorized representatives, attorneys, advocates, and special-needs professionals assisting another person.",
+  "Families and Benefit Monitors keeping Special Needs Trust disbursements next to the public-benefit record.",
 ];
 
 const TRUST = [
@@ -193,6 +203,27 @@ export default async function AboutPage() {
           </div>
         </section>
 
+        <section className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl px-5 sm:px-6">
+            <h2 className="text-[26px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[32px]">
+              Trust records and the benefit record
+            </h2>
+            <div className="mt-5 space-y-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+              <p>{SNT_GAP}</p>
+              <p>{SNT_CORE_MESSAGE}</p>
+              <p>{SNT_MONITOR}</p>
+            </div>
+            <ul className="mt-6 space-y-3">
+              {SNT_POINTS.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-[15px] leading-relaxed text-[var(--color-cs-text)]">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-cs-brand)]" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         {/* What we're building */}
         <section className="border-b border-[var(--color-cs-border)] bg-gradient-to-b from-[#e8faef] to-[var(--color-cs-surface)] py-16 sm:py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-6">
@@ -252,6 +283,7 @@ export default async function AboutPage() {
               <p>{PARTNER_INTRO}</p>
               <p>{PARTNER_BODY}</p>
               <p>{PARTNER_CTA}</p>
+              <p>{SNT_PROFESSIONAL}</p>
             </div>
           </div>
         </section>

@@ -57,6 +57,22 @@ const beneficiarySchema = new Schema(
     policyScreen: { type: Schema.Types.Mixed, default: null },
     /** Case-opening answers from Benefit Monitor onboarding (authority, screening, identity extras). */
     opening: { type: Schema.Types.Mixed, default: null },
+    /**
+     * Optional Special Needs Trust profile. The legal trustee and the financial
+     * institution are separate. This does not connect to the trust's bank.
+     */
+    sntProfile: {
+      type: new Schema(
+        {
+          trustName: { type: String, default: "", trim: true, maxlength: 200 },
+          trusteeName: { type: String, default: "", trim: true, maxlength: 200 },
+          trusteeContact: { type: String, default: "", trim: true, maxlength: 300 },
+          financialInstitution: { type: String, default: "", trim: true, maxlength: 200 },
+        },
+        { _id: false },
+      ),
+      default: () => ({}),
+    },
     benefitsEnrolled: { type: [benefitEnrollmentSchema], default: [] },
     /** systemKeys of bundled system thresholds the user has detached (opted out of). */
     detachedThresholdKeys: { type: [String], default: [] },

@@ -416,7 +416,7 @@ export const DOC_BOOKS: GuideBook[] = [
                 items: [
                   {
                     name: "Vault",
-                    text: "[[/vault|Vault]] is the filing cabinet. Preset folders: Identity and authority, Social Security and SSI, Medicare and assistance, Medicaid / MAWD / HCBS, SNAP, Income / resources / household, SNT and ABLE, Notices / submissions / appeals, and Other. Each slot is a document the opening file asks for. A filed Word document can be previewed.",
+                    text: "[[/vault|Vault]] is the filing cabinet. Preset folders: Identity and authority, Social Security and SSI, Medicare and assistance, Medicaid / MAWD / HCBS, SNAP, Income / resources / household, SNT and ABLE, Notices / submissions / appeals, and Other. The SNT folder keeps the trust agreement, the legal trustee, the financial institution, and a manual disbursement register. A request or approval is not a completed payment. Bene-Watch does not connect to the trust’s bank. A filed Word document can be previewed.",
                   },
                   {
                     name: "Forms",
@@ -448,7 +448,7 @@ export const DOC_BOOKS: GuideBook[] = [
                   { name: "QMB", text: "Qualified Medicare Beneficiary. A Medicare Savings Program that pays Part A and Part B premiums and cost-sharing. It is not full Medicaid. Keeping it deems Extra Help." },
                   { name: "Waiver (HCBS / CHC)", text: "Home- and community-based Medicaid. The financial renewal and the annual service or level-of-care review are separate. SSI can establish financial eligibility and still leave the service review in place." },
                   { name: "SAR / PA 564", text: "The semi-annual report many SNAP households file between recertifications. It is a different deadline from the renewal." },
-                  { name: "SNT", text: "Special needs trust. Assets inside it are generally not countable resources. How a payment leaves the trust still matters for SSI." },
+                  { name: "SNT", text: "Special needs trust. Assets inside it are generally not countable resources. How a payment leaves the trust can still matter, and SSI rules are not the same as Medicaid or other programs. The [[/vault#snt|Vault register]] records the request, approval, payment, and proof. It does not move trust funds or decide eligibility." },
                   { name: "ISM", text: "In-kind support and maintenance. Shelter a trust pays to a vendor is income, capped at the presumed maximum value. Food paid to a vendor has not counted since September 30, 2024. Cash paid to the beneficiary counts dollar for dollar." },
                   { name: "PMV", text: "Presumed maximum value. One-third of the individual FBR plus $20, about $351.33 in 2026. A large rent payment from a trust lowers the SSI check by about $331.33, not by the whole rent." },
                   { name: "Plaid", text: "The service that links a bank so balances and deposits can be read. Sign-in happens on Plaid’s screen." },
@@ -601,7 +601,8 @@ export const DOC_BOOKS: GuideBook[] = [
                   "Social Security and SSI — benefit verification, award notices, work reports and receipts, continuing disability review.",
                   "Medicare and assistance — Parts A and B, the drug plan, QMB / SLMB / QI notices, Extra Help.",
                   "Medicaid, MAWD, and HCBS — the exact category notice, the renewal, the waiver service plan, MAWD premium and budget, Workers with Job Success.",
-                  "SNAP, income and household, SNT and ABLE, and notices, submissions, and appeals.",
+                  "SNAP, income and household, and notices, submissions, and appeals.",
+                  "SNT and ABLE — trust agreement, legal trustee, financial institution, payment requests, approvals, confirmations, invoices, and a manual disbursement register. A personal bank link does not import trust-account transactions.",
                 ],
               },
               {

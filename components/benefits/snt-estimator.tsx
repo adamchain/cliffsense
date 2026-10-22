@@ -53,8 +53,10 @@ export function SntEstimator({ compact }: { compact?: boolean } = {}) {
             Effect of payments coming from an SNT — {SSI_FBR_YEAR}
           </h2>
           <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">
-            Estimate how a single trust distribution affects the monthly SSI check. Informational only — real cases
-            also turn on living arrangement, deeming, and any state supplement.
+            An estimate of how one trust distribution might affect the monthly SSI check. It is not a determination,
+            and it does not apply automatically to Medicaid or other programs. Cash paid to the beneficiary is generally
+            treated differently from many direct vendor payments, and some direct shelter payments can still affect SSI.
+            Real cases also turn on living arrangement, deeming, and any state supplement.
           </p>
         </>
       ) : null}

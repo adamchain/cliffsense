@@ -211,7 +211,11 @@ export default function HowItWorksPage() {
             <span className="font-semibold text-[var(--color-cs-text)]">What it doesn&apos;t model:</span>{" "}
             asset exclusions (a home, one car, ABLE/SNT balances) and the DAC exclusion. That&apos;s
             why an asset bar can read high even when your countable resources are fine — read it as a
-            flag, not a verdict.
+            flag, not a verdict. A linked personal account does not receive Special Needs Trust
+            transactions. Those payments are entered by hand in the{" "}
+            <Link href="/vault#snt" className={linkCls}>Vault SNT register</Link>. Cash that does land
+            in the personal account can still be flagged for review. The register does not decide
+            whether a payment affects eligibility.
           </Tip>
         </Section>
 

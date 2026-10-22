@@ -12,6 +12,7 @@ import {
   IconShieldLock,
   IconUsers,
   IconArrowsShuffle,
+  IconReceipt,
 } from "@tabler/icons-react";
 import { HeroVideo } from "@/components/landing/hero-video";
 import { MarketingFooter, MarketingHeader } from "@/components/landing/marketing-chrome";
@@ -31,6 +32,14 @@ import {
   POSITIONING_SHIFT,
   RENEWAL_VS_REPORTING,
   SITE_DISCLAIMER,
+  SNT_CORE_MESSAGE,
+  SNT_HEADING,
+  SNT_LIMITS,
+  SNT_POINTS,
+  SNT_PROFESSIONAL,
+  SNT_SUBHEADING,
+  SNT_SUMMARY,
+  SNT_WORKFLOW,
   SUBMISSION_LIMIT,
 } from "@/components/landing/claims";
 
@@ -82,7 +91,7 @@ const STEP1 = [
   },
   {
     title: "Secure Evidence Vault",
-    body: "Organize notices, bank statements, pay stubs, award letters, tax records, leases, medical documentation, waiver records, and submission confirmations in one indexed location.",
+    body: "Organize notices, bank statements, pay stubs, award letters, tax records, leases, medical documentation, waiver records, submission confirmations, and — when a Special Needs Trust is part of the case — the trust agreement, trustee record, and disbursement proof.",
   },
   {
     title: "Authorized Caregiver Access",
@@ -97,7 +106,7 @@ const STEP2 = [
   },
   {
     title: "Changes flagged for review",
-    body: "With the beneficiary's consent and control, flag pay increases, reduced hours, deposits, inheritances, trust distributions, address changes, and work-reporting duties for the household to review.",
+    body: "With the beneficiary's consent and control, flag pay increases, reduced hours, deposits, inheritances, trust distributions, address changes, and work-reporting duties for the household to review. Trust payments that never appear in a personal bank account can be entered in the SNT register and marked for review.",
   },
   {
     title: "Program-by-program record",
@@ -120,7 +129,7 @@ const STEP3 = [
   },
   {
     title: "Caregiver Coordination",
-    body: "Assign responsibilities, maintain a shared record, and preserve essential knowledge when responsibility passes from one caregiver or fiduciary to another.",
+    body: "Assign responsibilities, maintain a shared record, and preserve essential knowledge when responsibility passes from one caregiver, Benefit Monitor, or trustee to another — including the trust-payment history, when a Special Needs Trust is part of the case.",
   },
 ];
 
@@ -133,7 +142,7 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   {
     icon: IconBell,
     title: "Financial-change alerts",
-    body: "With consent, flag wages, deposits, balances, gifts, inheritances, trust distributions, and work activity that may need review. An alert is a prompt to look, not a finding that benefits will change.",
+    body: "With consent, flag wages, deposits, balances, gifts, inheritances, trust distributions, and work activity that may need review. A distribution entered on the SNT register can be flagged for SSI or Medicaid review. An alert or a flag is a prompt to look, not a finding that benefits will change.",
   },
   {
     icon: IconArrowsShuffle,
@@ -143,7 +152,7 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   {
     icon: IconUsers,
     title: "Caregiver Continuity",
-    body: "Create a durable record that authorized parents, siblings, guardians, trustees, fiduciaries, and future caregivers can use without rebuilding years of benefit history.",
+    body: "Create a durable record that authorized parents, siblings, guardians, trustees, fiduciaries, Benefit Monitors, and future caregivers can use without rebuilding years of benefit history, including Special Needs Trust payment records when those are part of the file.",
   },
   {
     icon: IconFileText,
@@ -153,7 +162,12 @@ const TOOLS: { icon: Icon; title: string; body: string }[] = [
   {
     icon: IconFolder,
     title: "Secure Evidence Vault",
-    body: "Keep notices, documents, explanations, and confirmations needed to demonstrate what was required and what you submitted.",
+    body: "Keep notices, documents, explanations, and confirmations needed to demonstrate what was required and what you submitted. The optional SNT section holds the trust agreement, the legal trustee, the financial institution, and a manual disbursement register.",
+  },
+  {
+    icon: IconReceipt,
+    title: "Special Needs Trust records",
+    body: "Document trust payments that never hit the personal bank account: who was paid, how much, and the proof. You enter the records. Bene-Watch does not connect to the trust's bank or approve a distribution.",
   },
 ];
 
@@ -473,6 +487,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section id="snt-tracking" className="border-b border-[var(--color-cs-border)] bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 sm:px-6">
+          <p className="cs-eyebrow text-[var(--color-cs-brand)]">Optional Vault capability</p>
+          <h2 className="mt-2 text-[28px] font-bold tracking-[-0.4px] text-[var(--color-cs-text)] sm:text-[34px]">
+            {SNT_HEADING}
+          </h2>
+          <p className="mt-3 text-[18px] font-medium leading-snug text-[var(--color-cs-text)]">{SNT_SUBHEADING}</p>
+          <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-cs-text-secondary)]">{SNT_SUMMARY}</p>
+          <p className="mt-4 text-[16px] font-medium leading-relaxed text-[var(--color-cs-text)]">{SNT_CORE_MESSAGE}</p>
+          <ul className="mt-6 space-y-3">
+            {SNT_POINTS.map((item) => (
+              <li key={item} className="flex items-start gap-3 text-[15px] leading-relaxed text-[var(--color-cs-text)]">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-cs-brand)]" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">{SNT_WORKFLOW}</p>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--color-cs-text-muted)]">{SNT_LIMITS}</p>
+          <p className="mt-4 text-[14px] leading-relaxed text-[var(--color-cs-text-secondary)]">
+            Bene-Watch does not manage trust funds. It helps manage the information and benefit-continuity
+            responsibilities surrounding trust expenditures.
+          </p>
+          <Link
+            href="/vault#snt"
+            className="mt-5 inline-flex text-[14px] font-semibold text-[var(--color-cs-brand)] hover:underline"
+          >
+            Open SNT records in the Vault →
+          </Link>
+        </div>
+      </section>
+
       {/* Calendar + vault shots */}
       <section className="border-y border-[var(--color-cs-border)] bg-white px-5 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-2">
@@ -503,7 +549,9 @@ export default function LandingPage() {
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-cs-text-secondary)]">
               Keep the notices, documents, explanations, and confirmations needed to demonstrate what
-              was required and what you submitted.
+              was required and what you submitted. When a Special Needs Trust is part of the case, the
+              same Vault holds the trust agreement, the legal trustee, the financial institution, payment
+              requests, approvals, disbursements, and the proof.
             </p>
             <div className="mt-6 rounded-[22px] border border-[var(--color-cs-border)] bg-[var(--color-cs-surface)] p-2 shadow-[var(--shadow-cs-float)]">
               <Shot
@@ -526,6 +574,7 @@ export default function LandingPage() {
             <p>{PARTNER_INTRO}</p>
             <p>{PARTNER_BODY}</p>
             <p>{PARTNER_CTA}</p>
+            <p>{SNT_PROFESSIONAL}</p>
           </div>
           <p className="mt-6 text-[14px] leading-relaxed text-[var(--color-cs-text-muted)]">
             A demonstration or pilot describes intended use. It is not a measured result, and it

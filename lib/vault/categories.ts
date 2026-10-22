@@ -393,13 +393,27 @@ export const VAULT_FOLDERS: readonly VaultFolderDef[] = [
   {
     id: "snt_able",
     label: "SNT & ABLE",
-    hint: "The instrument, who controls it, and each distribution.",
+    hint: "Trust agreement, the legal trustee, the financial institution, and each disbursement. Optional, and entered by hand.",
     tint: "#FF2D55",
     slots: [
       {
         id: "trust_instrument",
-        label: "Trust document and trustee",
-        hint: "Governing instrument or certification, plus trustee name and contact.",
+        label: "Trust agreement",
+        hint: "Governing instrument or certification. This is the trust document, not the bank.",
+        when: ["snt", "trustee"],
+        kind: "proof",
+      },
+      {
+        id: "trustee_record",
+        label: "Legal trustee",
+        hint: "Who the trustee is and how to reach them. Kept separate from the financial institution.",
+        when: ["snt", "trustee"],
+        kind: "proof",
+      },
+      {
+        id: "financial_institution",
+        label: "Trust financial institution",
+        hint: "The bank or brokerage that holds the trust. Bene-Watch does not connect to it.",
         when: ["snt", "trustee"],
         kind: "proof",
       },
@@ -412,17 +426,38 @@ export const VAULT_FOLDERS: readonly VaultFolderDef[] = [
       },
       {
         id: "proposed_distribution",
-        label: "Proposed distribution",
-        hint: "Amount, payee, purpose, date, and whether cash will enter the personal account.",
-        when: ["snt", "trustee", "able", "ABLE"],
-        kind: "proof",
+        label: "Payment request",
+        hint: "A request only: amount, payee, purpose, and date. This is not proof the trust paid.",
+        when: ["snt", "trustee"],
+        kind: "keep",
+      },
+      {
+        id: "trustee_approval",
+        label: "Trustee approval",
+        hint: "The trustee’s approval or denial. Approval is not a completed payment.",
+        when: ["snt", "trustee"],
+        kind: "keep",
+      },
+      {
+        id: "payment_confirmation",
+        label: "Payment confirmation",
+        hint: "Evidence the disbursement was made: a trustee statement, confirmation, or cleared record.",
+        when: ["snt", "trustee"],
+        kind: "keep",
       },
       {
         id: "distribution_receipts",
-        label: "Receipts after a distribution",
-        hint: "Invoices, trustee records, and which expense category the payment was.",
+        label: "Invoices and receipts",
+        hint: "Vendor invoices, receipts, and the purpose of the payment.",
         when: ["snt", "trustee", "able", "ABLE"],
-        kind: "proof",
+        kind: "keep",
+      },
+      {
+        id: "benefit_review",
+        label: "Benefit-review notes",
+        hint: "A flag that a distribution may need SSI, Medicaid, or other review. Bene-Watch does not decide the outcome.",
+        when: ["snt", "trustee"],
+        kind: "keep",
       },
     ],
   },
@@ -589,7 +624,11 @@ export function vaultSlotLabel(slotId: string | null | undefined): string | null
 }
 
 export function slotAttention(slot: VaultSlot, ctx: VaultCaseContext): SlotAttention {
-  if (slot.kind === "keep") return "keep";
+  if (slot.kind === "keep") {
+    if (slot.when.length === 0 || slot.when.some((key) => ctx.active.has(key))) return "keep";
+    if (slot.when.some((key) => ctx.review.has(key))) return "review";
+    return "optional";
+  }
   if (slot.when.length === 0) return "needed";
   if (slot.when.some((key) => ctx.active.has(key))) return "needed";
   if (slot.when.some((key) => ctx.review.has(key))) return "review";
@@ -630,7 +669,7 @@ export const MONITORING_SOURCES: { id: string; label: string; detail: string; ca
     {
       id: "snt_ledgers",
       label: "SNT disbursement ledgers",
-      detail: "How the trust paid matters (cash vs. vendor shelter vs. food/excluded).",
+      detail: "Enter requests, approvals, and payments in the SNT register. A personal bank link does not receive trust-account transactions.",
       categoryId: "snt_able",
     },
     {

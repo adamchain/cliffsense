@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   IconAlertCircle,
   IconChevronLeft,
@@ -12,6 +12,8 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
+import { SntRegister } from "@/components/vault/snt-register";
+import type { SntDisbursementView, SntProfileView } from "@/lib/snt/record";
 import { VaultDocumentRow, VaultFileCard } from "./document-row";
 import { VaultAddFile } from "./vault-upload";
 
@@ -105,17 +107,40 @@ export function VaultBrowser({
   proofFiled,
   proofNeeded,
   screened,
+  canWrite,
+  sntProfile,
+  sntDisbursements,
 }: {
   beneficiaryId: string;
   folders: VaultFolderView[];
   proofFiled: number;
   proofNeeded: number;
   screened: boolean;
+  canWrite: boolean;
+  sntProfile: SntProfileView;
+  sntDisbursements: SntDisbursementView[];
 }) {
   const [view, setView] = useState<"cards" | "list">("cards");
   const [scope, setScope] = useState<"case" | "all">(screened ? "case" : "all");
   const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    function openFromHash() {
+      if (window.location.hash === "#snt") {
+        setScope("all");
+        setOpenId("snt_able");
+      }
+    }
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (openId !== "snt_able" || window.location.hash !== "#snt") return;
+    document.getElementById("snt")?.scrollIntoView({ block: "start" });
+  }, [openId]);
 
   const q = query.trim().toLowerCase();
 
@@ -158,6 +183,15 @@ export function VaultBrowser({
 
     return (
       <div>
+        {folder.id === "snt_able" ? (
+          <SntRegister
+            beneficiaryId={beneficiaryId}
+            canWrite={canWrite}
+            profile={sntProfile}
+            disbursements={sntDisbursements}
+            evidence={folder.docs.map((doc) => ({ id: doc.id, filename: doc.filename }))}
+          />
+        ) : null}
         {ordered.length === 0 && loose.length === 0 ? (
           <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
             {folder.id === "other" ? "Nothing filed here yet." : "No matching documents in this folder."}
