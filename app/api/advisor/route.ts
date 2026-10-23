@@ -37,6 +37,18 @@ function reqEnv(name: string): string | null {
   return v && v.trim() !== "" ? v : null;
 }
 
+/** Anthropic's own error text, so a bad key or missing workspace isn't hidden as a bare 502. */
+function anthropicErrorMessage(status: number, body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { error?: { message?: string } };
+    const message = parsed.error?.message?.trim();
+    if (message) return message.slice(0, 400);
+  } catch {
+    // Non-JSON body. Fall through to the status.
+  }
+  return `Upstream status ${status}`;
+}
+
 export async function POST(req: Request) {
   const apiKey = reqEnv("ANTHROPIC_API_KEY");
   if (!apiKey) {
@@ -67,6 +79,7 @@ export async function POST(req: Request) {
 
   const model = reqEnv("ANTHROPIC_MODEL") ?? "claude-sonnet-4-6";
   const maxTokens = Number(reqEnv("ANTHROPIC_MAX_TOKENS") ?? "1024");
+  const workspaceId = reqEnv("ANTHROPIC_WORKSPACE_ID");
 
   // Give the advisor read access to the user's own financial picture so it can
   // answer from real figures instead of deflecting to a screen. Best-effort —
@@ -94,13 +107,18 @@ export async function POST(req: Request) {
   // Stream the reply so the UI can render it as it's written, rather than
   // waiting for the whole message. We forward only the text deltas to the
   // client as a plain-text stream; usage is captured for logging at the end.
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    "x-api-key": apiKey,
+    "anthropic-version": "2023-06-01",
+  };
+  // Personal keys (sk-ant-usr-…) that aren't tied to one workspace are rejected
+  // unless this header names the workspace to bill.
+  if (workspaceId) headers["anthropic-workspace-id"] = workspaceId;
+
   const upstream = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
+    headers,
     body: JSON.stringify({
       model,
       max_tokens: Number.isFinite(maxTokens) ? maxTokens : 1024,
@@ -123,7 +141,7 @@ export async function POST(req: Request) {
     const text = await upstream.text().catch(() => "");
     console.error("advisor upstream non-2xx", upstream.status, text.slice(0, 500));
     return NextResponse.json(
-      { error: "Advisor failed", details: `Upstream status ${upstream.status}` },
+      { error: "Advisor failed", details: anthropicErrorMessage(upstream.status, text) },
       { status: 502 },
     );
   }

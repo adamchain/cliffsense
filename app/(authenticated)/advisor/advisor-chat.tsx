@@ -105,7 +105,7 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
         ]);
         return;
       }
-      setError(data.error ?? "Advisor failed to respond");
+      setError([data.error, data.details].filter(Boolean).join(" — ") || "Advisor failed to respond");
       return;
     }
 
