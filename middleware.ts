@@ -3,6 +3,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isPublicPath } from "@/lib/auth/public-path";
 import { onboardingPathForStep } from "@/lib/onboarding/steps";
+import { isBeneWatchAdminEmail } from "@/lib/admin/staff-email";
+import {
+  ADMIN_COOKIE_NAME,
+  adminCookieSecure,
+  adminSessionSecret,
+  readAdminSession,
+} from "@/lib/admin/session-token";
 
 function continueIntoApp(onboardingStep: string, req: NextRequest) {
   if (onboardingStep && onboardingStep !== "complete") {
@@ -11,8 +18,44 @@ function continueIntoApp(onboardingStep: string, req: NextRequest) {
   return NextResponse.redirect(new URL("/dashboard", req.url));
 }
 
+/**
+ * Admin is its own app. The main-app session never grants access, and a missing
+ * admin cookie never falls through into the product sign-in or dashboard.
+ */
+async function handleAdmin(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const open =
+    pathname === "/admin/login" ||
+    pathname.startsWith("/api/admin/auth/");
+  if (open) return NextResponse.next();
+
+  const secret = adminSessionSecret();
+  const claims = secret
+    ? await readAdminSession(req.cookies.get(ADMIN_COOKIE_NAME)?.value, secret)
+    : null;
+  const allowed = Boolean(claims && isBeneWatchAdminEmail(claims.email));
+  if (allowed) return NextResponse.next();
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const login = new URL("/admin/login", req.url);
+  const res = NextResponse.redirect(login);
+  res.cookies.set(ADMIN_COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: adminCookieSecure(),
+    maxAge: 0,
+  });
+  return res;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    return handleAdmin(req);
+  }
   if (pathname.startsWith("/api/health")) {
     return NextResponse.next();
   }
@@ -62,15 +105,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Route handlers enforce their own auth and return JSON 401s. Still gate
-  // /api/admin here so a missing cookie cannot probe that surface.
+  // Route handlers enforce their own auth and return JSON 401s.
   if (pathname.startsWith("/api/")) {
-    if (pathname.startsWith("/api/admin")) {
-      const isAdmin = token?.isAdmin === true && !token?.impersonatorId;
-      if (!isAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-    }
     return NextResponse.next();
   }
 
@@ -85,17 +121,6 @@ export async function middleware(req: NextRequest) {
     const signIn = new URL("/auth/signin", req.url);
     signIn.searchParams.set("callbackUrl", `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(signIn);
-  }
-
-  // Admin surface: defense-in-depth on top of the per-page/route checks. Only a
-  // real admin who is NOT currently impersonating may reach it — during
-  // impersonation the token carries the target's (non-admin) isAdmin plus an
-  // impersonatorId, so both conditions must hold.
-  if (pathname.startsWith("/admin")) {
-    const isAdmin = token?.isAdmin === true && !token?.impersonatorId;
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
   }
 
   if (

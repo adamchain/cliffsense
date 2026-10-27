@@ -1,7 +1,6 @@
 import { SntEstimator } from "@/components/benefits/snt-estimator";
 import { SalarySntScenarios } from "@/components/benefits/salary-snt-scenarios";
 import { EligibilityLossCatalog } from "@/components/benefits/eligibility-loss-catalog";
-import { WorkPlanner } from "@/components/benefits/work-planner";
 import { PolicyScreen } from "@/components/policy/policy-screen";
 
 type Row = { label: string; value: string; note?: string };
@@ -172,8 +171,6 @@ export default function ResourcesPage() {
         automatically to Medicaid, SNAP, or another program.
       </p>
       <SalarySntScenarios />
-
-      <WorkPlanner />
 
       <EligibilityLossCatalog />
 

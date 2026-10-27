@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
 import { getBeneficiaryAccessRole } from "@/lib/beneficiaries/access";
-import { SNT_LIMITS, SNT_SUMMARY, SNT_WORKFLOW } from "@/components/landing/claims";
 import { connectDB } from "@/lib/db/mongodb";
 import Beneficiary from "@/lib/db/models/Beneficiary";
 import VaultDocument from "@/lib/db/models/Document";
@@ -154,17 +153,18 @@ export default async function VaultPage() {
         Preset folders for the opening file: identity and authority, each benefit, income and
         resources, trusts and ABLE, and the notice trail. Add a file on the row it belongs to.
       </p>
-      <section className="mb-4 max-w-2xl rounded-[18px] border border-[var(--color-cs-border)] bg-white p-4">
-        <h2 className="text-[15px] font-semibold text-[var(--color-cs-text)]">Special Needs Trust records</h2>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">{SNT_SUMMARY}</p>
-        <p className="mt-2 text-[13px] leading-relaxed text-[var(--color-cs-text-secondary)]">{SNT_WORKFLOW}</p>
-        <p className="mt-2 text-[12.5px] leading-relaxed text-[var(--color-cs-text-muted)]">{SNT_LIMITS}</p>
+      <p className="mb-4 max-w-2xl text-[12.5px] text-[var(--color-cs-text-secondary)]">
+        Trust payments are recorded in the SNT folder. Bene-Watch does not hold the funds or decide eligibility.
         {beneficiaryId ? (
-          <a href="#snt" className="mt-2 inline-flex text-[13px] font-semibold text-[var(--color-cs-brand)] hover:underline">
-            Open the disbursement register
-          </a>
+          <>
+            {" "}
+            <a href="#snt" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+              Open the register
+            </a>
+            .
+          </>
         ) : null}
-      </section>
+      </p>
       <p className="mb-4 max-w-2xl text-[12.5px] text-[var(--color-cs-text-secondary)]">
         Keep passwords, login codes, and full Social Security or account numbers out of these files.
         Max 10 MB each.

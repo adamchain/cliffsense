@@ -303,11 +303,11 @@ export function HomeDashboard({
                 if (upcoming.length === 0) {
                   return (
                     <div className="rounded-[18px] bg-white px-4 py-5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                      No renewals or deadlines yet. Set them in{" "}
-                      <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
-                        Limits
+                      No renewals or deadlines yet.{" "}
+                      <Link href="/limits" className="text-[var(--color-cs-brand)]">
+                        Open a program
                       </Link>{" "}
-                      or{" "}
+                      to add them, or use{" "}
                       <Link href="/calendar" className="text-[var(--color-cs-brand)]">
                         Calendar
                       </Link>

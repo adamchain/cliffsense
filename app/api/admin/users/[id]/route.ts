@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { clientMeta, getAdminSession, logAdminAction } from "@/lib/admin/audit";
+import { isBeneWatchAdminEmail } from "@/lib/admin/staff-email";
 
 const schema = z
   .object({
@@ -40,6 +41,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (isSelf && parsed.data.isAdmin === false) {
       return NextResponse.json(
         { error: "You cannot revoke your own admin access." },
+        { status: 400 },
+      );
+    }
+    if (parsed.data.isAdmin === true && !isBeneWatchAdminEmail(target.email)) {
+      return NextResponse.json(
+        { error: "Only a @bene-watch.com address can be an admin." },
         { status: 400 },
       );
     }

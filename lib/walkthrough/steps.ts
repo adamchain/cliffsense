@@ -33,7 +33,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     href: "/dashboard",
     target: "home-programs",
     title: "Programs at a glance",
-    body: "Federal and Pennsylvania programs show as wallet cards — where you stand against each income or asset limit. Confirm enrolled programs so the right limits appear.",
+    body: "Federal and Pennsylvania programs show as wallet cards — where you stand against each income or asset limit. Confirm enrolled programs in Settings so the right limits appear.",
   },
   {
     id: "upcoming",
@@ -54,7 +54,7 @@ export const WALKTHROUGH_STEPS: WalkthroughStep[] = [
     href: "/limits",
     target: "limits-page",
     title: "Limits",
-    body: "Reference limits for your programs live here. Alerts, 2026–27 policy, and programs are separate pages in this section.",
+    body: "Each card is a program you receive. Open a card for that program's alerts, dates, and limits. Enrolled programs are chosen in Settings.",
   },
   {
     id: "calendar",

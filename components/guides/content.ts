@@ -48,8 +48,8 @@ export const UPDATES: {
   },
   {
     date: "October 2026",
-    title: "Programs, Alerts, Limits, and policy are separate pages",
-    body: "Enrolled programs, alerts, reference limits, and the 2026–27 policy screen each have their own page under Programs.",
+    title: "Programs opens on the cards",
+    body: "Programs shows a card for each program you receive. Open a card for that program's alerts, dates, and limits. Enrollment is chosen in Settings.",
     articleId: "feature-programs",
   },
   {
@@ -105,7 +105,7 @@ export const DOC_BOOKS: GuideBook[] = [
               },
               {
                 kind: "p",
-                text: "After setup, the same choices live in the app: [[/limits/programs|Programs]] for enrollment and dates, [[/transactions|Money]] for the bank, [[/limits/alerts|Alerts]] for what needs attention, and [[/calendar|Calendar]] for every open obligation.",
+                text: "After setup, the same choices live in the app: [[/limits|Programs]] opens on the cards, and each card holds that program's alerts, dates, and limits. Enrollment is in [[/settings#programs|Settings]]. [[/transactions|Money]] is the bank, and [[/calendar|Calendar]] is every open obligation.",
               },
               {
                 kind: "note",
@@ -146,11 +146,11 @@ export const DOC_BOOKS: GuideBook[] = [
             blocks: [
               {
                 kind: "p",
-                text: "Open [[/limits/programs|Programs]] and choose what this person receives. The list includes SSI, SSDI, DAC, SNAP, ABD Medicaid, MAGI Medicaid, HCBS / Community HealthChoices, MAWD, QMB, Extra Help, TANF, LIHEAP, ACA / Pennie, and ABLE.",
+                text: "Open [[/settings#programs|Settings]] and choose what this person receives. The list includes SSI, SSDI, DAC, SNAP, ABD Medicaid, MAGI Medicaid, HCBS / Community HealthChoices, MAWD, QMB, Extra Help, TANF, LIHEAP, ACA / Pennie, and ABLE.",
               },
               {
                 kind: "p",
-                text: "For each enrolled program, record the next renewal or review date, and the interim report date when that program has one. Label every date **Confirmed by agency notice**, **Estimated from verified rules**, or **Needs confirmation**. SNAP also asks for the household’s reporting category.",
+                text: "Open each program from [[/limits|Programs]] and record the next renewal or review date, and the interim report date when that program has one. Label every date **Confirmed by agency notice**, **Estimated from verified rules**, or **Needs confirmation**. SNAP also asks for the household’s reporting category.",
               },
               {
                 kind: "note",
@@ -375,7 +375,7 @@ export const DOC_BOOKS: GuideBook[] = [
                   },
                   {
                     name: "October 2026 — Programs section",
-                    text: "[[/limits/programs|Programs]], [[/limits/alerts|Alerts]], [[/limits|Limits]], and [[/limits/policy|2026–27 policy]] are separate pages.",
+                    text: "[[/limits|Programs]] opens on the cards. Open a card for that program's alerts, dates, and limits.",
                   },
                   {
                     name: "October 2026 — Vault preview",
@@ -534,14 +534,13 @@ export const DOC_BOOKS: GuideBook[] = [
             id: "feature-programs",
             label: "Programs",
             title: "Programs",
-            lede: "The Programs section is four pages.",
+            lede: "Programs opens on the cards. Each card holds that program's alerts, dates, and limits.",
             blocks: [
               {
                 kind: "defs",
                 items: [
-                  { name: "Programs", text: "[[/limits/programs|Choose what this person receives]], with a renewal date, an interim date when the program has one, and a confidence label on each date." },
-                  { name: "Alerts", text: "[[/limits/alerts|Alerts]] raised from limits, cliffs, reporting clocks, trusts, and ABLE." },
-                  { name: "Limits", text: "[[/limits|Reference limits]] for those programs, plus custom caps." },
+                  { name: "Cards", text: "[[/limits|Programs]] opens on a card for each program you receive." },
+                  { name: "Inside a program", text: "Open a card for that program's alerts, dates, and reference limits. Renewal and report dates are edited on that page." },
                   { name: "2026–27 policy", text: "[[/limits/policy|A screen for projected rules]]. Check whether a rule applies to this person before treating it as current." },
                 ],
               },
@@ -662,15 +661,15 @@ export const DOC_BOOKS: GuideBook[] = [
             id: "config-programs",
             label: "Programs and dates",
             title: "Programs and dates",
-            lede: "Enrollment is edited on [[/limits/programs|Programs]] after the first screening.",
+            lede: "Enrollment is edited in [[/settings#programs|Settings]] after the first screening. Renewal and report dates are edited on each program.",
             blocks: [
               {
                 kind: "p",
-                text: "Turn a program on or off, then save the renewal date and, where the program has an interim report, that date too. Set confidence from the notice in hand. For SNAP, pick the reporting category: Not sure yet, Simplified reporting (SAR), Elderly or disabled with earned income, or ESAP. If you are not sure, leave it on Not sure yet rather than assuming an exemption.",
+                text: "Turn a program on or off in Settings, then open that program and save the renewal date and, where the program has an interim report, that date too. Set confidence from the notice in hand. For SNAP, pick the reporting category: Not sure yet, Simplified reporting (SAR), Elderly or disabled with earned income, or ESAP. If you are not sure, leave it on Not sure yet rather than assuming an exemption.",
               },
               {
                 kind: "note",
-                text: "During first-time setup the choices are Current, Possible, No, and Unknown, plus the exact Medicaid category. Programs is the screen you return to later.",
+                text: "During first-time setup the choices are Current, Possible, No, and Unknown, plus the exact Medicaid category. Settings is the screen you return to later to change enrollment.",
               },
             ],
           },

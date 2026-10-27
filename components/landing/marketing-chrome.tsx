@@ -3,10 +3,10 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 import { BRAND_LINE, FOOTER_LIMITS, HERO_DESCRIPTOR, SITE_DISCLAIMER } from "@/components/landing/claims";
 
 const NAV = [
-  { label: "Features", href: "/#features" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "About", href: "/about" },
-  { label: "Resources", href: "/resources" },
+  { label: "The problem", href: "/#problem" },
+  { label: "Who it affects", href: "/#cost" },
+  { label: "How it helps", href: "/#families" },
+  { label: "Pilot", href: "/#pilot" },
 ] as const;
 
 export function MarketingHeader({
@@ -52,10 +52,10 @@ const FOOTER_GROUPS: { heading: string; links: { label: string; href: string }[]
   {
     heading: "Product",
     links: [
-      { label: "Features", href: "/#features" },
-      { label: "How it works", href: "/#how-it-works" },
-      { label: "Evidence vault", href: "/#tools" },
-      { label: "Special needs trust", href: "/#snt-tracking" },
+      { label: "How it helps", href: "/#families" },
+      { label: "Benefits covered", href: "/#solution" },
+      { label: "Notices and records", href: "/#tools" },
+      { label: "Pilot", href: "/#pilot" },
       { label: "Resources", href: "/resources" },
     ],
   },

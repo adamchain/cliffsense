@@ -1,25 +1,11 @@
-import { auth } from "@/auth";
-import { redirect, notFound } from "next/navigation";
-import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
-import { BenefitDetailView } from "@/components/thresholds/benefit-detail-view";
-import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
+import { redirect } from "next/navigation";
 
-export default async function BenefitDetailPage({
+/** Older program links used /thresholds/SSI. The page now lives at /programs/SSI. */
+export default async function LegacyProgramRedirect({
   params,
 }: {
   params: Promise<{ program: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user) {
-    redirect("/auth/signin");
-  }
   const { program } = await params;
-  const code = programCodeKey(program);
-  if (!programMetaFor(code)) {
-    notFound();
-  }
-  const primary = await getActiveBeneficiaryForUser(session.user.id);
-  const beneficiaryId = primary?._id.toString() ?? null;
-
-  return <BenefitDetailView beneficiaryId={beneficiaryId} program={code} />;
+  redirect(`/programs/${program}`);
 }

@@ -230,7 +230,7 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
       items: onDay(renewals),
       empty: selectedDate
         ? "No renewals or reviews on this day."
-        : "No renewal dates yet — set them in Limits.",
+        : "No renewal dates yet. Open a program and enter the date from the notice.",
       first: renewals[0]?.date ?? "9999",
     },
     {
@@ -341,9 +341,9 @@ export function ReportingCalendarView({ beneficiaryId }: { beneficiaryId: string
           Tap a day to filter. Confirm every date with the agency.
         </span>
         <span className="hidden sm:inline">
-          Renewals from{" "}
-          <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
-            Limits
+          Renewals entered on{" "}
+          <Link href="/limits" className="text-[var(--color-cs-brand)]">
+            each program
           </Link>{" "}
           stay at the top. Add interviews, verifications, premiums, CDRs, assessments, and appeal /
           continued-benefit dates from the notice. Confirm every date with the agency.
@@ -624,8 +624,8 @@ function TipsCard() {
             Enter the date from each agency notice so it appears here and on Home. Confirm every
             date with the agency.
           </p>
-          <Link href="/limits#programs" className="mt-2 inline-block font-semibold text-[var(--color-cs-brand)]">
-            Set renewal dates in Limits →
+          <Link href="/limits" className="mt-2 inline-block font-semibold text-[var(--color-cs-brand)]">
+            Set renewal dates on the program →
           </Link>
         </div>
       )}
@@ -735,7 +735,7 @@ function AgendaBlock({
                   </Link>
                   {item.program && (
                     <Link
-                      href={`/thresholds/${item.program}`}
+                      href={`/programs/${item.program}`}
                       className="inline-flex min-h-9 items-center text-[13px] font-semibold text-[var(--color-cs-brand)] sm:min-h-0 sm:text-[12px]"
                     >
                       View limits

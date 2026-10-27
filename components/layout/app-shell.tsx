@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IconBell, IconSettings, IconShieldLock } from "@tabler/icons-react";
+import { IconBell, IconSettings } from "@tabler/icons-react";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { MobileTabBar } from "./mobile-tab-bar";
@@ -35,7 +35,7 @@ function SidebarGroup({
   const hasChildren = !!section.children?.length;
   const Icon = section.icon;
   const parentActive = !hasChildren && active;
-  const containsAlerts = section.children?.some((c) => c.href === "/limits/alerts") ?? false;
+  const containsAlerts = section.href === "/limits";
 
   return (
     <div>
@@ -80,8 +80,6 @@ function SidebarGroup({
   );
 }
 
-const ADMIN_SECTION: NavSection = { label: "Admin", icon: IconShieldLock, href: "/admin" };
-
 export function AppShell({
   children,
   userName,
@@ -91,7 +89,6 @@ export function AppShell({
   accounts = [],
   activeHref,
   alertCount = 0,
-  isAdmin = false,
 }: {
   children: ReactNode;
   userName: string;
@@ -101,7 +98,6 @@ export function AppShell({
   accounts?: BeneficiarySwitcherAccount[];
   activeHref: string;
   alertCount?: number;
-  isAdmin?: boolean;
 }) {
   const badge = alertCount > 9 ? "9+" : String(alertCount);
   const hideTopSearch =
@@ -115,10 +111,7 @@ export function AppShell({
 
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
   const leaves = flattenSections(ALL_SECTIONS);
-  const drawerNav = [
-    ...leaves,
-    ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: IconShieldLock }] : []),
-  ];
+  const drawerNav = leaves;
   // Five prototype tabs; remaining destinations live in the hamburger drawer.
   const tabPrimary = PRIMARY_HREFS.map((href) => leaves.find((n) => n.href === href)).filter(
     (n): n is (typeof leaves)[number] => Boolean(n),
@@ -153,13 +146,6 @@ export function AppShell({
               alertCount={alertCount}
             />
           ))}
-          {isAdmin && (
-            <SidebarGroup
-              section={ADMIN_SECTION}
-              activeHref={activeHref}
-              alertCount={alertCount}
-            />
-          )}
           <SidebarAccount
             userName={userName}
             initials={userInitials}

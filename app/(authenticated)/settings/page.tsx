@@ -4,7 +4,11 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import Beneficiary from "@/lib/db/models/Beneficiary";
+import { programLabel } from "@/lib/benefits/program-meta";
+import { getActiveBeneficiaryForUser } from "@/lib/beneficiaries/active";
+import { getBeneficiaryAccessRole } from "@/lib/beneficiaries/access";
 import { SettingsForm } from "./settings-form";
+import { ProgramsForm } from "./programs-form";
 import { SignOutButton } from "./sign-out-button";
 import { DeleteAccountButton } from "./delete-account-button";
 import { LegacySettingsHashRedirect } from "@/components/settings/legacy-hash-redirect";
@@ -15,12 +19,23 @@ export default async function SettingsPage() {
     redirect("/auth/signin");
   }
   await connectDB();
-  const [user, ownerBen] = await Promise.all([
+  const activeRef = await getActiveBeneficiaryForUser(session.user.id);
+  const [user, ownerBen, activeBen] = await Promise.all([
     User.findById(session.user.id).select("name email accountType notificationPrefs").lean(),
     Beneficiary.findOne({ ownerUserId: session.user.id, isOwner: true })
       .select("state householdSize")
       .lean(),
+    activeRef
+      ? Beneficiary.findById(activeRef._id)
+          .select("firstName lastName benefitsEnrolled")
+          .lean()
+      : null,
   ]);
+  const programRole = activeBen
+    ? await getBeneficiaryAccessRole(session.user.id, activeBen._id.toString())
+    : null;
+  const canEditPrograms = programRole === "owner" || programRole === "co_manager";
+  const enrolledPrograms = (activeBen?.benefitsEnrolled ?? []).map((b) => String(b.program));
 
   if (!user) {
     redirect("/auth/signin");
@@ -38,7 +53,7 @@ export default async function SettingsPage() {
       <LegacySettingsHashRedirect />
       <h1 className="cs-big-title mb-1">Settings</h1>
       <p className="mb-6 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Your account, notifications, and who this app is for.
+        Your account, notifications, enrolled programs, and who this app is for.
       </p>
 
       <Link
@@ -83,6 +98,51 @@ export default async function SettingsPage() {
               initialState={ownerBen?.state ?? ""}
               initialHouseholdSize={ownerBen?.householdSize ?? 1}
             />
+          </div>
+        </section>
+
+        <section id="programs" className="scroll-mt-28">
+          <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">
+            Enrolled programs
+          </h2>
+          {activeBen ? (
+            <p className="mb-2 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
+              For {activeBen.firstName} {activeBen.lastName}.{" "}
+              <Link href="/limits" className="text-[var(--color-cs-brand)] hover:underline">
+                Open a program
+              </Link>{" "}
+              to enter renewal and report dates.
+            </p>
+          ) : null}
+          <div className="rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            {activeBen && canEditPrograms ? (
+              <ProgramsForm
+                variant="enrollment"
+                beneficiaryId={activeBen._id.toString()}
+                initialPrograms={enrolledPrograms}
+              />
+            ) : activeBen ? (
+              enrolledPrograms.length === 0 ? (
+                <p className="text-[13.5px] text-[var(--color-cs-text-secondary)]">
+                  No programs yet. An owner or co-manager can choose them.
+                </p>
+              ) : (
+                <ul className="flex flex-wrap gap-2">
+                  {enrolledPrograms.map((program) => (
+                    <li
+                      key={program}
+                      className="rounded-xl border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] font-medium text-[var(--color-cs-text)]"
+                    >
+                      {programLabel(program)}
+                    </li>
+                  ))}
+                </ul>
+              )
+            ) : (
+              <p className="text-[13.5px] text-[var(--color-cs-text-secondary)]">
+                Add a beneficiary profile before choosing programs.
+              </p>
+            )}
           </div>
         </section>
 

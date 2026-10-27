@@ -208,7 +208,7 @@ export default function HelpPage() {
           <Tip>
             Already set up but the dashboard looks empty? Make sure at least one bank is{" "}
             <Link href="/transactions" className={linkCls}>connected</Link> and your{" "}
-            <Link href="/limits/programs" className={linkCls}>programs</Link> are confirmed — limits only
+            <Link href="/settings#programs" className={linkCls}>programs</Link> are confirmed — limits only
             appear once both are in place.
           </Tip>
         </Section>

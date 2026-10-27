@@ -6,7 +6,7 @@ const authTokenSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     purpose: {
       type: String,
-      enum: ["email_verify", "password_reset", "login_code"],
+      enum: ["email_verify", "password_reset", "login_code", "admin_login_code"],
       required: true,
     },
     tokenHash: { type: String, required: true, unique: true, index: true },

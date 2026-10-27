@@ -3,7 +3,7 @@ import type { Types } from "mongoose";
 import { connectDB } from "@/lib/db/mongodb";
 import AuthToken from "@/lib/db/models/AuthToken";
 
-export type TokenPurpose = "email_verify" | "password_reset" | "login_code";
+export type TokenPurpose = "email_verify" | "password_reset" | "login_code" | "admin_login_code";
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token, "utf8").digest("hex");
@@ -79,6 +79,46 @@ export async function consumeLoginCode(
   const tokenHash = hashToken(`${String(userId)}:${code.trim()}`);
   const doc = await AuthToken.findOneAndUpdate(
     { userId, tokenHash, purpose: "login_code", usedAt: null, expiresAt: { $gt: new Date() } },
+    { $set: { usedAt: new Date() } },
+    { new: true },
+  ).lean();
+  return Boolean(doc);
+}
+
+/**
+ * Admin-console code. Separate purpose and hash from the main app so a code
+ * requested on one screen cannot be used on the other.
+ */
+export async function issueAdminLoginCode(
+  userId: string | Types.ObjectId,
+  ttlMs: number,
+): Promise<string> {
+  await connectDB();
+  await AuthToken.deleteMany({ userId, purpose: "admin_login_code", usedAt: null });
+  const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+  await AuthToken.create({
+    userId,
+    purpose: "admin_login_code",
+    tokenHash: hashToken(`admin_login_code:${String(userId)}:${code}`),
+    expiresAt: new Date(Date.now() + ttlMs),
+  });
+  return code;
+}
+
+export async function consumeAdminLoginCode(
+  userId: string | Types.ObjectId,
+  code: string,
+): Promise<boolean> {
+  await connectDB();
+  const tokenHash = hashToken(`admin_login_code:${String(userId)}:${code.trim()}`);
+  const doc = await AuthToken.findOneAndUpdate(
+    {
+      userId,
+      tokenHash,
+      purpose: "admin_login_code",
+      usedAt: null,
+      expiresAt: { $gt: new Date() },
+    },
     { $set: { usedAt: new Date() } },
     { new: true },
   ).lean();

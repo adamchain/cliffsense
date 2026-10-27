@@ -113,7 +113,7 @@ export function ObligationsCard({
           ) : (
             <p className={muted}>
               Not set.{" "}
-              <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
+              <Link href="#program-dates" className="text-[var(--color-cs-brand)]">
                 Add the date from your notice
               </Link>
               .
@@ -140,7 +140,7 @@ export function ObligationsCard({
             <p className={muted}>
               {s.interimExpected ? "A report is due between renewals — " : ""}
               Not set. Check your notice and{" "}
-              <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
+              <Link href="#program-dates" className="text-[var(--color-cs-brand)]">
                 add the date
               </Link>
               . This date is never worked out from your renewal date.

@@ -32,6 +32,7 @@ export function MobileTabBar({
         activeHref.startsWith("/limits/") ||
         activeHref === "/thresholds" ||
         activeHref.startsWith("/thresholds/") ||
+        activeHref.startsWith("/programs/") ||
         activeHref === "/alerts" ||
         activeHref.startsWith("/alerts/")
       );

@@ -45,7 +45,14 @@ function ProgramGlyph({ code }: { code: string }) {
   }
 }
 
-export function WalletCard({ card }: { card: ProgramCardModel }) {
+export function WalletCard({
+  card,
+  linked = true,
+}: {
+  card: ProgramCardModel;
+  /** Home and the programs list link into the program. The program page shows the same card in place. */
+  linked?: boolean;
+}) {
   const fed = card.tier === "federal";
   const big =
     card.currentCents != null ? formatUsdCents(card.currentCents) : "—";
@@ -62,11 +69,11 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
   });
   const mark = card.status === "ok" ? "✓" : card.status === "warn" ? "!" : "✕";
 
-  return (
-    <Link
-      href={`/thresholds/${card.code}`}
-      className={`cs-wcard ${fed ? "cs-wcard--fed" : "cs-wcard--state"}`}
-    >
+  const className = `cs-wcard ${fed ? "cs-wcard--fed" : "cs-wcard--state"}${
+    linked ? "" : " cs-wcard--static"
+  }`;
+  const body = (
+    <>
       <div className="cs-wcard-seal" aria-hidden>
         {fed ? <SsaSeal /> : <PaKeystoneMark />}
       </div>
@@ -80,9 +87,11 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
             )}
             <span>{card.tag}</span>
           </span>
-          <span className="cs-wcard-chevron" aria-hidden>
-            ›
-          </span>
+          {linked ? (
+            <span className="cs-wcard-chevron" aria-hidden>
+              ›
+            </span>
+          ) : null}
         </div>
         <div className="cs-wcard-name">
           <ProgramGlyph code={card.code} />
@@ -137,6 +146,16 @@ export function WalletCard({ card }: { card: ProgramCardModel }) {
           )}
         </div>
       </div>
+    </>
+  );
+
+  if (!linked) {
+    return <div className={className}>{body}</div>;
+  }
+
+  return (
+    <Link href={`/programs/${card.code}`} className={className}>
+      {body}
     </Link>
   );
 }

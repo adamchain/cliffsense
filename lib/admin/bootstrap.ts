@@ -4,10 +4,10 @@ import { connectDB } from "@/lib/db/mongodb";
 import User, { type UserDoc } from "@/lib/db/models/User";
 
 /* ----------------------------------------------------------------------------
- * Bootstrap admins. These emails are always treated as internal admins: when
- * one requests an email sign-in code, the account is created (or promoted) on
- * the fly so there's no chicken-and-egg "you need an admin to make an admin"
- * problem. They still authenticate normally via the emailed 6-digit code.
+ * Bootstrap admins for the main app. When one of these emails requests a
+ * main-app sign-in code, the account is created (or promoted) on the fly.
+ * The /admin console does not use this list. It has its own session and only
+ * accepts a code sent to a @bene-watch.com address.
  *
  * Extend the list without code changes by setting ADMIN_EMAILS (comma-separated).
  * ------------------------------------------------------------------------- */

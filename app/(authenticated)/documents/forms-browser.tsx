@@ -11,6 +11,9 @@ import {
 } from "@tabler/icons-react";
 import type { Program } from "@/lib/programs";
 import type { CatalogForm } from "@/lib/forms/types";
+import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
+import { programAgencyTag, programTier } from "@/lib/benefits/program-tier";
+import { PaKeystoneMark, PaStateChip, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
 
 type ProgramGroup = {
   program: Program;
@@ -84,39 +87,45 @@ function ProgramSection({
   const reapply = group.forms.filter((f) => f.category === "reapply");
   const count = group.forms.length;
 
+  const code = programCodeKey(group.program);
+  const meta = programMetaFor(code);
+  const fed = programTier(code) === "federal";
+  const name = meta?.label ?? group.label;
+  const fullName = meta?.fullName;
+
   return (
-    <section className="overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <section>
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+        className={`cs-wcard cs-wcard--mini ${fed ? "cs-wcard--fed" : "cs-wcard--state"}`}
         aria-expanded={open}
       >
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--color-cs-brand)] text-white"
-          aria-hidden
-        >
-          <IconFileText size={18} stroke={1.8} />
+        <div className="cs-wcard-seal" aria-hidden>
+          {fed ? <SsaSeal /> : <PaKeystoneMark />}
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[16px] font-semibold text-[var(--color-cs-text)]">
-            {group.label}
+        <div className="cs-wcard-in">
+          <div className="cs-wcard-top">
+            <span className="cs-wcard-label">
+              {fed ? <UsFlagMark className="cs-fed-flag" /> : <PaStateChip />}
+              <span>{programAgencyTag(code)}</span>
+            </span>
+            <IconChevronDown
+              size={18}
+              stroke={2}
+              className={`shrink-0 text-white/70 transition-transform ${open ? "rotate-180" : ""}`}
+            />
           </div>
-          <div className="text-[12.5px] text-[var(--color-cs-text-secondary)]">
+          <div className="cs-wcard-name">{name}</div>
+          {fullName ? <p className="cs-wcard-sub">{fullName}</p> : null}
+          <p className="cs-wcard-sub">
             {count} form{count === 1 ? "" : "s"}
-          </div>
+          </p>
         </div>
-        <IconChevronDown
-          size={18}
-          stroke={2}
-          className={`shrink-0 text-[var(--color-cs-text-secondary)] transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-[var(--color-cs-sep)] px-4 py-3.5">
+        <div className="mt-2 space-y-4 rounded-[18px] bg-[var(--color-cs-card)] px-4 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <div>
             <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
               Reporting

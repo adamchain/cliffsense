@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { programLabel } from "@/lib/benefits/program-meta";
 import { ProgramPicker } from "@/components/benefits/program-picker";
@@ -66,11 +67,14 @@ export function ProgramsForm({
   beneficiaryId,
   initialPrograms,
   initialDates = {},
+  variant,
 }: {
   beneficiaryId: string;
   initialPrograms: string[];
   /** Dates keyed by program — preserved when toggling enrollment. */
   initialDates?: Record<string, Partial<EnrollmentDates>>;
+  /** Enrollment lives in Settings. Renewal dates are edited on each program page. */
+  variant: "enrollment" | "dates";
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(
@@ -112,6 +116,10 @@ export function ProgramsForm({
     setError(null);
     setSaved(false);
     const benefitsEnrolled = [...selected].map((program) => {
+      if (variant === "enrollment") {
+        // Omit date fields so an enrollment save keeps renewal dates already stored.
+        return { program: program as Program };
+      }
       const d = datesFor(program);
       return {
         program: program as Program,
@@ -129,7 +137,7 @@ export function ProgramsForm({
     });
     setSaving(false);
     if (!res.ok) {
-      setError("Could not save programs and dates");
+      setError(variant === "enrollment" ? "Could not save programs" : "Could not save dates");
       return;
     }
     setSaved(true);
@@ -138,18 +146,18 @@ export function ProgramsForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <h3 className="mb-1 text-[13px] font-semibold text-[var(--color-cs-text)]">
-          Enrolled programs
-        </h3>
-        <p className="mb-2.5 text-[12px] text-[var(--color-cs-text-secondary)]">
-          Reference limits attach automatically for the programs you select. Medicaid is split by
-          category so ABD, MAGI, Waiver, and MAWD limits stay separate.
-        </p>
-        <ProgramPicker selected={selected} onToggle={toggle} />
-      </div>
+      {variant === "enrollment" && (
+        <div>
+          <p className="mb-2.5 text-[12px] text-[var(--color-cs-text-secondary)]">
+            Reference limits attach automatically for the programs you select. Medicaid is split by
+            category so ABD, MAGI, Waiver, and MAWD limits stay separate.
+          </p>
+          <ProgramPicker selected={selected} onToggle={toggle} />
+        </div>
+      )}
 
-      <div className="border-t border-[var(--color-cs-sep)] pt-4">
+      {variant === "dates" && (
+      <div>
         <h3 className="mb-0.5 text-[13px] font-semibold text-[var(--color-cs-text)]">
           Renewal, review &amp; interim report dates
         </h3>
@@ -163,7 +171,11 @@ export function ProgramsForm({
 
         {selectedSorted.length === 0 ? (
           <p className="rounded-[14px] bg-[var(--color-cs-surface)] px-3.5 py-3 text-[13px] text-[var(--color-cs-text-secondary)]">
-            Select programs above to add renewal and report dates.
+            No programs yet.{" "}
+            <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
+              Choose them in Settings
+            </Link>
+            .
           </p>
         ) : (
           <div className="overflow-hidden rounded-[14px] border border-[var(--color-cs-sep)]">
@@ -265,18 +277,21 @@ export function ProgramsForm({
           </div>
         )}
       </div>
+      )}
 
       {error && <p className="text-xs text-[var(--color-cs-danger)]">{error}</p>}
+      {(variant === "enrollment" || selectedSorted.length > 0) && (
       <div className="flex items-center gap-3 border-t border-[var(--color-cs-sep)] pt-3">
         <button
           type="submit"
           disabled={saving}
           className="rounded-xl bg-[var(--color-cs-brand)] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[var(--color-cs-brand-hover)] disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Save programs & dates"}
+          {saving ? "Saving…" : variant === "enrollment" ? "Save programs" : "Save dates"}
         </button>
         {saved && <span className="text-[12px] text-[var(--color-cs-success)]">Saved</span>}
       </div>
+      )}
     </form>
   );
 }

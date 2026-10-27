@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getAdminSession } from "@/lib/admin/audit";
 import { connectDB } from "@/lib/db/mongodb";
 import ApplicationDocument from "@/lib/db/models/ApplicationDocument";
 
@@ -8,7 +9,8 @@ export const runtime = "nodejs";
 /** Stream an application document — to its owner, or to any admin (for review). */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) {
+  const admin = await getAdminSession();
+  if (!session?.user?.id && !admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await ctx.params;
@@ -17,9 +19,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!doc) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const isOwner = String(doc.userId) === session.user.id;
-  const isAdmin = session.user.isAdmin && !session.user.impersonatorId;
-  if (!isOwner && !isAdmin) {
+  const isOwner = Boolean(session?.user?.id) && String(doc.userId) === session?.user?.id;
+  if (!isOwner && !admin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

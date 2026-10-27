@@ -240,7 +240,7 @@ export default function HowItWorksPage() {
           <p>
             With estimates and projections in hand, the brain compares them against each limit that
             applies to you. Which limits load is driven by your enrolled{" "}
-            <Link href="/limits/programs" className={linkCls}>programs</Link> plus any custom caps you add;
+            <Link href="/settings#programs" className={linkCls}>programs</Link> plus any custom caps you add;
             a limit you&apos;ve detached is simply skipped.
           </p>
           <p>Each evaluated limit lands in one of three states:</p>

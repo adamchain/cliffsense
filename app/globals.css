@@ -325,6 +325,11 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 16px 28px -14px rgba(0, 0, 0, 0.58), 0 4px 10px rgba(0, 0, 0, 0.14);
   }
+  .cs-wcard--static:hover,
+  .cs-wcard--static:active {
+    transform: none;
+    box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.16);
+  }
   .cs-wcard:active {
     transform: scale(0.985);
   }
@@ -552,6 +557,45 @@ body {
   .cs-wcard-fill {
     height: 100%;
     border-radius: 6px;
+  }
+
+  /* Compact identity card — same pass, without status color or amounts. */
+  .cs-wcard--mini {
+    min-height: 0;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    appearance: none;
+    text-align: left;
+    font: inherit;
+    color: #fff;
+    cursor: pointer;
+  }
+  .cs-wcard--mini .cs-wcard-in {
+    min-height: 0;
+    padding: 12px 14px 13px;
+  }
+  .cs-wcard--mini .cs-wcard-seal {
+    width: 108px;
+    height: 108px;
+    right: -22px;
+  }
+  .cs-wcard--mini.cs-wcard--state .cs-wcard-seal {
+    width: 112px;
+    height: 112px;
+    right: -22px;
+  }
+  .cs-wcard--mini .cs-wcard-name {
+    margin-top: 6px;
+    font-size: 1.2rem;
+    letter-spacing: -0.3px;
+  }
+  .cs-wcard-sub {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    opacity: 0.78;
   }
 
   /* Program detail hero */

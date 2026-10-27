@@ -190,7 +190,7 @@ export function EventDetailView({ event }: { event: EventDetailModel }) {
       ? `Help me prepare for this deadline: ${title} on ${event.date} for ${meta?.label ?? code}. ${event.detail}`
       : `Help me prepare for this deadline: ${title} on ${event.date}. ${event.detail}`,
   );
-  const programHref = code ? `/thresholds/${code}` : "/thresholds";
+  const programHref = code ? `/programs/${code}` : "/limits";
   const ctaLabel =
     event.kind === "renewal"
       ? "Review renewal steps"

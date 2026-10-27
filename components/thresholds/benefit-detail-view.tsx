@@ -4,13 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   IconArrowLeft,
-  IconBriefcase,
   IconChevronDown,
-  IconCurrencyDollar,
   IconExternalLink,
-  IconHeart,
-  IconHome,
-  IconLeaf,
   IconRefresh,
   IconSparkles,
 } from "@tabler/icons-react";
@@ -32,13 +27,18 @@ import {
   programTier,
   statusFromRow,
 } from "@/lib/benefits/program-tier";
-import { PaKeystoneChip, PaKeystoneMark, SsaSeal, UsFlagMark } from "@/components/benefits/wallet-seals";
 import { fixedScheduleEventsForPrograms } from "@/lib/benefits/reporting-schedules";
 import { calendarEventHref } from "@/lib/calendar/event-id";
 import { ObligationsCard } from "@/components/benefits/obligations-card";
+import { ProgramDatesEditor } from "@/components/benefits/program-dates-editor";
+import { WalletCard } from "@/components/benefits/wallet-card";
+import { buildProgramCards } from "@/lib/benefits/program-tier";
+import { AlertsView } from "@/components/alerts/alerts-view";
 import {
+  DATE_CONFIDENCE_LABEL,
   isSnapReportingCategory,
   normalizeConfidence,
+  obligationCategoryForKind,
   type ObligationRow,
   type SnapReportingCategory,
 } from "@/lib/reporting/obligations";
@@ -117,29 +117,6 @@ function shortDueLabel(isoDate: string): string {
     month: "short",
     day: "numeric",
   });
-}
-
-function ProgramGlyph({ code }: { code: string }) {
-  const color = "#fff";
-  const props = { size: 23, stroke: 2, color, "aria-hidden": true as const };
-  switch (code) {
-    case "SSDI":
-      return <IconBriefcase {...props} />;
-    case "SNAP":
-    case "WIC":
-      return <IconLeaf {...props} />;
-    case "MEDICAID":
-    case "MEDICAIDABD":
-    case "MEDICAIDMAGI":
-    case "MEDICAIDWAIVER":
-    case "MAWD":
-    case "QMB":
-      return <IconHeart {...props} fill={color} />;
-    case "ABLE":
-      return <IconHome {...props} />;
-    default:
-      return <IconCurrencyDollar {...props} />;
-  }
 }
 
 function LimitCard({
@@ -273,22 +250,33 @@ function LimitCard({
   );
 }
 
+type StoredEnrollment = {
+  program: string;
+  nextRenewalDate?: string | null;
+  renewalConfidence?: string | null;
+  nextInterimReportDate?: string | null;
+  interimConfidence?: string | null;
+  reportingCategory?: string | null;
+};
+
 export function BenefitDetailView({
   beneficiaryId,
   program,
+  canEditDates = false,
 }: {
   beneficiaryId: string | null;
   program: string;
+  canEditDates?: boolean;
 }) {
   const code = programCodeKey(program);
   const meta: ProgramMeta | null = programMetaFor(code);
   const tier = programTier(code);
-  const fed = tier === "federal";
   const tag = programAgencyTag(code);
   const [data, setData] = useState<Payload | null>(null);
   const [relatedDates, setRelatedDates] = useState<RelatedDate[]>([]);
   const [obligationRows, setObligationRows] = useState<ObligationRow[]>([]);
   const [snapCategory, setSnapCategory] = useState<SnapReportingCategory | null>(null);
+  const [enrollments, setEnrollments] = useState<StoredEnrollment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -304,10 +292,12 @@ export function BenefitDetailView({
     const tJson = await tRes.json().catch(() => ({}));
     const dJson = await dRes.json().catch(() => ({}));
     const bJson = await bRes.json().catch(() => ({}));
-    const enrollment = (
-      (bJson as { beneficiary?: { benefitsEnrolled?: { program: string; reportingCategory?: string | null }[] } })
-        .beneficiary?.benefitsEnrolled ?? []
-    ).find((e) => programCodeKey(e.program) === code);
+    const stored = (
+      (bJson as { beneficiary?: { benefitsEnrolled?: StoredEnrollment[] } }).beneficiary
+        ?.benefitsEnrolled ?? []
+    );
+    setEnrollments(stored);
+    const enrollment = stored.find((e) => programCodeKey(e.program) === code);
     setSnapCategory(
       isSnapReportingCategory(enrollment?.reportingCategory) ? enrollment.reportingCategory : null,
     );
@@ -411,10 +401,43 @@ export function BenefitDetailView({
   const enrolled = data
     ? data.programsEnrolled.some((p) => programCodeKey(p) === code)
     : true;
+  const thisEnrollment = enrollments.find((e) => programCodeKey(e.program) === code);
 
   const title = meta?.label ?? program;
   const curCents = primary?.currentValueCents ?? null;
   const limitCents = primary?.limitCents ?? null;
+
+  const walletCard = useMemo(() => {
+    const built = buildProgramCards(data?.rows ?? []).find((card) => card.code === code);
+    const open = obligationRows
+      .filter((row) => row.program && programCodeKey(row.program) === code && !row.completedAt)
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    const next = open[0];
+    const base = built ?? {
+      code,
+      label: title,
+      tier,
+      tag,
+      status: "ok" as const,
+      word: "On track",
+      currentCents: null,
+      limitCents: null,
+      pct: null,
+      concern: 0,
+      watch: 0,
+      total: 0,
+    };
+    if (!next) return base;
+    return {
+      ...base,
+      nextDue: {
+        title: next.title,
+        date: next.dueDate.slice(0, 10),
+        confidenceLabel: DATE_CONFIDENCE_LABEL[next.confidence],
+        category: obligationCategoryForKind(next.kind),
+      },
+    };
+  }, [code, data?.rows, obligationRows, tag, tier, title]);
 
   if (!beneficiaryId) {
     return (
@@ -431,9 +454,9 @@ export function BenefitDetailView({
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
         <Link
-          href="/thresholds"
+          href="/limits"
           className="cs-circbtn !bg-white/75 shadow-sm"
-          aria-label="Back to limits"
+          aria-label="Back to programs"
         >
           <IconArrowLeft size={18} stroke={2.2} />
         </Link>
@@ -458,25 +481,52 @@ export function BenefitDetailView({
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
-      <ObligationsCard program={code} rows={obligationRows} snapCategory={snapCategory} />
+      {data && (
+        <div className="mb-5">
+          <WalletCard card={walletCard} linked={false} />
+        </div>
+      )}
 
-      {/* Related dates — relative labels, same card style as Limits / Home upcoming */}
-      <div className="mb-5">
+      <div id="program-dates" className="mb-5 scroll-mt-28">
         <div className="mb-2 flex items-baseline justify-between px-0.5">
           <h2 className="text-[22px] font-bold tracking-tight">Dates</h2>
           <Link href="/calendar" className="text-[15px] text-[var(--color-cs-brand)]">
             Calendar
           </Link>
         </div>
-        {relatedDates.length === 0 ? (
-          <div className="rounded-[18px] bg-white px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-            No upcoming dates for {title}. Set renewals in{" "}
-            <Link href="/limits#programs" className="text-[var(--color-cs-brand)]">
-              Limits
-            </Link>
-            .
+        {data && enrolled && canEditDates && beneficiaryId && (
+          <div className="mb-3">
+            <ProgramDatesEditor
+              key={[
+                code,
+                thisEnrollment?.nextRenewalDate ?? "",
+                thisEnrollment?.nextInterimReportDate ?? "",
+                thisEnrollment?.reportingCategory ?? "",
+                thisEnrollment?.renewalConfidence ?? "",
+                thisEnrollment?.interimConfidence ?? "",
+              ].join("|")}
+              beneficiaryId={beneficiaryId}
+              program={code}
+              enrolledPrograms={enrollments.map((e) => e.program)}
+              initial={{
+                renewal: thisEnrollment?.nextRenewalDate ?? null,
+                renewalConfidence: normalizeConfidence(thisEnrollment?.renewalConfidence),
+                interim: thisEnrollment?.nextInterimReportDate ?? null,
+                interimConfidence: normalizeConfidence(thisEnrollment?.interimConfidence),
+                reportingCategory: isSnapReportingCategory(thisEnrollment?.reportingCategory)
+                  ? thisEnrollment.reportingCategory
+                  : null,
+              }}
+              onSaved={() => void load()}
+            />
           </div>
-        ) : (
+        )}
+        {relatedDates.length === 0 && !(canEditDates && enrolled) ? (
+          <div className="rounded-[18px] bg-white px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            No upcoming dates for {title}.
+          </div>
+        ) : null}
+        {relatedDates.length > 0 ? (
           <div className="cs-ios-list">
             {relatedDates.map((d) => {
               const chip = dateChipParts(d.date);
@@ -534,43 +584,19 @@ export function BenefitDetailView({
               );
             })}
           </div>
-        )}
+        ) : null}
       </div>
+
+      <section className="mb-5">
+        <h2 className="mb-2 text-[22px] font-bold tracking-tight">Alerts</h2>
+        <AlertsView beneficiaryId={beneficiaryId} programCode={code} hideChrome embedded />
+      </section>
+
+      <ObligationsCard program={code} rows={obligationRows} snapCategory={snapCategory} />
 
       <div className="grid gap-5 lg:grid-cols-[1.05fr_1fr] lg:items-start">
         {/* Left: hero + program description */}
         <div>
-          <div className={`cs-hero ${fed ? "cs-hero--fed" : "cs-hero--state"}`}>
-            <div className="cs-wcard-seal" aria-hidden>
-              {fed ? <SsaSeal /> : <PaKeystoneMark />}
-            </div>
-            <div className="cs-hero-top">
-              <div>
-                <div className="cs-hero-name">
-                  <ProgramGlyph code={code} />
-                  {title}
-                </div>
-                <div className="cs-hero-tag">
-                  {fed ? <UsFlagMark className="cs-fed-flag" /> : <PaKeystoneChip className="cs-pa-chip" />}
-                  {tag}
-                </div>
-              </div>
-              <div className="cs-hero-big">
-                {curCents != null ? formatUsdCents(curCents) : "—"}
-              </div>
-            </div>
-            <div className="cs-hero-bottom">
-              <div className="cs-hero-label">
-                {primary ? TYPE_LABEL[primary.thresholdType] ?? primary.label : "Program status"}
-              </div>
-              <div className="cs-hero-limit">
-                {limitCents != null
-                  ? `of ${formatUsdCents(limitCents)} limit`
-                  : meta?.fullName ?? title}
-              </div>
-            </div>
-          </div>
-
           {!loading && data && (
             <div className="mt-3.5 flex overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
               <div className="flex-1 px-2 py-3 text-center">
@@ -611,7 +637,7 @@ export function BenefitDetailView({
           {!enrolled && (
             <div className="mt-3 rounded-[16px] bg-[var(--color-cs-card)] px-4 py-3 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
               You haven&apos;t marked {title} as an enrolled program.{" "}
-              <Link href="/onboarding/benefits" className="text-[var(--color-cs-brand)]">
+              <Link href="/settings#programs" className="text-[var(--color-cs-brand)]">
                 Update your programs
               </Link>
               .
@@ -694,7 +720,7 @@ export function BenefitDetailView({
             {!loading && data && rows.length === 0 && enrolled && (
               <div className="rounded-[18px] bg-[var(--color-cs-card)] px-4 py-3.5 text-[13.5px] text-[var(--color-cs-text-secondary)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
                 No reference limits are attached for {title}. Visit{" "}
-                <Link href="/thresholds" className="text-[var(--color-cs-brand)]">
+                <Link href="/limits" className="text-[var(--color-cs-brand)]">
                   Limits
                 </Link>{" "}
                 to attach the ones that apply to you.

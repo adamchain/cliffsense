@@ -1,13 +1,34 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth, updateSession } from "@/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/mongodb";
 import User from "@/lib/db/models/User";
 import { clientMeta, getAdminSession, logAdminAction } from "@/lib/admin/audit";
+import { writeMainAppSession } from "@/lib/admin/main-app-session";
 
 const schema = z.object({ targetUserId: z.string().min(1) });
 
-/** Start impersonation: swap the session to "view as" the target user. */
+function sessionFields(user: {
+  _id: { toString(): string };
+  email: string;
+  name?: string | null;
+  accountType: string;
+  isAdmin?: boolean | null;
+  onboardingStep?: string | null;
+  applicationStatus?: string | null;
+}) {
+  return {
+    id: user._id.toString(),
+    email: user.email,
+    name: user.name ?? "",
+    accountType: user.accountType,
+    isAdmin: Boolean(user.isAdmin),
+    onboardingStep: user.onboardingStep ?? "none",
+    applicationStatus: user.applicationStatus ?? "approved",
+  };
+}
+
+/** Open the main app as the target user. The admin cookie stays in place. */
 export async function POST(req: Request) {
   const session = await getAdminSession();
   if (!session) {
@@ -21,7 +42,12 @@ export async function POST(req: Request) {
   const { targetUserId } = parsed.data;
 
   await connectDB();
-  const target = await User.findById(targetUserId).select("email status").lean();
+  const [target, actor] = await Promise.all([
+    User.findById(targetUserId)
+      .select("email name accountType isAdmin onboardingStep applicationStatus status")
+      .lean(),
+    User.findById(session.user.id).select("email name").lean(),
+  ]);
   if (!target) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -29,7 +55,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "You cannot impersonate yourself." }, { status: 400 });
   }
 
-  await updateSession({ action: "impersonate", targetUserId } as Parameters<typeof updateSession>[0]);
+  await writeMainAppSession({
+    ...sessionFields(target),
+    impersonatorId: session.user.id,
+    impersonatorEmail: session.user.email,
+    impersonatorName: actor?.name ?? "",
+  });
 
   await logAdminAction({
     actorUserId: session.user.id,
@@ -44,20 +75,28 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-/** Stop impersonation: restore the original admin session. */
+/** Stop impersonation: put the main app back on the admin's own account. */
 export async function DELETE(req: Request) {
   const session = await auth();
   const impersonatorId = session?.user?.impersonatorId;
   if (!impersonatorId) {
     return NextResponse.json({ error: "Not impersonating" }, { status: 400 });
   }
-  const targetId = session!.user.id;
+  const targetId = session.user.id;
 
-  await updateSession({ action: "stopImpersonate" } as Parameters<typeof updateSession>[0]);
+  await connectDB();
+  const admin = await User.findById(impersonatorId)
+    .select("email name accountType isAdmin onboardingStep applicationStatus")
+    .lean();
+  if (!admin) {
+    return NextResponse.json({ error: "Admin account not found" }, { status: 404 });
+  }
+
+  await writeMainAppSession(sessionFields(admin));
 
   await logAdminAction({
     actorUserId: impersonatorId,
-    actorEmail: session!.user.impersonatorEmail,
+    actorEmail: session.user.impersonatorEmail,
     action: "stop_impersonation",
     targetUserId: targetId,
     ...clientMeta(req),

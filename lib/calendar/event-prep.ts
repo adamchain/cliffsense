@@ -137,7 +137,7 @@ export function buildEventPrepPackage(input: PrepInput): EventPrepPackage {
         kind: "review",
         title: "Check current limits",
         detail: "Confirm income and resource standing before you respond to the review.",
-        href: code ? `/thresholds/${code}` : "/thresholds",
+        href: code ? `/programs/${code}` : "/limits",
       },
       {
         id: "vault-docs",
@@ -161,7 +161,7 @@ export function buildEventPrepPackage(input: PrepInput): EventPrepPackage {
         kind: "review",
         title: "Review program status",
         detail: "See limits and what’s tracked for this benefit before you report.",
-        href: code ? `/thresholds/${code}` : "/thresholds",
+        href: code ? `/programs/${code}` : "/limits",
       },
       {
         id: "vault",

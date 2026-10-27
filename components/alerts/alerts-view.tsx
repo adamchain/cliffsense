@@ -116,18 +116,42 @@ function isTimeSensitive(level: string, trigger: string): boolean {
   );
 }
 
+function alertProgramCodes(a: AlertRow): string[] {
+  const snap = a.dataSnapshot;
+  const playbook = resolveAlertPlaybook({
+    playbookId: snap?.playbookId,
+    scenarioId: snap?.scenarioId,
+    program: snap?.program,
+    thresholdType: snap?.thresholdType,
+    trigger: a.trigger,
+    title: snap?.title,
+  });
+  const raw = snap?.program
+    ? [String(snap.program)]
+    : snap?.programs?.length
+      ? snap.programs
+      : playbook.programs;
+  return [...new Set(raw.map((p) => programCodeKey(String(p))).filter(Boolean))];
+}
+
 export function AlertsView({
   beneficiaryId,
   reportingActions = [],
   embedded = false,
   limitSources = null,
   focusAlertId = null,
+  programCode = null,
+  hideChrome = false,
 }: {
   beneficiaryId: string | null;
   reportingActions?: ReportingAction[];
   embedded?: boolean;
   limitSources?: LimitSources | null;
   focusAlertId?: string | null;
+  /** When set, only alerts for this program are shown. */
+  programCode?: string | null;
+  /** Program page: list only, without the cross-program tools. */
+  hideChrome?: boolean;
 }) {
   const [rows, setRows] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -185,14 +209,19 @@ export function AlertsView({
     );
   }
 
+  const visible = programCode
+    ? rows.filter((a) => alertProgramCodes(a).includes(programCodeKey(programCode)))
+    : rows;
+
   async function markAllRead() {
-    const open = rows.filter((r) => r.status === "new");
+    const open = visible.filter((r) => r.status === "new");
     await Promise.all(open.map((r) => patchStatus(r._id, "acknowledged")));
   }
 
   return (
     <div>
       <div data-tour="alerts-page">
+      {hideChrome ? null : (
       <div className="flex items-center justify-between gap-3">
         {embedded ? (
           <h2 className="text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">Alerts</h2>
@@ -212,12 +241,13 @@ export function AlertsView({
             type="button"
             className="text-[15px] font-medium text-[var(--color-cs-brand)] disabled:opacity-40"
             onClick={() => void markAllRead()}
-            disabled={!rows.some((r) => r.status === "new")}
+            disabled={!visible.some((r) => r.status === "new")}
           >
             Mark all read
           </button>
         </div>
       </div>
+      )}
 
       <div
         className="mb-4 mt-3 inline-flex rounded-[10px] bg-[rgba(118,118,128,0.12)] p-0.5"
@@ -253,31 +283,44 @@ export function AlertsView({
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
-      {reportingActions.length > 0 && (
+      {!hideChrome && reportingActions.length > 0 && (
         <div className="mb-5">
           <ActionCenter actions={reportingActions} />
         </div>
       )}
 
-      <CaseClocksStrip beneficiaryId={beneficiaryId} />
+      {!hideChrome && <CaseClocksStrip beneficiaryId={beneficiaryId} />}
 
-      <ReportEventForm beneficiaryId={beneficiaryId} onCreated={() => void load()} />
+      {!hideChrome && (
+        <ReportEventForm beneficiaryId={beneficiaryId} onCreated={() => void load()} />
+      )}
 
+      {hideChrome ? null : (
       <p className="mb-3 text-[12px] leading-relaxed text-[var(--color-cs-text-secondary)]">
         Each alert is an action plan: program, rule, deadline, documents, next coverage, and appeal
         dates. A DHS closure code is a recorded case action — codes 042 and 440 are procedural labels,
         and SNAP 474 means the certification period ended. They do not by themselves prove household
         fault or that the person was ineligible.
       </p>
+      )}
 
+      {programCode ? null : (
       <div className="mb-2 px-0.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-        Notifications
+        By program
       </div>
+      )}
 
       <div className="space-y-3">
         {loading && <p className="text-sm text-[var(--color-cs-text-secondary)]">Loading…</p>}
         {!loading &&
-          rows.map((a) => {
+          [...visible]
+            .sort((a, b) =>
+              (alertProgramCodes(a)[0] ?? "zzz").localeCompare(alertProgramCodes(b)[0] ?? "zzz"),
+            )
+            .map((a, index, ordered) => {
+            const sectionCode = alertProgramCodes(a)[0] ?? "";
+            const previousCode = index > 0 ? alertProgramCodes(ordered[index - 1]!)[0] ?? "" : "";
+            const showProgram = !programCode && sectionCode !== previousCode;
             const snap = a.dataSnapshot;
             const playbook = resolveAlertPlaybook({
               playbookId: snap?.playbookId,
@@ -304,9 +347,25 @@ export function AlertsView({
                 : playbook.programs;
             const focused = focusAlertId === a._id;
 
+            const sectionLabel = sectionCode
+              ? (programMetaFor(sectionCode)?.label ?? sectionCode)
+              : "Other";
+
             return (
+              <div key={a._id} className="space-y-3">
+              {showProgram && (
+                <div className="flex items-baseline justify-between gap-3 px-0.5 pt-2">
+                  <h2 className="text-[18px] font-bold tracking-tight text-[var(--color-cs-text)]">
+                    {sectionLabel}
+                  </h2>
+                  {sectionCode ? (
+                    <Link href={`/programs/${sectionCode}`} className="text-[14px] font-semibold text-[var(--color-cs-brand)]">
+                      Open
+                    </Link>
+                  ) : null}
+                </div>
+              )}
               <div
-                key={a._id}
                 id={`alert-${a._id}`}
                 className={`cs-acard ${a.status !== "new" ? "read" : ""} ${
                   focused ? "ring-2 ring-[var(--color-cs-brand)]" : ""
@@ -365,7 +424,7 @@ export function AlertsView({
                       </span>
                     </Link>
                     {prog && progMeta && (
-                      <Link href={`/thresholds/${prog}`} className="cs-acard-btn">
+                      <Link href={`/programs/${prog}`} className="cs-acard-btn">
                         <span className="inline-flex items-center gap-1">
                           <IconExternalLink size={13} stroke={1.5} aria-hidden />
                           View {progMeta.label}
@@ -393,13 +452,15 @@ export function AlertsView({
                   </div>
                 </div>
               </div>
+              </div>
             );
           })}
-        {!loading && rows.length === 0 && (
+        {!loading && visible.length === 0 && (
           <div className="cs-acard justify-center py-8 text-center">
             <p className="text-[14px] text-[var(--color-cs-text-secondary)]">
-              No alerts{filter === "new" ? " that need attention" : ""}. Sync a bank from Money to
-              refresh.
+              {programCode
+                ? "No alerts for this program."
+                : `No alerts${filter === "new" ? " that need attention" : ""}. Sync a bank from Money to refresh.`}
             </p>
           </div>
         )}

@@ -1,15 +1,12 @@
 import type { ComponentType } from "react";
 import {
-  IconBell,
   IconBook,
   IconCalendarEvent,
-  IconClipboardList,
   IconFileExport,
   IconFileText,
   IconFolder,
   IconHome,
   IconMessageCircle,
-  IconTarget,
   IconUsers,
   IconWallet,
 } from "@tabler/icons-react";
@@ -44,13 +41,7 @@ export const PRIMARY_SECTIONS: NavSection[] = [
   {
     label: "Programs",
     icon: IconUsers,
-    href: "/limits/programs",
-    children: [
-      { label: "Programs", icon: IconUsers, href: "/limits/programs" },
-      { label: "Alerts", icon: IconBell, href: "/limits/alerts" },
-      { label: "Limits", icon: IconTarget, href: "/limits" },
-      { label: "2026–27 policy", icon: IconClipboardList, href: "/limits/policy" },
-    ],
+    href: "/limits",
   },
   { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
   { label: "Forms", icon: IconFileText, href: "/documents" },
@@ -80,7 +71,8 @@ export function isHrefActive(activeHref: string, href: string): boolean {
     return (
       activeHref === "/limits" ||
       activeHref === "/thresholds" ||
-      activeHref.startsWith("/thresholds/")
+      activeHref.startsWith("/thresholds/") ||
+      activeHref.startsWith("/programs/")
     );
   }
   if (href === "/limits/alerts") {

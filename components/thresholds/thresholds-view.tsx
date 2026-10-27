@@ -53,9 +53,12 @@ const STATUS: Record<string, { label: string; className: string }> = {
 export function ThresholdsView({
   beneficiaryId,
   embedded = false,
+  cardsFirst = false,
 }: {
   beneficiaryId: string | null;
   embedded?: boolean;
+  /** Lead with the program cards. The reference table stays below them. */
+  cardsFirst?: boolean;
 }) {
   const [data, setData] = useState<Payload | null>(null);
   const [obligationPacket, setObligationPacket] = useState<{
@@ -216,16 +219,18 @@ export function ThresholdsView({
 
   return (
     <>
-      <div data-tour="limits-page" className="mb-3">
-      {embedded ? (
+      <div data-tour="limits-page" className={cardsFirst ? "mb-3" : "mb-3"}>
+      {cardsFirst ? null : embedded ? (
         <h2 className="mb-2 text-xl font-semibold tracking-tight text-[var(--color-cs-text)]">Limits</h2>
       ) : (
         <h1 className="cs-big-title mb-2">Limits</h1>
       )}
+      {cardsFirst ? null : (
       <p className="max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
         Wallet cards for each enrolled program, plus the full limit table below. Figures are
         informational — always confirm with a benefits counselor or agency.
       </p>
+      )}
       </div>
       <AppToolbar>
         <ToolbarButton onClick={() => void load()} primary>
@@ -241,8 +246,8 @@ export function ThresholdsView({
       {data && data.programsEnrolled.length === 0 && (
         <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
           Select enrolled programs in{" "}
-          <Link href="/limits/programs" className="text-[var(--color-cs-brand)] hover:underline">
-            Programs
+          <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
+            Settings
           </Link>{" "}
           to attach system reference limits.
         </div>
@@ -317,6 +322,14 @@ export function ThresholdsView({
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
 
+      {cardsFirst && data && data.rows.length > 0 && (
+        <ProgramCards
+          rows={data.rows}
+          stored={obligationPacket.stored}
+          enrollments={obligationPacket.enrollments}
+        />
+      )}
+
       {data && (
         <div className="mb-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded border border-[var(--color-cs-border)] bg-white p-3">
@@ -343,7 +356,7 @@ export function ThresholdsView({
         </div>
       )}
 
-      {data && data.rows.length > 0 && (
+      {!cardsFirst && data && data.rows.length > 0 && (
         <ProgramCards
           rows={data.rows}
           stored={obligationPacket.stored}

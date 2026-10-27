@@ -3,14 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   IconAlertCircle,
+  IconArrowUp,
   IconChevronLeft,
   IconCircleCheck,
-  IconFileWord,
   IconInbox,
   IconLayoutGrid,
   IconList,
   IconSearch,
-  IconX,
 } from "@tabler/icons-react";
 import { SntRegister } from "@/components/vault/snt-register";
 import type { SntDisbursementView, SntProfileView } from "@/lib/snt/record";
@@ -61,14 +60,6 @@ function FolderIcon({ tint, className }: { tint: string; className?: string }) {
         opacity="0.82"
       />
     </svg>
-  );
-}
-
-function folderDocx(folder: VaultFolderView): VaultDocView | null {
-  return (
-    folder.docs.find((doc) => doc.kind === "docx" && doc.preview) ??
-    folder.docs.find((doc) => doc.kind === "docx") ??
-    null
   );
 }
 
@@ -309,45 +300,123 @@ export function VaultBrowser({
     );
   }
 
-  return (
-    <section className="mt-4">
-      <div className="mb-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <div className="flex items-baseline justify-between gap-3">
-          <div className="text-[15px] font-semibold">Opening file</div>
-          <div className="text-[13px] tabular-nums text-[var(--color-cs-text-secondary)]">
-            {proofFiled} of {proofNeeded} on file
-          </div>
-        </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--color-cs-fill)]">
-          <div
-            className="h-full rounded-full bg-[var(--color-cs-brand)]"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className="mt-2 text-[12.5px] leading-snug text-[var(--color-cs-text-secondary)]">
-          {screened
-            ? "Missing proof follows the benefits and authority on this case. Other document types stay in All."
-            : "Identity comes first. Screen benefits so the vault can mark the proof this case actually needs."}
-        </p>
-      </div>
+  const itemCount = open ? open.slots.length + open.loose.length : visible.length;
+  const navBtn =
+    "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] font-medium";
 
-      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="cs-search sm:max-w-sm">
-          <IconSearch size={18} stroke={1.8} aria-hidden />
+  function openFolder(id: string) {
+    setOpenId(id);
+  }
+
+  return (
+    <section className="mt-4 overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div className="flex items-center gap-1.5 border-b border-[var(--color-cs-sep)] px-2 py-2 sm:px-3">
+        <button
+          type="button"
+          className="cs-circbtn !h-8 !w-8 disabled:opacity-40"
+          aria-label="Back"
+          disabled={!open}
+          onClick={() => setOpenId(null)}
+        >
+          <IconChevronLeft size={16} stroke={2.2} />
+        </button>
+        <button
+          type="button"
+          className="cs-circbtn !h-8 !w-8 disabled:opacity-40"
+          aria-label="Up to Vault"
+          disabled={!open}
+          onClick={() => setOpenId(null)}
+        >
+          <IconArrowUp size={16} stroke={2.2} />
+        </button>
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden rounded-lg bg-[var(--color-cs-surface)] px-3 py-1.5 text-[13px]">
+          <button
+            type="button"
+            onClick={() => setOpenId(null)}
+            className="shrink-0 font-semibold text-[var(--color-cs-brand)]"
+          >
+            Vault
+          </button>
+          {open ? (
+            <>
+              <span className="text-[var(--color-cs-text-muted)]" aria-hidden>
+                ›
+              </span>
+              <span className="truncate font-medium text-[var(--color-cs-text)]">{open.folder.label}</span>
+            </>
+          ) : (
+            <span className="truncate text-[var(--color-cs-text-secondary)]">
+              {scope === "case" ? "This case" : "All document types"}
+            </span>
+          )}
+        </div>
+        <label className="cs-search hidden !h-9 !w-52 !rounded-lg !px-3 sm:flex">
+          <IconSearch size={16} stroke={1.8} aria-hidden />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Find a document, like BPQY or QMB"
+            placeholder="Search"
             aria-label="Find a document"
           />
         </label>
-        <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
-          <div className="inline-flex rounded-lg bg-[var(--color-cs-fill)] p-0.5" role="group" aria-label="Which folders">
+        <div className="inline-flex rounded-lg bg-[var(--color-cs-fill)] p-0.5" role="group" aria-label="View mode">
+          <button
+            type="button"
+            onClick={() => setView("cards")}
+            className={`rounded-md p-1.5 ${
+              view === "cards"
+                ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm"
+                : "text-[var(--color-cs-text-secondary)]"
+            }`}
+            aria-pressed={view === "cards"}
+            aria-label="Icons"
+            title="Icons"
+          >
+            <IconLayoutGrid size={16} stroke={2} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            className={`rounded-md p-1.5 ${
+              view === "list"
+                ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm"
+                : "text-[var(--color-cs-text-secondary)]"
+            }`}
+            aria-pressed={view === "list"}
+            aria-label="Details"
+            title="Details"
+          >
+            <IconList size={16} stroke={2} />
+          </button>
+        </div>
+      </div>
+
+      <label className="cs-search !h-10 !rounded-none border-b border-[var(--color-cs-sep)] sm:hidden">
+        <IconSearch size={16} stroke={1.8} aria-hidden />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search Vault"
+          aria-label="Find a document"
+        />
+      </label>
+
+      <div className="flex min-h-[28rem]">
+        <nav className="hidden w-56 shrink-0 flex-col border-r border-[var(--color-cs-sep)] bg-[var(--color-cs-surface)] py-2 md:flex" aria-label="Folders">
+          <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
+            Vault
+          </div>
+          <div className="px-1.5">
             <button
               type="button"
-              onClick={() => setScope("case")}
-              className={`rounded-md px-2.5 py-1.5 text-[12.5px] font-semibold ${
-                scope === "case" ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm" : "text-[var(--color-cs-text-secondary)]"
+              onClick={() => {
+                setScope("case");
+                setOpenId(null);
+              }}
+              className={`${navBtn} ${
+                scope === "case" && !open
+                  ? "bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)]"
+                  : "text-[var(--color-cs-text)] hover:bg-white/70"
               }`}
               aria-pressed={scope === "case"}
             >
@@ -355,178 +424,174 @@ export function VaultBrowser({
             </button>
             <button
               type="button"
-              onClick={() => setScope("all")}
-              className={`rounded-md px-2.5 py-1.5 text-[12.5px] font-semibold ${
-                scope === "all" ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm" : "text-[var(--color-cs-text-secondary)]"
+              onClick={() => {
+                setScope("all");
+                setOpenId(null);
+              }}
+              className={`${navBtn} ${
+                scope === "all" && !open
+                  ? "bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)]"
+                  : "text-[var(--color-cs-text)] hover:bg-white/70"
               }`}
               aria-pressed={scope === "all"}
             >
               All document types
             </button>
           </div>
-          <div className="inline-flex rounded-lg bg-[var(--color-cs-fill)] p-0.5" role="group" aria-label="View mode">
-            <button
-              type="button"
-              onClick={() => setView("cards")}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] font-semibold ${
-                view === "cards" ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm" : "text-[var(--color-cs-text-secondary)]"
-              }`}
-              aria-pressed={view === "cards"}
-            >
-              <IconLayoutGrid size={15} stroke={2} />
-              Cards
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("list")}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] font-semibold ${
-                view === "list" ? "bg-[var(--color-cs-card)] text-[var(--color-cs-brand)] shadow-sm" : "text-[var(--color-cs-text-secondary)]"
-              }`}
-              aria-pressed={view === "list"}
-            >
-              <IconList size={15} stroke={2} />
-              List
-            </button>
+          <div className="mt-3 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
+            Folders
           </div>
-        </div>
-      </div>
-
-      {visible.length === 0 ? (
-        <p className="text-[13px] text-[var(--color-cs-text-secondary)]">No document types match that search.</p>
-      ) : view === "cards" ? (
-        <>
-          {(() => {
-            const wordDocs = visible.flatMap(({ folder }) => folder.docs.filter((doc) => doc.kind === "docx"));
-            if (open || wordDocs.length === 0) return null;
-            return (
-              <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {wordDocs.map((doc) => (
-                  <VaultFileCard
-                    key={doc.id}
-                    id={doc.id}
-                    filename={doc.filename}
-                    sizeLabel={doc.sizeLabel}
-                    uploadedLabel={doc.uploadedLabel}
-                    docx
-                    preview={doc.preview}
-                  />
-                ))}
-              </div>
-            );
-          })()}
-
-          <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 ${open ? "hidden sm:grid" : ""}`}>
+          <div className="min-h-0 flex-1 overflow-y-auto px-1.5">
             {visible.map(({ folder }) => {
-              const neededOpen = folder.slots.filter(
-                (slot) => slot.attention === "needed" && !folder.docs.some((doc) => doc.slotId === slot.id),
-              ).length;
               const selected = openId === folder.id;
-              const docx = folderDocx(folder);
               return (
                 <button
                   key={folder.id}
                   type="button"
-                  onClick={() => setOpenId((cur) => (cur === folder.id ? null : folder.id))}
-                  className={`group flex flex-col items-center rounded-[18px] px-3 pb-3 pt-4 text-center transition ${
+                  onClick={() => openFolder(folder.id)}
+                  className={`${navBtn} ${
                     selected
-                      ? "bg-[var(--color-cs-brand-soft)] ring-2 ring-[var(--color-cs-brand)]/30"
-                      : "bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:bg-[var(--color-cs-surface)]"
+                      ? "bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)]"
+                      : "text-[var(--color-cs-text)] hover:bg-white/70"
                   }`}
+                  aria-current={selected ? "page" : undefined}
                 >
-                  <span className="relative">
-                    <FolderIcon tint={folder.tint} className="h-14 w-[4.25rem] drop-shadow-sm transition group-hover:scale-[1.03]" />
-                    {docx ? (
-                      <IconFileWord
-                        size={16}
-                        stroke={1.7}
-                        className="absolute -bottom-0.5 -right-1 text-[#2b579a]"
-                        aria-hidden
-                      />
-                    ) : null}
-                  </span>
-                  <div className="mt-2 w-full text-[13.5px] font-semibold leading-tight text-[var(--color-cs-text)]">
-                    {folder.label}
-                  </div>
-                  <div className={`mt-0.5 text-[11.5px] ${neededOpen > 0 ? "font-semibold text-[var(--color-cs-warning)]" : "text-[var(--color-cs-text-secondary)]"}`}>
-                    {neededOpen > 0
-                      ? `${neededOpen} missing`
-                      : `${folder.docs.length} file${folder.docs.length === 1 ? "" : "s"}`}
-                  </div>
-                  {docx?.preview ? (
-                    <p className="mt-1 line-clamp-2 w-full text-left text-[11px] leading-snug text-[var(--color-cs-text-secondary)]">
-                      {docx.preview}
-                    </p>
-                  ) : null}
+                  <FolderIcon tint={folder.tint} className="h-4 w-5 shrink-0" />
+                  <span className="truncate">{folder.label}</span>
                 </button>
               );
             })}
           </div>
+        </nav>
 
-          {open && (
-            <div className="sm:mt-4 rounded-[18px] bg-[var(--color-cs-card)] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-              <button
-                type="button"
-                className="mb-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--color-cs-brand)] sm:hidden"
-                onClick={() => setOpenId(null)}
-              >
-                <IconChevronLeft size={16} stroke={2.2} aria-hidden />
-                All folders
-              </button>
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-[16px] font-bold tracking-tight">{open.folder.label}</div>
-                  <p className="mt-0.5 text-[12.5px] text-[var(--color-cs-text-secondary)]">{open.folder.hint}</p>
-                </div>
-                <button type="button" className="cs-circbtn !h-8 !w-8" aria-label="Close folder" onClick={() => setOpenId(null)}>
-                  <IconX size={16} stroke={2.2} />
-                </button>
+        <div className="min-w-0 flex-1 p-3 sm:p-4">
+          <div className="mb-3 flex gap-1 md:hidden" role="group" aria-label="Which folders">
+            <button
+              type="button"
+              onClick={() => {
+                setScope("case");
+                setOpenId(null);
+              }}
+              className={`rounded-lg px-2.5 py-1 text-[12.5px] font-semibold ${
+                scope === "case"
+                  ? "bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)]"
+                  : "text-[var(--color-cs-text-secondary)]"
+              }`}
+            >
+              This case
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setScope("all");
+                setOpenId(null);
+              }}
+              className={`rounded-lg px-2.5 py-1 text-[12.5px] font-semibold ${
+                scope === "all"
+                  ? "bg-[var(--color-cs-brand-soft)] text-[var(--color-cs-brand)]"
+                  : "text-[var(--color-cs-text-secondary)]"
+              }`}
+            >
+              All types
+            </button>
+          </div>
+
+          {visible.length === 0 ? (
+            <p className="text-[13px] text-[var(--color-cs-text-secondary)]">No folders match that search.</p>
+          ) : open ? (
+            <div>
+              <div className="mb-3">
+                <div className="text-[16px] font-bold tracking-tight">{open.folder.label}</div>
+                <p className="mt-0.5 text-[12.5px] text-[var(--color-cs-text-secondary)]">{open.folder.hint}</p>
               </div>
               {renderSlots(open.folder, open.slots, open.loose)}
             </div>
-          )}
-        </>
-      ) : (
-        <div className="overflow-hidden rounded-[18px] bg-[var(--color-cs-card)] shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-          {visible.map(({ folder, slots, loose }) => {
-            const docx = folderDocx(folder);
-            return (
-            <div key={folder.id} className="border-b border-[var(--color-cs-sep)] last:border-b-0">
-              <button
-                type="button"
-                onClick={() => setOpenId((cur) => (cur === folder.id ? null : folder.id))}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left"
-              >
-                <span className="relative shrink-0">
-                  <FolderIcon tint={folder.tint} className="h-8 w-10" />
-                  {docx ? (
-                    <IconFileWord
-                      size={14}
-                      stroke={1.7}
-                      className="absolute -bottom-0.5 -right-1 text-[#2b579a]"
-                      aria-hidden
-                    />
-                  ) : null}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[16px] font-medium">{folder.label}</div>
-                  <div className="truncate text-[12.5px] text-[var(--color-cs-text-secondary)]">{folder.hint}</div>
-                  {docx?.preview ? (
-                    <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap text-[12px] leading-snug text-[var(--color-cs-text)]">
-                      {docx.preview}
-                    </p>
-                  ) : null}
-                </div>
-              </button>
-              {openId === folder.id && (
-                <div className="border-t border-[var(--color-cs-sep)] bg-[var(--color-cs-surface)] px-4 py-1">
-                  {renderSlots(folder, slots, loose)}
-                </div>
-              )}
+          ) : view === "cards" ? (
+            <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-5">
+              {visible.map(({ folder }) => {
+                const neededOpen = folder.slots.filter(
+                  (slot) => slot.attention === "needed" && !folder.docs.some((doc) => doc.slotId === slot.id),
+                ).length;
+                return (
+                  <button
+                    key={folder.id}
+                    type="button"
+                    onClick={() => openFolder(folder.id)}
+                    className="flex flex-col items-center rounded-xl px-2 py-3 text-center hover:bg-[var(--color-cs-surface)]"
+                  >
+                    <FolderIcon tint={folder.tint} className="h-14 w-[4.25rem]" />
+                    <div className="mt-1.5 line-clamp-2 w-full text-[12.5px] font-medium leading-tight text-[var(--color-cs-text)]">
+                      {folder.label}
+                    </div>
+                    <div
+                      className={`mt-0.5 text-[11px] ${
+                        neededOpen > 0
+                          ? "font-semibold text-[var(--color-cs-warning)]"
+                          : "text-[var(--color-cs-text-secondary)]"
+                      }`}
+                    >
+                      {neededOpen > 0
+                        ? `${neededOpen} missing`
+                        : `${folder.docs.length} file${folder.docs.length === 1 ? "" : "s"}`}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            );
-          })}
+          ) : (
+            <div>
+              <div className="grid grid-cols-[1fr_4.5rem_4.5rem] gap-2 border-b border-[var(--color-cs-sep)] px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
+                <span>Name</span>
+                <span>Files</span>
+                <span>Needed</span>
+              </div>
+              {visible.map(({ folder }) => {
+                const neededOpen = folder.slots.filter(
+                  (slot) => slot.attention === "needed" && !folder.docs.some((doc) => doc.slotId === slot.id),
+                ).length;
+                return (
+                  <button
+                    key={folder.id}
+                    type="button"
+                    onClick={() => openFolder(folder.id)}
+                    className="grid w-full grid-cols-[1fr_4.5rem_4.5rem] items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-[var(--color-cs-surface)]"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <FolderIcon tint={folder.tint} className="h-5 w-6 shrink-0" />
+                      <span className="truncate text-[14px] font-medium">{folder.label}</span>
+                    </span>
+                    <span className="text-[13px] tabular-nums text-[var(--color-cs-text-secondary)]">
+                      {folder.docs.length}
+                    </span>
+                    <span
+                      className={`text-[13px] tabular-nums ${
+                        neededOpen > 0
+                          ? "font-semibold text-[var(--color-cs-warning)]"
+                          : "text-[var(--color-cs-text-secondary)]"
+                      }`}
+                    >
+                      {neededOpen}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-t border-[var(--color-cs-sep)] bg-[var(--color-cs-surface)] px-3 py-1.5 text-[12px] text-[var(--color-cs-text-secondary)]">
+        <span className="tabular-nums">
+          {itemCount} item{itemCount === 1 ? "" : "s"}
+          {open ? ` in ${open.folder.label}` : ""}
+        </span>
+        <span className="flex items-center gap-2 tabular-nums">
+          <span className="hidden h-1 w-16 overflow-hidden rounded-full bg-[var(--color-cs-fill)] sm:block">
+            <span className="block h-full bg-[var(--color-cs-brand)]" style={{ width: `${pct}%` }} />
+          </span>
+          {proofFiled} of {proofNeeded} on file
+        </span>
+      </div>
     </section>
   );
 }

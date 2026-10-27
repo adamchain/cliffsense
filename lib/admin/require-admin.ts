@@ -1,17 +1,24 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
-import { auth } from "@/auth";
+import { getAdminSession, type AdminActor } from "@/lib/admin/audit";
+import { ADMIN_COOKIE_NAME, adminCookieSecure } from "@/lib/admin/session-token";
 
 /**
- * Page/server-component guard: resolve the session only for a real, non-
- * impersonating admin. Anyone else is bounced to the dashboard. The admin group
- * layout calls this once; individual pages can call it too (cheap — `auth()` is
- * request-cached) for defense-in-depth if rendered outside the group.
+ * Page guard for the admin console. Missing or stale sessions go to the admin
+ * sign-in page, never into the main app.
  */
-export async function requireAdmin(): Promise<Session> {
-  const session = await auth();
-  if (!session?.user?.isAdmin || session.user.impersonatorId) {
-    redirect("/dashboard");
+export async function requireAdmin(): Promise<AdminActor> {
+  const session = await getAdminSession();
+  if (!session) {
+    const store = await cookies();
+    store.set(ADMIN_COOKIE_NAME, "", {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: adminCookieSecure(),
+      maxAge: 0,
+    });
+    redirect("/admin/login");
   }
   return session;
 }

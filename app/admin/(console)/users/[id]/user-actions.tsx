@@ -62,7 +62,7 @@ export function UserAdminActions({
   async function impersonate() {
     if (
       !confirm(
-        `View the app as ${email}? Your admin session is suspended until you exit, and the action is logged.`,
+        `Open the main app as ${email}? Admin stays signed in on its own, and the action is logged.`,
       )
     )
       return;

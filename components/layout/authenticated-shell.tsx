@@ -13,7 +13,6 @@ export function AuthenticatedShell({
   beneficiaryName,
   accounts = [],
   alertCount = 0,
-  isAdmin = false,
 }: {
   children: ReactNode;
   userName: string;
@@ -22,7 +21,6 @@ export function AuthenticatedShell({
   beneficiaryName?: string;
   accounts?: BeneficiarySwitcherAccount[];
   alertCount?: number;
-  isAdmin?: boolean;
 }) {
   const pathname = usePathname() ?? "/dashboard";
   return (
@@ -34,7 +32,6 @@ export function AuthenticatedShell({
       beneficiaryName={beneficiaryName}
       accounts={accounts}
       alertCount={alertCount}
-      isAdmin={isAdmin}
     >
       {children}
     </AppShell>

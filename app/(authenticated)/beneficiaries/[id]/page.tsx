@@ -89,12 +89,17 @@ export default async function BeneficiaryDetailPage({
         </section>
 
         <section className="rounded border border-[var(--color-cs-border)] bg-white p-4">
-          <h2 className="mb-2 text-sm font-medium text-[var(--color-cs-text)]">Enrolled programs</h2>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-medium text-[var(--color-cs-text)]">Enrolled programs</h2>
+            <Link href="/settings#programs" className="text-[11px] text-[var(--color-cs-brand)] hover:underline">
+              Edit in Settings
+            </Link>
+          </div>
           {(ben.benefitsEnrolled ?? []).length === 0 ? (
             <p className="text-[12px] text-[var(--color-cs-text-secondary)]">
               No programs yet.{" "}
-              <Link href="/onboarding/benefits" className="text-[var(--color-cs-brand)] hover:underline">
-                Pick programs
+              <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
+                Choose them in Settings
               </Link>
               .
             </p>

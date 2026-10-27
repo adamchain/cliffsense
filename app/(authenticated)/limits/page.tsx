@@ -1,5 +1,4 @@
 import { ThresholdsView } from "@/components/thresholds/thresholds-view";
-import { WorkPlanner } from "@/components/benefits/work-planner";
 import { loadLimitsHub } from "@/lib/limits/load-hub";
 
 export default async function LimitsPage() {
@@ -7,12 +6,11 @@ export default async function LimitsPage() {
 
   return (
     <div>
-      <h1 className="cs-big-title mb-1">Limits</h1>
+      <h1 className="cs-big-title mb-1">Programs</h1>
       <p className="mb-5 max-w-2xl text-[13.5px] text-[var(--color-cs-text-secondary)]">
-        Reference limits for the programs you receive. Alerts, 2026–27 policy, and programs each have their own page.
+        Each card is a program you receive. Open it for that program&apos;s alerts, dates, and limits.
       </p>
-      <ThresholdsView beneficiaryId={hub.beneficiaryId} embedded />
-      <WorkPlanner beneficiaryId={hub.beneficiaryId} initialTwpMonths={hub.twpMonthsUsed} />
+      <ThresholdsView beneficiaryId={hub.beneficiaryId} embedded cardsFirst />
     </div>
   );
 }
