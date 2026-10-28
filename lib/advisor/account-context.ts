@@ -4,6 +4,7 @@ import Beneficiary from "@/lib/db/models/Beneficiary";
 import Transaction from "@/lib/db/models/Transaction";
 import { formatPlainUsdFromCents, formatSignedUsd } from "@/lib/format/money";
 import { programLabel } from "@/lib/benefits/program-meta";
+import { qmbIncomeBeforeGeneralExclusionCents } from "@/lib/benefits/qmb-limits";
 import {
   grossMonthlyIncomeCents,
   monthlyIncomeBreakdownCents,
@@ -83,10 +84,15 @@ export async function buildAdvisorAccountContext(
     userCategory: t.userCategory,
     pending: Boolean(t.pending),
     excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    name: t.name ?? "",
+    merchantName: t.merchantName ?? "",
   }));
+  const irweRaw = Number((beneficiary as { irweMonthlyCents?: number }).irweMonthlyCents ?? 0);
+  const irweCents = Number.isFinite(irweRaw) && irweRaw > 0 ? Math.round(irweRaw) : 0;
   const breakdown = monthlyIncomeBreakdownCents(txLike, prefix);
   const grossMonthly = grossMonthlyIncomeCents(breakdown);
-  const ssiCountable = ssiCountableMonthlyIncomeCents(breakdown);
+  const ssiCountable = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
+  const qmbIncome = qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents });
 
   // Category mix for this month (count + summed magnitude).
   const catTotals = new Map<string, { count: number; cents: number }>();
@@ -123,9 +129,22 @@ export async function buildAdvisorAccountContext(
     `- Total gross monthly income (SNAP-style, all countable): ${formatPlainUsdFromCents(grossMonthly)}.`,
   );
   lines.push(
-    `- SSI/Medicaid countable income after the $20 general + $65 earned exclusions and halving remaining wages: ${formatPlainUsdFromCents(
+    `- Impairment-related work expenses entered: ${formatPlainUsdFromCents(irweCents)}. ${
+      irweCents > 0
+        ? "This amount is subtracted from earned income after the $65 and before the one-half. It is also taken off dollar-for-dollar before an SSDI substantial-gainful-activity comparison. It is not used for the Trial Work Period."
+        : "None entered, so IRWE was not subtracted. The user can enter a monthly amount on the SSDI, SSI, or QMB page."
+    }`,
+  );
+  lines.push(
+    `- SSI/ABD/MAWD countable income AFTER the $20 general exclusion (unearned first), the $65 earned exclusion, IRWE, and halving remaining wages: ${formatPlainUsdFromCents(
       ssiCountable,
-    )}.`,
+    )}. This $20 subtraction is for these programs only.`,
+  );
+  lines.push(
+    `- QMB income compared with the published limit: ${formatPlainUsdFromCents(qmbIncome    )}. The $20 was NOT subtracted from this figure. The published QMB limit ($1,350 one person / $1,824 a couple in 2026) already includes the $20. Do not tell the user this QMB number reflects a $20 exclusion.`,
+  );
+  lines.push(
+    "- SNAP deposits and ABLE distributions are left out when the bank description identifies them. Infrequent or irregular income is not detected automatically.",
   );
   lines.push(
     `- Projected earned income by month-end (incl. recurring payroll): ${formatPlainUsdFromCents(

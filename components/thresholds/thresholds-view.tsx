@@ -6,7 +6,7 @@ import { IconPencil, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-reac
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { WalletCardGroup } from "@/components/benefits/wallet-card";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
-import { buildProgramCards } from "@/lib/benefits/program-tier";
+import { attachWageChangeKind, buildProgramCards } from "@/lib/benefits/program-tier";
 import { programCodeKey } from "@/lib/benefits/program-meta";
 import {
   cardObligationSummaries,
@@ -42,6 +42,7 @@ type Payload = {
     maxDepositoryBalanceCents: number;
   };
   rows: Row[];
+  wageChangeKind?: "new_work" | "increase" | "decrease" | "stopped" | null;
 };
 
 const STATUS: Record<string, { label: string; className: string }> = {
@@ -327,6 +328,7 @@ export function ThresholdsView({
           rows={data.rows}
           stored={obligationPacket.stored}
           enrollments={obligationPacket.enrollments}
+          wageChangeKind={data.wageChangeKind}
         />
       )}
 
@@ -361,6 +363,7 @@ export function ThresholdsView({
           rows={data.rows}
           stored={obligationPacket.stored}
           enrollments={obligationPacket.enrollments}
+          wageChangeKind={data.wageChangeKind}
         />
       )}
 
@@ -487,13 +490,15 @@ function ProgramCards({
   rows,
   stored,
   enrollments,
+  wageChangeKind,
 }: {
   rows: Row[];
   stored: StoredObligation[];
   enrollments: { program: string; snapReportingCategory?: string | null }[];
+  wageChangeKind?: Payload["wageChangeKind"];
 }) {
   const enrolledPrograms = enrollments.map((row) => row.program);
-  const cards = buildProgramCards(rows).map((card) => {
+  const cards = attachWageChangeKind(buildProgramCards(rows), wageChangeKind).map((card) => {
     const enrollment = enrollments.find((row) => programCodeKey(row.program) === card.code);
     const view = obligationsForProgram({
       program: card.code,

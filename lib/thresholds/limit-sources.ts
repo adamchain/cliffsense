@@ -1,6 +1,12 @@
+import { noncountableIncomeNote } from "@/lib/benefits/noncountable-inflow";
 import { SNAP_LUMP_SUM_CENTS } from "@/lib/benefits/snap-limits";
 import { programCodeKey } from "@/lib/benefits/program-meta";
-import { resourceCountNote, type ResourceAccount, type TxLike } from "@/lib/thresholds/metrics";
+import {
+  noncountableIncomeInflow,
+  resourceCountNote,
+  type ResourceAccount,
+  type TxLike,
+} from "@/lib/thresholds/metrics";
 
 export type LimitSourceLine = {
   id: string;
@@ -34,10 +40,12 @@ export function buildLimitSources(
     if (t.amountCents >= 0) continue;
     if (!INCOME_CATEGORIES.has(t.userCategory)) continue;
     const amountCents = Math.abs(t.amountCents);
-    const included = !t.pending && !t.excludedFromThresholds;
+    const leftOut = noncountableIncomeInflow(t);
+    const included = !t.pending && !t.excludedFromThresholds && !leftOut;
     let note: string | null = null;
     if (t.pending) note = "Pending — not in the total yet.";
     else if (t.excludedFromThresholds) note = "Marked to leave out of limits.";
+    else if (leftOut) note = noncountableIncomeNote(leftOut);
     else if (t.userCategory === "other_income" && amountCents >= SNAP_LUMP_SUM_CENTS) {
       note = "Large enough to be treated as a one-time lump sum for SNAP.";
     }

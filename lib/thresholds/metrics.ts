@@ -1,3 +1,9 @@
+import { looksLikePayrollPayor } from "@/lib/transactions/suggest-user-category";
+import {
+  noncountableInflowReason,
+  type NoncountableInflow,
+} from "@/lib/benefits/noncountable-inflow";
+
 /** YYYY-MM prefix for UTC calendar month of `now`. */
 export function utcMonthPrefix(now: Date): { prefix: string; y: number; m: number } {
   const y = now.getUTCFullYear();
@@ -50,12 +56,30 @@ export type TxLike = {
   merchantName?: string;
 };
 
+/**
+ * SNAP is never income. An ABLE distribution is left out of the estimate.
+ * A paycheck from an employer whose name contains "Able" still counts.
+ */
+export function noncountableIncomeInflow(t: {
+  amountCents: number;
+  name?: string | null;
+  merchantName?: string | null;
+}): NoncountableInflow | null {
+  if (t.amountCents >= 0) return null;
+  const text = `${t.name ?? ""} ${t.merchantName ?? ""}`;
+  const reason = noncountableInflowReason(text);
+  if (!reason) return null;
+  if (reason === "able_distribution" && looksLikePayrollPayor(text)) return null;
+  return reason;
+}
+
 /** Sum earned-income inflows (Plaid: negative cents) for the UTC month prefix. */
 export function sumEarnedInflowTransactionsCents(transactions: TxLike[], monthPrefix: string): number {
   let sum = 0;
   for (const t of transactions) {
     if (t.pending) continue;
     if (t.excludedFromThresholds) continue;
+    if (noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(monthPrefix)) continue;
     if (t.userCategory !== "earned_income") continue;
     if (t.amountCents >= 0) continue;
@@ -113,6 +137,7 @@ export function monthlyIncomeBreakdownCents(
   for (const t of transactions) {
     if (t.pending) continue;
     if (t.excludedFromThresholds) continue;
+    if (noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(monthPrefix)) continue;
     if (t.amountCents >= 0) continue; // Plaid: inflows are negative
     const amt = Math.abs(t.amountCents);
@@ -143,7 +168,7 @@ export function earnedNetBeforeMonthInYearCents(transactions: TxLike[], monthPre
   const year = monthPrefix.slice(0, 4);
   let sum = 0;
   for (const t of transactions) {
-    if (t.pending || t.excludedFromThresholds) continue;
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) continue;
     if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
     const month = t.date.slice(0, 7);
     if (!month.startsWith(year) || month >= monthPrefix) continue;
@@ -159,7 +184,7 @@ export function benefitDepositsInMonth(
 ): { amountCents: number; name: string }[] {
   const out: { amountCents: number; name: string }[] = [];
   for (const t of transactions) {
-    if (t.pending || t.excludedFromThresholds) continue;
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(monthPrefix)) continue;
     if (t.userCategory !== "benefit_deposit" || t.amountCents >= 0) continue;
     out.push({
@@ -176,18 +201,54 @@ export function grossMonthlyIncomeCents(b: MonthlyIncomeBreakdown): number {
 }
 
 /**
- * SSI/Medicaid countable monthly income (ABD, QMB, Waiver, Extra Help): apply
- * the $20 general exclusion (to unearned first, then any remainder to earned),
- * the $65 earned exclusion, and halve the remaining earned. Does NOT model the
- * DAC exclusion (indistinguishable from SSDI in bank data), so it can over-state
- * for DAC recipients — surfaced as an estimate, never a determination.
+ * SSI/Medicaid countable monthly income (SSI, ABD, MAWD): apply the $20 general
+ * exclusion (to unearned first, then any remainder to earned), the $65 earned
+ * exclusion, IRWE, and halve the remaining earned. QMB and Extra Help do not use
+ * this function — their published limits already include the $20. Does NOT model
+ * the DAC exclusion (indistinguishable from SSDI in bank data), so it can
+ * over-state for DAC recipients — surfaced as an estimate, never a determination.
  */
 export type SsiCountableOptions = {
   /** Unearned cents to remove first — the person's own SSI payment. */
   excludeUnearnedCents?: number;
   /** Student earned-income exclusion, applied to gross wages before $65 and ½. */
   studentExclusionCents?: number;
+  /**
+   * Impairment-related work expenses. Subtracted from earned income after the
+   * unused $20 and the $65, and before the one-half. They do not reduce unearned income.
+   */
+  irweCents?: number;
 };
+
+/**
+ * Countable earned income under SSI rules.
+ * Order: student exclusion, unused $20, $65, IRWE, then one-half.
+ * IRWE is not halved and does not reduce unearned income.
+ */
+export function countableEarnedAfterExclusionsCents(
+  earnedGrossCents: number,
+  options?: {
+    studentExclusionCents?: number;
+    generalLeftForEarnedCents?: number;
+    irweCents?: number;
+  },
+): number {
+  const gross = Math.max(0, earnedGrossCents);
+  const seie = Math.min(Math.max(0, options?.studentExclusionCents ?? 0), gross);
+  const afterStudent = gross - seie;
+  const general = Math.max(0, options?.generalLeftForEarnedCents ?? 0);
+  const afterGeneralAnd65 = Math.max(0, afterStudent - SSI_EARNED_INCOME_EXCLUSION_CENTS - general);
+  const irwe = Math.min(Math.max(0, options?.irweCents ?? 0), afterGeneralAnd65);
+  return Math.floor((afterGeneralAnd65 - irwe) / 2);
+}
+
+/**
+ * Earnings compared with SGA. IRWE comes off dollar-for-dollar, with no one-half.
+ * The Trial Work Period test stays on gross wages and does not use this.
+ */
+export function earningsAfterIrweCents(earnedGrossCents: number, irweCents?: number): number {
+  return Math.max(0, Math.max(0, earnedGrossCents) - Math.max(0, irweCents ?? 0));
+}
 
 export function ssiCountableMonthlyIncomeCents(
   b: MonthlyIncomeBreakdown,
@@ -198,12 +259,11 @@ export function ssiCountableMonthlyIncomeCents(
   const generalToUnearned = Math.min(unearned, SSI_GENERAL_INCOME_EXCLUSION_CENTS);
   const countableUnearned = unearned - generalToUnearned;
   const generalLeftForEarned = SSI_GENERAL_INCOME_EXCLUSION_CENTS - generalToUnearned;
-  const seie = Math.min(Math.max(0, options?.studentExclusionCents ?? 0), Math.max(0, b.earnedGrossCents));
-  const earnedAfterExclusions = Math.max(
-    0,
-    b.earnedGrossCents - seie - SSI_EARNED_INCOME_EXCLUSION_CENTS - generalLeftForEarned,
-  );
-  const countableEarned = Math.floor(earnedAfterExclusions / 2);
+  const countableEarned = countableEarnedAfterExclusionsCents(b.earnedGrossCents, {
+    studentExclusionCents: options?.studentExclusionCents,
+    generalLeftForEarnedCents: generalLeftForEarned,
+    irweCents: options?.irweCents,
+  });
   return countableUnearned + countableEarned;
 }
 

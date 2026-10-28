@@ -215,8 +215,8 @@ export const PROGRAM_OBLIGATION_RULES: Record<string, ProgramObligationRule> = {
     reviews: [{ kind: "cdr", label: "Disability review (CDR)", frequency: CDR_SCHEDULE }],
     interim: null,
     changeReporting: {
-      deadline: "Promptly — there is no fixed calendar date",
-      what: "Starting or stopping work, changes in hours or pay, workers' compensation, address, and medical improvement.",
+      deadline: "Report work promptly to Social Security at my Social Security or 1-800-772-1213",
+      what: "Starting or stopping work, or a change in hours or pay. There is no form due date. The renewal date is not where you report wages, and Bene-Watch does not send the report.",
     },
     linked: [
       "After 24 months of SSDI, Medicare begins. QMB can then pay Medicare costs, with its own renewal.",
@@ -228,8 +228,8 @@ export const PROGRAM_OBLIGATION_RULES: Record<string, ProgramObligationRule> = {
     reviews: [{ kind: "cdr", label: "Disability review (CDR)", frequency: CDR_SCHEDULE }],
     interim: null,
     changeReporting: {
-      deadline: "Promptly — there is no fixed calendar date",
-      what: "Work and earnings, address, and marriage (marriage can end DAC).",
+      deadline: "Report work promptly to Social Security at my Social Security or 1-800-772-1213",
+      what: "Work, earnings, address, and marriage. Marriage can end DAC. There is no form due date. The renewal date is not where you report this.",
     },
     linked: ["A DAC benefit is left out of the Pennsylvania waiver income test."],
     sources: [SSA_CDR, SSA_DI_REPORT],
@@ -637,7 +637,7 @@ function interimFallback(code: string, snapCategory: SnapReportingCategory | nul
   if (code === "SNAP") return SNAP_CATEGORY_RULES[snapCategory ?? "unknown"].interimNote;
   const interim = obligationRuleFor(code)?.interim;
   if (interim) return `${interim.label}. ${interim.frequency}`;
-  return "No interim report on file.";
+  return "No report between renewals for this program.";
 }
 
 /**
@@ -701,7 +701,7 @@ export function obligationsForProgram(input: {
         label: OBLIGATION_CATEGORY_LABEL.document_request,
         value: view.documentsDue[0]
           ? datedObligation("Documents", view.documentsDue[0])
-          : "No document request on file.",
+          : "None requested.",
         sooner: Boolean(documentDate && renewalDate && documentDate < renewalDate),
       },
     ],

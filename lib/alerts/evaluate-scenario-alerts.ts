@@ -85,6 +85,8 @@ export type ScenarioEvalInput = {
   qmbIncomeCents?: number;
   /** Extra Help income before the $20 disregard. The published limit already includes that $20. */
   extraHelpIncomeCents?: number;
+  /** Monthly impairment-related work expenses. Applied to SGA, not to the Trial Work Period. */
+  irweCents?: number;
 };
 
 function hasProgram(programs: string[], code: string): boolean {
@@ -142,6 +144,7 @@ export async function evaluateScenarioAlerts(
   };
 
   const earned = input.earnedGrossCents;
+  const sgaEarned = Math.max(0, earned - Math.max(0, input.irweCents ?? 0));
   const countable = input.ssiCountableCents;
   const assets = input.maxAssetCents;
   const gross = input.grossMonthlyCents;
@@ -149,12 +152,16 @@ export async function evaluateScenarioAlerts(
   const now = input.now ?? new Date();
 
   if (hasProgram(input.programs, "SSDI")) {
-    const ssdiAlert = ssdiWageAlert(earned, input.twpMonthsUsed ?? 0);
-    if (ssdiAlert === "sga") consider("ssdi_sga_after_twp", "breach");
-    else if (ssdiAlert === "twp") consider("ssdi_twp_service_month", "warning");
+    const twpUsed = input.twpMonthsUsed ?? 0;
+    const grossAlert = ssdiWageAlert(earned, twpUsed);
+    const sgaAlert = ssdiWageAlert(sgaEarned, twpUsed);
+    if (sgaAlert === "sga") consider("ssdi_sga_after_twp", "breach");
+    else if (grossAlert === "twp" || (grossAlert === "sga" && twpUsed < 9)) {
+      consider("ssdi_twp_service_month", "warning");
+    }
   }
   if (hasProgram(input.programs, "DAC")) {
-    const dacAlert = dacSgaAlert(earned);
+    const dacAlert = dacSgaAlert(sgaEarned);
     if (dacAlert) consider("dac_sga_disability", dacAlert);
   }
   if (hasProgram(input.programs, "SSI")) {
@@ -216,8 +223,8 @@ export async function evaluateScenarioAlerts(
     }
     if (
       (hasProgram(input.programs, "SSDI") &&
-        ssdiWaiverTwilight(earned, waiverGross, input.twpMonthsUsed ?? 0)) ||
-      (hasProgram(input.programs, "DAC") && dacWaiverTwilight(earned, waiverGross))
+        ssdiWaiverTwilight(sgaEarned, waiverGross, input.twpMonthsUsed ?? 0)) ||
+      (hasProgram(input.programs, "DAC") && dacWaiverTwilight(sgaEarned, waiverGross))
     ) {
       consider("ssdi_waiver_twilight");
     }
@@ -239,7 +246,7 @@ export async function evaluateScenarioAlerts(
     !hasProgram(input.programs, "MedicaidWaiver") &&
     !hasProgram(input.programs, "MAWD") &&
     hasProgram(input.programs, "Medicaid") &&
-    earned >= SGA_NONBLIND_CENTS
+    sgaEarned >= SGA_NONBLIND_CENTS
   ) {
     consider("mawd_transition");
   }

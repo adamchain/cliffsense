@@ -65,6 +65,28 @@ describe("income aggregations", () => {
       ssiCountableMonthlyIncomeCents(withSsi, { excludeUnearnedCents: 994_00, studentExclusionCents: 800_00 }),
     ).toBe(0);
   });
+  it("subtracts IRWE after $65 and before the one-half, and does not reduce unearned income", () => {
+    const wages = { earnedNetCents: 1000_00, earnedGrossCents: 1000_00, benefitCents: 0, otherCents: 0 };
+    // $1,000 − $20 − $65 − $100 IRWE = $815; half is $407.50
+    expect(ssiCountableMonthlyIncomeCents(wages, { irweCents: 100_00 })).toBe(407_50);
+    const withUnearned = { earnedNetCents: 0, earnedGrossCents: 100_00, benefitCents: 500_00, otherCents: 0 };
+    // Unearned already uses the $20. Earned $100 − $65 = $35, IRWE uses that up.
+    expect(ssiCountableMonthlyIncomeCents(withUnearned, { irweCents: 80_00 })).toBe(480_00);
+  });
+});
+
+describe("noncountable deposits", () => {
+  it("leaves SNAP and ABLE distributions out of income, and keeps a paycheck", () => {
+    const rows: TxLike[] = [
+      tx("2026-06-03", -200_00, "benefit_deposit", { name: "PA SNAP EBT" }),
+      tx("2026-06-04", -150_00, "other_income", { merchantName: "PA ABLE" }),
+      tx("2026-06-05", -400_00, "earned_income", { name: "ABLE STAFFING PAYROLL" }),
+    ];
+    const b = monthlyIncomeBreakdownCents(rows, "2026-06");
+    expect(b.benefitCents).toBe(0);
+    expect(b.otherCents).toBe(0);
+    expect(b.earnedNetCents).toBe(400_00);
+  });
 });
 
 describe("countable resources", () => {

@@ -38,6 +38,7 @@ import {
   countableResourceBalanceCents,
   earnedNetBeforeMonthInYearCents,
   monthlyIncomeBreakdownCents,
+  noncountableIncomeInflow,
   projectRecurringEarnedRestOfMonthCents,
   ssiCountableMonthlyIncomeCents,
   sumEarnedInflowTransactionsCents,
@@ -238,6 +239,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const ableBalanceCents = ableAccountBalanceCents(accountsFlat);
 
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
+  const irweRaw = Number(beneficiary.irweMonthlyCents ?? 0);
+  const irweCents = Number.isFinite(irweRaw) && irweRaw > 0 ? Math.min(100_000_00, Math.round(irweRaw)) : 0;
   const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
   const txMapped = txRows.map((t) => ({
     date: t.date,
@@ -257,6 +260,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
     benefitDeposits,
     age,
     earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+    irweCents,
   });
   const excludeUnearnedCents = ssiBenefitCentsToExclude({
     programs,
@@ -271,6 +275,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const projectedSsiCountable = ssiCountableMonthlyIncomeCents(projectedBreakdown, {
     excludeUnearnedCents,
     studentExclusionCents: projectedStudentExclusion,
+    irweCents,
   });
   const sntCashDeposit = txMapped.some(
     (t) =>
@@ -341,8 +346,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
           currentValue = ssiAdjusted.countable;
           projectedValue = projectedSsiCountable;
         } else {
-          currentValue = ssiCountableMonthlyIncomeCents(breakdown);
-          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+          currentValue = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
+          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown, { irweCents });
         }
         break;
       case "asset_balance":
@@ -426,7 +431,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const priorPrefix = utcMonthPrefix(priorMonthDate).prefix;
   const priorEarnedNet = sumEarnedInflowTransactionsCents(txMapped, priorPrefix);
   const earnedDeposits = txRows.flatMap((t) => {
-    if (t.pending || t.excludedFromThresholds) return [];
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) return [];
     if (t.userCategory !== "earned_income" || t.amountCents >= 0) return [];
     const payerKey = String(t.merchantName || t.name || "")
       .trim()
@@ -440,7 +445,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
     programs,
     earnedGrossCents: breakdown.earnedGrossCents,
     priorEarnedGrossCents: grossUpEarnedCents(priorEarnedNet),
-    ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
+    ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown, { irweCents }),
     ssiAdjustedCountableCents: ssiAdjusted.countable,
     ssiUnearnedOnlyCents: ssiAdjusted.unearnedOnly,
     abdCountableCents: abdCountableCents({
@@ -448,6 +453,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
       programs,
       householdSize,
       deposits: benefitDeposits,
+      irweCents,
     }),
     waiverGrossCents: waiverGrossCountableCents({
       breakdown,
@@ -455,10 +461,11 @@ export async function evaluateThresholdsForBeneficiary(input: {
       deposits: benefitDeposits,
     }),
     married: isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus),
-    mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown),
+    mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown, { irweCents }),
     mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
-    qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown),
-    extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(breakdown),
+    qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
+    extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
+    irweCents,
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,

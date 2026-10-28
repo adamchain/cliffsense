@@ -7,7 +7,7 @@ import {
   IconLeaf,
 } from "@tabler/icons-react";
 import type { ProgramCardModel } from "@/lib/benefits/program-tier";
-import { formatUsdCents, statusReassurance } from "@/lib/benefits/program-tier";
+import { formatUsdCents, statusReassurance, wageReportPlace } from "@/lib/benefits/program-tier";
 import { PaKeystoneMark, PaStateChip, SsaSeal, UsFlagMark } from "./wallet-seals";
 
 const BAR: Record<ProgramCardModel["status"], string> = {
@@ -66,7 +66,9 @@ export function WalletCard({
     code: card.code,
     reportingDue: card.reportingDue,
     wageReport: card.wageReport,
+    wageChangeKind: card.wageChangeKind,
   });
+  const reportPlace = card.wageReport ? wageReportPlace(card.code) : null;
   const mark = card.status === "ok" ? "✓" : card.status === "warn" ? "!" : "✕";
 
   const className = `cs-wcard ${fed ? "cs-wcard--fed" : "cs-wcard--state"}${
@@ -104,6 +106,19 @@ export function WalletCard({
         >
           <span aria-hidden>{mark}</span> {reassurance}
         </p>
+        {reportPlace && (
+          <p className="cs-wcard-next">
+            {(card.code === "SSDI" || card.code === "DAC") &&
+              "The dollar line is estimated gross wages, not a form to file. "}
+            {linked ? (
+              reportPlace.sentence
+            ) : (
+              <a href={reportPlace.href} target="_blank" rel="noreferrer" className="underline">
+                {reportPlace.sentence}
+              </a>
+            )}
+          </p>
+        )}
         {card.nextDue && (
           <p className="cs-wcard-next">
             Next due{" "}

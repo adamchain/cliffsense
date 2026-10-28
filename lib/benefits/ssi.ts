@@ -210,9 +210,11 @@ export function abdCountableCents(input: {
   programs: string[];
   householdSize: number;
   deposits: { amountCents: number; name?: string }[];
+  irweCents?: number;
 }): number {
   return ssiCountableMonthlyIncomeCents(input.breakdown, {
     excludeUnearnedCents: abdUnearnedExclusionCents(input),
+    irweCents: input.irweCents,
   });
 }
 
@@ -223,6 +225,7 @@ export function adjustedSsiCountable(input: {
   benefitDeposits: { amountCents: number; name?: string }[];
   age: number | null;
   earnedGrossYearToDateBeforeMonthCents: number;
+  irweCents?: number;
 }): { countable: number; unearnedOnly: number } {
   const excludeUnearnedCents = ssiBenefitCentsToExclude({
     programs: input.programs,
@@ -237,6 +240,7 @@ export function adjustedSsiCountable(input: {
   const countable = ssiCountableMonthlyIncomeCents(input.breakdown, {
     excludeUnearnedCents,
     studentExclusionCents,
+    irweCents: input.irweCents,
   });
   const unearnedOnly = ssiCountableMonthlyIncomeCents(
     { ...input.breakdown, earnedNetCents: 0, earnedGrossCents: 0 },

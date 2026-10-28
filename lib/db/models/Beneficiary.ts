@@ -53,6 +53,11 @@ const beneficiarySchema = new Schema(
     householdSize: { type: Number, default: 1, min: 1 },
     /** SSDI Trial Work Period months the user has counted (0–9). */
     twpMonthsUsed: { type: Number, default: 0, min: 0, max: 9 },
+    /**
+     * Monthly impairment-related work expenses, in cents. Subtracted from earned
+     * income before the one-half exclusion, and dollar-for-dollar from SGA.
+     */
+    irweMonthlyCents: { type: Number, default: 0, min: 0 },
     /** Answers for the gated 2026–27 SNAP/MAGI/immigrant policy screen. */
     policyScreen: { type: Schema.Types.Mixed, default: null },
     /** Case-opening answers from Benefit Monitor onboarding (authority, screening, identity extras). */

@@ -96,6 +96,23 @@ describe("suggestUserCategoryFromPlaid", () => {
     ).toBe("earned_income");
   });
 
+  it("does not count a SNAP deposit or an ABLE distribution as income", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -200_00,
+        pfcPrimary: "INCOME",
+        pfcDetailed: "INCOME_OTHER",
+        name: "PA SNAP BENEFITS",
+      }),
+    ).toBe("transfer");
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: -80_00,
+        name: "PA ABLE DISTRIBUTION",
+      }),
+    ).toBe("transfer");
+  });
+
   it("returns null without PFC primary when not payroll", () => {
     expect(
       suggestUserCategoryFromPlaid({

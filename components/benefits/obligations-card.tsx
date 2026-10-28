@@ -10,6 +10,7 @@ import {
   type ObligationRow,
   type SnapReportingCategory,
 } from "@/lib/reporting/obligations";
+import { ruleForProgram } from "@/lib/reporting/program-rules";
 
 const CONFIDENCE_TONE: Record<DateConfidence, string> = {
   confirmed: "bg-[var(--color-cs-success-bg)] text-[var(--color-cs-success)]",
@@ -83,6 +84,7 @@ export function ObligationsCard({
 }) {
   const s = summarizeProgramObligations(program, rows, { snapCategory });
   const rule = s.rule;
+  const reportRule = ruleForProgram(program);
   const snapRule = s.code === "SNAP" ? SNAP_CATEGORY_RULES[snapCategory ?? "unknown"] : null;
 
   return (
@@ -171,16 +173,30 @@ export function ObligationsCard({
               <DateLine row={r} />
             </div>
           ))}
+          {reportRule && (
+            <p className={`mt-1.5 ${muted}`}>
+              <a
+                href={reportRule.reportUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-[var(--color-cs-brand)] hover:underline"
+              >
+                Report to {reportRule.agency}
+                {reportRule.phone ? ` · ${reportRule.phone}` : ""}
+              </a>
+            </p>
+          )}
         </Section>
 
         <Section label={OBLIGATION_CATEGORY_LABEL.document_request}>
           {s.documentsDue.length === 0 ? (
             <p className={muted}>
-              None recorded. When the agency asks for proof, add it on the{" "}
+              None requested. A wage change is not a document request. If the agency asks for
+              proof, add that notice on the{" "}
               <Link href="/calendar" className="text-[var(--color-cs-brand)]">
                 Calendar
               </Link>{" "}
-              as &ldquo;Documents requested&rdquo; with its own due date.
+              with its own due date.
             </p>
           ) : (
             <div className="space-y-1.5">

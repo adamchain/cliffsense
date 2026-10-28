@@ -48,6 +48,7 @@ const patchSchema = z.object({
   county: z.string().trim().optional(),
   householdSize: z.coerce.number().int().min(1).optional(),
   twpMonthsUsed: z.coerce.number().int().min(0).max(9).optional(),
+  irweMonthlyCents: z.coerce.number().int().min(0).max(100_000_00).optional(),
   opening: z
     .object({
       consentAcknowledged: z.boolean().optional(),
@@ -134,6 +135,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (parsed.data.county !== undefined) $set.county = parsed.data.county;
   if (parsed.data.householdSize !== undefined) $set.householdSize = parsed.data.householdSize;
   if (parsed.data.twpMonthsUsed !== undefined) $set.twpMonthsUsed = parsed.data.twpMonthsUsed;
+  if (parsed.data.irweMonthlyCents !== undefined) $set.irweMonthlyCents = parsed.data.irweMonthlyCents;
   if (parsed.data.policyScreen !== undefined) $set.policyScreen = parsed.data.policyScreen;
   if (parsed.data.opening !== undefined) {
     const prior =
@@ -253,7 +255,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   const shouldReevaluate =
-    parsed.data.benefitsEnrolled !== undefined || parsed.data.householdSize !== undefined;
+    parsed.data.benefitsEnrolled !== undefined ||
+    parsed.data.householdSize !== undefined ||
+    parsed.data.irweMonthlyCents !== undefined;
   if (shouldReevaluate) {
     try {
       const er = await evaluateThresholdsForBeneficiary({
@@ -286,7 +290,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const ben = await Beneficiary.findById(id)
     .select(
-      "firstName lastName dateOfBirth state county householdSize twpMonthsUsed policyScreen isOwner benefitsEnrolled",
+      "firstName lastName dateOfBirth state county householdSize twpMonthsUsed irweMonthlyCents policyScreen isOwner benefitsEnrolled",
     )
     .lean();
   if (!ben) {

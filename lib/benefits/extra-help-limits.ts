@@ -1,4 +1,7 @@
-import type { MonthlyIncomeBreakdown } from "@/lib/thresholds/metrics";
+import {
+  countableEarnedAfterExclusionsCents,
+  type MonthlyIncomeBreakdown,
+} from "@/lib/thresholds/metrics";
 
 /** 2026 full Extra Help. Income must be below these amounts. They already include the $20 disregard. */
 const EXTRA_HELP_INCOME_ONE_CENTS = 2015_00;
@@ -8,8 +11,6 @@ const EXTRA_HELP_INCOME_COUPLE_CENTS = 2725_00;
 const EXTRA_HELP_RESOURCE_ONE_CENTS = 18090_00;
 const EXTRA_HELP_RESOURCE_COUPLE_CENTS = 36100_00;
 
-const EARNED_EXCLUSION_CENTS = 65_00;
-
 export function extraHelpIncomeLimitCents(householdSize: number): number {
   return householdSize >= 2 ? EXTRA_HELP_INCOME_COUPLE_CENTS : EXTRA_HELP_INCOME_ONE_CENTS;
 }
@@ -18,11 +19,19 @@ export function extraHelpResourceLimitCents(householdSize: number): number {
   return householdSize >= 2 ? EXTRA_HELP_RESOURCE_COUPLE_CENTS : EXTRA_HELP_RESOURCE_ONE_CENTS;
 }
 
-/** Income before the $20 disregard. The published limit already includes that $20. */
-export function extraHelpIncomeBeforeGeneralExclusionCents(b: MonthlyIncomeBreakdown): number {
+/**
+ * Income before the $20 disregard. The published limit already includes that $20,
+ * so this figure must not subtract it again. Earned income still gets the $65 exclusion, IRWE, and one-half.
+ */
+export function extraHelpIncomeBeforeGeneralExclusionCents(
+  b: MonthlyIncomeBreakdown,
+  options?: { irweCents?: number },
+): number {
   const unearned = Math.max(0, b.benefitCents + b.otherCents);
-  const earnedAfter65 = Math.max(0, b.earnedGrossCents - EARNED_EXCLUSION_CENTS);
-  return unearned + Math.floor(earnedAfter65 / 2);
+  const earned = countableEarnedAfterExclusionsCents(b.earnedGrossCents, {
+    irweCents: options?.irweCents,
+  });
+  return unearned + earned;
 }
 
 /** Medicaid, a Medicare Savings Program, or SSI makes Extra Help automatic. */

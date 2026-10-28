@@ -37,6 +37,20 @@ describe("QMB limits", () => {
     ).toBe(100_00);
   });
 
+  it("subtracts IRWE before the one-half and still does not subtract the $20", () => {
+    expect(
+      qmbIncomeBeforeGeneralExclusionCents(
+        {
+          earnedNetCents: 1000_00,
+          earnedGrossCents: 1000_00,
+          benefitCents: 0,
+          otherCents: 0,
+        },
+        { irweCents: 100_00 },
+      ),
+    ).toBe(417_50);
+  });
+
   it("is Important only when income or resources are over the limit", () => {
     expect(qmbIncomeAlert(1350_00, 1350_00)).toBe("warning");
     expect(qmbIncomeAlert(1350_01, 1350_00)).toBe("breach");

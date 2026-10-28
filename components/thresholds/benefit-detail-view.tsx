@@ -31,8 +31,9 @@ import { fixedScheduleEventsForPrograms } from "@/lib/benefits/reporting-schedul
 import { calendarEventHref } from "@/lib/calendar/event-id";
 import { ObligationsCard } from "@/components/benefits/obligations-card";
 import { ProgramDatesEditor } from "@/components/benefits/program-dates-editor";
+import { IrweEditor, programUsesIrwe } from "@/components/benefits/irwe-editor";
 import { WalletCard } from "@/components/benefits/wallet-card";
-import { buildProgramCards } from "@/lib/benefits/program-tier";
+import { attachWageChangeKind, buildProgramCards } from "@/lib/benefits/program-tier";
 import { AlertsView } from "@/components/alerts/alerts-view";
 import {
   DATE_CONFIDENCE_LABEL,
@@ -72,6 +73,8 @@ type Payload = {
   programsEnrolled: string[];
   monthPrefix: string;
   rows: Row[];
+  wageChangeKind?: "new_work" | "increase" | "decrease" | "stopped" | null;
+  irweMonthlyCents?: number;
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -408,7 +411,10 @@ export function BenefitDetailView({
   const limitCents = primary?.limitCents ?? null;
 
   const walletCard = useMemo(() => {
-    const built = buildProgramCards(data?.rows ?? []).find((card) => card.code === code);
+    const built = attachWageChangeKind(
+      buildProgramCards(data?.rows ?? []),
+      data?.wageChangeKind,
+    ).find((card) => card.code === code);
     const open = obligationRows
       .filter((row) => row.program && programCodeKey(row.program) === code && !row.completedAt)
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
@@ -437,7 +443,7 @@ export function BenefitDetailView({
         category: obligationCategoryForKind(next.kind),
       },
     };
-  }, [code, data?.rows, obligationRows, tag, tier, title]);
+  }, [code, data?.rows, data?.wageChangeKind, obligationRows, tag, tier, title]);
 
   if (!beneficiaryId) {
     return (
@@ -485,6 +491,15 @@ export function BenefitDetailView({
         <div className="mb-5">
           <WalletCard card={walletCard} linked={false} />
         </div>
+      )}
+
+      {data && beneficiaryId && canEditDates && programUsesIrwe(code) && (
+        <IrweEditor
+          key={data.irweMonthlyCents ?? 0}
+          beneficiaryId={beneficiaryId}
+          initialCents={data.irweMonthlyCents ?? 0}
+          onSaved={() => void load()}
+        />
       )}
 
       <div id="program-dates" className="mb-5 scroll-mt-28">

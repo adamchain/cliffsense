@@ -5,7 +5,11 @@ import RecurringStream from "@/lib/db/models/RecurringStream";
 import Threshold from "@/lib/db/models/Threshold";
 import Transaction from "@/lib/db/models/Transaction";
 import { isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
-import { detectWageChange, programsThatMustReportWageChange } from "@/lib/alerts/wage-change";
+import {
+  detectWageChange,
+  programsThatMustReportWageChange,
+  type WageChangeKind,
+} from "@/lib/alerts/wage-change";
 import { abdIncomeLimitCents, abdResourceLimitCents } from "@/lib/benefits/abd-limits";
 import {
   enrolledWorkersWithJobSuccess,
@@ -44,7 +48,9 @@ import {
   benefitDepositsInMonth,
   countableResourceBalanceCents,
   earnedNetBeforeMonthInYearCents,
+  earningsAfterIrweCents,
   monthlyIncomeBreakdownCents,
+  noncountableIncomeInflow,
   projectRecurringEarnedRestOfMonthCents,
   ssiCountableMonthlyIncomeCents,
   sumEarnedInflowTransactionsCents,
@@ -87,6 +93,12 @@ function assetWarn(value: number, limitCents: number, warnAt: number): boolean {
   return value > Math.floor(limitCents * warnAt);
 }
 
+function storedIrweCents(value: unknown): number {
+  const n = Number(value ?? 0);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(100_000_00, Math.round(n));
+}
+
 export type ThresholdUiStatus = "ok" | "watch" | "concern";
 
 export type ThresholdDashboardRow = {
@@ -122,6 +134,10 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   };
   limitSources: LimitSources;
   rows: ThresholdDashboardRow[];
+  /** Why a wage-change report is showing, when one is. */
+  wageChangeKind: WageChangeKind | null;
+  /** Monthly impairment-related work expenses used in the income math. */
+  irweMonthlyCents: number;
 }> {
   await ensureSystemThresholdsSeeded();
 
@@ -141,6 +157,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       metrics: emptyMetrics,
       limitSources: emptyLimitSources(),
       rows: [],
+      wageChangeKind: null,
+      irweMonthlyCents: 0,
     };
   }
 
@@ -164,8 +182,12 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       metrics: emptyMetrics,
       limitSources: emptyLimitSources(),
       rows: [],
+      wageChangeKind: null,
+      irweMonthlyCents: 0,
     };
   }
+
+  const irweCents = storedIrweCents(beneficiary.irweMonthlyCents);
 
   // Re-tag payroll stuck as unclear/transfer (imports + Plaid TRANSFER_IN).
   await reapplyAutoCategoriesForBeneficiary(beneficiaryId);
@@ -284,6 +306,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     benefitDeposits,
     age,
     earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+    irweCents,
   });
   const excludeUnearnedCents = ssiBenefitCentsToExclude({ programs, householdSize, deposits: benefitDeposits });
   const projectedSsiCountable = ssiCountableMonthlyIncomeCents(projectedBreakdown, {
@@ -293,6 +316,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       earnedGrossThisMonthCents: projectedBreakdown.earnedGrossCents,
       earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
     }),
+    irweCents,
   });
   const waiverGrossNow = waiverGrossCountableCents({ breakdown, programs, deposits: benefitDeposits });
   const waiverGrossProjected = waiverGrossCountableCents({
@@ -303,16 +327,23 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   const onSsi = programs.some((p) => String(p).toUpperCase() === "SSI");
   const mawdJobSuccess = enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []);
   const married = isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus);
-  const abdIncomeNow = abdCountableCents({ breakdown, programs, householdSize, deposits: benefitDeposits });
+  const abdIncomeNow = abdCountableCents({
+    breakdown,
+    programs,
+    householdSize,
+    deposits: benefitDeposits,
+    irweCents,
+  });
   const abdIncomeProjected = abdCountableCents({
     breakdown: projectedBreakdown,
     programs,
     householdSize,
     deposits: benefitDeposits,
+    irweCents,
   });
 
   const earnedDeposits = txMapped.flatMap((t) => {
-    if (t.pending || t.excludedFromThresholds) return [];
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) return [];
     if (t.userCategory !== "earned_income" || t.amountCents >= 0) return [];
     const payerKey = String(t.merchantName || t.name || "")
       .trim()
@@ -346,9 +377,13 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
 
     switch (th.thresholdType) {
       case "monthly_earned_income":
-        // SSI/SGA earned-income limits are tested on GROSS wages.
+        // Trial Work Period uses gross wages. SGA subtracts IRWE dollar-for-dollar.
         currentValue = breakdown.earnedGrossCents;
         projectedValue = projectedBreakdown.earnedGrossCents;
+        if (sk && /sga/i.test(sk)) {
+          currentValue = earningsAfterIrweCents(currentValue, irweCents);
+          projectedValue = earningsAfterIrweCents(projectedValue ?? 0, irweCents);
+        }
         break;
       case "monthly_gross_income":
         // SNAP gross-income test: wages, benefits, and recurring other income.
@@ -362,9 +397,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         }
         break;
       case "monthly_unearned_income":
-        // ABD / QMB / Waiver "monthly income" limits use SSI countable-income
-        // methodology ($20 general + $65 earned + ½ remaining earned).
-        // The SSI row also drops the SSI payment itself and applies the student exclusion.
+        // SSI, ABD, and MAWD use the $20, then $65, IRWE, and one-half.
+        // QMB and Extra Help replace this below and do not subtract the $20.
         if (String(th.program ?? "").toUpperCase() === "SSI") {
           currentValue = ssiAdjusted.countable;
           projectedValue = projectedSsiCountable;
@@ -372,8 +406,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
           currentValue = abdIncomeNow;
           projectedValue = abdIncomeProjected;
         } else {
-          currentValue = ssiCountableMonthlyIncomeCents(breakdown);
-          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown);
+          currentValue = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
+          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown, { irweCents });
         }
         break;
       case "asset_balance":
@@ -438,8 +472,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       }
     } else if (sk === "pa_qmb_income_2026") {
       limitCents = qmbIncomeLimitCents(householdSize);
-      currentValue = qmbIncomeBeforeGeneralExclusionCents(breakdown);
-      projectedValue = qmbIncomeBeforeGeneralExclusionCents(projectedBreakdown);
+      currentValue = qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents });
+      projectedValue = qmbIncomeBeforeGeneralExclusionCents(projectedBreakdown, { irweCents });
     } else if (sk === "pa_qmb_resources_2026") {
       limitCents = qmbResourceLimitCents(householdSize);
     } else if (sk === "extra_help_lis_income_monthly_2026") {
@@ -448,8 +482,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
         currentValue = null;
         projectedValue = null;
       } else {
-        currentValue = extraHelpIncomeBeforeGeneralExclusionCents(breakdown);
-        projectedValue = extraHelpIncomeBeforeGeneralExclusionCents(projectedBreakdown);
+        currentValue = extraHelpIncomeBeforeGeneralExclusionCents(breakdown, { irweCents });
+        projectedValue = extraHelpIncomeBeforeGeneralExclusionCents(projectedBreakdown, { irweCents });
       }
     } else if (sk === "extra_help_lis_resources_2026") {
       limitCents = extraHelpResourceLimitCents(householdSize);
@@ -557,5 +591,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     },
     limitSources,
     rows,
+    wageChangeKind: wageKind,
+    irweMonthlyCents: irweCents,
   };
 }

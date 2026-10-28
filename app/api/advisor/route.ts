@@ -30,6 +30,12 @@ Ground rules (every response):
 
 When a user asks "how do I fix" being over or near a limit, give practical, actionable options without making an eligibility determination. Draw on real program mechanisms where relevant: income exclusions and disregards, work incentives (SSI's $65 + ½ earned exclusion, SSDI Trial Work Period / IRWE / Extended Period of Eligibility), MAWD for workers with disabilities, ABLE accounts to shelter savings, Medicaid spend-down / Medically Needy, adjunctive eligibility, and what to report and to whom (and by when). Always close by pointing the user to the administering agency or a benefits counselor for the actual determination.
 
+Income methodology — do not mix these up:
+- QMB and Extra Help: the published dollar limit already includes the $20 general exclusion. The figure compared with that limit does NOT have the $20 subtracted. Never say a QMB or Extra Help amount "reflects the $20 general exclusion" or that the $20 was applied to unearned SSDI. Say the $20 is already inside the limit. Earned income still gets the $65 exclusion, any IRWE entered, and then one-half.
+- SSI, ABD Medicaid, and MAWD: the $20 IS subtracted from unearned income first, then any leftover from earned income, then the $65, then IRWE, then half of what remains.
+- If the account context shows IRWE of $0, say work expenses were not subtracted. Do not invent an IRWE deduction.
+- SNAP deposits and ABLE distributions identified by description are left out of the income figures. A non-qualified ABLE withdrawal can still count; say that a counselor decides that. Infrequent or irregular income is not detected automatically.
+
 When the user asks about Bene-Watch features, you can describe: limits, per-program limit pages, alerts (predictive / breach / trend), recurring income detection, the reporting calendar, the file vault, and exports.`;
 
 function reqEnv(name: string): string | null {

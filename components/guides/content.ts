@@ -1012,7 +1012,7 @@ export const USE_CASES: GuideBook = {
           blocks: [
             {
               kind: "p",
-              text: "Gross wages of $1,210 or more in 2026 count as a Trial Work Period service month. After nine of those months, $1,690 or more (non-blind) can suspend the check for that month. Work expenses and a subsidy can still bring countable earnings under SGA; Bene-Watch does not apply them for you. DAC uses the same SGA line and has no trial work period. A waiver’s $2,982 income limit can still be satisfied in a month when SSDI cash stops.",
+              text: "Gross wages of $1,210 or more in 2026 count as a Trial Work Period service month. Work expenses are not subtracted from that test. After nine of those months, $1,690 or more (non-blind) can suspend the check for that month. A monthly impairment-related work expense you enter is subtracted from the SGA comparison. A subsidy is not. DAC uses the same SGA line and has no trial work period. A waiver’s $2,982 income limit can still be satisfied in a month when SSDI cash stops.",
             },
           ],
         },

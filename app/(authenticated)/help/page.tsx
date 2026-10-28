@@ -330,9 +330,10 @@ export default function HelpPage() {
               SNAP&apos;s test uses this with no disregards.
             </Term>
             <Term name="Countable income (Medicaid/SSI-style)">
-              ABD Medicaid uses the $20 general exclusion, the $65 earned exclusion, and half of the
-              remaining earned income. QMB uses the earned exclusions, and its published limit already
-              includes the $20. Waiver income is a gross test.
+              ABD Medicaid uses the $20 general exclusion, the $65 earned exclusion, any work
+              expenses you enter, and half of the remaining earned income. QMB uses the earned
+              exclusions and those work expenses. Its published limit already includes the $20, so
+              that $20 is not subtracted from the QMB figure. Waiver income is a gross test.
             </Term>
             <Term name="Asset balance">
               The highest current balance across your linked checking/savings accounts, compared to

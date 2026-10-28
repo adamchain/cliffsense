@@ -9,7 +9,7 @@ import Transaction from "@/lib/db/models/Transaction";
 import { connectDB } from "@/lib/db/mongodb";
 import { countVisibleBankConnections } from "@/lib/banks/linked-connections";
 import { loadThresholdDashboardPayload } from "@/lib/thresholds/threshold-dashboard";
-import { buildProgramCards } from "@/lib/benefits/program-tier";
+import { attachWageChangeKind, buildProgramCards } from "@/lib/benefits/program-tier";
 import { calendarEventHref } from "@/lib/calendar/event-id";
 import {
   DATE_CONFIDENCE_LABEL,
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
     if (latestBank?.lastSyncAt) {
       lastSyncAt = new Date(latestBank.lastSyncAt as Date).toISOString();
     }
-    cards = buildProgramCards(p.rows);
+    cards = attachWageChangeKind(buildProgramCards(p.rows), p.wageChangeKind);
     // Each benefit card shows its own soonest obligation, whatever the kind.
     for (const card of cards) {
       const mine = deadlines

@@ -202,7 +202,7 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     effectiveTo: null,
     label: "SSDI — Substantial Gainful Activity (non-blind, 2026)",
     description:
-      "2026 federal SGA ceiling for non-blind individuals: $1,690/month gross earned income. After nine recorded Trial Work Period months, earning at or above this can suspend SSDI cash for that month. SSA counts earned income only — not the SSDI payment itself — and IRWE, employer subsidies, and self-employment expenses lower countable earnings. Disabled Adult Child (DAC) benefits have no earned-income cap, but SGA still governs whether SSA considers the disability ongoing. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar." +
+      "2026 federal SGA ceiling for non-blind individuals: $1,690/month gross earned income. After nine recorded Trial Work Period months, earning at or above this can suspend SSDI cash for that month. SSA counts earned income only — not the SSDI payment itself. A monthly impairment-related work expense entered on the SSDI page is subtracted here. An employer subsidy is not. Disabled Adult Child (DAC) benefits have no earned-income cap, but SGA still governs whether SSA considers the disability ongoing. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar." +
       ESTIMATE_NOTE,
     sourceUrl: SSA_SGA,
   },

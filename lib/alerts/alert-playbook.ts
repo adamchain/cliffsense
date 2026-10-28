@@ -153,7 +153,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ssdi_sga_after_twp",
     "SSDI cash may stop after the Trial Work Period",
     ["SSDI"],
-    "After nine recorded Trial Work Period months, gross earnings at or above SGA ($1,690/mo non-blind, 2026) can suspend SSDI cash for that month. Work expenses and a subsidy can still bring countable earnings under SGA. This estimate comes from bank deposits and does not subtract those amounts.",
+    "After nine recorded Trial Work Period months, gross earnings at or above SGA ($1,690/mo non-blind, 2026) can suspend SSDI cash for that month. A monthly impairment-related work expense you enter is subtracted before that comparison. A subsidy is not. This estimate comes from bank deposits.",
     "Count Trial Work Period months from pay stubs. Document work expenses and any subsidy before treating one high month as a suspension. Report work to SSA promptly. SSDI has no fixed 10th-of-the-month wage calendar.",
     {
       personaId: "anthony_sga_after_twp",

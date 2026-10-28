@@ -1,5 +1,10 @@
 import { detectWageChange, programsThatMustReportWageChange, type WageDeposit } from "@/lib/alerts/wage-change";
-import { grossMonthlyIncomeCents, monthlyIncomeBreakdownCents, utcMonthPrefix } from "@/lib/thresholds/metrics";
+import {
+  grossMonthlyIncomeCents,
+  monthlyIncomeBreakdownCents,
+  noncountableIncomeInflow,
+  utcMonthPrefix,
+} from "@/lib/thresholds/metrics";
 import { ruleForProgram, soonestReportingDue, type ProgramRule } from "./program-rules";
 
 /* ---------------------------------------------------------------------------
@@ -94,6 +99,8 @@ export function buildReportingActions(input: {
         userCategory: t.userCategory,
         pending: Boolean(t.pending),
         excludedFromThresholds: Boolean(t.excludedFromThresholds),
+        name: t.name,
+        merchantName: t.merchantName,
       })),
       prefix,
     ),
@@ -101,7 +108,7 @@ export function buildReportingActions(input: {
 
   const deposits: WageDeposit[] = [];
   for (const t of transactions) {
-    if (t.pending || t.excludedFromThresholds) continue;
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) continue;
     if (t.userCategory !== "earned_income" || t.amountCents >= 0) continue;
     deposits.push({
       date: t.date,
@@ -175,7 +182,7 @@ export function buildReportingActions(input: {
   let unusualMonth = 0;
   const unusualNames: string[] = [];
   for (const t of transactions) {
-    if (t.pending || t.excludedFromThresholds) continue;
+    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(prefix)) continue;
     if (t.amountCents >= 0) continue;
     if (!unusualCats.has(t.userCategory)) continue;

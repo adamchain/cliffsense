@@ -1,3 +1,5 @@
+import { noncountableInflowReason } from "@/lib/benefits/noncountable-inflow";
+
 /**
  * Maps Plaid Personal Finance Categories (+ amount direction + payor text)
  * to Bene-Watch `userCategory` values used for limits and reporting.
@@ -55,7 +57,7 @@ const PAYROLL_HINT =
   /\b(payroll|pay\s*roll|paycheck|pay\s*check|salary|wages?|earning|employer|direct\s*dep(?:osit)?|dir\.?\s*dep(?:osit)?|dirdep|net\s*pay|bi-?weekly\s*pay|semi-?monthly\s*pay|paychex|adp|gusto|workday|paycom|paylocity|ceridian|ukg|zenefits|rippling|square\s*payroll|intuit\s*payroll|quickbooks\s*payroll|ach\s*(?:credit|dep(?:osit)?|payroll)|ccd\s*(?:credit|deposit)|corp\s*pay)\b/i;
 
 const BENEFIT_HINT =
-  /\b(social\s*security|ssi|ssdi|supplemental\s*security|disability|unemployment|pension|va\s*benefit|child\s*support|alimony|snap\s*deposit|ebt)\b/i;
+  /\b(social\s*security|ssi|ssdi|supplemental\s*security|disability|unemployment|pension|va\s*benefit|child\s*support|alimony|ebt)\b/i;
 
 export function looksLikePayrollPayor(args: SuggestArgs | string | null | undefined, merchantName?: string | null): boolean {
   // Back-compat: looksLikePayrollPayor(name, merchantName)
@@ -83,11 +85,15 @@ export function suggestUserCategoryFromPlaid(args: SuggestArgs): CliffUserCatego
   const outflow = args.amountCents > 0;
   const payrollText = looksLikePayrollPayor(args);
   const benefitText = looksLikeBenefitPayor(args);
+  const excluded = noncountableInflowReason(payorBlob(args));
 
+  // SNAP is never income. An ABLE distribution is not a benefit deposit.
+  if (inflow && excluded === "snap") return "transfer";
   // Text beats PFC: payroll ACH often lands as TRANSFER_IN; bank CSVs have no PFC.
   if (inflow && payrollText) {
     return "earned_income";
   }
+  if (inflow && excluded === "able_distribution") return "transfer";
   if (inflow && benefitText) {
     return "benefit_deposit";
   }

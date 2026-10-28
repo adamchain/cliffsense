@@ -1,4 +1,6 @@
+import type { WageChangeKind } from "@/lib/alerts/wage-change";
 import { programCodeKey, programLabel, programMetaFor } from "@/lib/benefits/program-meta";
+import { ruleForProgram } from "@/lib/reporting/program-rules";
 
 /** Federal SSA-style programs vs Commonwealth of Pennsylvania programs. */
 export type ProgramTier = "federal" | "state";
@@ -34,17 +36,55 @@ export function statusWord(sc: LimitStatus, okWord = "On track"): string {
   return okWord;
 }
 
+/** Why the card is asking for a wage report. */
+export function wageChangeHeadline(kind?: WageChangeKind | null): string {
+  switch (kind) {
+    case "new_work":
+      return "New wages showed up and need to be reported";
+    case "increase":
+      return "A paycheck is higher than last month and needs to be reported";
+    case "decrease":
+      return "A paycheck is lower than last month and needs to be reported";
+    case "stopped":
+      return "Wages stopped and that needs to be reported";
+    default:
+      return "A wage change needs to be reported";
+  }
+}
+
+/** Where this program's wage change is reported. The renewal date is not that place. */
+export function wageReportPlace(code: string): { href: string; sentence: string } {
+  const rule = ruleForProgram(code);
+  if (!rule) {
+    return {
+      href: "https://www.ssa.gov/manage-benefits/report-changes-affect-disability-benefits",
+      sentence: "Report it to the agency that runs this benefit. The renewal date is not where you report it.",
+    };
+  }
+  const phone = rule.phone ? ` at ${rule.phone}` : "";
+  return {
+    href: rule.reportUrl,
+    sentence: `Report it to ${rule.agency}${phone}. ${rule.deadlineNote} The renewal date is not where you report it.`,
+  };
+}
+
 /** Plain-language reassurance — answers "Am I okay?" before the numbers. */
 export function statusReassurance(
   status: LimitStatus,
-  opts?: { hasLimit?: boolean; code?: string; reportingDue?: boolean; wageReport?: boolean },
+  opts?: {
+    hasLimit?: boolean;
+    code?: string;
+    reportingDue?: boolean;
+    wageReport?: boolean;
+    wageChangeKind?: WageChangeKind | null;
+  },
 ): string {
   const hasLimit = opts?.hasLimit ?? true;
   if (status === "warn" && opts?.reportingDue && opts.code === "SNAP") {
     return "Gross income is over the 10-day reporting line";
   }
   if (status === "warn" && opts?.wageReport) {
-    return "A wage change needs to be reported";
+    return wageChangeHeadline(opts.wageChangeKind);
   }
   if (status === "crit") {
     return hasLimit
@@ -75,6 +115,14 @@ export function formatUsdCents(cents: number): string {
   });
 }
 
+export function attachWageChangeKind<T extends ProgramCardModel>(
+  cards: T[],
+  kind: WageChangeKind | null | undefined,
+): T[] {
+  if (!kind) return cards;
+  return cards.map((card) => (card.wageReport ? { ...card, wageChangeKind: kind } : card));
+}
+
 export function statusRank(sc: LimitStatus): number {
   if (sc === "crit") return 2;
   if (sc === "warn") return 1;
@@ -98,6 +146,8 @@ export type ProgramCardModel = {
   reportingDue?: boolean;
   /** A wage change is reportable even though this program is still under its limit. */
   wageReport?: boolean;
+  /** What kind of wage change was detected, when wageReport is set. */
+  wageChangeKind?: WageChangeKind | null;
   /**
    * Soonest open obligation for this benefit of any kind (renewal, review,
    * interim report, change report, or document request).
@@ -119,6 +169,7 @@ type RowLike = {
   currentValueCents: number | null;
   limitCents: number;
   statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
+  thresholdType?: string;
 };
 
 /** Collapse threshold rows into one wallet card per program. */
@@ -131,6 +182,7 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
     metricStatus: LimitStatus;
     currentCents: number | null;
     limitCents: number | null;
+    metricType: string | null;
     reportingDue: boolean;
     wageReport: boolean;
   };
@@ -147,6 +199,7 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
       metricStatus: "ok" as LimitStatus,
       currentCents: null,
       limitCents: null,
+      metricType: null,
       reportingDue: false,
       wageReport: false,
     };
@@ -158,10 +211,19 @@ export function buildProgramCards(rows: RowLike[]): ProgramCardModel[] {
 
     const sc = statusFromRow(r.status);
     if (r.currentValueCents != null) {
-      if (g.currentCents == null || statusRank(sc) > statusRank(g.metricStatus)) {
+      const bothEarned =
+        g.metricType === "monthly_earned_income" && r.thresholdType === "monthly_earned_income";
+      const replace =
+        g.currentCents == null ||
+        statusRank(sc) > statusRank(g.metricStatus) ||
+        (bothEarned &&
+          statusRank(sc) === statusRank(g.metricStatus) &&
+          (g.limitCents ?? 0) < r.limitCents);
+      if (replace) {
         g.currentCents = r.currentValueCents;
         g.limitCents = r.limitCents;
         g.metricStatus = sc;
+        g.metricType = r.thresholdType ?? g.metricType;
       }
     }
 
