@@ -75,10 +75,18 @@ export default async function AdminUsersPage({
     <>
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-xl font-medium">Users</h1>
-        <span className="text-[12px] text-[var(--color-cs-text-secondary)]">
-          {matchCount.toLocaleString()} match{matchCount === 1 ? "" : "es"}
-          {matchCount > LIMIT ? ` · showing newest ${LIMIT}` : ""}
-        </span>
+        <div className="flex items-baseline gap-3">
+          <span className="text-[12px] text-[var(--color-cs-text-secondary)]">
+            {matchCount.toLocaleString()} match{matchCount === 1 ? "" : "es"}
+            {matchCount > LIMIT ? ` · showing newest ${LIMIT}` : ""}
+          </span>
+          <Link
+            href="/admin/users/add"
+            className="h-8 rounded-sm bg-[var(--color-cs-brand)] px-3 pt-1.5 text-[12px] font-medium text-white hover:bg-[var(--color-cs-brand-hover)]"
+          >
+            Add user
+          </Link>
+        </div>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-1.5">

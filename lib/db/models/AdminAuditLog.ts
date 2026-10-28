@@ -7,6 +7,7 @@ import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
  * ------------------------------------------------------------------------- */
 
 export const ADMIN_AUDIT_ACTIONS = [
+  "create_user",
   "grant_admin",
   "revoke_admin",
   "disable_user",

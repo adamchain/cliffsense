@@ -2,6 +2,7 @@ import type { AdminAuditAction } from "@/lib/db/models/AdminAuditLog";
 
 /** Human-readable labels for admin audit actions, shared across admin views. */
 export const ADMIN_AUDIT_LABEL: Record<AdminAuditAction, string> = {
+  create_user: "Created user",
   grant_admin: "Granted admin",
   revoke_admin: "Revoked admin",
   disable_user: "Disabled account",
@@ -30,6 +31,7 @@ export function auditActionTone(action: AdminAuditAction): string {
     case "reject_application":
     case "reject_application_document":
       return "bg-[var(--color-cs-danger-bg)] text-[var(--color-cs-danger)]";
+    case "create_user":
     case "grant_admin":
     case "enable_user":
     case "approve_application":
