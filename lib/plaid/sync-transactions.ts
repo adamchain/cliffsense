@@ -21,6 +21,7 @@ function mapPlaidTransaction(
   return {
     beneficiaryId,
     bankConnectionId,
+    plaidAccountId: t.account_id ?? "",
     plaidTransactionId: t.transaction_id,
     date: t.date,
     postedDate: t.authorized_date ?? t.date,

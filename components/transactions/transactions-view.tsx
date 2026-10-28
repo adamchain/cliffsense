@@ -32,18 +32,26 @@ type UserCategory =
 type TxRow = {
   _id: string;
   date: string;
+  postedDate?: string;
   name: string;
   merchantName: string;
   category: string;
   pfcPrimary?: string;
   pfcDetailed?: string;
   amountCents: number;
+  currency?: string;
   pending: boolean;
   userCategory: UserCategory;
   suggestedUserCategory?: UserCategory | null;
   excludedFromThresholds?: boolean;
+  excludeReason?: string;
+  notes?: string;
   receiptDocumentId?: string | null;
+  bankConnectionId?: string;
+  plaidAccountId?: string;
 };
+
+type AccountInfo = { institutionName: string; accountName: string; mask: string };
 
 type ApplyAllPrompt = {
   sourceId: string;
@@ -191,6 +199,9 @@ export function TransactionsView({
 }) {
   const [filter, setFilter] = useState("all");
   const [showAccounts, setShowAccounts] = useState(false);
+  // "" = all; "conn:<id>" = whole institution; "acct:<plaidAccountId>" = one account.
+  const [accountFilter, setAccountFilter] = useState("");
+  const [detailRow, setDetailRow] = useState<TxRow | null>(null);
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [page, setPage] = useState(1);
@@ -204,6 +215,46 @@ export function TransactionsView({
   const [applyPrompt, setApplyPrompt] = useState<ApplyAllPrompt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const limit = 50;
+
+  // Resolve a transaction's connection + account to display names. Transactions
+  // carry bankConnectionId always and plaidAccountId when the sync captured it.
+  const { connById, acctByPlaidId } = useMemo(() => {
+    const conn = new Map<string, string>();
+    const acct = new Map<string, AccountInfo>();
+    for (const c of connections) {
+      conn.set(c.id, c.institutionName);
+      for (const a of c.accounts) {
+        if (a.plaidAccountId) {
+          acct.set(a.plaidAccountId, {
+            institutionName: c.institutionName,
+            accountName: a.name,
+            mask: a.mask,
+          });
+        }
+      }
+    }
+    return { connById: conn, acctByPlaidId: acct };
+  }, [connections]);
+
+  const accountInfoForRow = useCallback(
+    (r: TxRow): AccountInfo | null => {
+      if (r.plaidAccountId && acctByPlaidId.has(r.plaidAccountId)) {
+        return acctByPlaidId.get(r.plaidAccountId)!;
+      }
+      if (r.bankConnectionId && connById.has(r.bankConnectionId)) {
+        return { institutionName: connById.get(r.bankConnectionId)!, accountName: "", mask: "" };
+      }
+      return null;
+    },
+    [acctByPlaidId, connById],
+  );
+
+  // Flat list of selectable accounts for the filter: each institution, then
+  // each of its known accounts.
+  const hasMultipleAccounts = useMemo(
+    () => connections.reduce((n, c) => n + Math.max(1, c.accounts.length), 0) > 1,
+    [connections],
+  );
 
   const receiptInputRef = useRef<HTMLInputElement | null>(null);
   const receiptTargetRef = useRef<string | null>(null);
@@ -260,6 +311,8 @@ export function TransactionsView({
     });
     if (filter !== "all") params.set("filter", filter);
     if (debouncedQ) params.set("q", debouncedQ);
+    if (accountFilter.startsWith("conn:")) params.set("connectionId", accountFilter.slice(5));
+    else if (accountFilter.startsWith("acct:")) params.set("accountId", accountFilter.slice(5));
     const res = await fetch(`/api/transactions?${params}`);
     const data = await res.json().catch(() => ({}));
     setLoading(false);
@@ -269,7 +322,7 @@ export function TransactionsView({
     }
     setRows((data as { transactions: TxRow[] }).transactions ?? []);
     setTotal((data as { total: number }).total ?? 0);
-  }, [beneficiaryId, page, filter, debouncedQ]);
+  }, [beneficiaryId, page, filter, debouncedQ, accountFilter]);
 
   useEffect(() => {
     void load();
@@ -551,7 +604,7 @@ export function TransactionsView({
         ))}
       </div>
 
-      <div className="mb-3">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <input
           type="search"
           placeholder="Search description, merchant, or category"
@@ -560,8 +613,34 @@ export function TransactionsView({
             setQ(e.target.value);
             setPage(1);
           }}
-          className="cs-input max-w-md"
+          className="cs-input max-w-md flex-1"
         />
+        {hasMultipleAccounts && (
+          <select
+            aria-label="Filter by account"
+            value={accountFilter}
+            onChange={(e) => {
+              setAccountFilter(e.target.value);
+              setPage(1);
+            }}
+            className="cs-input w-auto shrink-0"
+          >
+            <option value="">All accounts</option>
+            {connections.map((c) => (
+              <optgroup key={c.id} label={c.institutionName}>
+                <option value={`conn:${c.id}`}>All of {c.institutionName}</option>
+                {c.accounts
+                  .filter((a) => a.plaidAccountId)
+                  .map((a) => (
+                    <option key={a.plaidAccountId} value={`acct:${a.plaidAccountId}`}>
+                      {a.name}
+                      {a.mask ? ` ••${a.mask}` : ""}
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
+          </select>
+        )}
       </div>
 
       {error && (
@@ -598,6 +677,12 @@ export function TransactionsView({
         {rows.map((r) => {
           const inflow = isInflowCents(r.amountCents);
           const highlightUnclear = r.userCategory === "unclear";
+          const acct = accountInfoForRow(r);
+          const acctLabel = acct
+            ? acct.accountName
+              ? `${acct.institutionName} · ${acct.accountName}${acct.mask ? ` ••${acct.mask}` : ""}`
+              : acct.institutionName
+            : "";
           const excluded = Boolean(r.excludedFromThresholds);
           const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
           const showApply = applyPrompt?.sourceId === r._id;
@@ -624,16 +709,20 @@ export function TransactionsView({
                     <div className="mt-0.5 text-[12px] leading-tight text-[var(--color-cs-text-muted)]">
                       {formatShortDate(r.date)}
                       {r.pending ? " · Pending" : ""}
+                      {acctLabel ? ` · ${acctLabel}` : ""}
                     </div>
                   </div>
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => setDetailRow(r)}
+                    aria-label="View transaction details"
                     className={`flex shrink-0 items-center gap-0.5 text-[14px] font-semibold leading-tight tabular-nums ${
                       inflow ? "text-[var(--color-cs-success)]" : "text-[var(--color-cs-text)]"
                     }`}
                   >
                     {formatSignedUsd(r.amountCents)}
                     <IconChevronRight size={14} stroke={2} className="text-[var(--color-cs-text-muted)]" />
-                  </div>
+                  </button>
                 </div>
                 <div className="mt-1 flex items-center justify-end gap-1">
                   {countsTowardEarned && (
@@ -760,6 +849,112 @@ export function TransactionsView({
           </button>
         </div>
       </div>
+
+      {detailRow &&
+        (() => {
+          const d = detailRow;
+          const acct = accountInfoForRow(d);
+          const cats = (d.category ?? "")
+            .split(/›|·/)
+            .map((p) => p.trim())
+            .filter(Boolean);
+          const rows: { label: string; value: string }[] = [
+            { label: "Amount", value: formatSignedUsd(d.amountCents) },
+            { label: "Date", value: formatShortDate(d.date) },
+            ...(d.postedDate && d.postedDate !== d.date
+              ? [{ label: "Posted", value: formatShortDate(d.postedDate) }]
+              : []),
+            { label: "Status", value: d.pending ? "Pending" : "Posted" },
+            {
+              label: "Institution",
+              value: acct?.institutionName ?? "Unknown",
+            },
+            {
+              label: "Account",
+              value: acct?.accountName
+                ? `${acct.accountName}${acct.mask ? ` ••${acct.mask}` : ""}`
+                : "—",
+            },
+            { label: "Merchant", value: d.merchantName || "—" },
+            { label: "Bank category", value: cats.join(" › ") || "—" },
+            { label: "Category", value: CATEGORY_LABEL[d.userCategory] },
+          ];
+          return (
+            <div className="fixed inset-0 z-50 flex">
+              <div className="absolute inset-0 bg-black/30" onClick={() => setDetailRow(null)} />
+              <div className="absolute right-0 top-0 flex h-full w-full max-w-[400px] flex-col overflow-y-auto bg-[var(--color-cs-card)] p-4 shadow-xl">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <h3 className="text-[16px] font-bold text-[var(--color-cs-text)]">
+                    {shortTitle(d.name ?? "", d.merchantName ?? "")}
+                  </h3>
+                  <button
+                    type="button"
+                    className="cs-circbtn !h-8 !w-8"
+                    aria-label="Close details"
+                    onClick={() => setDetailRow(null)}
+                  >
+                    <IconX size={16} stroke={2} />
+                  </button>
+                </div>
+                <dl className="flex flex-col divide-y divide-[var(--color-cs-sep)]">
+                  {rows.map((row) => (
+                    <div key={row.label} className="flex justify-between gap-4 py-2 text-[13px]">
+                      <dt className="shrink-0 text-[var(--color-cs-text-secondary)]">{row.label}</dt>
+                      <dd className="min-w-0 break-words text-right font-medium text-[var(--color-cs-text)]">
+                        {row.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                {d.name && d.name !== shortTitle(d.name, d.merchantName ?? "") && (
+                  <p className="mt-2 text-[12px] text-[var(--color-cs-text-muted)]">{d.name}</p>
+                )}
+                {d.notes ? (
+                  <div className="mt-3 rounded-[12px] bg-[var(--color-cs-surface)] p-3">
+                    <div className="mb-1 text-[11px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
+                      Notes
+                    </div>
+                    <p className="text-[13px] text-[var(--color-cs-text)]">{d.notes}</p>
+                  </div>
+                ) : null}
+                {d.excludedFromThresholds && (
+                  <p className="mt-3 text-[12px] text-[var(--color-cs-warning)]">
+                    Excluded from benefit limits{d.excludeReason ? ` — ${d.excludeReason}` : ""}.
+                  </p>
+                )}
+                <div className="mt-4">
+                  <label className="mb-1 block text-[11px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
+                    Category
+                  </label>
+                  <select
+                    className="cs-input w-full"
+                    value={d.userCategory}
+                    onChange={(e) => {
+                      const next = e.target.value as UserCategory;
+                      void patchCategory(d._id, next);
+                      setDetailRow({ ...d, userCategory: next });
+                    }}
+                  >
+                    {(Object.keys(CATEGORY_LABEL) as UserCategory[]).map((k) => (
+                      <option key={k} value={k}>
+                        {CATEGORY_LABEL[k]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {d.receiptDocumentId && (
+                  <Link
+                    href={`/vault/${d.receiptDocumentId}`}
+                    className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-cs-brand)]"
+                  >
+                    <IconReceipt size={15} stroke={1.8} aria-hidden />
+                    View attached receipt
+                  </Link>
+                )}
+              </div>
+            </div>
+          );
+        })()}
     </div>
   );
 }

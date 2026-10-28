@@ -66,7 +66,7 @@ const FOOTER_GROUPS: { heading: string; links: { label: string; href: string }[]
       { label: "A father's perspective", href: "/about#perspective" },
       { label: "For organizations", href: "/about#organizations" },
       { label: "Sign in", href: "/auth/signin" },
-      { label: "Support", href: "mailto:support@bene-watch.com" },
+      { label: "Support", href: "mailto:adam@bene-watch.com,frank@bene-watch.com" },
     ],
   },
   {

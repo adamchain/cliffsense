@@ -17,6 +17,8 @@ import {
   vaultCaseContext,
 } from "@/lib/vault/categories";
 import { bufferFromStored, docxPlainText, isDocxFile } from "@/lib/vault/docx-preview";
+import { secretStorageAvailable } from "@/lib/crypto/secret-box";
+import { SecureItemsPanel } from "@/components/vault/secure-items-panel";
 import { VaultBrowser } from "./vault-browser";
 
 function formatSize(bytes: number): string {
@@ -46,6 +48,7 @@ export default async function VaultPage() {
       uploadedLabel: string;
       slotId: string | null;
       kind: "docx" | "file";
+      isImage: boolean;
       preview: string | null;
     }[];
   }[] = [];
@@ -116,6 +119,7 @@ export default async function VaultPage() {
         uploadedLabel: new Date(row.createdAt).toLocaleDateString(),
         slotId,
         kind: docx ? "docx" : "file",
+        isImage: (row.mimeType || "").startsWith("image/"),
         preview: previewById.get(id) ?? null,
       });
       docsByFolder.set(folderId, list);
@@ -202,6 +206,13 @@ export default async function VaultPage() {
             sntProfile={sntProfile}
             sntDisbursements={sntDisbursements}
           />
+          <div className="mt-4">
+            <SecureItemsPanel
+              beneficiaryId={beneficiaryId}
+              canWrite={canWrite}
+              available={secretStorageAvailable()}
+            />
+          </div>
         </>
       )}
     </>

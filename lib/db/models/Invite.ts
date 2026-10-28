@@ -5,6 +5,12 @@ const inviteSchema = new Schema(
     beneficiaryId: { type: Schema.Types.ObjectId, ref: "Beneficiary", required: true, index: true },
     email: { type: String, required: true, lowercase: true, trim: true, index: true },
     role: { type: String, enum: ["co_manager", "viewer"], required: true },
+    /** Who this person is to the beneficiary — a label; `role` enforces access. */
+    relationship: {
+      type: String,
+      enum: ["family", "benefit_manager", "accountant", "fiduciary", "other"],
+      default: "other",
+    },
     token: { type: String, required: true, unique: true, index: true },
     invitedByUserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     status: {

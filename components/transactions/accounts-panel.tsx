@@ -12,7 +12,7 @@ export type AccountConnection = {
   status: string;
   source?: "plaid" | "import";
   lastSyncAt: string | null;
-  accounts: { name: string; mask: string; currentBalanceCents: number }[];
+  accounts: { plaidAccountId?: string; name: string; mask: string; currentBalanceCents: number }[];
 };
 
 /**

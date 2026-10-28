@@ -6,6 +6,13 @@ const transactionSchema = new Schema(
     beneficiaryId: { type: Schema.Types.ObjectId, ref: "Beneficiary", required: true, index: true },
     bankConnectionId: { type: Schema.Types.ObjectId, ref: "BankConnection", required: true, index: true },
     /**
+     * Plaid `account_id` of the specific account within the connection this
+     * transaction belongs to. Lets the app attribute a transaction to one of
+     * several accounts at the same institution. Empty for legacy rows synced
+     * before this field and for imports where the account is unknown.
+     */
+    plaidAccountId: { type: String, default: "", index: true },
+    /**
      * How this transaction entered the app. Plaid-synced rows keep the real
      * Plaid `transaction_id`; imported rows carry a synthetic stable id
      * (`import:<hash>`) so the unique index still dedupes re-imports of the

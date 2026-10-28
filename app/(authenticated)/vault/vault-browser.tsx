@@ -14,7 +14,7 @@ import {
 import { SntRegister } from "@/components/vault/snt-register";
 import type { SntDisbursementView, SntProfileView } from "@/lib/snt/record";
 import { VaultDocumentRow, VaultFileCard } from "./document-row";
-import { VaultAddFile } from "./vault-upload";
+import { VaultAddFile, VaultDropzone } from "./vault-upload";
 
 export type VaultDocView = {
   id: string;
@@ -23,6 +23,7 @@ export type VaultDocView = {
   uploadedLabel: string;
   slotId: string | null;
   kind: "docx" | "file";
+  isImage?: boolean;
   preview: string | null;
 };
 
@@ -224,6 +225,7 @@ export function VaultBrowser({
                             sizeLabel={doc.sizeLabel}
                             uploadedLabel={doc.uploadedLabel}
                             docx={doc.kind === "docx"}
+                            isImage={doc.isImage}
                             preview={doc.preview}
                           />
                         ))}
@@ -261,7 +263,7 @@ export function VaultBrowser({
               <div className="text-[13px] font-semibold text-[var(--color-cs-text)]">
                 {folder.id === "other" ? "Files" : "Other files in this folder"}
               </div>
-              <VaultAddFile beneficiaryId={beneficiaryId} category={folder.id} label="Add" />
+              <VaultAddFile beneficiaryId={beneficiaryId} category={folder.id} label="Add" multiple />
             </div>
             {loose.length === 0 ? (
               <p className="text-[13px] text-[var(--color-cs-text-secondary)]">No extra files.</p>
@@ -275,6 +277,7 @@ export function VaultBrowser({
                     sizeLabel={doc.sizeLabel}
                     uploadedLabel={doc.uploadedLabel}
                     docx={doc.kind === "docx"}
+                    isImage={doc.isImage}
                     preview={doc.preview}
                   />
                 ))}
@@ -461,6 +464,21 @@ export function VaultBrowser({
                 </button>
               );
             })}
+            {scope === "case" && !q && folders.length > visible.length && (
+              <button
+                type="button"
+                onClick={() => {
+                  setScope("all");
+                  setOpenId(null);
+                }}
+                className={`${navBtn} text-[var(--color-cs-text-muted)] hover:bg-white/70`}
+                title="Folders for programs this person isn't enrolled in are hidden"
+              >
+                <span className="truncate">
+                  +{folders.length - visible.length} more not in this case
+                </span>
+              </button>
+            )}
           </div>
         </nav>
 
@@ -504,7 +522,13 @@ export function VaultBrowser({
                 <div className="text-[16px] font-bold tracking-tight">{open.folder.label}</div>
                 <p className="mt-0.5 text-[12.5px] text-[var(--color-cs-text-secondary)]">{open.folder.hint}</p>
               </div>
-              {renderSlots(open.folder, open.slots, open.loose)}
+              {canWrite ? (
+                <VaultDropzone beneficiaryId={beneficiaryId} category={open.folder.id}>
+                  {renderSlots(open.folder, open.slots, open.loose)}
+                </VaultDropzone>
+              ) : (
+                renderSlots(open.folder, open.slots, open.loose)
+              )}
             </div>
           ) : view === "cards" ? (
             <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-5">

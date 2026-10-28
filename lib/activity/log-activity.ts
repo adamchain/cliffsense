@@ -18,7 +18,8 @@ export type LogActivityInput = {
     | "advisor"
     | "export"
     | "admin"
-    | "recurring";
+    | "recurring"
+    | "task";
   action: string;
   resourceType?: string;
   resourceId?: string;

@@ -94,6 +94,7 @@ export function VaultFileCard({
   sizeLabel,
   uploadedLabel,
   docx,
+  isImage = false,
   preview,
 }: {
   id: string;
@@ -101,6 +102,7 @@ export function VaultFileCard({
   sizeLabel: string;
   uploadedLabel: string;
   docx: boolean;
+  isImage?: boolean;
   preview: string | null;
 }) {
   return (
@@ -110,7 +112,15 @@ export function VaultFileCard({
       title={filename}
     >
       <div className="relative h-32 overflow-hidden bg-[#f7f8fa] px-3 py-2.5">
-        {preview ? (
+        {isImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/vault/${id}?inline=1`}
+            alt={filename}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : preview ? (
           <p className="line-clamp-6 whitespace-pre-wrap text-[11px] leading-snug text-[var(--color-cs-text)]">
             {preview}
           </p>

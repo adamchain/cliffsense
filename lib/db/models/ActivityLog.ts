@@ -20,6 +20,7 @@ const activityLogSchema = new Schema(
         "export",
         "admin",
         "recurring",
+        "task",
       ],
       required: true,
       index: true,

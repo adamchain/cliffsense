@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AskComposer } from "@/components/layout/ask-composer";
 
-type Message = {
+export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
@@ -36,14 +36,31 @@ function FormattedMessage({ content }: { content: string }) {
   );
 }
 
-export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export function AdvisorChat({
+  initialQuestion,
+  conversationId = null,
+  initialMessages = [],
+  beneficiaryId = null,
+  onConversationChange,
+}: {
+  initialQuestion?: string;
+  /** Existing thread this chat continues, or null for a new one. */
+  conversationId?: string | null;
+  /** Prior turns to seed the view when resuming a saved thread. */
+  initialMessages?: Message[];
+  /** Active beneficiary, stored with new threads for context/filtering. */
+  beneficiaryId?: string | null;
+  /** Fired after a turn is saved, with the (possibly new) thread id + title. */
+  onConversationChange?: (id: string, title: string) => void;
+}) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [streamingId, setStreamingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const startedRef = useRef(false);
+  const convIdRef = useRef<string | null>(conversationId);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -135,6 +152,28 @@ export function AdvisorChat({ initialQuestion }: { initialQuestion?: string }) {
       setMessages((m) =>
         m.map((x) => (x.id === assistantId ? { ...x, content: "(empty response)" } : x)),
       );
+    } else {
+      // Persist the completed turn. New threads are created on first save; the
+      // returned id is reused for the rest of the conversation.
+      try {
+        const r = await fetch("/api/advisor/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId: convIdRef.current,
+            beneficiaryId,
+            userMessage: trimmed,
+            assistantMessage: acc,
+          }),
+        });
+        if (r.ok) {
+          const d = (await r.json()) as { id: string; title: string };
+          convIdRef.current = d.id;
+          onConversationChange?.(d.id, d.title);
+        }
+      } catch {
+        // Saving history is best-effort; the chat itself already succeeded.
+      }
     }
     setStreamingId(null);
     setSending(false);

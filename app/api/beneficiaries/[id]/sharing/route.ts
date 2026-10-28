@@ -11,6 +11,9 @@ import { canManageSharing, createInvite } from "@/lib/beneficiaries/invites";
 const inviteSchema = z.object({
   email: z.string().email(),
   role: z.enum(["co_manager", "viewer"]),
+  relationship: z
+    .enum(["family", "benefit_manager", "accountant", "fiduciary", "other"])
+    .default("other"),
 });
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -42,6 +45,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         email: u?.email ?? "",
         name: u?.name ?? "",
         role: r.role,
+        relationship: r.relationship ?? "other",
         isSelf: String(r.userId) === session.user!.id,
       };
     }),
@@ -49,6 +53,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       id: String(i._id),
       email: i.email,
       role: i.role,
+      relationship: i.relationship ?? "other",
       expiresAt: i.expiresAt,
     })),
   });
@@ -72,6 +77,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     beneficiaryId: id,
     email: parsed.data.email,
     role: parsed.data.role,
+    relationship: parsed.data.relationship,
     invitedByUserId: session.user.id,
   });
   if (!result.ok) {

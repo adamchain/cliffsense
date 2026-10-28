@@ -10,7 +10,7 @@ export type VisibleBankConnection = {
   status: string;
   source: "plaid" | "import";
   lastSyncAt: string | null;
-  accounts: { name: string; mask: string; currentBalanceCents: number }[];
+  accounts: { plaidAccountId: string; name: string; mask: string; currentBalanceCents: number }[];
 };
 
 export function visibleBankQuery(beneficiaryId: Types.ObjectId | string) {
@@ -37,6 +37,7 @@ export async function listVisibleBankConnections(
     source: c.source === "import" ? "import" : "plaid",
     lastSyncAt: c.lastSyncAt ? new Date(c.lastSyncAt).toISOString() : null,
     accounts: (c.accounts ?? []).map((a) => ({
+      plaidAccountId: a.plaidAccountId ?? "",
       name: a.name,
       mask: a.mask,
       currentBalanceCents: a.currentBalanceCents,

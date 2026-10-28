@@ -9,6 +9,12 @@ const beneficiaryAccessSchema = new Schema(
       enum: ["owner", "co_manager", "viewer"],
       required: true,
     },
+    /** Who this person is to the beneficiary — a label; `role` enforces access. */
+    relationship: {
+      type: String,
+      enum: ["family", "benefit_manager", "accountant", "fiduciary", "other"],
+      default: "other",
+    },
     invitedByUserId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     invitedAt: { type: Date, default: null },
     acceptedAt: { type: Date, default: null },

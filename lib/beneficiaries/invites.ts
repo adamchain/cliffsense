@@ -10,6 +10,7 @@ import { appUrl, sendEmail, withDisclaimer } from "@/lib/email/mailer";
 import { getBeneficiaryAccessRole } from "@/lib/beneficiaries/access";
 
 export type InviteRole = "co_manager" | "viewer";
+export type InviteRelationship = "family" | "benefit_manager" | "accountant" | "fiduciary" | "other";
 
 const INVITE_TTL_DAYS = 14;
 
@@ -27,6 +28,7 @@ export async function createInvite(params: {
   beneficiaryId: string;
   email: string;
   role: InviteRole;
+  relationship?: InviteRelationship;
   invitedByUserId: string;
 }): Promise<{ ok: true; inviteId: string } | { ok: false; error: string }> {
   await connectDB();
@@ -68,6 +70,7 @@ export async function createInvite(params: {
     beneficiaryId: ben._id,
     email,
     role: params.role,
+    relationship: params.relationship ?? "other",
     token,
     invitedByUserId: new mongoose.Types.ObjectId(params.invitedByUserId),
     status: "pending",
@@ -93,7 +96,7 @@ export async function createInvite(params: {
     action: "beneficiary.invited",
     resourceType: "invite",
     resourceId: invite._id.toString(),
-    details: { email, role: params.role },
+    details: { email, role: params.role, relationship: params.relationship ?? "other" },
   });
 
   return { ok: true, inviteId: invite._id.toString() };
@@ -130,6 +133,7 @@ export async function acceptInvite(params: {
     {
       $set: {
         role: invite.role,
+        relationship: invite.relationship ?? "other",
         status: "active",
         acceptedAt: new Date(),
         invitedByUserId: invite.invitedByUserId,

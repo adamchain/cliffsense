@@ -32,6 +32,26 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 
   const url = new URL(req.url);
   const download = url.searchParams.get("download") === "1";
+  const inline = url.searchParams.get("inline") === "1";
+
+  // Inline image thumbnail for card previews: serve bytes for images only,
+  // displayed in-page (not a download) and without logging each thumbnail view.
+  if (inline) {
+    const mime = doc.mimeType || "";
+    if (!mime.startsWith("image/")) {
+      return NextResponse.json({ error: "Not previewable" }, { status: 415 });
+    }
+    const body = new Uint8Array(doc.content);
+    return new NextResponse(body, {
+      status: 200,
+      headers: {
+        "content-type": mime,
+        "content-length": String(doc.sizeBytes),
+        "content-disposition": "inline",
+        "cache-control": "private, max-age=300",
+      },
+    });
+  }
 
   if (!download) {
     return NextResponse.json({

@@ -2,22 +2,32 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { IconTrash, IconUserPlus } from "@tabler/icons-react";
+import { SHARE_PRESETS, relationshipLabel, type ShareRelationship } from "@/lib/beneficiaries/share-roles";
 
-type AccessRow = { userId: string; email: string; name: string; role: string; isSelf: boolean };
-type InviteRow = { id: string; email: string; role: string; expiresAt: string };
+type AccessRow = {
+  userId: string;
+  email: string;
+  name: string;
+  role: string;
+  relationship?: string;
+  isSelf: boolean;
+};
+type InviteRow = { id: string; email: string; role: string; relationship?: string; expiresAt: string };
 type Payload = { access: AccessRow[]; invites: InviteRow[] };
 
-const ROLE_LABEL: Record<string, string> = {
-  owner: "Owner",
-  co_manager: "Co-manager",
-  viewer: "Viewer",
-};
+/** Relationship label + the access it grants, e.g. "Accountant · read-only". */
+function personLabel(role: string, relationship?: string): string {
+  if (role === "owner") return "Owner";
+  const rel = relationshipLabel(relationship ?? "other");
+  const access = role === "co_manager" ? "full access" : "read-only";
+  return `${rel} · ${access}`;
+}
 
 export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"co_manager" | "viewer">("viewer");
+  const [relationship, setRelationship] = useState<ShareRelationship>("family");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -40,10 +50,11 @@ export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
     setBusy(true);
     setError(null);
     setNotice(null);
+    const preset = SHARE_PRESETS.find((p) => p.id === relationship) ?? SHARE_PRESETS[0];
     const res = await fetch(`/api/beneficiaries/${beneficiaryId}/sharing`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), role }),
+      body: JSON.stringify({ email: email.trim(), role: preset.role, relationship: preset.id }),
     });
     const json = await res.json().catch(() => ({}));
     setBusy(false);
@@ -86,14 +97,17 @@ export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
           />
         </label>
         <label className="block">
-          <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Role</span>
+          <span className="mb-0.5 block text-xs text-[var(--color-cs-text-secondary)]">Invite as</span>
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as "co_manager" | "viewer")}
+            value={relationship}
+            onChange={(e) => setRelationship(e.target.value as ShareRelationship)}
             className="rounded-sm border border-[var(--color-cs-border)] px-2 py-1.5"
           >
-            <option value="viewer">Viewer (read-only)</option>
-            <option value="co_manager">Co-manager (can edit)</option>
+            {SHARE_PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label} ({p.role === "co_manager" ? "full access" : "read-only"})
+              </option>
+            ))}
           </select>
         </label>
         <button
@@ -105,6 +119,11 @@ export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
           {busy ? "Sending…" : "Invite"}
         </button>
       </form>
+      <p className="mb-3 text-[11.5px] text-[var(--color-cs-text-secondary)]">
+        {SHARE_PRESETS.find((p) => p.id === relationship)?.description}{" "}
+        They&apos;ll get an email invite; once they sign in with this address, this person&apos;s
+        account opens for them.
+      </p>
 
       {error && <p className="mb-2 text-xs text-[var(--color-cs-danger)]">{error}</p>}
       {notice && <p className="mb-2 text-xs text-[#107c10]">{notice}</p>}
@@ -118,7 +137,7 @@ export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
             <div>
               <span className="font-medium text-[var(--color-cs-text)]">{a.email || a.name || "User"}</span>
               <span className="ml-2 text-[11px] uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-                {ROLE_LABEL[a.role] ?? a.role}
+                {personLabel(a.role, a.relationship)}
                 {a.isSelf ? " · you" : ""}
               </span>
             </div>
@@ -143,7 +162,7 @@ export function SharingPanel({ beneficiaryId }: { beneficiaryId: string }) {
             <div>
               <span className="text-[var(--color-cs-text)]">{i.email}</span>
               <span className="ml-2 text-[11px] uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
-                {ROLE_LABEL[i.role] ?? i.role} · pending
+                {personLabel(i.role, i.relationship)} · pending
               </span>
             </div>
             <button

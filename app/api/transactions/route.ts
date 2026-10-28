@@ -46,6 +46,16 @@ export async function GET(req: Request) {
 
   const query: Record<string, unknown> = { beneficiaryId: beneficiaryObjectId };
 
+  // Narrow to one linked bank, or to a single account within it.
+  const connectionId = searchParams.get("connectionId");
+  if (connectionId && /^[a-f0-9]{24}$/i.test(connectionId)) {
+    query.bankConnectionId = new mongoose.Types.ObjectId(connectionId);
+  }
+  const accountId = searchParams.get("accountId");
+  if (accountId) {
+    query.plaidAccountId = accountId;
+  }
+
   if (from || to) {
     const range: Record<string, string> = {};
     if (from) range.$gte = from;

@@ -2,10 +2,12 @@ import type { ComponentType } from "react";
 import {
   IconBook,
   IconCalendarEvent,
+  IconChecklist,
   IconFileExport,
   IconFileText,
   IconFolder,
   IconHome,
+  IconLayoutGrid,
   IconMessageCircle,
   IconUsers,
   IconWallet,
@@ -38,6 +40,7 @@ export type NavSection = {
 export const PRIMARY_SECTIONS: NavSection[] = [
   { label: "Home", icon: IconHome, href: "/dashboard" },
   { label: "Calendar", icon: IconCalendarEvent, href: "/calendar" },
+  { label: "Tasks", icon: IconChecklist, href: "/tasks" },
   {
     label: "Programs",
     icon: IconUsers,
@@ -51,6 +54,7 @@ export const PRIMARY_SECTIONS: NavSection[] = [
 /** Bottom utility group. Vault leads (rendered as a card in the sidebar). */
 export const UTILITY_SECTIONS: NavSection[] = [
   { label: "Vault", icon: IconFolder, href: "/vault" },
+  { label: "Projects", icon: IconLayoutGrid, href: "/projects" },
   { label: "Exports", icon: IconFileExport, href: "/reports" },
   { label: "Guides", icon: IconBook, href: "/guides", newTab: true },
 ];

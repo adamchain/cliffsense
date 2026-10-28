@@ -2,6 +2,8 @@
 import Link from "next/link";
 import "./stay-connected.css";
 
+const DEMO_MAIL = "mailto:adam@bene-watch.com,frank@bene-watch.com";
+
 export function StayConnectedPage({
   signInHref = "/auth/signin",
   signInLabel = "Sign in",
@@ -332,8 +334,8 @@ export function StayConnectedPage({
 <div className="card" style={{ padding: "24px" }}><div className="ic" style={{ background: "#E8F1FE" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A7CF0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg></div><div style={{ marginTop: "18px", fontSize: "19px", fontWeight: "800" }}>Staff time</div></div>
 </div>
 <div style={{ marginTop: "40px", display: "flex", flexWrap: "wrap", gap: "14px", alignItems: "center" }}>
-<a className="btn btn-n" href="mailto:support@bene-watch.com?subject=Pennsylvania%20pilot">Interested? Let&apos;s talk <span style={{ color: "#F2A24A" }}>bene-watch.com</span></a>
-<a className="btn btn-b" href="mailto:support@bene-watch.com?subject=Bene-Watch%20demonstration">Arrange a demonstration</a>
+<a className="btn btn-n" href={`${DEMO_MAIL}?subject=Pennsylvania%20pilot`}>Interested? Let&apos;s talk <span style={{ color: "#F2A24A" }}>bene-watch.com</span></a>
+<a className="btn btn-b" href={`${DEMO_MAIL}?subject=Bene-Watch%20demonstration`}>Arrange a demonstration</a>
 </div>
 </div>
 </section>
@@ -368,7 +370,7 @@ export function StayConnectedPage({
 <span className="cap" style={{ fontSize: "11px", color: "#8A94A6" }}>Company</span>
 <Link style={{ fontSize: "15px", textDecoration: "none" }} href="/about">About</Link>
 <Link style={{ fontSize: "15px", textDecoration: "none" }} href="/resources">Resources</Link>
-<a style={{ fontSize: "15px", textDecoration: "none" }} href="mailto:support@bene-watch.com">Contact</a>
+<a style={{ fontSize: "15px", textDecoration: "none" }} href={DEMO_MAIL}>Contact</a>
 </div>
 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
 <span className="cap" style={{ fontSize: "11px", color: "#8A94A6" }}>Legal</span>
