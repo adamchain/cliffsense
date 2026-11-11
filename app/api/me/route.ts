@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/activity/log-activity";
 import { emitDacMarriageAlert, emitHouseholdChangeAlert, isMarriedStatus } from "@/lib/alerts/evaluate-scenario-alerts";
 import { sendAlertEmailsForNewAlerts } from "@/lib/email/dispatch-alerts";
 import { sendAlertPushForNewAlerts } from "@/lib/push/dispatch-push";
+import { stepRequiresBetaAgreement } from "@/lib/onboarding/steps";
 
 const patchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
@@ -24,9 +25,12 @@ const patchSchema = z.object({
       "plaid",
       "benefits",
       "notifications",
+      "agreement",
+      "setup",
       "complete",
     ])
     .optional(),
+  betaAgreementAccepted: z.literal(true).optional(),
   notificationPrefs: z
     .object({
       email: z.string().email().optional().or(z.literal("")),
@@ -78,8 +82,26 @@ export async function PATCH(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const { name, state, householdSize, onboardingStep, notificationPrefs, ownerProfile, walkthroughCompleted } =
-    parsed.data;
+  const {
+    name,
+    state,
+    householdSize,
+    onboardingStep,
+    notificationPrefs,
+    ownerProfile,
+    walkthroughCompleted,
+    betaAgreementAccepted,
+  } = parsed.data;
+  if (betaAgreementAccepted && !user.betaAgreementAcceptedAt) {
+    user.betaAgreementAcceptedAt = new Date();
+  }
+  if (
+    onboardingStep !== undefined &&
+    stepRequiresBetaAgreement(onboardingStep) &&
+    !user.betaAgreementAcceptedAt
+  ) {
+    return NextResponse.json({ error: "Accept the beta agreement to continue." }, { status: 400 });
+  }
   if (name !== undefined) user.name = name;
   if (onboardingStep !== undefined) user.onboardingStep = onboardingStep;
   if (walkthroughCompleted === true) {

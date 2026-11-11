@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { UsStateSelect } from "@/components/forms/us-state-select";
 import { DISABILITY_OPTIONS, MARITAL_OPTIONS } from "@/lib/onboarding/opening";
-import { nextStepAfterProfile, pathForOnboardingStepId } from "@/lib/onboarding/steps";
+import { pathForOnboardingStepId } from "@/lib/onboarding/steps";
 
 function dobInput(value: unknown): string {
   if (!value) return "";
@@ -16,7 +16,7 @@ function dobInput(value: unknown): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function OnboardingProfileForm({ accountType }: { accountType: string }) {
+export function OnboardingProfileForm({ accountType: _accountType }: { accountType: string }) {
   const router = useRouter();
   const { update } = useSession();
   const [firstName, setFirstName] = useState("");
@@ -80,7 +80,7 @@ export function OnboardingProfileForm({ accountType }: { accountType: string }) 
     setError(null);
     setLoading(true);
     const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
-    const nextStep = nextStepAfterProfile(accountType);
+    const nextStep = "setup" as const;
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

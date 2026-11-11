@@ -17,6 +17,8 @@ type OnboardingShellProps = {
   subtitle?: ReactNode;
   /** Inner progress for a multi-question step. */
   subProgress?: { current: number; total: number };
+  /** Bank return page is not one of the three setup steps. */
+  showProgress?: boolean;
   children: ReactNode;
 };
 
@@ -33,6 +35,7 @@ export function OnboardingShell({
   title,
   subtitle,
   subProgress,
+  showProgress = true,
   children,
 }: OnboardingShellProps) {
   const steps = getOnboardingSteps(accountType);
@@ -40,12 +43,14 @@ export function OnboardingShell({
   const prevStep = idx > 0 ? steps[idx - 1] : null;
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-cs-surface)] font-sans text-[13px] text-[var(--color-cs-text)]">
-      <OnboardingProgress steps={steps} currentStepId={currentStepId} subProgress={subProgress} />
+      {showProgress ? (
+        <OnboardingProgress steps={steps} currentStepId={currentStepId} subProgress={subProgress} />
+      ) : null}
       <main className="mx-auto w-full max-w-lg px-5 py-10 sm:py-14">
         <Link href="/" className="inline-flex" aria-label="Bene-Watch home">
           <BrandLogo priority className="h-8 w-auto" />
         </Link>
-        {prevStep ? (
+        {showProgress && prevStep ? (
           <Link
             href={prevStep.path}
             className="mt-6 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-cs-text-secondary)] hover:text-[var(--color-cs-brand)]"
@@ -54,7 +59,7 @@ export function OnboardingShell({
             Back to {prevStep.label}
           </Link>
         ) : null}
-        <div className={prevStep ? "mt-4" : "mt-7"}>
+        <div className={showProgress && prevStep ? "mt-4" : "mt-7"}>
           {eyebrow ? (
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-secondary)]">
               {eyebrow}

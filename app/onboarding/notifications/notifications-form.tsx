@@ -25,7 +25,8 @@ export function NotificationsForm({ defaultEmail }: { defaultEmail: string }) {
     });
     setLoading(false);
     if (!res.ok) {
-      setError("Could not save preferences");
+      const j = await res.json().catch(() => ({}));
+      setError((j as { error?: string }).error ?? "Could not save preferences");
       return;
     }
     await update({ onboardingStep: "complete" });

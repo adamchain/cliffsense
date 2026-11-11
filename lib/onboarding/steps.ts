@@ -7,12 +7,15 @@ export const ONBOARDING_STEP_VALUES = [
   "benefits",
   "plaid",
   "notifications",
+  "agreement",
+  "setup",
   "complete",
 ] as const;
 
 export type PersistedOnboardingStep = (typeof ONBOARDING_STEP_VALUES)[number];
 
-export type OnboardingStepId = "role" | "profile" | "beneficiary" | "authority" | "benefits" | "plaid" | "notifications";
+/** The three screens a new account actually sees. */
+export type OnboardingStepId = "agreement" | "setup" | "notifications";
 
 export type OnboardingStep = {
   id: OnboardingStepId;
@@ -21,22 +24,13 @@ export type OnboardingStep = {
   path: string;
 };
 
-/** Ordered steps for the signed-in user (beneficiary skips “add person”). */
-export function getOnboardingSteps(accountType: string | undefined): OnboardingStep[] {
-  const steps: OnboardingStep[] = [
-    { id: "role", label: "Role", path: "/onboarding/role" },
-    { id: "profile", label: "Identity", path: "/onboarding/profile" },
-  ];
-  if (accountType && accountType !== "beneficiary") {
-    steps.push({ id: "beneficiary", label: "Person", path: "/onboarding/beneficiary" });
-  }
-  steps.push(
-    { id: "authority", label: "Authority", path: "/onboarding/authority" },
-    { id: "benefits", label: "Programs", path: "/onboarding/benefits" },
-    { id: "plaid", label: "Bank", path: "/onboarding/plaid" },
+/** Agreement, the person and their programs, then alerts. Bank linking is later. */
+export function getOnboardingSteps(_accountType?: string): OnboardingStep[] {
+  return [
+    { id: "agreement", label: "Agreement", path: "/onboarding/agreement" },
+    { id: "setup", label: "Person", path: "/onboarding/setup" },
     { id: "notifications", label: "Alerts", path: "/onboarding/notifications" },
-  );
-  return steps;
+  ];
 }
 
 export function onboardingStepIndex(steps: OnboardingStep[], currentId: OnboardingStepId): number {
@@ -44,48 +38,33 @@ export function onboardingStepIndex(steps: OnboardingStep[], currentId: Onboardi
   return i >= 0 ? i : 0;
 }
 
-export function nextStepAfterProfile(accountType: string): OnboardingStepId {
-  return accountType === "beneficiary" ? "authority" : "beneficiary";
-}
-
 export function pathForOnboardingStepId(id: OnboardingStepId): string {
-  switch (id) {
-    case "role":
-      return "/onboarding/role";
-    case "profile":
-      return "/onboarding/profile";
-    case "beneficiary":
-      return "/onboarding/beneficiary";
-    case "authority":
-      return "/onboarding/authority";
-    case "benefits":
-      return "/onboarding/benefits";
-    case "plaid":
-      return "/onboarding/plaid";
-    case "notifications":
-      return "/onboarding/notifications";
-  }
+  return getOnboardingSteps().find((s) => s.id === id)?.path ?? "/onboarding/agreement";
 }
 
-/** Maps persisted `User.onboardingStep` / JWT to the route to resume onboarding. */
+/**
+ * A saved step may continue only after the beta agreement is stored.
+ * The agreement screen itself, and untouched legacy "role" / "none" rows, do not.
+ */
+export function stepRequiresBetaAgreement(step: string): boolean {
+  return step !== "none" && step !== "role" && step !== "agreement";
+}
+
+/**
+ * Maps a persisted `User.onboardingStep` to the short flow.
+ * Older steps land on the nearest new screen. Bank setup is not one of them.
+ */
 export function onboardingPathForStep(step: string): string {
   switch (step) {
-    case "none":
-    case "role":
-      return "/onboarding/role";
-    case "profile":
-      return "/onboarding/profile";
-    case "beneficiary":
-      return "/onboarding/beneficiary";
-    case "authority":
-      return "/onboarding/authority";
-    case "plaid":
-      return "/onboarding/plaid";
-    case "benefits":
-      return "/onboarding/benefits";
     case "notifications":
+    case "plaid":
       return "/onboarding/notifications";
+    case "setup":
+    case "benefits":
+      return "/onboarding/setup";
+    case "complete":
+      return "/dashboard";
     default:
-      return "/onboarding/role";
+      return "/onboarding/agreement";
   }
 }

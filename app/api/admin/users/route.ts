@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   const plainPassword = password ?? crypto.randomBytes(24).toString("base64url");
   const hashedPassword = await bcrypt.hash(plainPassword, 12);
 
-  const onboardingStep = completeOnboarding ? "complete" : "role";
+  const onboardingStep = completeOnboarding ? "complete" : "agreement";
   const applicationStatus = completeOnboarding
     ? "approved"
     : initialApplicationStatus(accountType);

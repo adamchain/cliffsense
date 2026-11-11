@@ -68,10 +68,14 @@ const userSchema = new Schema(
         "plaid",
         "benefits",
         "notifications",
+        "agreement",
+        "setup",
         "complete",
       ],
       default: "none",
     },
+    /** Set when the family-and-friends beta agreement checkbox is accepted. */
+    betaAgreementAcceptedAt: { type: Date, default: null },
     /** Set when the in-app product walkthrough finishes or is skipped. Null = not done yet. */
     walkthroughCompletedAt: { type: Date, default: null },
   },

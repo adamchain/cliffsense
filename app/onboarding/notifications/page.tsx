@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
+import { betaAgreementAccepted } from "@/lib/onboarding/beta-agreement";
 import { NotificationsForm } from "./notifications-form";
 
 export default async function OnboardingNotificationsPage() {
@@ -8,14 +9,17 @@ export default async function OnboardingNotificationsPage() {
   if (!session?.user) {
     redirect("/auth/signin");
   }
+  if (!(await betaAgreementAccepted(session.user.id))) {
+    redirect("/onboarding/agreement");
+  }
 
   return (
     <OnboardingShell
       accountType={session.user.accountType}
       currentStepId="notifications"
-      eyebrow="Notifications"
-      title="Email preferences"
-      subtitle="We'll email you when an alert is created. The note stays factual: what changed, and what to do next."
+      eyebrow="Alerts"
+      title="Where should alerts go?"
+      subtitle="We'll email this address when a deadline or a warning shows up. You can change it later."
     >
       <NotificationsForm defaultEmail={session.user.email ?? ""} />
     </OnboardingShell>

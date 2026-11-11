@@ -43,7 +43,8 @@ export default async function OnboardingPlaidPage() {
   return (
     <OnboardingShell
       accountType={session.user.accountType}
-      currentStepId="plaid"
+      currentStepId="notifications"
+      showProgress={false}
       eyebrow="Bank"
       title="Load a financial baseline"
       subtitle={subtitle}

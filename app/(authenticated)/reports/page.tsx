@@ -24,7 +24,7 @@ export default async function ReportsPage() {
       {!beneficiaryId ? (
         <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
           Add a beneficiary profile first.{" "}
-          <Link href="/onboarding/profile" className="text-[var(--color-cs-brand)] hover:underline">
+          <Link href="/onboarding/agreement" className="text-[var(--color-cs-brand)] hover:underline">
             Continue onboarding
           </Link>
           .

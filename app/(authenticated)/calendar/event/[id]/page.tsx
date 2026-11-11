@@ -36,7 +36,7 @@ export default async function CalendarEventPage({
 
   const primary = await getActiveBeneficiaryForUser(session.user.id);
   if (!primary) {
-    redirect("/onboarding/profile");
+    redirect("/onboarding/agreement");
   }
   const beneficiaryId = primary._id;
 

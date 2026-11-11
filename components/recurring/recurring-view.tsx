@@ -108,7 +108,7 @@ export function RecurringView({ beneficiaryId }: { beneficiaryId: string | null 
     return (
       <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
         Add a beneficiary profile to see recurring streams.{" "}
-        <Link href="/onboarding/profile" className="text-[var(--color-cs-brand)] hover:underline">
+        <Link href="/onboarding/agreement" className="text-[var(--color-cs-brand)] hover:underline">
           Complete profile
         </Link>
       </p>

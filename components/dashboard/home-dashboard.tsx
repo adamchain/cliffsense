@@ -217,7 +217,7 @@ export function HomeDashboard({
                 label="Connect bank"
               />
             ) : (
-              <Link href="/onboarding/profile" className="cs-btn cs-btn-secondary">
+              <Link href="/onboarding/agreement" className="cs-btn cs-btn-secondary">
                 Continue onboarding
               </Link>
             )}

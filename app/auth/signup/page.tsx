@@ -181,7 +181,7 @@ export default function SignUpPage() {
           email,
           code,
           redirect: false,
-          callbackUrl: "/onboarding/role",
+          callbackUrl: "/onboarding/agreement",
         }),
         new Promise<null>((_, reject) =>
           setTimeout(() => reject(new Error("timeout")), 20_000),
@@ -191,7 +191,7 @@ export default function SignUpPage() {
         setError("That code is invalid or expired. Request a new one.");
         return;
       }
-      router.push("/onboarding/role");
+      router.push("/onboarding/agreement");
       router.refresh();
     } catch (err) {
       setError(

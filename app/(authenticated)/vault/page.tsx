@@ -177,7 +177,7 @@ export default async function VaultPage() {
       {!beneficiaryId ? (
         <p className="text-[13px] text-[var(--color-cs-text-secondary)]">
           Add a beneficiary profile first.{" "}
-          <Link href="/onboarding/profile" className="text-[var(--color-cs-brand)] hover:underline">
+          <Link href="/onboarding/agreement" className="text-[var(--color-cs-brand)] hover:underline">
             Continue onboarding
           </Link>
           .
@@ -186,12 +186,8 @@ export default async function VaultPage() {
         <>
           {!screened && (
             <p className="mb-3 text-[13px] text-[var(--color-cs-text-secondary)]">
-              <Link href="/onboarding/benefits" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
-                Screen benefits
-              </Link>{" "}
-              and{" "}
-              <Link href="/onboarding/authority" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
-                record authority
+              <Link href="/onboarding/setup" className="font-semibold text-[var(--color-cs-brand)] hover:underline">
+                Add programs
               </Link>{" "}
               so empty rows show up only for this case.
             </p>

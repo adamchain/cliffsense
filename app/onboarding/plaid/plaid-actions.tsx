@@ -39,8 +39,8 @@ export function PlaidOnboardingActions({ beneficiaryId }: { beneficiaryId: strin
           Try refreshing the page. If this keeps happening, complete the profile step with your name and state, or sign
           out and sign back in.
         </p>
-        <Link href="/onboarding/profile" className="cs-btn cs-btn-primary mt-4">
-          Go to profile
+        <Link href="/onboarding/setup" className="cs-btn cs-btn-primary mt-4">
+          Go to setup
           <IconArrowRight size={16} stroke={1.5} aria-hidden />
         </Link>
       </div>
