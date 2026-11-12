@@ -4,7 +4,7 @@ import { StayConnectedPage } from "@/components/landing/stay-connected";
 import { continueDestination } from "@/lib/auth/continue-destination";
 
 export const metadata: Metadata = {
-  title: "Bene-Watch — Keeping PA Connected",
+  title: "Bene-Watch — Protecting PA Benefits",
   description:
     "Bene-Watch helps you track benefit requirements so you don't get lost in the shuffle.",
 };
