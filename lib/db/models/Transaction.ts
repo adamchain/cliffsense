@@ -41,6 +41,8 @@ const transactionSchema = new Schema(
       default: "unclear",
     },
     excludedFromThresholds: { type: Boolean, default: false, index: true },
+    /** Program codes this deposit does not count toward. Empty means it counts for every enrolled program. */
+    excludedPrograms: { type: [String], default: [] },
     excludeReason: { type: String, default: "" },
     recurringStreamId: { type: Schema.Types.ObjectId, ref: "RecurringStream", default: null },
     /** A receipt (VaultDocument) the user attached to this transaction. */

@@ -21,6 +21,7 @@ const patchSchema = z
   .object({
     userCategory: userCategoryEnum.optional(),
     excludedFromThresholds: z.boolean().optional(),
+    excludedPrograms: z.array(z.string().max(40)).max(30).optional(),
     excludeReason: z.string().max(500).optional(),
     notes: z.string().max(2000).optional(),
   })
@@ -29,6 +30,7 @@ const patchSchema = z
     (d) =>
       d.userCategory !== undefined ||
       d.excludedFromThresholds !== undefined ||
+      d.excludedPrograms !== undefined ||
       d.notes !== undefined ||
       d.excludeReason !== undefined,
     { message: "No changes" },
@@ -68,6 +70,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       tx.excludeReason = "";
     }
   }
+  if (parsed.data.excludedPrograms !== undefined) {
+    tx.excludedPrograms = [
+      ...new Set(parsed.data.excludedPrograms.map((program) => program.trim()).filter(Boolean)),
+    ];
+    tx.markModified("excludedPrograms");
+  }
   if (parsed.data.excludeReason !== undefined) {
     tx.excludeReason = parsed.data.excludeReason;
   }
@@ -88,7 +96,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       details: { from: prevCat, to: parsed.data.userCategory },
     });
   }
-  if (parsed.data.excludedFromThresholds !== undefined && parsed.data.excludedFromThresholds !== prevExcluded) {
+  if (
+    (parsed.data.excludedFromThresholds !== undefined && parsed.data.excludedFromThresholds !== prevExcluded) ||
+    parsed.data.excludedPrograms !== undefined
+  ) {
     await logActivity({
       userId: session.user.id,
       beneficiaryId: tx.beneficiaryId,

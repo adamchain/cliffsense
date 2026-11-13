@@ -2,6 +2,7 @@ import { noncountableIncomeNote } from "@/lib/benefits/noncountable-inflow";
 import { SNAP_LUMP_SUM_CENTS } from "@/lib/benefits/snap-limits";
 import { programCodeKey } from "@/lib/benefits/program-meta";
 import {
+  countsTowardProgram,
   noncountableIncomeInflow,
   resourceCountNote,
   type ResourceAccount,
@@ -16,6 +17,7 @@ export type LimitSourceLine = {
   category: string;
   included: boolean;
   note: string | null;
+  excludedPrograms?: string[];
 };
 
 export type LimitSources = {
@@ -58,6 +60,7 @@ export function buildLimitSources(
       category: t.userCategory,
       included,
       note,
+      excludedPrograms: [...(t.excludedPrograms ?? [])],
     });
   }
   income.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
@@ -101,6 +104,13 @@ export function linesForLimit(
   const lines = sources.income
     .filter((line) => categories.has(line.category))
     .map((line) => {
+      if (
+        line.included &&
+        program &&
+        !countsTowardProgram({ excludedPrograms: line.excludedPrograms }, program)
+      ) {
+        return { ...line, included: false, note: "Left out of this program." };
+      }
       if (!snapGross || line.category !== "other_income") return line;
       if (!line.note?.includes("one-time lump sum")) return line;
       return {

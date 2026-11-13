@@ -50,6 +50,7 @@ import {
   countableResourceBalanceCents,
   earnedNetBeforeMonthInYearCents,
   earningsAfterIrweCents,
+  breakdownForProgram,
   monthlyIncomeBreakdownCents,
   noncountableIncomeInflow,
   projectRecurringEarnedRestOfMonthCents,
@@ -217,6 +218,7 @@ export async function loadThresholdDashboardPayload(
         userCategory: 1,
         pending: 1,
         excludedFromThresholds: 1,
+        excludedPrograms: 1,
         name: 1,
         merchantName: 1,
       })
@@ -250,6 +252,7 @@ export async function loadThresholdDashboardPayload(
     userCategory: t.userCategory,
     pending: Boolean(t.pending),
     excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    excludedPrograms: Array.isArray(t.excludedPrograms) ? t.excludedPrograms.map(String) : [],
     name: t.name ?? "",
     merchantName: t.merchantName ?? "",
   }));
@@ -301,6 +304,7 @@ export async function loadThresholdDashboardPayload(
       userCategory: String(t.userCategory ?? ""),
       pending: Boolean(t.pending),
       excludedFromThresholds: Boolean(t.excludedFromThresholds),
+      excludedPrograms: Array.isArray(t.excludedPrograms) ? t.excludedPrograms.map(String) : [],
       name: t.name ? String(t.name) : "",
       merchantName: t.merchantName ? String(t.merchantName) : "",
     })),
@@ -310,15 +314,6 @@ export async function loadThresholdDashboardPayload(
   const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
   const benefitDeposits = benefitDepositsInMonth(txMapped, prefix);
   const ytdEarnedBefore = grossUpEarnedCents(earnedNetBeforeMonthInYearCents(txMapped, prefix));
-  const ssiAdjusted = adjustedSsiCountable({
-    breakdown,
-    programs,
-    householdSize,
-    benefitDeposits,
-    age,
-    earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
-    irweCents,
-  });
   const excludeUnearnedCents = ssiBenefitCentsToExclude({ programs, householdSize, deposits: benefitDeposits });
   const projectedSsiCountable = ssiCountableMonthlyIncomeCents(projectedBreakdown, {
     excludeUnearnedCents,
@@ -329,29 +324,9 @@ export async function loadThresholdDashboardPayload(
     }),
     irweCents,
   });
-  const waiverGrossNow = waiverGrossCountableCents({ breakdown, programs, deposits: benefitDeposits });
-  const waiverGrossProjected = waiverGrossCountableCents({
-    breakdown: projectedBreakdown,
-    programs,
-    deposits: benefitDeposits,
-  });
   const onSsi = programs.some((p) => String(p).toUpperCase() === "SSI");
   const mawdJobSuccess = enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []);
   const married = isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus);
-  const abdIncomeNow = abdCountableCents({
-    breakdown,
-    programs,
-    householdSize,
-    deposits: benefitDeposits,
-    irweCents,
-  });
-  const abdIncomeProjected = abdCountableCents({
-    breakdown: projectedBreakdown,
-    programs,
-    householdSize,
-    deposits: benefitDeposits,
-    irweCents,
-  });
 
   const earnedDeposits = txMapped.flatMap((t) => {
     if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) return [];
@@ -367,7 +342,11 @@ export async function loadThresholdDashboardPayload(
     now,
     hasHistoryBeforeMonth: txMapped.some((t) => String(t.date).slice(0, 7) < prefix),
   });
-  const snapGrossForReport = Math.max(0, grossMonthlyIncomeCents(breakdown) - oneTimeOtherIncomeCents(txMapped, prefix));
+  const snapGrossForReport = Math.max(
+    0,
+    grossMonthlyIncomeCents(monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SNAP" })) -
+      oneTimeOtherIncomeCents(txMapped, prefix),
+  );
   const wageReportKeys = new Set(
     (wageKind
       ? programsThatMustReportWageChange(programs, wageKind, snapGrossForReport, householdSize)
@@ -382,6 +361,12 @@ export async function loadThresholdDashboardPayload(
     const sk = (th as { systemKey?: string }).systemKey;
     if (!passesHouseholdRule(sk, householdSize)) continue;
     const attached = !(th.scope === "system" && sk ? detachedKeys.has(sk) : false);
+    const programName = String(th.program ?? "");
+    const programBreakdown = programName
+      ? monthlyIncomeBreakdownCents(txMapped, prefix, { program: programName })
+      : breakdown;
+    const programDeposits = programName ? benefitDepositsInMonth(txMapped, prefix, programName) : benefitDeposits;
+    const programProjected = breakdownForProgram(projectedBreakdown, breakdown, programBreakdown);
 
     let currentValue: number | null = null;
     let projectedValue: number | null = null;
@@ -389,8 +374,8 @@ export async function loadThresholdDashboardPayload(
     switch (th.thresholdType) {
       case "monthly_earned_income":
         // Trial Work Period uses gross wages. SGA subtracts IRWE dollar-for-dollar.
-        currentValue = breakdown.earnedGrossCents;
-        projectedValue = projectedBreakdown.earnedGrossCents;
+        currentValue = programBreakdown.earnedGrossCents;
+        projectedValue = programProjected.earnedGrossCents;
         if (sk && /sga/i.test(sk)) {
           currentValue = earningsAfterIrweCents(currentValue, irweCents);
           projectedValue = earningsAfterIrweCents(projectedValue ?? 0, irweCents);
@@ -399,8 +384,8 @@ export async function loadThresholdDashboardPayload(
       case "monthly_gross_income":
         // SNAP gross-income test: wages, benefits, and recurring other income.
         // A one-time lump sum of $1,500 or more is left out.
-        currentValue = grossMonthlyIncomeCents(breakdown);
-        projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        currentValue = grossMonthlyIncomeCents(programBreakdown);
+        projectedValue = grossMonthlyIncomeCents(programProjected);
         if (String(th.program ?? "").toUpperCase() === "SNAP") {
           const lump = oneTimeOtherIncomeCents(txMapped, prefix);
           currentValue = Math.max(0, currentValue - lump);
@@ -411,14 +396,34 @@ export async function loadThresholdDashboardPayload(
         // SSI, ABD, and MAWD use the $20, then $65, IRWE, and one-half.
         // QMB and Extra Help replace this below and do not subtract the $20.
         if (String(th.program ?? "").toUpperCase() === "SSI") {
-          currentValue = ssiAdjusted.countable;
+          currentValue = adjustedSsiCountable({
+            breakdown: programBreakdown,
+            programs,
+            householdSize,
+            benefitDeposits: programDeposits,
+            age,
+            earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+            irweCents,
+          }).countable;
           projectedValue = projectedSsiCountable;
         } else if (String(th.program ?? "").toUpperCase() === "MEDICAIDABD") {
-          currentValue = abdIncomeNow;
-          projectedValue = abdIncomeProjected;
+          currentValue = abdCountableCents({
+            breakdown: programBreakdown,
+            programs,
+            householdSize,
+            deposits: programDeposits,
+            irweCents,
+          });
+          projectedValue = abdCountableCents({
+            breakdown: programProjected,
+            programs,
+            householdSize,
+            deposits: programDeposits,
+            irweCents,
+          });
         } else {
-          currentValue = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
-          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown, { irweCents });
+          currentValue = ssiCountableMonthlyIncomeCents(programBreakdown, { irweCents });
+          projectedValue = ssiCountableMonthlyIncomeCents(programProjected, { irweCents });
         }
         break;
       case "asset_balance":
@@ -452,8 +457,16 @@ export async function loadThresholdDashboardPayload(
         currentValue = null;
         projectedValue = null;
       } else {
-        currentValue = waiverGrossNow;
-        projectedValue = waiverGrossProjected;
+        currentValue = waiverGrossCountableCents({
+          breakdown: programBreakdown,
+          programs,
+          deposits: programDeposits,
+        });
+        projectedValue = waiverGrossCountableCents({
+          breakdown: programProjected,
+          programs,
+          deposits: programDeposits,
+        });
       }
     } else if (sk === "pa_waiver_resources_2026" && (onSsi || married)) {
       currentValue = null;
@@ -483,8 +496,8 @@ export async function loadThresholdDashboardPayload(
       }
     } else if (sk === "pa_qmb_income_2026") {
       limitCents = qmbIncomeLimitCents(householdSize);
-      currentValue = qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents });
-      projectedValue = qmbIncomeBeforeGeneralExclusionCents(projectedBreakdown, { irweCents });
+      currentValue = qmbIncomeBeforeGeneralExclusionCents(programBreakdown, { irweCents });
+      projectedValue = qmbIncomeBeforeGeneralExclusionCents(programProjected, { irweCents });
     } else if (sk === "pa_qmb_resources_2026") {
       limitCents = qmbResourceLimitCents(householdSize);
     } else if (sk === "extra_help_lis_income_monthly_2026") {
@@ -493,8 +506,8 @@ export async function loadThresholdDashboardPayload(
         currentValue = null;
         projectedValue = null;
       } else {
-        currentValue = extraHelpIncomeBeforeGeneralExclusionCents(breakdown, { irweCents });
-        projectedValue = extraHelpIncomeBeforeGeneralExclusionCents(projectedBreakdown, { irweCents });
+        currentValue = extraHelpIncomeBeforeGeneralExclusionCents(programBreakdown, { irweCents });
+        projectedValue = extraHelpIncomeBeforeGeneralExclusionCents(programProjected, { irweCents });
       }
     } else if (sk === "extra_help_lis_resources_2026") {
       limitCents = extraHelpResourceLimitCents(householdSize);

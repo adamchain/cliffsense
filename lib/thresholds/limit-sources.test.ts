@@ -46,6 +46,26 @@ describe("linesForLimit", () => {
     expect(view.lines.find((line) => line.id === "w")?.included).toBe(true);
   });
 
+  it("leaves a deposit out of one program and keeps it in another", () => {
+    const partial = buildLimitSources(
+      [
+        {
+          id: "ssa",
+          date: "2026-11-04",
+          amountCents: -663_00,
+          userCategory: "benefit_deposit",
+          pending: false,
+          excludedPrograms: ["QMB"],
+          name: "Social Security Administration",
+        },
+      ],
+      [],
+      "2026-11",
+    );
+    expect(linesForLimit(partial, "monthly_gross_income", "QMB").lines[0]?.included).toBe(false);
+    expect(linesForLimit(partial, "monthly_gross_income", "SNAP").lines[0]?.included).toBe(true);
+  });
+
   it("lists countable account balances for a resource limit", () => {
     const view = linesForLimit(sources, "asset_balance", "SSI");
     expect(view.lines).toHaveLength(1);

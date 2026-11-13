@@ -34,17 +34,40 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const match = recurringSeriesMatchFrom(tx);
     if (!match) return NextResponse.json({ match: null, count: 0, sample: [] });
+    const wantedPrograms = [...(tx.excludedPrograms ?? [])]
+      .map((program) => String(program).toUpperCase().replace(/[^A-Z0-9]/g, ""))
+      .filter(Boolean)
+      .sort()
+      .join(",");
+    const wantedAll = Boolean(tx.excludedFromThresholds);
     const candidates = await Transaction.find({
       ...similarPrefilter(tx),
       _id: { $ne: tx._id },
       amountCents: tx.amountCents,
-      excludedFromThresholds: series === "exclude" ? { $ne: true } : true,
     })
       .sort({ date: -1 })
       .limit(SCAN)
-      .select({ date: 1, name: 1, merchantName: 1, amountCents: 1, userCategory: 1 })
+      .select({
+        date: 1,
+        name: 1,
+        merchantName: 1,
+        amountCents: 1,
+        userCategory: 1,
+        excludedFromThresholds: 1,
+        excludedPrograms: 1,
+      })
       .lean();
-    const matched = candidates.filter((c) => rowMatchesRecurringSeries(c, match)).slice(0, MAX);
+    const matched = candidates
+      .filter((c) => {
+        if (!rowMatchesRecurringSeries(c, match)) return false;
+        const programs = [...(c.excludedPrograms ?? [])]
+          .map((program) => String(program).toUpperCase().replace(/[^A-Z0-9]/g, ""))
+          .filter(Boolean)
+          .sort()
+          .join(",");
+        return Boolean(c.excludedFromThresholds) !== wantedAll || programs !== wantedPrograms;
+      })
+      .slice(0, MAX);
     return NextResponse.json({
       match: { field: "amount", label: match.label, amountCents: match.amountCents },
       count: matched.length,

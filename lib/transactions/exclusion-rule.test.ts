@@ -26,4 +26,17 @@ describe("recurring benefit exclusion", () => {
       }),
     ).toBe(false);
   });
+
+  it("matches a deposit that is left out of one program only", () => {
+    expect(
+      exclusionRuleMatches(
+        {
+          active: true,
+          matcher: { merchantName: "social security administration", amountMinCents: -663_00, amountMaxCents: -663_00 },
+          action: { excludeFromThresholds: false, excludedPrograms: ["QMB"] },
+        },
+        { merchantName: "Social Security Administration", amountCents: -663_00 },
+      ),
+    ).toBe(true);
+  });
 });

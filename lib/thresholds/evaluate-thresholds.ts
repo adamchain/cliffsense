@@ -41,6 +41,7 @@ import {
   countableEarnedAfterExclusionsCents,
   countableResourceBalanceCents,
   earnedNetBeforeMonthInYearCents,
+  breakdownForProgram,
   monthlyIncomeBreakdownCents,
   noncountableIncomeInflow,
   projectRecurringEarnedRestOfMonthCents,
@@ -159,6 +160,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
         userCategory: 1,
         pending: 1,
         excludedFromThresholds: 1,
+        excludedPrograms: 1,
         name: 1,
         merchantName: 1,
       })
@@ -223,6 +225,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
       userCategory: t.userCategory,
       pending: Boolean(t.pending),
       excludedFromThresholds: Boolean(t.excludedFromThresholds),
+      excludedPrograms: Array.isArray(t.excludedPrograms) ? t.excludedPrograms.map(String) : [],
     })),
     prefix,
   );
@@ -255,20 +258,12 @@ export async function evaluateThresholdsForBeneficiary(input: {
     userCategory: t.userCategory,
     pending: Boolean(t.pending),
     excludedFromThresholds: Boolean(t.excludedFromThresholds),
+    excludedPrograms: Array.isArray(t.excludedPrograms) ? t.excludedPrograms.map(String) : [],
     name: t.name ?? "",
     merchantName: t.merchantName ?? "",
   }));
   const benefitDeposits = benefitDepositsInMonth(txMapped, prefix);
   const ytdEarnedBefore = grossUpEarnedCents(earnedNetBeforeMonthInYearCents(txMapped, prefix));
-  const ssiAdjusted = adjustedSsiCountable({
-    breakdown,
-    programs,
-    householdSize,
-    benefitDeposits,
-    age,
-    earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
-    irweCents,
-  });
   const excludeUnearnedCents = ssiBenefitCentsToExclude({
     programs,
     householdSize,
@@ -301,6 +296,11 @@ export async function evaluateThresholdsForBeneficiary(input: {
 
   for (const th of thresholdRows) {
     if (!matchesState(th.state as string | null, benState)) continue;
+    const programName = String(th.program ?? "");
+    const programBreakdown = programName
+      ? monthlyIncomeBreakdownCents(txMapped, prefix, { program: programName })
+      : breakdown;
+    const programProjected = breakdownForProgram(projectedBreakdown, breakdown, programBreakdown);
     const sk = (th as { systemKey?: string }).systemKey;
     if (!passesHouseholdRule(sk, householdSize)) continue;
     // Skip system limits the user has detached — they should not fire alerts.
@@ -336,12 +336,12 @@ export async function evaluateThresholdsForBeneficiary(input: {
 
     switch (th.thresholdType) {
       case "monthly_earned_income":
-        currentValue = breakdown.earnedGrossCents;
-        projectedValue = projectedBreakdown.earnedGrossCents;
+        currentValue = programBreakdown.earnedGrossCents;
+        projectedValue = programProjected.earnedGrossCents;
         break;
       case "monthly_gross_income":
-        currentValue = grossMonthlyIncomeCents(breakdown);
-        projectedValue = grossMonthlyIncomeCents(projectedBreakdown);
+        currentValue = grossMonthlyIncomeCents(programBreakdown);
+        projectedValue = grossMonthlyIncomeCents(programProjected);
         if (String(th.program ?? "").toUpperCase() === "SNAP") {
           const lump = oneTimeOtherIncomeCents(txMapped, prefix);
           currentValue = Math.max(0, currentValue - lump);
@@ -350,11 +350,19 @@ export async function evaluateThresholdsForBeneficiary(input: {
         break;
       case "monthly_unearned_income":
         if (String(th.program ?? "").toUpperCase() === "SSI") {
-          currentValue = ssiAdjusted.countable;
+          currentValue = adjustedSsiCountable({
+            breakdown: programBreakdown,
+            programs,
+            householdSize,
+            benefitDeposits: benefitDepositsInMonth(txMapped, prefix, "SSI"),
+            age,
+            earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+            irweCents,
+          }).countable;
           projectedValue = projectedSsiCountable;
         } else {
-          currentValue = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
-          projectedValue = ssiCountableMonthlyIncomeCents(projectedBreakdown, { irweCents });
+          currentValue = ssiCountableMonthlyIncomeCents(programBreakdown, { irweCents });
+          projectedValue = ssiCountableMonthlyIncomeCents(programProjected, { irweCents });
         }
         break;
       case "asset_balance":
@@ -465,37 +473,72 @@ export async function evaluateThresholdsForBeneficiary(input: {
     ownerUserId: beneficiary.ownerUserId,
     actorUserId: input.actorUserId,
     programs,
-    earnedGrossCents: breakdown.earnedGrossCents,
+    earnedGrossCents: monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SSDI" }).earnedGrossCents,
     priorEarnedGrossCents: grossUpEarnedCents(priorEarnedNet),
-    ssiCountableCents: ssiCountableMonthlyIncomeCents(breakdown, { irweCents }),
-    ssiAdjustedCountableCents: ssiAdjusted.countable,
-    ssiUnearnedOnlyCents: ssiAdjusted.unearnedOnly,
-    abdCountableCents: abdCountableCents({
-      breakdown,
+    ssiCountableCents: ssiCountableMonthlyIncomeCents(
+      monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SSI" }),
+      { irweCents },
+    ),
+    ssiAdjustedCountableCents: adjustedSsiCountable({
+      breakdown: monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SSI" }),
       programs,
       householdSize,
-      deposits: benefitDeposits,
+      benefitDeposits: benefitDepositsInMonth(txMapped, prefix, "SSI"),
+      age,
+      earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+      irweCents,
+    }).countable,
+    ssiUnearnedOnlyCents: adjustedSsiCountable({
+      breakdown: monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SSI" }),
+      programs,
+      householdSize,
+      benefitDeposits: benefitDepositsInMonth(txMapped, prefix, "SSI"),
+      age,
+      earnedGrossYearToDateBeforeMonthCents: ytdEarnedBefore,
+      irweCents,
+    }).unearnedOnly,
+    abdCountableCents: abdCountableCents({
+      breakdown: monthlyIncomeBreakdownCents(txMapped, prefix, { program: "MedicaidABD" }),
+      programs,
+      householdSize,
+      deposits: benefitDepositsInMonth(txMapped, prefix, "MedicaidABD"),
       irweCents,
     }),
     waiverGrossCents: waiverGrossCountableCents({
-      breakdown,
+      breakdown: monthlyIncomeBreakdownCents(txMapped, prefix, { program: "MedicaidWaiver" }),
       programs,
-      deposits: benefitDeposits,
+      deposits: benefitDepositsInMonth(txMapped, prefix, "MedicaidWaiver"),
     }),
     married: isMarriedStatus((beneficiary.opening as { maritalStatus?: string } | null)?.maritalStatus),
-    mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown, { irweCents }),
+    mawdCountableCents: ssiCountableMonthlyIncomeCents(
+      monthlyIncomeBreakdownCents(txMapped, prefix, { program: "MAWD" }),
+      { irweCents },
+    ),
     mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
-    qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
-    qmbEarnedCountableCents: countableEarnedAfterExclusionsCents(breakdown.earnedGrossCents, { irweCents }),
+    qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(
+      monthlyIncomeBreakdownCents(txMapped, prefix, { program: "QMB" }),
+      { irweCents },
+    ),
+    qmbEarnedCountableCents: countableEarnedAfterExclusionsCents(
+      monthlyIncomeBreakdownCents(txMapped, prefix, { program: "QMB" }).earnedGrossCents,
+      { irweCents },
+    ),
     dacExcludedCents: dacBenefitCentsToExclude({ programs, deposits: benefitDeposits }),
-    extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
+    extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(
+      monthlyIncomeBreakdownCents(txMapped, prefix, { program: "ExtraHelp" }),
+      { irweCents },
+    ),
     irweCents,
     maxAssetCents: maxAsset,
     ableBalanceCents,
     sntCashDeposit,
     dateOfBirth: (beneficiary.dateOfBirth as Date | string | null | undefined) ?? null,
-    grossMonthlyCents: grossMonthlyIncomeCents(breakdown),
-    snapGrossCents: Math.max(0, grossMonthlyIncomeCents(breakdown) - oneTimeOtherIncomeCents(txMapped, prefix)),
+    grossMonthlyCents: grossMonthlyIncomeCents(monthlyIncomeBreakdownCents(txMapped, prefix, { program: "MedicaidMAGI" })),
+    snapGrossCents: Math.max(
+      0,
+      grossMonthlyIncomeCents(monthlyIncomeBreakdownCents(txMapped, prefix, { program: "SNAP" })) -
+        oneTimeOtherIncomeCents(txMapped, prefix),
+    ),
     substantialGamblingWin: isSubstantialGamblingWin(
       txMapped
         .filter(

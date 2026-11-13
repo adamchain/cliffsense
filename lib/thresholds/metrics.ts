@@ -50,11 +50,34 @@ export type TxLike = {
   amountCents: number;
   userCategory: string;
   pending: boolean;
-  /** When true, row is omitted from earned-income threshold math. */
+  /** When true, row is omitted from every program total. */
   excludedFromThresholds?: boolean;
+  /** Programs this deposit stays out of. It still counts for the others. */
+  excludedPrograms?: string[] | null;
   name?: string;
   merchantName?: string;
 };
+
+export function programCountKey(program: string): string {
+  return String(program ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+/** A deposit counts for a program unless it was left out of every program, or out of this one. */
+export function countsTowardProgram(
+  t: { excludedFromThresholds?: boolean; excludedPrograms?: string[] | null },
+  program?: string | null,
+): boolean {
+  if (t.excludedFromThresholds) return false;
+  if (!program) return true;
+  const key = programCountKey(program);
+  if (!key) return true;
+  const excluded = (t.excludedPrograms ?? []).map(programCountKey);
+  if (excluded.includes(key)) return false;
+  if ((key === "EXTRAHELP" || key === "LIS") && excluded.some((item) => item === "EXTRAHELP" || item === "LIS")) {
+    return false;
+  }
+  return true;
+}
 
 /**
  * SNAP is never income. An ABLE distribution is left out of the estimate.
@@ -130,13 +153,14 @@ export type MonthlyIncomeBreakdown = {
 export function monthlyIncomeBreakdownCents(
   transactions: TxLike[],
   monthPrefix: string,
+  options?: { program?: string },
 ): MonthlyIncomeBreakdown {
   let earnedNetCents = 0;
   let benefitCents = 0;
   let otherCents = 0;
   for (const t of transactions) {
     if (t.pending) continue;
-    if (t.excludedFromThresholds) continue;
+    if (!countsTowardProgram(t, options?.program)) continue;
     if (noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(monthPrefix)) continue;
     if (t.amountCents >= 0) continue; // Plaid: inflows are negative
@@ -163,6 +187,26 @@ export function monthlyIncomeBreakdownCents(
   };
 }
 
+/**
+ * Rest-of-month wages stay in the projection. Wages already left out of this
+ * program are taken back out, so they are not added in again.
+ */
+export function breakdownForProgram(
+  projected: MonthlyIncomeBreakdown,
+  allPrograms: MonthlyIncomeBreakdown,
+  program: MonthlyIncomeBreakdown,
+): MonthlyIncomeBreakdown {
+  const droppedNet = Math.max(0, allPrograms.earnedNetCents - program.earnedNetCents);
+  const earnedNetCents = Math.max(0, projected.earnedNetCents - droppedNet);
+  return {
+    ...projected,
+    benefitCents: program.benefitCents,
+    otherCents: program.otherCents,
+    earnedNetCents,
+    earnedGrossCents: grossUpEarnedCents(earnedNetCents),
+  };
+}
+
 /** Net wages earlier this calendar year, before monthPrefix. Used for the student annual cap. */
 export function earnedNetBeforeMonthInYearCents(transactions: TxLike[], monthPrefix: string): number {
   const year = monthPrefix.slice(0, 4);
@@ -181,10 +225,11 @@ export function earnedNetBeforeMonthInYearCents(transactions: TxLike[], monthPre
 export function benefitDepositsInMonth(
   transactions: TxLike[],
   monthPrefix: string,
+  program?: string,
 ): { amountCents: number; name: string }[] {
   const out: { amountCents: number; name: string }[] = [];
   for (const t of transactions) {
-    if (t.pending || t.excludedFromThresholds || noncountableIncomeInflow(t)) continue;
+    if (t.pending || !countsTowardProgram(t, program) || noncountableIncomeInflow(t)) continue;
     if (!t.date.startsWith(monthPrefix)) continue;
     if (t.userCategory !== "benefit_deposit" || t.amountCents >= 0) continue;
     out.push({

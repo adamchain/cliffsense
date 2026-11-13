@@ -87,7 +87,8 @@ export async function syncTransactionsForConnection(
         );
         const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
           userCategory: exclusion?.action?.userCategory || initialCategory,
-          excludedFromThresholds: Boolean(exclusion),
+          excludedFromThresholds: Boolean(exclusion?.action?.excludeFromThresholds),
+          excludedPrograms: exclusion?.action?.excludedPrograms ?? [],
           excludeReason: exclusion ? exclusion.action?.reason || RECURRING_EXCLUSION_REASON : "",
           notes: "",
           recurringStreamId: null,

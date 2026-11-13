@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ableAccountBalanceCents,
+  breakdownForProgram,
   countableResourceBalanceCents,
   grossMonthlyIncomeCents,
   grossUpEarnedCents,
@@ -86,6 +87,24 @@ describe("noncountable deposits", () => {
     expect(b.benefitCents).toBe(0);
     expect(b.otherCents).toBe(0);
     expect(b.earnedNetCents).toBe(400_00);
+  });
+
+  it("leaves a deposit out of one program and keeps it in another", () => {
+    const rows: TxLike[] = [
+      tx("2026-11-04", -663_00, "benefit_deposit", { excludedPrograms: ["QMB"] }),
+      tx("2026-11-04", -1140_00, "benefit_deposit"),
+    ];
+    expect(monthlyIncomeBreakdownCents(rows, "2026-11", { program: "QMB" }).benefitCents).toBe(1140_00);
+    expect(monthlyIncomeBreakdownCents(rows, "2026-11", { program: "SNAP" }).benefitCents).toBe(1803_00);
+  });
+
+  it("keeps the rest-of-month wage projection after a wage is left out of one program", () => {
+    const all = { earnedNetCents: 100_00, earnedGrossCents: 113_00, benefitCents: 663_00, otherCents: 0 };
+    const projected = { ...all, earnedNetCents: 200_00, earnedGrossCents: 226_00 };
+    const qmb = { ...all, earnedNetCents: 40_00, earnedGrossCents: 45_20 };
+    const next = breakdownForProgram(projected, all, qmb);
+    expect(next.earnedNetCents).toBe(140_00);
+    expect(next.benefitCents).toBe(663_00);
   });
 });
 

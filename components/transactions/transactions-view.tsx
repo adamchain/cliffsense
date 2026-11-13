@@ -46,6 +46,7 @@ type TxRow = {
   userCategory: UserCategory;
   suggestedUserCategory?: UserCategory | null;
   excludedFromThresholds?: boolean;
+  excludedPrograms?: string[];
   excludeReason?: string;
   notes?: string;
   receiptDocumentId?: string | null;
@@ -60,6 +61,7 @@ type ApplyAllPrompt = {
   kind: "category" | "series";
   userCategory: UserCategory;
   excluded?: boolean;
+  excludedPrograms?: string[];
   label: string;
   count: number;
   amountCents?: number;
@@ -72,6 +74,36 @@ const FILTER_CHIPS: { id: string; label: string }[] = [
   { id: "outflow", label: "Expenses" },
   { id: "unclear", label: "Needs review" },
 ];
+
+function seriesChoiceSentence(
+  prompt: { excluded?: boolean; excludedPrograms?: string[]; count: number },
+  programs: { code: string; label: string }[],
+): string {
+  const countLabel = `${prompt.count} ${prompt.count === 1 ? "deposit" : "deposits"} of the same amount`;
+  if (prompt.excluded) return `Leave the other ${countLabel} out of every program.`;
+  const left = prompt.excludedPrograms ?? [];
+  if (left.length === 0) return `Count the other ${countLabel} toward every program.`;
+  const names = left.map(
+    (code) => programs.find((program) => program.code.toUpperCase() === code.toUpperCase())?.label ?? code,
+  );
+  return `Leave the other ${countLabel} out of ${names.join(", ")}. They still count toward the other programs.`;
+}
+
+function programChoiceNote(
+  row: { userCategory: UserCategory; excludedFromThresholds?: boolean; excludedPrograms?: string[] },
+  programs: { code: string; label: string }[],
+): string | null {
+  if (row.userCategory !== "benefit_deposit" && row.userCategory !== "other_income" && row.userCategory !== "earned_income") {
+    return null;
+  }
+  if (row.excludedFromThresholds) return "Left out";
+  const left = row.excludedPrograms ?? [];
+  if (left.length === 0) return null;
+  const names = left.map(
+    (code) => programs.find((program) => program.code.toUpperCase() === code.toUpperCase())?.label ?? code,
+  );
+  return `Not ${names.join(", ")}`;
+}
 
 const CATEGORY_LABEL: Record<UserCategory, string> = {
   earned_income: "Earned income",
@@ -198,9 +230,11 @@ function CategoryMark({ row }: { row: TxRow }) {
 export function TransactionsView({
   beneficiaryId,
   connections = [],
+  programs = [],
 }: {
   beneficiaryId: string | null;
   connections?: AccountConnection[];
+  programs?: { code: string; label: string }[];
 }) {
   const [filter, setFilter] = useState("all");
   const [showAccounts, setShowAccounts] = useState(false);
@@ -218,6 +252,7 @@ export function TransactionsView({
   const [applyingPlaid, setApplyingPlaid] = useState(false);
   const [applyingBulk, setApplyingBulk] = useState(false);
   const [applyPrompt, setApplyPrompt] = useState<ApplyAllPrompt | null>(null);
+  const [seriesNote, setSeriesNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [recurring, setRecurring] = useState<(ExpenseSummary & { irweAuto?: boolean }) | null>(null);
   const limit = 50;
@@ -421,7 +456,12 @@ export function TransactionsView({
     }
   }
 
-  async function checkSeries(id: string, excluded: boolean, userCategory: UserCategory) {
+  async function checkSeries(
+    id: string,
+    excluded: boolean,
+    userCategory: UserCategory,
+    excludedPrograms: string[] = [],
+  ) {
     const series = excluded ? "exclude" : "include";
     const res = await fetch(`/api/transactions/${id}/similar?series=${series}`);
     const data = await res.json().catch(() => ({}));
@@ -430,19 +470,30 @@ export function TransactionsView({
     const label = (data as { match?: { label?: string; amountCents?: number } | null }).match?.label;
     const amountCents = (data as { match?: { amountCents?: number } | null }).match?.amountCents;
     if (count > 0 && label) {
-      setDetailRow(null);
+      setSeriesNote(null);
       setApplyPrompt({
         sourceId: id,
         kind: "series",
         userCategory,
         excluded,
+        excludedPrograms,
         label,
         count,
         amountCents,
       });
-    } else {
-      setApplyPrompt(null);
+      return;
     }
+    setApplyPrompt(null);
+    await fetch("/api/transactions/bulk-series", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sourceTransactionId: id,
+        excludedFromThresholds: excluded,
+        excludedPrograms,
+      }),
+    });
+    setSeriesNote("The next deposit of this amount will use this choice.");
   }
 
   useEffect(() => {
@@ -482,6 +533,7 @@ export function TransactionsView({
             ? {
                 sourceTransactionId: applyPrompt.sourceId,
                 excludedFromThresholds: Boolean(applyPrompt.excluded),
+                excludedPrograms: applyPrompt.excludedPrograms ?? [],
               }
             : {
                 sourceTransactionId: applyPrompt.sourceId,
@@ -501,24 +553,29 @@ export function TransactionsView({
     await refreshUnclear();
   }
 
-  async function patchExcluded(id: string, excludedFromThresholds: boolean) {
-    const row = rows.find((r) => r._id === id);
+  async function patchExcluded(
+    id: string,
+    excludedFromThresholds: boolean,
+    excludedPrograms: string[] = [],
+  ) {
+    const leftOut = excludedPrograms.filter(Boolean);
     const res = await fetch(`/api/transactions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         excludedFromThresholds,
-        excludeReason: excludedFromThresholds ? "Left out of program totals." : "",
+        excludedPrograms: excludedFromThresholds ? [] : leftOut,
+        excludeReason: excludedFromThresholds
+          ? "Left out of program totals."
+          : leftOut.length
+            ? `Left out of ${leftOut.join(", ")}.`
+            : "",
       }),
     });
     if (!res.ok) return;
     const data = (await res.json()) as { transaction: TxRow };
     setRows((prev) => prev.map((r) => (r._id === id ? { ...r, ...data.transaction } : r)));
     setDetailRow((current) => (current?._id === id ? { ...current, ...data.transaction } : current));
-    const category = data.transaction.userCategory ?? row?.userCategory;
-    if (category === "benefit_deposit" || category === "other_income") {
-      void checkSeries(id, excludedFromThresholds, category);
-    }
   }
 
   async function runSync() {
@@ -788,7 +845,7 @@ export function TransactionsView({
                       {formatShortDate(r.date)}
                       {r.pending ? " · Pending" : ""}
                       {filter === "outflow" && recurringIds.has(r._id) ? " · Recurring" : ""}
-                      {excluded ? " · Not counted toward programs" : ""}
+                      {programChoiceNote(r, programs) ? ` · ${programChoiceNote(r, programs)}` : ""}
                       {acctLabel ? ` · ${acctLabel}` : ""}
                     </div>
                   </div>
@@ -808,20 +865,24 @@ export function TransactionsView({
                   {countsTowardPrograms && (
                     <label
                       className="inline-flex shrink-0 items-center gap-1 text-[11px] text-[var(--color-cs-text-secondary)]"
-                      title="Count toward program limits. A benefit deposit can stay a benefit deposit and still be left out."
+                      title="Open the deposit to choose which programs it counts toward."
                     >
                       <input
                         type="checkbox"
                         className="h-3.5 w-3.5 shrink-0"
-                        checked={!excluded}
-                        onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
-                        aria-label={
-                          r.userCategory === "benefit_deposit"
-                            ? "Count this benefit deposit toward program limits"
-                            : "Count this transaction toward program limits"
-                        }
+                        ref={(el) => {
+                          if (el) el.indeterminate = !excluded && (r.excludedPrograms?.length ?? 0) > 0;
+                        }}
+                        checked={!excluded && (r.excludedPrograms?.length ?? 0) === 0}
+                        onChange={(e) => {
+                          const excluded = !e.target.checked;
+                          void patchExcluded(r._id, excluded, []).then(() =>
+                            checkSeries(r._id, excluded, r.userCategory, []),
+                          );
+                        }}
+                        aria-label="Count this deposit toward every enrolled program"
                       />
-                      {r.userCategory === "benefit_deposit" ? (excluded ? "Left out" : "Counts") : null}
+                      {r.userCategory === "benefit_deposit" ? programChoiceNote(r, programs) ?? "Counts" : null}
                     </label>
                   )}
                   <select
@@ -875,10 +936,7 @@ export function TransactionsView({
                         deposit from{" "}
                         <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.label}</span>{" "}
                         repeats.{" "}
-                        {applyPrompt.excluded ? "Leave the other" : "Count the other"}{" "}
-                        <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.count}</span>{" "}
-                        {applyPrompt.count === 1 ? "deposit" : "deposits"} of the same amount{" "}
-                        {applyPrompt.excluded ? "out of program totals" : "toward program totals"}. Each one stays a{" "}
+                        {seriesChoiceSentence(applyPrompt, programs)} Each one stays a{" "}
                         {CATEGORY_LABEL[applyPrompt.userCategory].toLowerCase()}. The next deposit of this amount is treated the same way.
                       </>
                     ) : (
@@ -1021,29 +1079,85 @@ export function TransactionsView({
                     <p className="text-[13px] text-[var(--color-cs-text)]">{d.notes}</p>
                   </div>
                 ) : null}
-                {d.excludedFromThresholds && (
-                  <p className="mt-3 text-[12px] text-[var(--color-cs-warning)]">
-                    Excluded from benefit limits{d.excludeReason ? ` — ${d.excludeReason}` : ""}.
-                  </p>
-                )}
                 {(d.userCategory === "benefit_deposit" ||
                   d.userCategory === "other_income" ||
                   d.userCategory === "earned_income") &&
-                  !d.pending && (
-                    <label className="mt-4 flex items-start gap-2 text-[13px] text-[var(--color-cs-text)]">
-                      <input
-                        type="checkbox"
-                        className="mt-0.5 h-4 w-4 shrink-0"
-                        checked={!d.excludedFromThresholds}
-                        onChange={(e) => void patchExcluded(d._id, !e.target.checked)}
-                      />
-                      <span>
-                        Count toward program limits.
-                        {d.userCategory === "benefit_deposit"
-                          ? " It stays a benefit deposit either way. Uncheck a repeating deposit to leave that amount out of QMB, SNAP, and the other programs, including the other months."
-                          : ""}
-                      </span>
-                    </label>
+                  !d.pending &&
+                  programs.length > 0 && (
+                    <fieldset className="mt-4">
+                      <legend className="text-[11px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
+                        Counts toward
+                      </legend>
+                      <p className="mt-1 text-[12px] leading-snug text-[var(--color-cs-text-secondary)]">
+                        It stays a {CATEGORY_LABEL[d.userCategory].toLowerCase()}. Uncheck a program to leave this
+                        deposit out of that program only. A repeating amount can use the same choice on the other months.
+                      </p>
+                      <div className="mt-2 flex flex-col gap-1.5">
+                        {programs.map((program) => {
+                          const leftOut = (d.excludedPrograms ?? []).some(
+                            (code) => code.toUpperCase() === program.code.toUpperCase(),
+                          );
+                          const counts = !d.excludedFromThresholds && !leftOut;
+                          return (
+                            <label key={program.code} className="flex items-center gap-2 text-[13px] text-[var(--color-cs-text)]">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 shrink-0"
+                                checked={counts}
+                                onChange={(e) => {
+                                  const next = new Set(
+                                    (d.excludedPrograms ?? []).map((code) => code.toUpperCase()),
+                                  );
+                                  if (e.target.checked) next.delete(program.code.toUpperCase());
+                                  else next.add(program.code.toUpperCase());
+                                  const excludedPrograms = programs
+                                    .map((item) => item.code)
+                                    .filter((code) => next.has(code.toUpperCase()));
+                                  const allOut = excludedPrograms.length === programs.length;
+                                  void patchExcluded(d._id, allOut, allOut ? [] : excludedPrograms);
+                                }}
+                              />
+                              {program.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <button
+                        type="button"
+                        className="cs-btn cs-btn-secondary mt-3"
+                        onClick={() =>
+                          void checkSeries(
+                            d._id,
+                            Boolean(d.excludedFromThresholds),
+                            d.userCategory,
+                            d.excludedFromThresholds ? [] : (d.excludedPrograms ?? []),
+                          )
+                        }
+                      >
+                        Apply to the other deposits of this amount
+                      </button>
+                      {seriesNote && applyPrompt?.sourceId !== d._id ? (
+                        <p className="mt-2 text-[12px] text-[var(--color-cs-text-secondary)]">{seriesNote}</p>
+                      ) : null}
+                      {applyPrompt?.sourceId === d._id ? (
+                        <div className="mt-3 rounded-[12px] bg-[var(--color-cs-brand-soft)] p-3">
+                          <p className="text-[13px] text-[var(--color-cs-text)]">
+                            {applyPrompt.count} other{" "}
+                            {formatPlainUsdFromCents(Math.abs(applyPrompt.amountCents ?? 0))}{" "}
+                            {applyPrompt.count === 1 ? "deposit" : "deposits"} from {applyPrompt.label} can use this
+                            choice. The next one will too.
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button type="button" className="cs-btn cs-btn-primary" disabled={applyingBulk} onClick={() => void applyToSimilar()}>
+                              {applyingBulk ? "Applying…" : `Apply to all ${applyPrompt.count}`}
+                            </button>
+                            <button type="button" className="cs-btn cs-btn-secondary" onClick={() => setApplyPrompt(null)}>
+                              Just this one
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </fieldset>
                   )}
                 <div className="mt-4">
                   <label className="mb-1 block text-[11px] font-semibold uppercase text-[var(--color-cs-text-muted)]">

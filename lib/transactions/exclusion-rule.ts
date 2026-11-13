@@ -13,9 +13,10 @@ type RuleLike = {
     amountMinCents?: number | null;
     amountMaxCents?: number | null;
   } | null;
-  action?: {
+    action?: {
     userCategory?: string | null;
     excludeFromThresholds?: boolean | null;
+    excludedPrograms?: string[] | null;
     reason?: string | null;
   } | null;
 };
@@ -24,7 +25,8 @@ export function exclusionRuleMatches(
   rule: RuleLike,
   tx: { merchantName?: string | null; name?: string | null; amountCents: number },
 ): boolean {
-  if (rule.active === false || !rule.action?.excludeFromThresholds) return false;
+  const leavesSomeProgramsOut = (rule.action?.excludedPrograms?.length ?? 0) > 0;
+  if (rule.active === false || (!rule.action?.excludeFromThresholds && !leavesSomeProgramsOut)) return false;
   const wanted = normalizeMerchantKey(rule.matcher?.merchantName ?? "");
   const merchant = normalizeMerchantKey(tx.merchantName ?? "");
   const name = normalizeMerchantKey(tx.name ?? "");
@@ -43,9 +45,11 @@ export async function saveRecurringExclusionRule(input: {
   amountCents: number;
   userCategory: string;
   excluded: boolean;
+  excludedPrograms?: string[];
 }): Promise<void> {
   const merchantName = normalizeMerchantKey(input.merchantName);
   if (!merchantName || !input.amountCents) return;
+  const excludedPrograms = [...new Set((input.excludedPrograms ?? []).map((program) => program.trim()).filter(Boolean))];
   const filter = {
     beneficiaryId: input.beneficiaryId,
     scope: "amount-range" as const,
@@ -53,10 +57,13 @@ export async function saveRecurringExclusionRule(input: {
     "matcher.amountMinCents": input.amountCents,
     "matcher.amountMaxCents": input.amountCents,
   };
-  if (!input.excluded) {
+  if (!input.excluded && excludedPrograms.length === 0) {
     await ClassificationRule.updateMany(filter, { $set: { active: false } });
     return;
   }
+  const reason = input.excluded
+    ? RECURRING_EXCLUSION_REASON
+    : `Left out of ${excludedPrograms.join(", ")}. The same amount from this payor stays out of those programs.`;
   await ClassificationRule.findOneAndUpdate(
     filter,
     {
@@ -64,8 +71,9 @@ export async function saveRecurringExclusionRule(input: {
         active: true,
         createdByUserId: input.userId,
         "action.userCategory": input.userCategory,
-        "action.excludeFromThresholds": true,
-        "action.reason": RECURRING_EXCLUSION_REASON,
+        "action.excludeFromThresholds": input.excluded,
+        "action.excludedPrograms": excludedPrograms,
+        "action.reason": reason,
       },
       $setOnInsert: {
         beneficiaryId: input.beneficiaryId,

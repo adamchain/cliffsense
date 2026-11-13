@@ -13,6 +13,7 @@ import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thre
 const bodySchema = z.object({
   sourceTransactionId: z.string().min(1),
   excludedFromThresholds: z.boolean(),
+  excludedPrograms: z.array(z.string().max(40)).max(30).default([]),
 });
 
 const SCAN = 400;
@@ -40,11 +41,13 @@ export async function POST(req: Request) {
   if (!match) return NextResponse.json({ updated: 0 });
 
   const excluded = parsed.data.excludedFromThresholds;
+  const excludedPrograms = [
+    ...new Set(parsed.data.excludedPrograms.map((program) => program.trim()).filter(Boolean)),
+  ];
   const candidates = await Transaction.find({
     ...similarPrefilter(source),
     _id: { $ne: source._id },
     amountCents: source.amountCents,
-    excludedFromThresholds: excluded ? { $ne: true } : true,
   })
     .select({ _id: 1, name: 1, merchantName: 1, amountCents: 1 })
     .limit(SCAN)
@@ -61,7 +64,12 @@ export async function POST(req: Request) {
       {
         $set: {
           excludedFromThresholds: excluded,
-          excludeReason: excluded ? RECURRING_EXCLUSION_REASON : "",
+          excludedPrograms,
+          excludeReason: excluded
+            ? RECURRING_EXCLUSION_REASON
+            : excludedPrograms.length
+              ? `Left out of ${excludedPrograms.join(", ")}.`
+              : "",
           lastUserEditedAt: now,
         },
       },
@@ -75,6 +83,7 @@ export async function POST(req: Request) {
     amountCents: source.amountCents,
     userCategory: source.userCategory,
     excluded,
+    excludedPrograms,
   });
 
   try {

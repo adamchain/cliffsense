@@ -15,6 +15,7 @@ const actionSchema = new Schema(
   {
     userCategory: { type: String, default: "" },
     excludeFromThresholds: { type: Boolean, default: false },
+    excludedPrograms: { type: [String], default: [] },
     reason: { type: String, default: "" },
   },
   { _id: false },
