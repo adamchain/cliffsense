@@ -2,12 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconBell, IconSettings } from "@tabler/icons-react";
 import { BrandLogo } from "@/components/brand/brand-logo";
-import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import { MobileTabBar } from "./mobile-tab-bar";
 import { MobileNavDrawer } from "./mobile-nav-drawer";
 import { TopbarControls } from "./topbar-controls";
 import { SectionTabs } from "./section-tabs";
-import { GlobalAskBar } from "./global-ask-bar";
+import { AdvisorDock } from "./advisor-dock";
 import { SidebarAccount } from "./sidebar-account";
 import type { BeneficiarySwitcherAccount } from "@/components/dashboard/beneficiary-switcher";
 import {
@@ -106,7 +105,6 @@ export function AppShell({
     activeHref === "/documents" ||
     activeHref.startsWith("/documents/");
   const isAdvisor = activeHref === "/advisor" || activeHref.startsWith("/advisor/");
-  const showAskBar = !isAdvisor;
   const settingsActive = isHrefActive(activeHref, "/settings");
 
   // Mobile tab bar: prototype primaries; More holds Money/Limits/Calendar/Vault/…
@@ -237,17 +235,14 @@ export function AppShell({
           className={
             isAdvisor
               ? "flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-2 sm:px-5 lg:px-6 lg:pb-4 lg:pt-4"
-              : `min-w-0 flex-1 px-4 pt-2 sm:px-5 lg:p-6 ${
-                  showAskBar ? "pb-36 lg:pb-24" : "pb-28 lg:pb-6"
-                }`
+              : "min-w-0 flex-1 px-4 pb-28 pt-2 sm:px-5 lg:p-6"
           }
         >
           {children}
         </div>
       </div>
 
-      <FeedbackWidget />
-      {showAskBar ? <GlobalAskBar /> : null}
+      <AdvisorDock beneficiaryId={beneficiaryId ?? null} />
       <MobileTabBar
         primary={tabPrimary}
         more={tabMore}

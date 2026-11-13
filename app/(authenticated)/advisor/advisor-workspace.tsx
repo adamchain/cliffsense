@@ -47,9 +47,12 @@ function relativeTime(iso: string): string {
 export function AdvisorWorkspace({
   initialQuestion,
   beneficiaryId,
+  layout = "page",
 }: {
   initialQuestion?: string;
   beneficiaryId: string | null;
+  /** Panel hides the history rail so the chat fits a side drawer. */
+  layout?: "page" | "panel";
 }) {
   const [list, setList] = useState<ConversationSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -205,16 +208,24 @@ export function AdvisorWorkspace({
     </div>
   );
 
+  const panel = layout === "panel";
+
   return (
     <div className="flex min-h-0 w-full flex-1 gap-3">
       {/* Desktop history rail */}
-      <aside className="hidden w-[232px] shrink-0 rounded-[18px] bg-[var(--color-cs-card)] p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:block">
+      <aside
+        className={
+          panel
+            ? "hidden"
+            : "hidden w-[232px] shrink-0 rounded-[18px] bg-[var(--color-cs-card)] p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:block"
+        }
+      >
         {sidebar}
       </aside>
 
       {/* Mobile drawer */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className={panel ? "fixed inset-0 z-[80]" : "fixed inset-0 z-40 md:hidden"}>
           <div className="absolute inset-0 bg-black/30" onClick={() => setDrawerOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-[80%] max-w-[300px] bg-[var(--color-cs-card)] p-3 shadow-xl">
             <div className="mb-2 flex justify-end">
@@ -228,7 +239,7 @@ export function AdvisorWorkspace({
       )}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="mb-2 flex items-center justify-between md:hidden">
+        <div className={`mb-2 items-center justify-between ${panel ? "flex" : "flex md:hidden"}`}>
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}

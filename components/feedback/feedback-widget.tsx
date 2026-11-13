@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { IconMessageDots, IconX } from "@tabler/icons-react";
 
@@ -12,6 +12,7 @@ export function FeedbackWidget() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
   useEffect(() => {
@@ -20,14 +21,30 @@ export function FeedbackWidget() {
     }
   }, [open, done]);
 
-  function close() {
+  const close = useCallback(() => {
     setOpen(false);
     setError(null);
     if (done) {
       setDone(false);
       setMessage("");
     }
-  }
+  }, [done]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    function onPointer(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) close();
+    }
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onPointer);
+    };
+  }, [open, close]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,16 +75,14 @@ export function FeedbackWidget() {
     }
   }
 
-  if (pathname === "/advisor" || pathname.startsWith("/advisor/")) return null;
-
   return (
-    <div className="pointer-events-none fixed bottom-24 right-4 z-[45] flex flex-col items-end gap-3 lg:bottom-6 lg:right-6">
+    <div ref={rootRef} className="relative">
       {open && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="pointer-events-auto w-[min(100vw-2rem,22rem)] overflow-hidden rounded-2xl border border-[var(--color-cs-border)] bg-white shadow-[var(--shadow-cs-float)]"
+          className="absolute bottom-full left-0 z-[80] mb-2 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-[var(--color-cs-border)] bg-white shadow-[var(--shadow-cs-float)]"
         >
           <header className="flex items-center justify-between border-b border-[var(--color-cs-border)] px-4 py-3">
             <h2 id={titleId} className="text-[15px] font-semibold text-[var(--color-cs-text)]">
@@ -129,9 +144,12 @@ export function FeedbackWidget() {
         onClick={() => (open ? close() : setOpen(true))}
         aria-label={open ? "Close feedback" : "Send feedback"}
         aria-expanded={open}
-        className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-cs-brand)] text-white shadow-[var(--shadow-cs-float)] hover:bg-[var(--color-cs-brand-hover)]"
+        className={`cs-macos-sidebar-item w-full cursor-pointer border-0 bg-transparent text-left ${
+          open ? "cs-macos-sidebar-item--active" : ""
+        }`}
       >
-        {open ? <IconX size={24} stroke={1.8} /> : <IconMessageDots size={24} stroke={1.8} />}
+        <IconMessageDots size={16} stroke={open ? 2 : 1.75} aria-hidden />
+        <span className="min-w-0 flex-1 truncate">Feedback</span>
       </button>
     </div>
   );

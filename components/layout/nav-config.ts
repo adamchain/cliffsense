@@ -8,7 +8,6 @@ import {
   IconFolder,
   IconHome,
   IconLayoutGrid,
-  IconMessageCircle,
   IconUsers,
   IconWallet,
 } from "@tabler/icons-react";
@@ -34,30 +33,37 @@ export type NavSection = {
 };
 
 /* ---------------------------------------------------------------------------
- * Sidebar order: Home → Calendar → Programs, then the rest.
+ * Sidebar: Home, Calendar, Programs, Money.
+ * Below that, the utility list. Guides sits under the divider, above Settings.
  * ------------------------------------------------------------------------- */
 
 export const PRIMARY_SECTIONS: NavSection[] = [
   { label: "Home", icon: IconHome, href: "/dashboard" },
   { label: "Calendar", icon: IconCalendarEvent, href: "/calendar" },
-  { label: "Tasks", icon: IconChecklist, href: "/tasks" },
   {
     label: "Programs",
     icon: IconUsers,
     href: "/limits",
   },
-  { label: "Advisor", icon: IconMessageCircle, href: "/advisor" },
-  { label: "Forms", icon: IconFileText, href: "/documents" },
   { label: "Money", icon: IconWallet, href: "/transactions" },
 ];
 
-/** Bottom utility group. Vault leads (rendered as a card in the sidebar). */
+/** Bottom list, above the divider that leads to Feedback, Guides, and Settings. */
 export const UTILITY_SECTIONS: NavSection[] = [
   { label: "Vault", icon: IconFolder, href: "/vault" },
+  { label: "Forms", icon: IconFileText, href: "/documents" },
+  { label: "Tasks", icon: IconChecklist, href: "/tasks" },
   { label: "Projects", icon: IconLayoutGrid, href: "/projects" },
   { label: "Exports", icon: IconFileExport, href: "/reports" },
-  { label: "Guides", icon: IconBook, href: "/guides", newTab: true },
 ];
+
+/** Under the divider, directly above Settings. */
+export const GUIDE_SECTION: NavSection = {
+  label: "Guides",
+  icon: IconBook,
+  href: "/guides",
+  newTab: true,
+};
 
 export const ALL_SECTIONS: NavSection[] = [...PRIMARY_SECTIONS, ...UTILITY_SECTIONS];
 
