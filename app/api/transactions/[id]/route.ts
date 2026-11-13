@@ -6,6 +6,7 @@ import { logActivity } from "@/lib/activity/log-activity";
 import { connectDB } from "@/lib/db/mongodb";
 import Transaction from "@/lib/db/models/Transaction";
 import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
+import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 
 const userCategoryEnum = z.enum([
   "earned_income",
@@ -97,6 +98,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       resourceId: tx._id.toString(),
       details: { excluded: parsed.data.excludedFromThresholds },
     });
+    try {
+      await evaluateThresholdsForBeneficiary({
+        beneficiaryId: tx.beneficiaryId,
+        actorUserId: session.user.id,
+      });
+    } catch (error) {
+      console.warn("evaluateThresholdsForBeneficiary after transaction exclusion", error);
+    }
   }
 
   const plain = tx.toObject();

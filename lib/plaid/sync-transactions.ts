@@ -1,7 +1,9 @@
 import type { UpdateFilter } from "mongodb";
 import type { PlaidApi } from "plaid";
 import type { Transaction as PlaidTransaction } from "plaid";
+import ClassificationRule from "@/lib/db/models/ClassificationRule";
 import Transaction, { type TransactionDoc } from "@/lib/db/models/Transaction";
+import { exclusionRuleMatches, RECURRING_EXCLUSION_REASON } from "@/lib/transactions/exclusion-rule";
 import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
 import type { Types } from "mongoose";
 
@@ -47,6 +49,7 @@ export async function syncTransactionsForConnection(
 ): Promise<{ cursor: string; upserted: number }> {
   const maxPages = options?.maxPages ?? 25;
   let cursor: string | undefined = options?.initialCursor?.trim() || undefined;
+  const exclusionRules = await ClassificationRule.find({ beneficiaryId, active: true }).lean();
   let upserted = 0;
   let lastCursor = "";
 
@@ -75,13 +78,20 @@ export async function syncTransactionsForConnection(
           category: doc.category as string,
         });
         const initialCategory = suggested ?? "unclear";
+        const exclusion = exclusionRules.find((rule) =>
+          exclusionRuleMatches(rule, {
+            merchantName: doc.merchantName as string,
+            name: doc.name as string,
+            amountCents: doc.amountCents as number,
+          }),
+        );
         const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
-          userCategory: initialCategory,
-          excludedFromThresholds: false,
-          excludeReason: "",
+          userCategory: exclusion?.action?.userCategory || initialCategory,
+          excludedFromThresholds: Boolean(exclusion),
+          excludeReason: exclusion ? exclusion.action?.reason || RECURRING_EXCLUSION_REASON : "",
           notes: "",
           recurringStreamId: null,
-          appliedRuleId: null,
+          appliedRuleId: exclusion?._id ?? null,
           lastUserEditedAt: null,
         };
         return {

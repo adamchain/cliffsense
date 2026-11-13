@@ -4,6 +4,8 @@ import { assertBeneficiaryAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import Transaction from "@/lib/db/models/Transaction";
 import {
+  recurringSeriesMatchFrom,
+  rowMatchesRecurringSeries,
   rowMatchesSimilar,
   similarMatchFrom,
   similarPrefilter,
@@ -22,7 +24,40 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { id } = await ctx.params;
+  const series = new URL(req.url).searchParams.get("series");
   const userCategory = new URL(req.url).searchParams.get("userCategory");
+  if (series === "exclude" || series === "include") {
+    await connectDB();
+    const tx = await Transaction.findById(id).lean();
+    if (!tx) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const ok = await assertBeneficiaryAccess(session.user.id, tx.beneficiaryId.toString());
+    if (!ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const match = recurringSeriesMatchFrom(tx);
+    if (!match) return NextResponse.json({ match: null, count: 0, sample: [] });
+    const candidates = await Transaction.find({
+      ...similarPrefilter(tx),
+      _id: { $ne: tx._id },
+      amountCents: tx.amountCents,
+      excludedFromThresholds: series === "exclude" ? { $ne: true } : true,
+    })
+      .sort({ date: -1 })
+      .limit(SCAN)
+      .select({ date: 1, name: 1, merchantName: 1, amountCents: 1, userCategory: 1 })
+      .lean();
+    const matched = candidates.filter((c) => rowMatchesRecurringSeries(c, match)).slice(0, MAX);
+    return NextResponse.json({
+      match: { field: "amount", label: match.label, amountCents: match.amountCents },
+      count: matched.length,
+      sample: matched.slice(0, 5).map((s) => ({
+        _id: String(s._id),
+        date: s.date,
+        name: s.name,
+        merchantName: s.merchantName,
+        amountCents: s.amountCents,
+        userCategory: s.userCategory,
+      })),
+    });
+  }
   if (
     !userCategory ||
     ![

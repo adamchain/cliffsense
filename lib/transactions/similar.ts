@@ -76,3 +76,20 @@ export function rowMatchesSimilar(
   const n = normalizeMerchantKey(row.name ?? "");
   return n === match.matchValue || n.startsWith(match.matchValue) || match.matchValue.startsWith(n);
 }
+
+/** Same payor and the same amount, so one Social Security deposit is not the other. */
+export type RecurringSeriesMatch = SimilarMatch & { amountCents: number };
+
+export function recurringSeriesMatchFrom(tx: SimilarSource): RecurringSeriesMatch | null {
+  if (!tx.amountCents) return null;
+  const base = similarMatchFrom(tx);
+  if (!base) return null;
+  return { ...base, amountCents: tx.amountCents };
+}
+
+export function rowMatchesRecurringSeries(
+  row: { merchantName?: string | null; name?: string | null; amountCents: number },
+  match: RecurringSeriesMatch,
+): boolean {
+  return row.amountCents === match.amountCents && rowMatchesSimilar(row, match);
+}

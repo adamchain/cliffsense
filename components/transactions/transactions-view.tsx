@@ -17,7 +17,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
+import { formatPlainUsdFromCents, formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
 import { AccountsPanel, type AccountConnection } from "@/components/transactions/accounts-panel";
 import { RecurringExpensesCard } from "@/components/transactions/recurring-expenses-card";
 import { ImportModal } from "@/components/imports/import-modal";
@@ -57,9 +57,12 @@ type AccountInfo = { institutionName: string; accountName: string; mask: string 
 
 type ApplyAllPrompt = {
   sourceId: string;
+  kind: "category" | "series";
   userCategory: UserCategory;
+  excluded?: boolean;
   label: string;
   count: number;
+  amountCents?: number;
 };
 
 const FILTER_CHIPS: { id: string; label: string }[] = [
@@ -412,7 +415,31 @@ export function TransactionsView({
     const count = (data as { count?: number }).count ?? 0;
     const label = (data as { match?: { label?: string } | null }).match?.label;
     if (count > 0 && label) {
-      setApplyPrompt({ sourceId: id, userCategory, label, count });
+      setApplyPrompt({ sourceId: id, kind: "category", userCategory, label, count });
+    } else {
+      setApplyPrompt(null);
+    }
+  }
+
+  async function checkSeries(id: string, excluded: boolean, userCategory: UserCategory) {
+    const series = excluded ? "exclude" : "include";
+    const res = await fetch(`/api/transactions/${id}/similar?series=${series}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return;
+    const count = (data as { count?: number }).count ?? 0;
+    const label = (data as { match?: { label?: string; amountCents?: number } | null }).match?.label;
+    const amountCents = (data as { match?: { amountCents?: number } | null }).match?.amountCents;
+    if (count > 0 && label) {
+      setDetailRow(null);
+      setApplyPrompt({
+        sourceId: id,
+        kind: "series",
+        userCategory,
+        excluded,
+        label,
+        count,
+        amountCents,
+      });
     } else {
       setApplyPrompt(null);
     }
@@ -445,14 +472,24 @@ export function TransactionsView({
   async function applyToSimilar() {
     if (!applyPrompt) return;
     setApplyingBulk(true);
-    const res = await fetch("/api/transactions/bulk-category", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sourceTransactionId: applyPrompt.sourceId,
-        userCategory: applyPrompt.userCategory,
-      }),
-    });
+    const res = await fetch(
+      applyPrompt.kind === "series" ? "/api/transactions/bulk-series" : "/api/transactions/bulk-category",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          applyPrompt.kind === "series"
+            ? {
+                sourceTransactionId: applyPrompt.sourceId,
+                excludedFromThresholds: Boolean(applyPrompt.excluded),
+              }
+            : {
+                sourceTransactionId: applyPrompt.sourceId,
+                userCategory: applyPrompt.userCategory,
+              },
+        ),
+      },
+    );
     const data = await res.json().catch(() => ({}));
     setApplyingBulk(false);
     if (!res.ok) {
@@ -465,14 +502,23 @@ export function TransactionsView({
   }
 
   async function patchExcluded(id: string, excludedFromThresholds: boolean) {
+    const row = rows.find((r) => r._id === id);
     const res = await fetch(`/api/transactions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ excludedFromThresholds }),
+      body: JSON.stringify({
+        excludedFromThresholds,
+        excludeReason: excludedFromThresholds ? "Left out of program totals." : "",
+      }),
     });
     if (!res.ok) return;
     const data = (await res.json()) as { transaction: TxRow };
     setRows((prev) => prev.map((r) => (r._id === id ? { ...r, ...data.transaction } : r)));
+    setDetailRow((current) => (current?._id === id ? { ...current, ...data.transaction } : current));
+    const category = data.transaction.userCategory ?? row?.userCategory;
+    if (category === "benefit_deposit" || category === "other_income") {
+      void checkSeries(id, excludedFromThresholds, category);
+    }
   }
 
   async function runSync() {
@@ -712,14 +758,18 @@ export function TransactionsView({
               : acct.institutionName
             : "";
           const excluded = Boolean(r.excludedFromThresholds);
-          const countsTowardEarned = r.userCategory === "earned_income" && !r.pending;
+          const countsTowardPrograms =
+            (r.userCategory === "earned_income" ||
+              r.userCategory === "benefit_deposit" ||
+              r.userCategory === "other_income") &&
+            !r.pending;
           const showApply = applyPrompt?.sourceId === r._id;
           return (
             <div key={r._id} className="border-b border-[var(--color-cs-sep)] last:border-b-0">
             <article
               className={`flex items-start gap-3 px-3 py-2.5 ${
                 highlightUnclear ? "bg-[var(--color-cs-warning-bg)]" : ""
-              } ${excluded && countsTowardEarned ? "opacity-70" : ""}`}
+              } ${excluded && countsTowardPrograms ? "opacity-70" : ""}`}
               title={r.name}
             >
               <CategoryMark row={r} />
@@ -738,6 +788,7 @@ export function TransactionsView({
                       {formatShortDate(r.date)}
                       {r.pending ? " · Pending" : ""}
                       {filter === "outflow" && recurringIds.has(r._id) ? " · Recurring" : ""}
+                      {excluded ? " · Not counted toward programs" : ""}
                       {acctLabel ? ` · ${acctLabel}` : ""}
                     </div>
                   </div>
@@ -754,15 +805,24 @@ export function TransactionsView({
                   </button>
                 </div>
                 <div className="mt-1 flex items-center justify-end gap-1">
-                  {countsTowardEarned && (
-                    <input
-                      type="checkbox"
-                      className="h-3.5 w-3.5 shrink-0"
-                      checked={!excluded}
-                      onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
-                      aria-label="Count this transaction toward earned-income limits"
-                      title="Count toward limits"
-                    />
+                  {countsTowardPrograms && (
+                    <label
+                      className="inline-flex shrink-0 items-center gap-1 text-[11px] text-[var(--color-cs-text-secondary)]"
+                      title="Count toward program limits. A benefit deposit can stay a benefit deposit and still be left out."
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-3.5 w-3.5 shrink-0"
+                        checked={!excluded}
+                        onChange={(e) => void patchExcluded(r._id, !e.target.checked)}
+                        aria-label={
+                          r.userCategory === "benefit_deposit"
+                            ? "Count this benefit deposit toward program limits"
+                            : "Count this transaction toward program limits"
+                        }
+                      />
+                      {r.userCategory === "benefit_deposit" ? (excluded ? "Left out" : "Counts") : null}
+                    </label>
                   )}
                   <select
                     aria-label="Change category"
@@ -806,19 +866,34 @@ export function TransactionsView({
                     Apply to similar transactions?
                   </div>
                   <p className="mt-1 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
-                    We found{" "}
-                    <span className="font-semibold text-[var(--color-cs-text)]">
-                      {applyPrompt.count}
-                    </span>{" "}
-                    other {applyPrompt.count === 1 ? "transaction" : "transactions"} from{" "}
-                    <span className="font-semibold text-[var(--color-cs-text)]">
-                      {applyPrompt.label}
-                    </span>{" "}
-                    at this bank that aren&apos;t marked{" "}
-                    <span className="font-semibold text-[var(--color-cs-text)]">
-                      {CATEGORY_LABEL[applyPrompt.userCategory]}
-                    </span>
-                    .
+                    {applyPrompt.kind === "series" ? (
+                      <>
+                        This{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">
+                          {formatPlainUsdFromCents(Math.abs(applyPrompt.amountCents ?? 0))}
+                        </span>{" "}
+                        deposit from{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.label}</span>{" "}
+                        repeats.{" "}
+                        {applyPrompt.excluded ? "Leave the other" : "Count the other"}{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.count}</span>{" "}
+                        {applyPrompt.count === 1 ? "deposit" : "deposits"} of the same amount{" "}
+                        {applyPrompt.excluded ? "out of program totals" : "toward program totals"}. Each one stays a{" "}
+                        {CATEGORY_LABEL[applyPrompt.userCategory].toLowerCase()}. The next deposit of this amount is treated the same way.
+                      </>
+                    ) : (
+                      <>
+                        We found{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.count}</span>{" "}
+                        other {applyPrompt.count === 1 ? "transaction" : "transactions"} from{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">{applyPrompt.label}</span>{" "}
+                        at this bank that aren&apos;t marked{" "}
+                        <span className="font-semibold text-[var(--color-cs-text)]">
+                          {CATEGORY_LABEL[applyPrompt.userCategory]}
+                        </span>
+                        .
+                      </>
+                    )}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
@@ -951,6 +1026,25 @@ export function TransactionsView({
                     Excluded from benefit limits{d.excludeReason ? ` — ${d.excludeReason}` : ""}.
                   </p>
                 )}
+                {(d.userCategory === "benefit_deposit" ||
+                  d.userCategory === "other_income" ||
+                  d.userCategory === "earned_income") &&
+                  !d.pending && (
+                    <label className="mt-4 flex items-start gap-2 text-[13px] text-[var(--color-cs-text)]">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 shrink-0"
+                        checked={!d.excludedFromThresholds}
+                        onChange={(e) => void patchExcluded(d._id, !e.target.checked)}
+                      />
+                      <span>
+                        Count toward program limits.
+                        {d.userCategory === "benefit_deposit"
+                          ? " It stays a benefit deposit either way. Uncheck a repeating deposit to leave that amount out of QMB, SNAP, and the other programs, including the other months."
+                          : ""}
+                      </span>
+                    </label>
+                  )}
                 <div className="mt-4">
                   <label className="mb-1 block text-[11px] font-semibold uppercase text-[var(--color-cs-text-muted)]">
                     Category

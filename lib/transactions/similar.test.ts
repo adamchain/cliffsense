@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeMerchantKey,
+  recurringSeriesMatchFrom,
+  rowMatchesRecurringSeries,
   rowMatchesSimilar,
   similarMatchFrom,
 } from "./similar";
@@ -31,6 +33,30 @@ describe("similar transactions", () => {
     expect(m).not.toBeNull();
     expect(rowMatchesSimilar({ merchantName: "ACME  CARE" }, m!)).toBe(true);
     expect(rowMatchesSimilar({ merchantName: "Other Co" }, m!)).toBe(false);
+  });
+
+  it("keeps a repeating deposit separate from a different amount from the same payor", () => {
+    const series = recurringSeriesMatchFrom({
+      _id: "1",
+      beneficiaryId: { toString: () => "b" },
+      merchantName: "Social Security Administration",
+      name: "Social Security Administration",
+      amountCents: -663_00,
+      userCategory: "benefit_deposit",
+    });
+    expect(series).not.toBeNull();
+    expect(
+      rowMatchesRecurringSeries(
+        { merchantName: "Social Security Administration", amountCents: -663_00 },
+        series!,
+      ),
+    ).toBe(true);
+    expect(
+      rowMatchesRecurringSeries(
+        { merchantName: "Social Security Administration", amountCents: -1140_00 },
+        series!,
+      ),
+    ).toBe(false);
   });
 
   it("falls back to name prefix matching", () => {
