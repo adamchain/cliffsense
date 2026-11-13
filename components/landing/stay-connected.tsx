@@ -130,7 +130,7 @@ export function StayConnectedPage({
           </span>
         </h1>
         <p style={{ margin: "28px auto 0", maxWidth: "620px", fontSize: "20px", fontWeight: "500", lineHeight: "1.55", color: "rgba(255,255,255,.9)" }}>
-          Bene-Watch helps you track benefit requirements so you don't get lost in the shuffle.
+          Bene-Watch helps you track benefit requirements so you don&apos;t get lost in the shuffle.
         </p>
         <div style={{ marginTop: "36px", display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap" }}>
           <a className="btn btn-w" href="#families">
@@ -953,7 +953,7 @@ export function StayConnectedPage({
         </div>
       </div>
       <p style={{ margin: "28px auto 0", maxWidth: "560px", fontSize: "16px", lineHeight: "1.6", color: "#5B667A" }}>
-        Bene-Watch works alongside official systems. Families still submit through official channels, with their own record of what was sent and what's still open.
+        Bene-Watch works alongside official systems. Families still submit through official channels, with their own record of what was sent and what&apos;s still open.
       </p>
     </div>
   </section>
@@ -974,7 +974,7 @@ export function StayConnectedPage({
             </svg>
           </div>
           <div style={{ fontSize: "22px", fontWeight: "800", letterSpacing: "-.01em" }}>
-            See what's due
+            See what&apos;s due
           </div>
           <div className="due">
             <div className="dbox">
