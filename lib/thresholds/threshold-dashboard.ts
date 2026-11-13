@@ -117,7 +117,10 @@ export type ThresholdDashboardRow = {
   statusNote?: "snap_report_130" | "wage_report" | "reference" | null;
 };
 
-export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectId): Promise<{
+export async function loadThresholdDashboardPayload(
+  beneficiaryId: Types.ObjectId,
+  options?: { skipCategorySync?: boolean },
+): Promise<{
   programsEnrolled: string[];
   monthPrefix: string;
   priorMonthPrefix: string;
@@ -191,8 +194,13 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   }
 
   // Re-tag imports, then fill work expenses from pharmacy, transportation, and medical charges.
-  await reapplyAutoCategoriesForBeneficiary(beneficiaryId);
-  const irweSync = await syncAutoIrweFromExpenses(beneficiaryId);
+  // The badge check skips that write so opening a page does not retag the ledger.
+  const irweSync = options?.skipCategorySync
+    ? { monthlyCents: Number(beneficiary.irweMonthlyCents ?? 0), source: "stored" as const }
+    : await (async () => {
+        await reapplyAutoCategoriesForBeneficiary(beneficiaryId);
+        return syncAutoIrweFromExpenses(beneficiaryId);
+      })();
   const irweCents = irweSync.monthlyCents;
 
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([

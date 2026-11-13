@@ -30,8 +30,10 @@ export default async function AuthenticatedGroupLayout({
     redirect("/auth/signin");
   }
   const display = session.user.name?.trim() || session.user.email || "User";
+  const people = await loadActiveBeneficiaryContext(session.user.id).catch(() => null);
+  const active = people?.active ?? null;
   const [alertCount, walkthroughRow] = await Promise.all([
-    countUnreadAlertsForUser(session.user.id).catch(() => 0),
+    countUnreadAlertsForUser(session.user.id, active?._id.toString() ?? null).catch(() => 0),
     (async () => {
       await connectDB();
       return User.findById(session.user.id)
@@ -45,13 +47,11 @@ export default async function AuthenticatedGroupLayout({
   const shouldAutoStart =
     onboardingDone && !walkthroughRow?.walkthroughCompletedAt && !session.user.impersonatorId;
 
-  const people = await loadActiveBeneficiaryContext(session.user.id).catch(() => null);
   const accounts = (people?.accounts ?? []).map((a) => ({
     id: a._id.toString(),
     name: displayNameForBeneficiary(a) || "Beneficiary",
     roleLabel: a.roleLabel,
   }));
-  const active = people?.active ?? null;
   const beneficiaryName = active ? displayNameForBeneficiary(active) || display : display;
 
   return (
