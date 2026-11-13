@@ -20,7 +20,13 @@ export function LegacySettingsHashRedirect() {
       router.replace(href);
       return;
     }
-    if (id) document.getElementById(id)?.scrollIntoView();
+    if (!id) return;
+    const scroll = () => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    scroll();
+    const timer = window.setTimeout(scroll, 80);
+    return () => window.clearTimeout(timer);
   }, [router]);
   return null;
 }

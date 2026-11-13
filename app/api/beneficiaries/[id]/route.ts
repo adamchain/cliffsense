@@ -135,7 +135,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (parsed.data.county !== undefined) $set.county = parsed.data.county;
   if (parsed.data.householdSize !== undefined) $set.householdSize = parsed.data.householdSize;
   if (parsed.data.twpMonthsUsed !== undefined) $set.twpMonthsUsed = parsed.data.twpMonthsUsed;
-  if (parsed.data.irweMonthlyCents !== undefined) $set.irweMonthlyCents = parsed.data.irweMonthlyCents;
+  if (parsed.data.irweMonthlyCents !== undefined) {
+    $set.irweMonthlyCents = parsed.data.irweMonthlyCents;
+    const sameAutoValue =
+      existing.irweSource === "auto" &&
+      Number(existing.irweMonthlyCents ?? 0) === parsed.data.irweMonthlyCents;
+    if (!sameAutoValue) $set.irweSource = "manual";
+  }
   if (parsed.data.policyScreen !== undefined) $set.policyScreen = parsed.data.policyScreen;
   if (parsed.data.opening !== undefined) {
     const prior =

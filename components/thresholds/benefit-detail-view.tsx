@@ -75,6 +75,8 @@ type Payload = {
   rows: Row[];
   wageChangeKind?: "new_work" | "increase" | "decrease" | "stopped" | null;
   irweMonthlyCents?: number;
+  irweAuto?: boolean;
+  irweWorkExpenseNote?: string;
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -495,9 +497,11 @@ export function BenefitDetailView({
 
       {data && beneficiaryId && canEditDates && programUsesIrwe(code) && (
         <IrweEditor
-          key={data.irweMonthlyCents ?? 0}
+          key={`${data.irweMonthlyCents ?? 0}-${data.irweAuto ? "auto" : "manual"}`}
           beneficiaryId={beneficiaryId}
           initialCents={data.irweMonthlyCents ?? 0}
+          autoFilled={Boolean(data.irweAuto)}
+          workExpenseNote={data.irweWorkExpenseNote ?? ""}
           onSaved={() => void load()}
         />
       )}

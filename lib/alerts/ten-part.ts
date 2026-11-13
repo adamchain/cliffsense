@@ -1,4 +1,5 @@
 import type { AlertPlaybook } from "@/lib/alerts/alert-playbook";
+import type { FinancialFinding } from "@/lib/alerts/financial-finding";
 import { ruleForProgram, reportingDueDate } from "@/lib/reporting/program-rules";
 import { isCurrentRule, ruleStatusLine, stampForPlaybook, type RuleStamp } from "@/lib/rules/stamp";
 
@@ -48,6 +49,8 @@ export type TenPartAlert = {
     source: "notice" | "none";
     note: string;
   };
+  /** Present when this alert is a financial calculation. The prose above restates it. */
+  financialFinding?: FinancialFinding;
 };
 
 const COMPASS = "https://www.compass.state.pa.us/compass.web/Public/CMPHome";
@@ -109,6 +112,8 @@ export function composeTenPart(input: {
   userNote?: string | null;
   /** When set, only these programs are treated as affected. Otherwise the playbook catalog is used. */
   programs?: string[];
+  /** Replaces the catalog sentence with the calculation that fired this alert. */
+  financialFinding?: FinancialFinding;
 }): TenPartAlert {
   const programs = input.programs?.length
     ? input.programs
@@ -153,23 +158,35 @@ export function composeTenPart(input: {
     }
   }
 
+  const finding = input.financialFinding;
+  const noticeWins = actionConfidence === "confirmed";
   return {
-    whatChanged: [input.playbook.title, input.eventSummary, confidenceLine, `Observed ${observed}.`, note]
-      .filter(Boolean)
-      .join(" "),
+    whatChanged: finding
+      ? finding.whatChanged
+      : [input.playbook.title, input.eventSummary, confidenceLine, `Observed ${observed}.`, note]
+          .filter(Boolean)
+          .join(" "),
     changeConfidence: input.changeConfidence,
     affectedBenefits: programs.map((program) => ({
       program,
-      analysis: `${input.playbook.triggeringRule} ${REVIEW}`,
+      analysis: finding ? finding.whatCounts : `${input.playbook.triggeringRule} ${REVIEW}`,
       rule: stampForPlaybook(input.playbook.id, program),
     })),
-    whyItMatters: `${input.playbook.triggeringRule} ${REVIEW}`,
-    actionDate: {
-      label: input.playbook.effectiveDateNote,
-      iso: actionIso,
-      source: actionSource,
-      confidence: actionConfidence,
-    },
+    whyItMatters: finding ? finding.riskText : `${input.playbook.triggeringRule} ${REVIEW}`,
+    actionDate: finding && !noticeWins
+      ? {
+          label: finding.whatToDo,
+          iso: finding.deadlineIso,
+          source: finding.deadlineSource,
+          confidence: finding.deadlineConfidence,
+        }
+      : {
+          label: input.playbook.effectiveDateNote,
+          iso: actionIso,
+          source: actionSource,
+          confidence: actionConfidence,
+        },
+    financialFinding: finding,
     evidence: input.playbook.documents.map((label, index) => ({
       key: slotKey(label, index),
       label,

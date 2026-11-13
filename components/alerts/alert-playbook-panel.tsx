@@ -9,10 +9,13 @@ import {
 export function AlertPlaybookPanel({
   playbook,
   programs: programsOverride,
+  calculationAttached = false,
 }: {
   playbook: AlertPlaybook;
   /** Enrolled programs this alert applies to. The playbook list is the full catalog. */
   programs?: string[];
+  /** The financial finding already states the calculation, risk, and action. */
+  calculationAttached?: boolean;
 }) {
   const steps = playbookPersonaSteps(playbook);
   const codes = closureCodeNotes(playbook);
@@ -22,7 +25,7 @@ export function AlertPlaybookPanel({
   return (
     <details className="group mt-3 rounded-xl border border-[var(--color-cs-border)] bg-white/70 px-3 py-2">
       <summary className="flex cursor-pointer list-none items-center gap-2 text-[13px] font-semibold text-[var(--color-cs-text)]">
-        What to do
+        {calculationAttached ? "Documents and next coverage" : "What to do"}
         <IconChevronDown
           size={16}
           stroke={2}
@@ -32,9 +35,13 @@ export function AlertPlaybookPanel({
       </summary>
       <dl className="mt-3 space-y-2.5 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
         <PlaybookField label="1. Threatened program" value={programs} />
-        <PlaybookField label="2. Triggering rule" value={playbook.triggeringRule} />
-        <PlaybookField label="3. Deadline / effective date" value={playbook.effectiveDateNote} />
-        <PlaybookField label="4. Action that cures or limits the loss" value={playbook.cureAction} />
+        {calculationAttached ? null : (
+          <>
+            <PlaybookField label="2. Triggering rule" value={playbook.triggeringRule} />
+            <PlaybookField label="3. Deadline / effective date" value={playbook.effectiveDateNote} />
+            <PlaybookField label="4. Action that cures or limits the loss" value={playbook.cureAction} />
+          </>
+        )}
         <div>
           <dt className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
             5. Documents

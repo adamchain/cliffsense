@@ -122,4 +122,42 @@ describe("suggestUserCategoryFromPlaid", () => {
       }),
     ).toBeNull();
   });
+
+  it("maps imported spending to expense without a Plaid category", () => {
+    const samples = [
+      { name: "CVS PHARMACY", category: "Pharmacy & Personal Care", amountCents: 1620 },
+      { name: "McDonald's", category: "Restaurants", amountCents: 1365 },
+      { name: "T-Mobile", category: "Phone", amountCents: 4800 },
+      { name: "Giant Food Stores", category: "Groceries", amountCents: 5124 },
+      { name: "ATM Withdrawal", category: "Cash Withdrawal", amountCents: 4000 },
+      { name: "Rent Payment - Oakview Apartment", category: "Housing", amountCents: 62500 },
+      { name: "SEPTA KEY AUTOLOAD", category: "Transportation", amountCents: 2500 },
+      { name: "Comcast Internet", category: "Utilities", amountCents: 5999 },
+      { name: "PECO ELECTRIC", category: "Utilities", amountCents: 7118 },
+      { name: "Coffee", category: "", amountCents: 450 },
+    ];
+    for (const sample of samples) {
+      expect(suggestUserCategoryFromPlaid({ ...sample, pfcPrimary: "" })).toBe("expense");
+    }
+  });
+
+  it("keeps an imported transfer out of expenses", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: 20000,
+        pfcPrimary: "",
+        name: "Zelle to savings",
+      }),
+    ).toBe("transfer");
+  });
+
+  it("leaves a payroll reversal for review", () => {
+    expect(
+      suggestUserCategoryFromPlaid({
+        amountCents: 40000,
+        pfcPrimary: "",
+        name: "GUSTO PAYROLL REVERSAL",
+      }),
+    ).toBeNull();
+  });
 });

@@ -4,6 +4,7 @@ import Alert from "@/lib/db/models/Alert";
 import { appUrl } from "@/lib/email/mailer";
 import { wantsAlertType } from "@/lib/email/recipients";
 import { playbookPushBody, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
+import { isFinancialFinding } from "@/lib/alerts/financial-finding";
 import { pushConfigured, sendPushToUser } from "@/lib/push/web-push";
 import User from "@/lib/db/models/User";
 
@@ -36,6 +37,7 @@ export async function sendAlertPushForNewAlerts(alertIds: string[]): Promise<num
       program?: string;
       thresholdType?: string;
       title?: string;
+      financialFinding?: unknown;
     };
     const playbook = resolveAlertPlaybook({
       playbookId: snap.playbookId,
@@ -47,7 +49,9 @@ export async function sendAlertPushForNewAlerts(alertIds: string[]): Promise<num
     });
     const res = await sendPushToUser(String(a.userId), {
       title: playbook.title,
-      body: playbookPushBody(playbook),
+      body: isFinancialFinding(snap.financialFinding)
+        ? snap.financialFinding.whatToDo.slice(0, 180)
+        : playbookPushBody(playbook),
       url: `${appUrl()}/alerts`,
       tag: String(a._id),
     });

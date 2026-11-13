@@ -87,8 +87,8 @@ export async function buildAdvisorAccountContext(
     name: t.name ?? "",
     merchantName: t.merchantName ?? "",
   }));
-  const irweRaw = Number((beneficiary as { irweMonthlyCents?: number }).irweMonthlyCents ?? 0);
-  const irweCents = Number.isFinite(irweRaw) && irweRaw > 0 ? Math.round(irweRaw) : 0;
+  const irweCents = Math.max(0, dash.irweMonthlyCents ?? 0);
+  const irweAuto = Boolean(dash.irweAuto);
   const breakdown = monthlyIncomeBreakdownCents(txLike, prefix);
   const grossMonthly = grossMonthlyIncomeCents(breakdown);
   const ssiCountable = ssiCountableMonthlyIncomeCents(breakdown, { irweCents });
@@ -129,7 +129,11 @@ export async function buildAdvisorAccountContext(
     `- Total gross monthly income (SNAP-style, all countable): ${formatPlainUsdFromCents(grossMonthly)}.`,
   );
   lines.push(
-    `- Impairment-related work expenses entered: ${formatPlainUsdFromCents(irweCents)}. ${
+    `- ${
+      irweAuto
+        ? `Work expenses filled from pharmacy, transportation, and medical charges in Money: ${formatPlainUsdFromCents(irweCents)}.`
+        : `Impairment-related work expenses entered: ${formatPlainUsdFromCents(irweCents)}.`
+    } ${
       irweCents > 0
         ? "This amount is subtracted from earned income after the $65 and before the one-half. It is also taken off dollar-for-dollar before an SSDI substantial-gainful-activity comparison. It is not used for the Trial Work Period."
         : "None entered, so IRWE was not subtracted. The user can enter a monthly amount on the SSDI, SSI, or QMB page."
@@ -141,8 +145,16 @@ export async function buildAdvisorAccountContext(
     )}. This $20 subtraction is for these programs only.`,
   );
   lines.push(
-    `- QMB income compared with the published limit: ${formatPlainUsdFromCents(qmbIncome    )}. The $20 was NOT subtracted from this figure. The published QMB limit ($1,350 one person / $1,824 a couple in 2026) already includes the $20. Do not tell the user this QMB number reflects a $20 exclusion.`,
+    `- QMB income compared with the published limit: ${formatPlainUsdFromCents(qmbIncome)}. The $20 was NOT subtracted from this figure. The published QMB limit ($1,350 one person / $1,824 a couple in 2026) already includes the $20. Do not tell the user this QMB number reflects a $20 exclusion.`,
   );
+  if (
+    programs.some((p) => String(p).toUpperCase() === "DAC") &&
+    programs.some((p) => String(p).toUpperCase() === "QMB")
+  ) {
+    lines.push(
+      "- This person is enrolled in DAC and QMB. Do not apply the waiver or Healthy Horizons DAC exclusion to the QMB figure. Do not say the QMB figure is over or under the QMB limit. The QMB category is not recorded, and the benefit deposits are not identified as DAC or SSDI. Say the QMB income treatment is unverified.",
+    );
+  }
   lines.push(
     "- SNAP deposits and ABLE distributions are left out when the bank description identifies them. Infrequent or irregular income is not detected automatically.",
   );

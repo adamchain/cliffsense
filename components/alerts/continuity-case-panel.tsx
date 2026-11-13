@@ -69,24 +69,30 @@ export function ContinuityCasePanel({
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
         Case · {statusLabel(continuityCase.status)}
       </p>
-      <p className="mt-1 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">{parts.whatChanged}</p>
+      {parts.financialFinding ? null : (
+        <p className="mt-1 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">{parts.whatChanged}</p>
+      )}
       <p className={`mt-1 text-[12px] leading-snug ${rule.current ? "text-[var(--color-cs-text-muted)]" : "text-[var(--color-cs-danger)]"}`}>
         {rule.line}
       </p>
 
-      <Field label="Why it matters" value={parts.whyItMatters} />
-      <div className="mt-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
-          Each benefit
-        </p>
-        <ul className="mt-1 space-y-1">
-          {parts.affectedBenefits.map((benefit) => (
-            <li key={benefit.program} className="text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
-              <span className="font-medium text-[var(--color-cs-text)]">{benefit.program}.</span> {benefit.analysis}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {parts.financialFinding ? null : (
+        <>
+          <Field label="Why it matters" value={parts.whyItMatters} />
+          <div className="mt-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-cs-text-muted)]">
+              Each benefit
+            </p>
+            <ul className="mt-1 space-y-1">
+              {parts.affectedBenefits.map((benefit) => (
+                <li key={benefit.program} className="text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
+                  <span className="font-medium text-[var(--color-cs-text)]">{benefit.program}.</span> {benefit.analysis}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
       <Field
         label={`Deadline · ${parts.actionDate.confidence}`}
         value={`${parts.actionDate.label} ${parts.actionDate.source}`}

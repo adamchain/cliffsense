@@ -13,6 +13,7 @@ import { SharingPanel } from "@/components/beneficiaries/sharing-panel";
 import { BeneficiaryProfileForm } from "@/components/beneficiaries/beneficiary-profile-form";
 import { toDateInputValue } from "@/lib/beneficiaries/date-input";
 import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
+import { isFinancialFinding } from "@/lib/alerts/financial-finding";
 
 export default async function BeneficiaryDetailPage({
   params,
@@ -206,6 +207,7 @@ export default async function BeneficiaryDetailPage({
                   thresholdType?: string;
                   title?: string;
                   thresholdLabel?: string;
+                  financialFinding?: unknown;
                 };
                 const playbook = resolveAlertPlaybook({
                   playbookId: snap.playbookId,
@@ -223,7 +225,9 @@ export default async function BeneficiaryDetailPage({
                   <p className="font-medium text-[var(--color-cs-text)]">
                     {snap.thresholdLabel ?? playbook.title}
                   </p>
-                  <p className="text-[var(--color-cs-text-secondary)]">{playbook.cureAction}</p>
+                  <p className="text-[var(--color-cs-text-secondary)]">
+                    {isFinancialFinding(snap.financialFinding) ? snap.financialFinding.riskText : playbook.cureAction}
+                  </p>
                 </li>
                 );
               })}

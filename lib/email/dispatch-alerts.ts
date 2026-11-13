@@ -6,6 +6,17 @@ import { appUrl, sendEmail } from "@/lib/email/mailer";
 import { resolveRecipients, wantsAlertType } from "@/lib/email/recipients";
 import { renderEmail } from "@/lib/email/template";
 import { playbookEmailParagraphs, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
+import { isFinancialFinding, type FinancialFinding } from "@/lib/alerts/financial-finding";
+
+function financialParagraphs(finding: FinancialFinding): string[] {
+  return [
+    `What changed: ${finding.whatChanged}`,
+    `What counts: ${finding.whatCounts}`,
+    `What is the risk: ${finding.riskText}`,
+    `What should I do: ${finding.whatToDo}`,
+    "Bene-Watch does not decide eligibility.",
+  ];
+}
 
 /**
  * Sends one email per new alert, as soon as the alert is created. Marks
@@ -48,6 +59,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
       thresholdType?: string;
       title?: string;
       programs?: unknown;
+      financialFinding?: unknown;
     };
     const playbook = resolveAlertPlaybook({
       playbookId: snap.playbookId,
@@ -60,7 +72,10 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
     const namedPrograms = Array.isArray(snap.programs)
       ? snap.programs.filter((program): program is string => typeof program === "string" && program.length > 0)
       : undefined;
-    const paragraphs = playbookEmailParagraphs(playbook, namedPrograms);
+    const finding = isFinancialFinding(snap.financialFinding) ? snap.financialFinding : null;
+    const paragraphs = finding
+      ? financialParagraphs(finding)
+      : playbookEmailParagraphs(playbook, namedPrograms);
     const subject = `Bene-Watch: ${
       level === "breach" ? "Important" : trigger === "cliff" || trigger === "snt" || trigger === "able"
         ? "Eligibility warning"
@@ -70,7 +85,7 @@ export async function sendAlertEmailsForNewAlerts(alertIds: string[]): Promise<n
     } — ${playbook.title}`;
     const { html, text } = renderEmail({
       heading: playbook.title,
-      preheader: playbook.cureAction.slice(0, 110),
+      preheader: (finding?.whatToDo ?? playbook.cureAction).slice(0, 110),
       tone: level === "breach" ? "danger" : level === "warning" ? "warning" : "info",
       paragraphs,
       cta: { label: "View this alert", url: `${appUrl()}/limits/alerts?alert=${String(a._id)}` },

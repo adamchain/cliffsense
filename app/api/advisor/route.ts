@@ -36,6 +36,8 @@ Income methodology — do not mix these up:
 - If the account context shows IRWE of $0, say work expenses were not subtracted. Do not invent an IRWE deduction.
 - SNAP deposits and ABLE distributions identified by description are left out of the income figures. A non-qualified ABLE withdrawal can still count; say that a counselor decides that. Infrequent or irregular income is not detected automatically.
 
+Financial findings — when the user message or the account context includes What changed, What counts, What is the risk, and What should I do, explain those four results in plain language. Do not supply a threshold, an income classification, an exclusion, or a deadline that those four results do not already state. If the risk is insufficient information, say what is missing and stop. Do not finish the calculation from general program knowledge. A DAC exclusion used for a waiver or Healthy Horizons is not a QMB rule.
+
 When the user asks about Bene-Watch features, you can describe: limits, per-program limit pages, alerts (predictive / breach / trend), recurring income detection, the reporting calendar, the file vault, and exports.`;
 
 function reqEnv(name: string): string | null {

@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { assertBeneficiaryWriteAccess } from "@/lib/beneficiaries/access";
 import { connectDB } from "@/lib/db/mongodb";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
+import { syncAutoIrweFromExpenses } from "@/lib/transactions/sync-auto-irwe";
+import { evaluateThresholdsForBeneficiary } from "@/lib/thresholds/evaluate-thresholds";
 
 const bodySchema = z.object({ beneficiaryId: z.string().min(1) }).strict();
 
@@ -31,9 +33,24 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
-  const result = await reapplyAutoCategoriesForBeneficiary(
-    new mongoose.Types.ObjectId(beneficiaryId),
-  );
+  const beneficiaryObjectId = new mongoose.Types.ObjectId(beneficiaryId);
+  const result = await reapplyAutoCategoriesForBeneficiary(beneficiaryObjectId);
+  const irwe = await syncAutoIrweFromExpenses(beneficiaryObjectId);
 
-  return NextResponse.json(result);
+  if (result.updated > 0 || irwe.changed) {
+    try {
+      await evaluateThresholdsForBeneficiary({
+        beneficiaryId: beneficiaryObjectId,
+        actorUserId: session.user.id,
+      });
+    } catch (e) {
+      console.warn("evaluateThresholdsForBeneficiary after category apply", e);
+    }
+  }
+
+  return NextResponse.json({
+    ...result,
+    irweMonthlyCents: irwe.monthlyCents,
+    irweChanged: irwe.changed,
+  });
 }

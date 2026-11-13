@@ -19,7 +19,9 @@ import {
 import Link from "next/link";
 import { formatShortDate, formatSignedUsd, isInflowCents } from "@/lib/format/money";
 import { AccountsPanel, type AccountConnection } from "@/components/transactions/accounts-panel";
+import { RecurringExpensesCard } from "@/components/transactions/recurring-expenses-card";
 import { ImportModal } from "@/components/imports/import-modal";
+import type { ExpenseSummary } from "@/lib/transactions/recurring-expenses";
 
 type UserCategory =
   | "earned_income"
@@ -214,6 +216,7 @@ export function TransactionsView({
   const [applyingBulk, setApplyingBulk] = useState(false);
   const [applyPrompt, setApplyPrompt] = useState<ApplyAllPrompt | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [recurring, setRecurring] = useState<(ExpenseSummary & { irweAuto?: boolean }) | null>(null);
   const limit = 50;
 
   // Resolve a transaction's connection + account to display names. Transactions
@@ -322,6 +325,15 @@ export function TransactionsView({
     }
     setRows((data as { transactions: TxRow[] }).transactions ?? []);
     setTotal((data as { total: number }).total ?? 0);
+    if (filter === "outflow") {
+      const recRes = await fetch(
+        `/api/transactions/recurring-expenses?beneficiaryId=${encodeURIComponent(beneficiaryId)}`,
+      );
+      const rec = (await recRes.json().catch(() => null)) as
+        | (ExpenseSummary & { irweAuto?: boolean })
+        | null;
+      setRecurring(recRes.ok && rec ? rec : null);
+    }
   }, [beneficiaryId, page, filter, debouncedQ, accountFilter]);
 
   useEffect(() => {
@@ -345,7 +357,10 @@ export function TransactionsView({
     void refreshUnclear();
   }, [refreshUnclear]);
 
-  // One-shot: upgrade payroll stuck as unclear/transfer from prior imports.
+  const loadRef = useRef(load);
+  loadRef.current = load;
+
+  // One-shot: classify imported spending and fill work expenses from it.
   useEffect(() => {
     if (!beneficiaryId) return;
     let cancelled = false;
@@ -356,9 +371,9 @@ export function TransactionsView({
         body: JSON.stringify({ beneficiaryId }),
       }).catch(() => null);
       if (cancelled || !res?.ok) return;
-      const data = (await res.json().catch(() => ({}))) as { updated?: number };
-      if ((data.updated ?? 0) > 0) {
-        await load();
+      const data = (await res.json().catch(() => ({}))) as { updated?: number; irweChanged?: boolean };
+      if ((data.updated ?? 0) > 0 || data.irweChanged) {
+        await loadRef.current();
         await refreshUnclear();
       }
     })();
@@ -482,6 +497,14 @@ export function TransactionsView({
   const showingFrom = total === 0 ? 0 : (page - 1) * limit + 1;
   const showingTo = Math.min(page * limit, total);
 
+  const recurringIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const item of recurring?.recurring ?? []) {
+      for (const id of item.transactionIds) ids.add(id);
+    }
+    return ids;
+  }, [recurring]);
+
   const chips = useMemo(() => {
     return FILTER_CHIPS.map((c) => {
       let label = c.label;
@@ -539,7 +562,8 @@ export function TransactionsView({
       </div>
       <p className="mb-4 text-[13.5px] text-[var(--color-cs-text-secondary)]">
         Categorize deposits so limits stay accurate. Mark earned income and we&apos;ll offer to apply
-        it to matching payors from the same bank.
+        it to matching payors from the same bank. Imported spending is marked as an expense. Open
+        Expenses to see repeating bills.
       </p>
 
       <input
@@ -656,6 +680,10 @@ export function TransactionsView({
         </p>
       )}
 
+      {filter === "outflow" && recurring ? (
+        <RecurringExpensesCard summary={recurring} irweAuto={Boolean(recurring.irweAuto)} />
+      ) : null}
+
       <div className="mb-2 flex items-baseline justify-between px-0.5">
         <h2 className="text-[22px] font-bold tracking-tight">Transactions</h2>
         <span className="text-[13px] text-[var(--color-cs-text-secondary)]">
@@ -709,6 +737,7 @@ export function TransactionsView({
                     <div className="mt-0.5 text-[12px] leading-tight text-[var(--color-cs-text-muted)]">
                       {formatShortDate(r.date)}
                       {r.pending ? " · Pending" : ""}
+                      {filter === "outflow" && recurringIds.has(r._id) ? " · Recurring" : ""}
                       {acctLabel ? ` · ${acctLabel}` : ""}
                     </div>
                   </div>

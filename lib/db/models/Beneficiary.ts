@@ -58,6 +58,12 @@ const beneficiarySchema = new Schema(
      * income before the one-half exclusion, and dollar-for-dollar from SGA.
      */
     irweMonthlyCents: { type: Number, default: 0, min: 0 },
+    /**
+     * How `irweMonthlyCents` was last set.
+     * `auto` is replaced when Money recalculates pharmacy, transportation, and medical charges.
+     * `manual` is a number the user saved and is left alone.
+     */
+    irweSource: { type: String, enum: ["", "auto", "manual"], default: "" },
     /** Answers for the gated 2026–27 SNAP/MAGI/immigrant policy screen. */
     policyScreen: { type: Schema.Types.Mixed, default: null },
     /** Case-opening answers from Benefit Monitor onboarding (authority, screening, identity extras). */

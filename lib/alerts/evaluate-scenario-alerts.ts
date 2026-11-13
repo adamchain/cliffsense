@@ -1,6 +1,21 @@
 import type { Types } from "mongoose";
 import { createContinuityAlert } from "@/lib/alerts/create-continuity-alert";
 import {
+  abdIncomeFinding,
+  extraHelpIncomeFinding,
+  isFinancialFinding,
+  magiIncomeFinding,
+  mawdIncomeFinding,
+  qmbIncomeFinding,
+  qmbResourceFinding,
+  resourceScreenFinding,
+  snapElderlyResourceFinding,
+  snapReportingFinding,
+  ssiIncomeFinding,
+  waiverIncomeFinding,
+  type FinancialFinding,
+} from "@/lib/alerts/financial-finding";
+import {
   ELIGIBILITY_LOSS_SCENARIOS,
   type EligibilityLossScenario,
 } from "@/lib/alerts/eligibility-loss-scenarios";
@@ -22,12 +37,13 @@ import {
 import { magiAdultAgeApplies, magiAdultIncomeAlert, magiAdultIncomeLimitCents } from "@/lib/benefits/magi-limits";
 import { qmbIncomeAlert, qmbResourceAlert, qmbIncomeLimitCents, qmbResourceLimitCents } from "@/lib/benefits/qmb-limits";
 import {
+  MAWD_RESOURCE_CENTS,
   mawdIncomeAlert,
   mawdIncomeLimitCents,
   mawdJobSuccessIncomeLimitCents,
   mawdResourceAlert,
 } from "@/lib/benefits/mawd-limits";
-import { WAIVER_GROSS_INCOME_CENTS, waiverIncomeAlert, waiverResourceAlert } from "@/lib/benefits/waiver-limits";
+import { WAIVER_GROSS_INCOME_CENTS, WAIVER_RESOURCE_CENTS, waiverIncomeAlert, waiverResourceAlert } from "@/lib/benefits/waiver-limits";
 import { dacSgaAlert, dacWaiverTwilight, ssdiWageAlert, ssdiWaiverTwilight } from "@/lib/benefits/work-planner";
 import {
   SNAP_ELDERLY_RESOURCE_CENTS,
@@ -83,6 +99,10 @@ export type ScenarioEvalInput = {
   mawdJobSuccess?: boolean;
   /** QMB income before the $20 disregard. The published limit already includes that $20. */
   qmbIncomeCents?: number;
+  /** Earned portion of the QMB figure, after the $65, IRWE, and one-half. */
+  qmbEarnedCountableCents?: number;
+  /** DAC dollars the waiver and Healthy Horizons calculators actually removed. */
+  dacExcludedCents?: number;
   /** Extra Help income before the $20 disregard. The published limit already includes that $20. */
   extraHelpIncomeCents?: number;
   /** Monthly impairment-related work expenses. Applied to SGA, not to the Trial Work Period. */
@@ -107,6 +127,7 @@ async function recentlyAlerted(
   beneficiaryId: Types.ObjectId,
   scenarioId: string,
   level: string,
+  hasFinding: boolean,
 ): Promise<boolean> {
   const since = new Date(Date.now() - 7 * 86400000);
   const recent = await Alert.findOne({
@@ -115,11 +136,13 @@ async function recentlyAlerted(
     status: { $in: ["new", "acknowledged"] },
     createdAt: { $gte: since },
   })
-    .select({ _id: 1, level: 1 })
+    .select({ _id: 1, level: 1, dataSnapshot: 1 })
     .lean();
   if (!recent) return false;
   // A higher severity is a material change and opens a new alert.
   if ((LEVEL_RANK[level] ?? 0) > (LEVEL_RANK[String(recent.level)] ?? 0)) return false;
+  const snap = recent.dataSnapshot as { financialFinding?: unknown } | null;
+  if (hasFinding && !isFinancialFinding(snap?.financialFinding)) return false;
   return true;
 }
 
@@ -131,16 +154,24 @@ export async function evaluateScenarioAlerts(
   input: ScenarioEvalInput,
 ): Promise<{ alertsCreated: number; alertIdsCreated: Types.ObjectId[] }> {
   const programSet = input.programs.map((p) => p.toUpperCase());
-  const candidates: { scenario: EligibilityLossScenario; level: "info" | "warning" | "breach" }[] = [];
+  const candidates: {
+    scenario: EligibilityLossScenario;
+    level: "info" | "warning" | "breach";
+    finding?: FinancialFinding;
+  }[] = [];
 
-  const consider = (id: string, level?: "info" | "warning" | "breach") => {
+  const consider = (
+    id: string,
+    level?: "info" | "warning" | "breach",
+    finding?: FinancialFinding,
+  ) => {
     const s = ELIGIBILITY_LOSS_SCENARIOS.find((x) => x.id === id);
     if (!s?.autoDetect) return;
     if (!enrolledFor(s, programSet)) return;
     if (candidates.some((c) => c.scenario.id === id)) return;
     const resolved =
       level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
-    candidates.push({ scenario: s, level: resolved });
+    candidates.push({ scenario: s, level: resolved, finding });
   };
 
   const earned = input.earnedGrossCents;
@@ -262,7 +293,19 @@ export async function evaluateScenarioAlerts(
     const qmbIncome = input.qmbIncomeCents ?? countable;
     const incomeLimit = qmbIncomeLimitCents(householdSize);
     const incomeLevel = qmbIncomeAlert(qmbIncome, incomeLimit);
-    if (incomeLevel) consider("qmb_income_resources", incomeLevel);
+    if (incomeLevel) {
+      const built = qmbIncomeFinding({
+        programs: input.programs,
+        countableCents: qmbIncome,
+        earnedCountableCents: input.qmbEarnedCountableCents ?? 0,
+        limitCents: incomeLimit,
+        level: incomeLevel,
+        irweCents: input.irweCents ?? 0,
+        monthPrefix: input.monthPrefix,
+        observedAt: now,
+      });
+      consider("qmb_income_resources", built.level, built.finding);
+    }
     const resourceLimit = qmbResourceLimitCents(householdSize);
     const resourceLevel = qmbResourceAlert(assets, resourceLimit);
     if (resourceLevel) consider("qmb_resources", resourceLevel);
@@ -334,7 +377,29 @@ export async function evaluateScenarioAlerts(
   let alertsCreated = 0;
 
   for (const pending of candidates) {
-    if (await recentlyAlerted(input.beneficiaryId, pending.scenario.id, pending.level)) continue;
+    const financialFinding =
+      pending.finding ??
+      findingForScenario(pending.scenario.id, {
+        programs: input.programs,
+        assets,
+        gross,
+        snapGross: input.snapGrossCents ?? gross,
+        householdSize,
+        monthPrefix: input.monthPrefix,
+        observedAt: now,
+        irweCents: input.irweCents ?? 0,
+        dacExcludedCents: input.dacExcludedCents ?? 0,
+        level: pending.level,
+        ssiCountable: input.ssiAdjustedCountableCents ?? countable,
+        abdCountable: input.abdCountableCents ?? countable,
+        waiverGross: input.waiverGrossCents ?? gross,
+        mawdCountable: input.mawdCountableCents ?? countable,
+        mawdJobSuccess: input.mawdJobSuccess ?? false,
+        extraHelpIncome: input.extraHelpIncomeCents ?? countable,
+      });
+    if (await recentlyAlerted(input.beneficiaryId, pending.scenario.id, pending.level, Boolean(financialFinding))) {
+      continue;
+    }
     const createdId = await insertScenarioAlert({
       beneficiaryId: input.beneficiaryId,
       ownerUserId: input.ownerUserId,
@@ -350,6 +415,7 @@ export async function evaluateScenarioAlerts(
         pending.scenario.id === "reporting_wage_change_10day"
           ? wageReportPrograms
           : pending.scenario.programs.filter((program) => enrolledMatchesProgram(programSet, program)),
+      financialFinding,
     });
     alertsCreated += 1;
     alertIdsCreated.push(createdId);
@@ -372,7 +438,7 @@ export async function emitDacMarriageAlert(input: {
   if (!input.programs.some((p) => p.toUpperCase() === "DAC")) return null;
   const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "dac_marriage");
   if (!scenario) return null;
-  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level)) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level, false)) return null;
   return insertScenarioAlert({
     beneficiaryId: input.beneficiaryId,
     ownerUserId: input.ownerUserId,
@@ -392,7 +458,7 @@ export async function emitHouseholdChangeAlert(input: {
 }): Promise<Types.ObjectId | null> {
   const scenario = ELIGIBILITY_LOSS_SCENARIOS.find((s) => s.id === "reporting_household_change");
   if (!scenario || !enrolledFor(scenario, input.programs)) return null;
-  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level)) return null;
+  if (await recentlyAlerted(input.beneficiaryId, scenario.id, scenario.level, false)) return null;
   return insertScenarioAlert({
     beneficiaryId: input.beneficiaryId,
     ownerUserId: input.ownerUserId,
@@ -417,6 +483,7 @@ async function insertScenarioAlert(input: {
   changeConfidence?: "confirmed" | "inferred";
   /** Enrolled programs this alert actually applies to. The playbook list is the full catalog. */
   programs?: string[];
+  financialFinding?: FinancialFinding;
 }): Promise<Types.ObjectId> {
   const s = input.scenario;
   const level = input.level ?? (s.level === "info" ? "info" : s.level === "breach" ? "breach" : "warning");
@@ -442,5 +509,172 @@ async function insertScenarioAlert(input: {
     eventSummary: s.risk,
     changeConfidence: input.changeConfidence ?? "inferred",
     activityDetails: { scenarioId: s.id, level, trigger: s.trigger },
+    financialFinding: input.financialFinding,
   });
+}
+
+function findingForScenario(
+  id: string,
+  facts: {
+    programs: string[];
+    assets: number;
+    gross: number;
+    snapGross: number;
+    householdSize: number;
+    monthPrefix: string;
+    observedAt: Date;
+    irweCents: number;
+    dacExcludedCents: number;
+    level: "info" | "warning" | "breach";
+    ssiCountable: number;
+    abdCountable: number;
+    waiverGross: number;
+    mawdCountable: number;
+    mawdJobSuccess: boolean;
+    extraHelpIncome: number;
+  },
+): FinancialFinding | undefined {
+  const level = facts.level === "breach" ? "breach" : "warning";
+  switch (id) {
+    case "qmb_resources":
+      return qmbResourceFinding({
+        countedCents: facts.assets,
+        householdSize: facts.householdSize,
+        monthPrefix: facts.monthPrefix,
+      });
+    case "snap_report_130_fpl":
+      return snapReportingFinding({
+        grossCents: facts.snapGross,
+        householdSize: facts.householdSize,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+      });
+    case "snap_elderly_resources":
+      return snapElderlyResourceFinding({
+        assetCents: facts.assets,
+        grossCents: facts.snapGross,
+        householdSize: facts.householdSize,
+        monthPrefix: facts.monthPrefix,
+        crossed: facts.level === "breach",
+      });
+    case "waiver_income_2982":
+      return waiverIncomeFinding({
+        programs: facts.programs,
+        countableCents: facts.waiverGross,
+        dacExcludedCents: facts.dacExcludedCents,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        level,
+      });
+    case "ssi_countable_income_fbr":
+      return ssiIncomeFinding({
+        countableCents: facts.ssiCountable,
+        householdSize: facts.householdSize,
+        irweCents: facts.irweCents,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        level,
+      });
+    case "abd_income_limit":
+      return abdIncomeFinding({
+        programs: facts.programs,
+        countableCents: facts.abdCountable,
+        dacExcludedCents: facts.dacExcludedCents,
+        householdSize: facts.householdSize,
+        irweCents: facts.irweCents,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        level,
+      });
+    case "mawd_income_limit":
+      return mawdIncomeFinding({
+        countableCents: facts.mawdCountable,
+        householdSize: facts.householdSize,
+        jobSuccess: facts.mawdJobSuccess,
+        irweCents: facts.irweCents,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        level,
+      });
+    case "lucas_magi_income":
+      return magiIncomeFinding({ grossCents: facts.gross, monthPrefix: facts.monthPrefix });
+    case "extra_help_income":
+      return extraHelpIncomeFinding({
+        countableCents: facts.extraHelpIncome,
+        householdSize: facts.householdSize,
+        irweCents: facts.irweCents,
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        level,
+      });
+    case "extra_help_resources":
+      return resourceScreenFinding({
+        program: "ExtraHelp",
+        countedCents: facts.assets,
+        limitCents: extraHelpResourceLimitCents(facts.householdSize),
+        limitLabel: "Extra Help resource limit",
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        crossed: facts.level === "breach",
+        clock: true,
+        clockSource: "An Extra Help-only case reports resource changes to SSA by the 10th of the next month.",
+        action:
+          "Report a resource change to SSA. Someone who has Medicaid, QMB, or SSI gets Extra Help automatically.",
+        boundary: "Resources must be below this limit. An amount equal to the limit has reached it.",
+      });
+    case "ssi_resources_2k":
+      return resourceScreenFinding({
+        program: "SSI",
+        countedCents: facts.assets,
+        limitCents: ssiResourceLimitCents(facts.householdSize),
+        limitLabel: "SSI resource limit",
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        crossed: facts.level === "breach",
+        clock: true,
+        clockSource: "SSI resource changes are due by the 10th of the month after the change.",
+        action: "Report the resource change to SSA.",
+      });
+    case "waiver_resources_8k":
+      return resourceScreenFinding({
+        program: "MedicaidWaiver",
+        countedCents: facts.assets,
+        limitCents: WAIVER_RESOURCE_CENTS,
+        limitLabel: "waiver resource limit",
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        crossed: facts.level === "breach",
+        clock: true,
+        clockSource: "Waiver resource changes are reported to the County Assistance Office within 10 days.",
+        action: "Report this waiver resource change to the County Assistance Office. This action is for the waiver only.",
+      });
+    case "mawd_resources_10k":
+      return resourceScreenFinding({
+        program: "MAWD",
+        countedCents: facts.assets,
+        limitCents: MAWD_RESOURCE_CENTS,
+        limitLabel: "MAWD resource limit",
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        crossed: facts.level === "breach",
+        clock: true,
+        clockSource: "MAWD resource changes are reported to the County Assistance Office within 10 days.",
+        action: "Report this MAWD resource change to the County Assistance Office.",
+      });
+    case "abd_resources_2k":
+      return resourceScreenFinding({
+        program: "MedicaidABD",
+        countedCents: facts.assets,
+        limitCents: facts.householdSize >= 2 ? 3000_00 : 2000_00,
+        limitLabel: "Healthy Horizons resource limit",
+        monthPrefix: facts.monthPrefix,
+        observedAt: facts.observedAt,
+        crossed: facts.level === "breach",
+        clock: true,
+        clockSource: "Healthy Horizons resource changes are reported to the County Assistance Office within 10 days.",
+        action: "Report this Healthy Horizons resource change to the County Assistance Office.",
+      });
+    default:
+      return undefined;
+  }
 }

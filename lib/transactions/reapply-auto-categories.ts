@@ -5,9 +5,10 @@ import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-ca
 const MAX_PER_RUN = 2000;
 
 /**
- * Upgrade unedited rows that heuristics can now classify as income/benefits.
- * Safe to call on every sync / dashboard load — only touches unclear/transfer/
- * other_income when lastUserEditedAt is null.
+ * Upgrade unedited rows that heuristics can now classify.
+ * Unclear imports become expenses (or income, when the description says so).
+ * Transfer / other-income rows are only moved when the signal is earned income
+ * or a benefit deposit. Rows the user edited are left alone.
  */
 export async function reapplyAutoCategoriesForBeneficiary(
   beneficiaryId: Types.ObjectId,

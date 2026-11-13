@@ -59,6 +59,13 @@ const PAYROLL_HINT =
 const BENEFIT_HINT =
   /\b(social\s*security|ssi|ssdi|supplemental\s*security|disability|unemployment|pension|va\s*benefit|child\s*support|alimony|ebt)\b/i;
 
+/**
+ * Money moving between the person's own accounts, or a payment to a credit card.
+ * "Rent Payment" and "Water Utility Payment" are bills, so bare "payment" is not enough.
+ */
+const ACCOUNT_TRANSFER_OUT =
+  /\b(transfer|xfer|zelle|venmo|paypal|cash\s*app|wire\s*transfer|credit\s*card\s*payment|payment\s*thank\s*you|online\s*payment\s*to\s*crd)\b/i;
+
 export function looksLikePayrollPayor(args: SuggestArgs | string | null | undefined, merchantName?: string | null): boolean {
   // Back-compat: looksLikePayrollPayor(name, merchantName)
   if (typeof args === "string" || args == null) {
@@ -98,8 +105,13 @@ export function suggestUserCategoryFromPlaid(args: SuggestArgs): CliffUserCatego
     return "benefit_deposit";
   }
 
+  // Bank CSV imports have no Plaid category. Money going out is spending unless
+  // the description is a transfer or a payroll/benefit reversal (leave those for review).
   if (!prim) {
-    return null;
+    if (!outflow) return null;
+    if (payrollText || benefitText) return null;
+    if (ACCOUNT_TRANSFER_OUT.test(payorBlob(args))) return "transfer";
+    return "expense";
   }
 
   if (prim === "TRANSFER_IN" || prim === "TRANSFER_OUT" || prim.startsWith("TRANSFER_")) {

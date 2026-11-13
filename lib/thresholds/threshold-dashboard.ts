@@ -41,6 +41,7 @@ import {
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
+import { syncAutoIrweFromExpenses } from "@/lib/transactions/sync-auto-irwe";
 import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
@@ -93,12 +94,6 @@ function assetWarn(value: number, limitCents: number, warnAt: number): boolean {
   return value > Math.floor(limitCents * warnAt);
 }
 
-function storedIrweCents(value: unknown): number {
-  const n = Number(value ?? 0);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.min(100_000_00, Math.round(n));
-}
-
 export type ThresholdUiStatus = "ok" | "watch" | "concern";
 
 export type ThresholdDashboardRow = {
@@ -138,6 +133,10 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
   wageChangeKind: WageChangeKind | null;
   /** Monthly impairment-related work expenses used in the income math. */
   irweMonthlyCents: number;
+  /** True when that amount was calculated from pharmacy, transportation, and medical charges. */
+  irweAuto: boolean;
+  /** Payees that made up the calculated work-expense amount. */
+  irweWorkExpenseNote: string;
 }> {
   await ensureSystemThresholdsSeeded();
 
@@ -159,6 +158,8 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       rows: [],
       wageChangeKind: null,
       irweMonthlyCents: 0,
+      irweAuto: false,
+      irweWorkExpenseNote: "",
     };
   }
 
@@ -184,13 +185,15 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
       rows: [],
       wageChangeKind: null,
       irweMonthlyCents: 0,
+      irweAuto: false,
+      irweWorkExpenseNote: "",
     };
   }
 
-  const irweCents = storedIrweCents(beneficiary.irweMonthlyCents);
-
-  // Re-tag payroll stuck as unclear/transfer (imports + Plaid TRANSFER_IN).
+  // Re-tag imports, then fill work expenses from pharmacy, transportation, and medical charges.
   await reapplyAutoCategoriesForBeneficiary(beneficiaryId);
+  const irweSync = await syncAutoIrweFromExpenses(beneficiaryId);
+  const irweCents = irweSync.monthlyCents;
 
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({
@@ -593,5 +596,7 @@ export async function loadThresholdDashboardPayload(beneficiaryId: Types.ObjectI
     rows,
     wageChangeKind: wageKind,
     irweMonthlyCents: irweCents,
+    irweAuto: irweSync.source === "auto" && irweCents > 0,
+    irweWorkExpenseNote: irweSync.source === "auto" ? irweSync.note : "",
   };
 }

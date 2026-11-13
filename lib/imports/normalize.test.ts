@@ -55,8 +55,9 @@ describe("detectMapping + normalizeRows", () => {
     // Deposit (positive in file) becomes negative (money in) in app convention.
     expect(valid[0].amountCents).toBe(-120000);
     expect(valid[0].suggestedUserCategory).toBe("earned_income");
-    // Debit (negative in file) becomes positive (money out).
+    // Debit (negative in file) becomes positive (money out) and counts as an expense.
     expect(valid[1].amountCents).toBe(450);
+    expect(valid[1].suggestedUserCategory).toBe("expense");
   });
 
   it("honors depositsArePositive = false", () => {
@@ -76,6 +77,7 @@ describe("detectMapping + normalizeRows", () => {
     expect(mapping.amount.kind).toBe("split");
     const { valid } = normalizeRows(rows, rawLines, mapping);
     expect(valid[0].amountCents).toBe(90000); // debit = money out = positive
+    expect(valid[0].suggestedUserCategory).toBe("expense");
     expect(valid[1].amountCents).toBe(-2500); // credit = money in = negative
   });
 

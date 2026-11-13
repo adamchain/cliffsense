@@ -106,7 +106,10 @@ export function initialCaseWorkflow(parts: TenPartAlert): CaseWorkflow {
       },
       {
         key: "report",
-        title: "Record the report and attach the receipt",
+        title:
+          parts.financialFinding?.risk === "insufficient_information"
+            ? "Confirm the missing facts before reporting"
+            : "Record the report and attach the receipt",
         dueDate: due,
         requiresProof: true,
         status: "open",

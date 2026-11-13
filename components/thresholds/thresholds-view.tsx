@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { IconPencil, IconPlus, IconRefresh, IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconRefresh, IconSettings, IconTrash } from "@tabler/icons-react";
 import { AppToolbar, ToolbarButton } from "@/components/layout/app-shell";
 import { WalletCardGroup } from "@/components/benefits/wallet-card";
 import { formatPlainUsdFromCents } from "@/lib/format/money";
@@ -118,17 +118,6 @@ export function ThresholdsView({
     void load();
   }, [load]);
 
-  function openAdd() {
-    // Toggle the add form closed only when it's already open in add mode.
-    if (showAdd && editId === null) {
-      closeForm();
-      return;
-    }
-    setEditId(null);
-    setForm({ label: "", thresholdType: "monthly_earned_income", limitDollars: "" });
-    setShowAdd(true);
-  }
-
   function startEdit(row: Row) {
     setEditId(row._id);
     setShowAdd(true);
@@ -238,19 +227,19 @@ export function ThresholdsView({
           <IconRefresh size={16} stroke={1.5} aria-hidden />
           Refresh
         </ToolbarButton>
-        <ToolbarButton onClick={openAdd}>
-          <IconPlus size={16} stroke={1.5} aria-hidden />
-          Custom limit
+        <ToolbarButton href="/settings#programs">
+          <IconSettings size={16} stroke={1.5} aria-hidden />
+          Program settings
         </ToolbarButton>
       </AppToolbar>
 
       {data && data.programsEnrolled.length === 0 && (
         <div className="mb-3 rounded border border-[var(--color-cs-border)] bg-white px-3 py-2 text-[13px] text-[var(--color-cs-text-secondary)]">
-          Select enrolled programs in{" "}
+          Choose programs in{" "}
           <Link href="/settings#programs" className="text-[var(--color-cs-brand)] hover:underline">
-            Settings
-          </Link>{" "}
-          to attach system reference limits.
+            Program settings
+          </Link>
+          .
         </div>
       )}
 
@@ -475,7 +464,7 @@ export function ThresholdsView({
             {!loading && data && data.rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-3 py-6 text-center text-[var(--color-cs-text-secondary)]">
-                  No thresholds yet. Enroll programs or add a custom limit.
+                  No thresholds yet. Choose programs in Program settings.
                 </td>
               </tr>
             )}

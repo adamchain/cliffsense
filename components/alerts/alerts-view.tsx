@@ -16,11 +16,13 @@ import { programCodeKey, programMetaFor } from "@/lib/benefits/program-meta";
 import { advisorAskHref, fixThresholdQuestion } from "@/lib/benefits/fix-prompts";
 import { ActionCenter } from "@/components/actions/action-center";
 import { AlertPlaybookPanel } from "@/components/alerts/alert-playbook-panel";
+import { FinancialFindingPanel } from "@/components/alerts/financial-finding-panel";
 import { CaseClocksStrip } from "@/components/alerts/case-clocks-strip";
 import { CategoryHandoffPanel } from "@/components/alerts/category-handoff-panel";
 import { ContinuityCasePanel } from "@/components/alerts/continuity-case-panel";
 import { ReportEventForm } from "@/components/alerts/report-event-form";
 import { resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
+import { isFinancialFinding, renderFinancialFinding, type FinancialFinding } from "@/lib/alerts/financial-finding";
 import type { ContinuityCaseView } from "@/lib/alerts/serialize-case";
 import type { ReportingAction } from "@/lib/reporting/reporting-actions";
 import { LimitSourceList } from "@/components/thresholds/limit-source-list";
@@ -43,6 +45,7 @@ type AlertRow = {
     title?: string;
     limitCents?: number;
     currentValueCents?: number;
+    financialFinding?: FinancialFinding;
   };
   continuityCase?: ContinuityCaseView | null;
 };
@@ -346,6 +349,8 @@ export function AlertsView({
                 ? snap.programs
                 : playbook.programs;
             const focused = focusAlertId === a._id;
+            const rawFinding = snap?.financialFinding;
+            const finding = isFinancialFinding(rawFinding) ? rawFinding : null;
 
             const sectionLabel = sectionCode
               ? (programMetaFor(sectionCode)?.label ?? sectionCode)
@@ -381,7 +386,11 @@ export function AlertsView({
                   </div>
                   {sensitive && <div className="cs-acard-badge">Time Sensitive</div>}
                   <div className="cs-acard-title">{title}</div>
-                  <p className="cs-acard-body">{playbook.cureAction}</p>
+                  {finding ? (
+                    <FinancialFindingPanel finding={finding} />
+                  ) : (
+                    <p className="cs-acard-body">{playbook.cureAction}</p>
+                  )}
                   {(snap?.currentValueCents != null || snap?.thresholdType) && (
                     <LimitSourceList
                       sources={limitSources}
@@ -389,7 +398,11 @@ export function AlertsView({
                       program={snap?.program}
                     />
                   )}
-                  <AlertPlaybookPanel playbook={playbook} programs={scopedPrograms} />
+                  <AlertPlaybookPanel
+                    playbook={playbook}
+                    programs={scopedPrograms}
+                    calculationAttached={finding != null}
+                  />
                   {a.continuityCase && (
                     <ContinuityCasePanel
                       beneficiaryId={beneficiaryId}
@@ -402,19 +415,23 @@ export function AlertsView({
                   <div className="cs-acard-actions">
                     <Link
                       href={
-                        prog && progMeta && snap?.limitCents != null
+                        finding
                           ? advisorAskHref(
-                              fixThresholdQuestion({
-                                program: prog,
-                                label: snap.thresholdLabel ?? progMeta.label,
-                                currentValueCents: snap.currentValueCents,
-                                limitCents: snap.limitCents,
-                                status: a.level === "breach" ? "concern" : "watch",
-                              }),
+                              `Explain this financial alert in plain language. Use only these results. Do not add a threshold, an income rule, an exclusion, or a deadline that is not written here.\n${renderFinancialFinding(finding)}`,
                             )
-                          : advisorAskHref(
-                              `For Pennsylvania benefits: ${playbook.title}. ${playbook.cureAction} ${playbook.alternativePathway} What should I do next? Note this is not an eligibility determination.`,
-                            )
+                          : prog && progMeta && snap?.limitCents != null
+                            ? advisorAskHref(
+                                fixThresholdQuestion({
+                                  program: prog,
+                                  label: snap.thresholdLabel ?? progMeta.label,
+                                  currentValueCents: snap.currentValueCents,
+                                  limitCents: snap.limitCents,
+                                  status: a.level === "breach" ? "concern" : "watch",
+                                }),
+                              )
+                            : advisorAskHref(
+                                `For Pennsylvania benefits: ${playbook.title}. ${playbook.cureAction} ${playbook.alternativePathway} What should I do next? Note this is not an eligibility determination.`,
+                              )
                       }
                       className="cs-acard-btn cs-acard-btn-primary"
                     >

@@ -10,6 +10,7 @@ import { evaluateScenarioAlerts, isMarriedStatus } from "@/lib/alerts/evaluate-s
 import {
   abdCountableCents,
   adjustedSsiCountable,
+  dacBenefitCentsToExclude,
   isSntCashDeposit,
   ssiBenefitCentsToExclude,
   studentEarnedIncomeExclusionCents,
@@ -26,15 +27,18 @@ import {
   snapStoredGrossLimitCents,
 } from "@/lib/benefits/snap-limits";
 import { playbookIdForThreshold } from "@/lib/alerts/alert-playbook";
+import { findingForLiveThreshold, isFinancialFinding } from "@/lib/alerts/financial-finding";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
+import { syncAutoIrweFromExpenses } from "@/lib/transactions/sync-auto-irwe";
 import {
   endOfUtcMonth,
   grossMonthlyIncomeCents,
   grossUpEarnedCents,
   ableAccountBalanceCents,
   benefitDepositsInMonth,
+  countableEarnedAfterExclusionsCents,
   countableResourceBalanceCents,
   earnedNetBeforeMonthInYearCents,
   monthlyIncomeBreakdownCents,
@@ -104,6 +108,8 @@ async function shouldSkipAlert(
     .lean();
   if (!recent) return false;
   if (levelRank(level) > levelRank(recent.level as string)) return false;
+  const snap = recent.dataSnapshot as { financialFinding?: unknown } | null;
+  if (!isFinancialFinding(snap?.financialFinding)) return false;
   return true;
 }
 
@@ -140,8 +146,10 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const monthEnd = endOfUtcMonth(y, m);
   const benState = (beneficiary.state as string) ?? "";
 
-  // Re-tag payroll/benefits stuck as transfer/unclear before metrics run.
+  // Re-tag imports and payroll before metrics run, then fill work expenses
+  // from pharmacy, transportation, and medical charges when the user has not saved their own.
   await reapplyAutoCategoriesForBeneficiary(input.beneficiaryId);
+  const irweSync = await syncAutoIrweFromExpenses(input.beneficiaryId);
 
   const [txRows, recurringRows, connections, thresholdRows] = await Promise.all([
     Transaction.find({ beneficiaryId: input.beneficiaryId })
@@ -239,8 +247,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
   const ableBalanceCents = ableAccountBalanceCents(accountsFlat);
 
   const householdSize = Math.max(1, beneficiary.householdSize ?? 1);
-  const irweRaw = Number(beneficiary.irweMonthlyCents ?? 0);
-  const irweCents = Number.isFinite(irweRaw) && irweRaw > 0 ? Math.min(100_000_00, Math.round(irweRaw)) : 0;
+  const irweCents = irweSync.monthlyCents;
   const age = ageFromDateOfBirth(beneficiary.dateOfBirth as Date | string | null | undefined, now);
   const txMapped = txRows.map((t) => ({
     date: t.date,
@@ -394,6 +401,19 @@ export async function evaluateThresholdsForBeneficiary(input: {
       if (await shouldSkipAlert(input.beneficiaryId, th._id, c.trigger, c.level)) continue;
 
       const playbookId = playbookIdForThreshold(String(th.program), String(th.thresholdType));
+      const finding = findingForLiveThreshold({
+        program: String(th.program ?? ""),
+        thresholdType: String(th.thresholdType),
+        label: String(th.label ?? th.program ?? "stored limit"),
+        currentCents: currentValue,
+        limitCents,
+        crossed: c.level === "breach",
+        householdSize,
+        monthPrefix: prefix,
+        observedAt: now,
+        lumpLeftOutCents: oneTimeOtherIncomeCents(txMapped, prefix),
+        irweCents,
+      });
       const createdId = await createContinuityAlert({
         beneficiaryId: input.beneficiaryId,
         ownerUserId: beneficiary.ownerUserId,
@@ -415,6 +435,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
         playbookId,
         eventSummary: c.message,
         changeConfidence: "inferred",
+        financialFinding: finding,
         activityDetails: {
           thresholdId: th._id.toString(),
           level: c.level,
@@ -464,6 +485,8 @@ export async function evaluateThresholdsForBeneficiary(input: {
     mawdCountableCents: ssiCountableMonthlyIncomeCents(breakdown, { irweCents }),
     mawdJobSuccess: enrolledWorkersWithJobSuccess(beneficiary.benefitsEnrolled ?? []),
     qmbIncomeCents: qmbIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
+    qmbEarnedCountableCents: countableEarnedAfterExclusionsCents(breakdown.earnedGrossCents, { irweCents }),
+    dacExcludedCents: dacBenefitCentsToExclude({ programs, deposits: benefitDeposits }),
     extraHelpIncomeCents: extraHelpIncomeBeforeGeneralExclusionCents(breakdown, { irweCents }),
     irweCents,
     maxAssetCents: maxAsset,

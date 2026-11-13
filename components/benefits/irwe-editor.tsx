@@ -24,10 +24,15 @@ export function programUsesIrwe(code: string): boolean {
 export function IrweEditor({
   beneficiaryId,
   initialCents,
+  autoFilled = false,
+  workExpenseNote = "",
   onSaved,
 }: {
   beneficiaryId: string;
   initialCents: number;
+  /** True when Money calculated this amount from pharmacy, transportation, and medical charges. */
+  autoFilled?: boolean;
+  workExpenseNote?: string;
   onSaved: () => void;
 }) {
   const [dollars, setDollars] = useState(centsToDollarInput(initialCents));
@@ -72,6 +77,13 @@ export function IrweEditor({
         the SSDI substantial-gainful-activity comparison. It is not used for the Trial
         Work Period. SSA decides which receipts qualify. Leave this at 0 if you have none.
       </p>
+      {autoFilled && initialCents > 0 ? (
+        <p className="mt-2 text-[13px] leading-snug text-[var(--color-cs-text)]">
+          Filled from pharmacy, transportation, and medical charges in Money
+          {workExpenseNote ? `: ${workExpenseNote}` : ""}. This amount is already used in
+          the income math. Save after you change it.
+        </p>
+      ) : null}
       <label className="mt-3 block">
         <span className="text-[12px] font-semibold text-[var(--color-cs-text-secondary)]">
           Monthly amount

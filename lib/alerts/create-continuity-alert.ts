@@ -2,6 +2,7 @@ import type { Types } from "mongoose";
 import { logActivity } from "@/lib/activity/log-activity";
 import { playbookById, resolveAlertPlaybook } from "@/lib/alerts/alert-playbook";
 import { initialCaseWorkflow } from "@/lib/alerts/case-workflow";
+import { renderFinancialFinding, type FinancialFinding } from "@/lib/alerts/financial-finding";
 import { composeTenPart, type ChangeConfidence } from "@/lib/alerts/ten-part";
 import Alert from "@/lib/db/models/Alert";
 import ContinuityCase from "@/lib/db/models/ContinuityCase";
@@ -23,6 +24,7 @@ export async function createContinuityAlert(input: {
   userNote?: string | null;
   activityDetails?: Record<string, unknown>;
   programs?: string[];
+  financialFinding?: FinancialFinding;
 }): Promise<Types.ObjectId> {
   const playbook = playbookById(input.playbookId) ?? resolveAlertPlaybook({ playbookId: input.playbookId });
   const programs = input.programs ?? (Array.isArray(input.dataSnapshot.programs) ? (input.dataSnapshot.programs as string[]) : undefined);
@@ -34,6 +36,7 @@ export async function createContinuityAlert(input: {
     noticeDeadline: input.noticeDeadline,
     userNote: input.userNote,
     programs,
+    financialFinding: input.financialFinding,
   });
   const workflow = initialCaseWorkflow(parts);
   const created = await Alert.create({
@@ -42,10 +45,11 @@ export async function createContinuityAlert(input: {
     thresholdId: input.thresholdId ?? null,
     level: input.level,
     trigger: input.trigger,
-    message: input.message,
+    message: input.financialFinding ? renderFinancialFinding(input.financialFinding) : input.message,
     dataSnapshot: {
       ...input.dataSnapshot,
       playbookId: playbook.id,
+      ...(input.financialFinding ? { financialFinding: input.financialFinding } : {}),
     },
     parts,
     status: "new",
