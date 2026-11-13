@@ -10,7 +10,7 @@ import {
 export const SGA_NONBLIND_CENTS = 1690_00;
 export const TWP_SERVICE_CENTS = 1210_00;
 export const MAWD_INCOME_CENTS = 3325_00;
-export const SNAP_HH1_GROSS_CENTS = 2610_00;
+export const SNAP_HH1_GROSS_CENTS = 2660_00;
 export const ABD_INCOME_CENTS = 1330_00;
 export const WAIVER_INCOME_CENTS = 2982_00;
 

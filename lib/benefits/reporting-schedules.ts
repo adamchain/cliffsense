@@ -146,10 +146,10 @@ export const REPORTING_SCHEDULES: Record<string, ProgramSchedule> = {
     ],
     eventTriggered: [
       {
-        title: "The 3 simplified-reporting triggers (within 10 days)",
+        title: "The 3 simplified-reporting triggers",
         detail:
-          "Under semi-annual/simplified reporting, report only: (1) total household gross income rises above 130% FPL for your size; (2) an ABAWD's work hours drop below 80/month; (3) lottery/gambling winnings of $4,750 or more in a single game.",
-        deadline: "Within 10 days of the trigger",
+          "Under semi-annual/simplified reporting, review: (1) total household gross income over 130% of the poverty line for the household size; (2) an ABAWD's work hours below 80 a month; (3) lottery or gambling winnings of $4,750 or more in a single game. Income over 130% is not by itself a loss of SNAP. Gambling winnings use a separate 10-day clock from the day they are received.",
+        deadline: "Income and hours: by the 10th of the month after the change. Gambling winnings: within 10 days of receipt.",
       },
     ],
     doNotReport: [

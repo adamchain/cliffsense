@@ -71,7 +71,8 @@ function channelFor(program: string): {
       short: program,
       agency: "PA County Assistance Office",
       phone: PA_DHS_PHONE,
-      deadlineNote: "Use the date on the notice. Income, household, and resource changes are generally reported within 10 days.",
+      deadlineNote:
+        "Use the date on the notice. Otherwise income, household, and resource changes are due by the 10th of the month after the change, not 10 days from the alert.",
       reportUrl: COMPASS,
     };
   }

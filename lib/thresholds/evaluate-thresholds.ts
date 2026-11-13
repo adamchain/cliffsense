@@ -27,7 +27,7 @@ import {
   snapStoredGrossLimitCents,
 } from "@/lib/benefits/snap-limits";
 import { playbookIdForThreshold } from "@/lib/alerts/alert-playbook";
-import { findingForLiveThreshold, isFinancialFinding } from "@/lib/alerts/financial-finding";
+import { FINANCIAL_RULE_VERSION, findingForLiveThreshold } from "@/lib/alerts/financial-finding";
 import { expandEnrolledProgramKeys } from "@/lib/programs";
 import { ensureSystemThresholdsSeeded } from "@/lib/thresholds/ensure-system-thresholds";
 import { reapplyAutoCategoriesForBeneficiary } from "@/lib/transactions/reapply-auto-categories";
@@ -108,8 +108,8 @@ async function shouldSkipAlert(
     .lean();
   if (!recent) return false;
   if (levelRank(level) > levelRank(recent.level as string)) return false;
-  const snap = recent.dataSnapshot as { financialFinding?: unknown } | null;
-  if (!isFinancialFinding(snap?.financialFinding)) return false;
+  const snap = recent.dataSnapshot as { financialFinding?: { ruleVersion?: string } } | null;
+  if (snap?.financialFinding?.ruleVersion !== FINANCIAL_RULE_VERSION) return false;
   return true;
 }
 
@@ -398,8 +398,6 @@ export async function evaluateThresholdsForBeneficiary(input: {
     }
 
     for (const c of candidates) {
-      if (await shouldSkipAlert(input.beneficiaryId, th._id, c.trigger, c.level)) continue;
-
       const playbookId = playbookIdForThreshold(String(th.program), String(th.thresholdType));
       const finding = findingForLiveThreshold({
         program: String(th.program ?? ""),
@@ -414,11 +412,14 @@ export async function evaluateThresholdsForBeneficiary(input: {
         lumpLeftOutCents: oneTimeOtherIncomeCents(txMapped, prefix),
         irweCents,
       });
+      const level =
+        finding?.risk === "insufficient_information" && c.level === "breach" ? "warning" : c.level;
+      if (await shouldSkipAlert(input.beneficiaryId, th._id, c.trigger, level)) continue;
       const createdId = await createContinuityAlert({
         beneficiaryId: input.beneficiaryId,
         ownerUserId: beneficiary.ownerUserId,
         actorUserId: input.actorUserId,
-        level: c.level,
+        level,
         trigger: c.trigger,
         message: c.message,
         thresholdId: th._id,
@@ -438,7 +439,7 @@ export async function evaluateThresholdsForBeneficiary(input: {
         financialFinding: finding,
         activityDetails: {
           thresholdId: th._id.toString(),
-          level: c.level,
+          level,
           trigger: c.trigger,
         },
       });

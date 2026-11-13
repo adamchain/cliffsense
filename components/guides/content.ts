@@ -318,7 +318,7 @@ export const DOC_BOOKS: GuideBook[] = [
                 items: [
                   { name: "Next renewal or review", text: "Recertification, an SSI financial redetermination, a continuing disability review, or a waiver service review. Each is its own row." },
                   { name: "Next interim report", text: "A scheduled report between renewals, such as a SNAP semi-annual report (PA 564). The date is never calculated by splitting a renewal date." },
-                  { name: "Changes you must report", text: "The clock depends on the program: the 10th of the next month for many SSA financial changes, within 10 days for Pennsylvania Medical Assistance, prompt work reports for SSDI and DAC." },
+                  { name: "Changes you must report", text: "The clock depends on the program: the 10th of the month after the change for SSI, Extra Help, Medical Assistance, QMB, and simplified-reporting SNAP income. A November change is due December 10. SSDI and DAC work reports are prompt. A notice date controls." },
                   { name: "Documents requested", text: "Proof an agency asked for, with that notice’s due date." },
                 ],
               },
@@ -778,7 +778,7 @@ export const DOC_BOOKS: GuideBook[] = [
               },
               {
                 kind: "p",
-                text: "Under simplified reporting, tell the county within 10 days when gross income goes over 130% of poverty for the household size, when ABAWD hours fall below 80 a month, or when gambling winnings are $4,750 or more. An ordinary raise that stays under the 130% line waits for the semi-annual report. A person moving in usually waits for that report too, unless the case is on change reporting.",
+                text: "Under simplified reporting, income over 130% of poverty is due by the 10th of the month after the month it went over the line. A November change is due December 10. That is not 10 days from the alert, and it is not by itself a loss of SNAP. Pennsylvania screens most households at 200% of poverty. An ordinary raise that stays at or under the 130% line waits for the semi-annual report. Gambling winnings of $4,750 or more from one game are a separate report, due within 10 days of receipt.",
               },
             ],
           },
@@ -816,11 +816,11 @@ export const DOC_BOOKS: GuideBook[] = [
               {
                 kind: "bullets",
                 items: [
-                  "**ABD / Healthy Horizons** — income, resources, household, and coverage changes within 10 days. The annual financial renewal is not a waiver service review, a QMB renewal, or an Extra Help application.",
-                  "**MAGI** — income, household, address, and other coverage within 10 days. No asset test. Adults 19–64 use 138% of poverty.",
-                  "**HCBS / Community HealthChoices** — financial and household changes within 10 days. The annual service or level-of-care review is separate from the financial renewal. SSI can meet the financial test and still leave the service review in place.",
-                  "**MAWD** — income, resources, and employment within 10 days. Paid work is required. Workers with Job Success is a different resource rule.",
-                  "**QMB** — income and resource changes within 10 days, on its own renewal notice. It is not full Medicaid and it does not renew a waiver.",
+                  "**ABD / Healthy Horizons** — income, resources, household, and coverage changes are due by the 10th of the month after the change. The annual financial renewal is not a waiver service review, a QMB renewal, or an Extra Help application.",
+                  "**MAGI** — income, household, address, and other coverage are due by the 10th of the month after the change. No asset test. Adults 19–64 use 138% of poverty.",
+                  "**HCBS / Community HealthChoices** — financial and household changes are due by the 10th of the month after the change. The annual service or level-of-care review is separate from the financial renewal. SSI can meet the financial test and still leave the service review in place.",
+                  "**MAWD** — income, resources, and employment are due by the 10th of the month after the change. Paid work is required. Workers with Job Success is a different resource rule.",
+                  "**QMB** — when a report is required, income and resource changes are due by the 10th of the month after the change, on the QMB category's own notice. QMB is not full Medicaid and it does not renew a waiver.",
                 ],
               },
             ],
@@ -988,7 +988,7 @@ export const USE_CASES: GuideBook = {
           blocks: [
             {
               kind: "p",
-              text: "Categorize pay as earned income so the 1.13 gross-up runs. Watch the 2026 countable lines — $3,325 for one person, $4,509 for two — and the $10,000 resource cap, unless Workers with Job Success applies. Report income, resources, and employment to Pennsylvania DHS within 10 days. If SSDI is also on the record, the Trial Work Period and SGA are a second clock, not the MAWD clock.",
+              text: "Categorize pay as earned income so the 1.13 gross-up runs. Watch the 2026 countable lines — $3,325 for one person, $4,509 for two — and the $10,000 resource cap, unless Workers with Job Success applies. Report income, resources, and employment to Pennsylvania DHS by the 10th of the month after the change. If SSDI is also on the record, the Trial Work Period and SGA are a second clock, not the MAWD clock.",
             },
           ],
         },

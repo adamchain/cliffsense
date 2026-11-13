@@ -3,7 +3,7 @@ import { createContinuityAlert } from "@/lib/alerts/create-continuity-alert";
 import {
   abdIncomeFinding,
   extraHelpIncomeFinding,
-  isFinancialFinding,
+  FINANCIAL_RULE_VERSION,
   magiIncomeFinding,
   mawdIncomeFinding,
   qmbIncomeFinding,
@@ -141,8 +141,8 @@ async function recentlyAlerted(
   if (!recent) return false;
   // A higher severity is a material change and opens a new alert.
   if ((LEVEL_RANK[level] ?? 0) > (LEVEL_RANK[String(recent.level)] ?? 0)) return false;
-  const snap = recent.dataSnapshot as { financialFinding?: unknown } | null;
-  if (hasFinding && !isFinancialFinding(snap?.financialFinding)) return false;
+  const snap = recent.dataSnapshot as { financialFinding?: { ruleVersion?: string } } | null;
+  if (hasFinding && snap?.financialFinding?.ruleVersion !== FINANCIAL_RULE_VERSION) return false;
   return true;
 }
 
@@ -645,7 +645,7 @@ function findingForScenario(
         observedAt: facts.observedAt,
         crossed: facts.level === "breach",
         clock: true,
-        clockSource: "Waiver resource changes are reported to the County Assistance Office within 10 days.",
+        clockSource: "Waiver resource changes are due by the 10th of the month after the change.",
         action: "Report this waiver resource change to the County Assistance Office. This action is for the waiver only.",
       });
     case "mawd_resources_10k":
@@ -658,7 +658,7 @@ function findingForScenario(
         observedAt: facts.observedAt,
         crossed: facts.level === "breach",
         clock: true,
-        clockSource: "MAWD resource changes are reported to the County Assistance Office within 10 days.",
+        clockSource: "MAWD resource changes are due by the 10th of the month after the change.",
         action: "Report this MAWD resource change to the County Assistance Office.",
       });
     case "abd_resources_2k":
@@ -671,7 +671,7 @@ function findingForScenario(
         observedAt: facts.observedAt,
         crossed: facts.level === "breach",
         clock: true,
-        clockSource: "Healthy Horizons resource changes are reported to the County Assistance Office within 10 days.",
+        clockSource: "Healthy Horizons resource changes are due by the 10th of the month after the change.",
         action: "Report this Healthy Horizons resource change to the County Assistance Office.",
       });
     default:

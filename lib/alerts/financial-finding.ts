@@ -26,6 +26,9 @@ export type FinancialRisk =
 
 export type DeadlineConfidence = "confirmed" | "estimated" | "unknown";
 
+/** Bump when alert wording or the reporting date rule changes, so an open alert is replaced. */
+export const FINANCIAL_RULE_VERSION = "2026-11-13.3";
+
 export type FinancialFinding = {
   whatChanged: string;
   whatCounts: string;
@@ -38,6 +41,7 @@ export type FinancialFinding = {
   program: string;
   countableCents: number | null;
   limitCents: number | null;
+  ruleVersion: string;
 };
 
 const RISK_LEAD: Record<FinancialRisk, string> = {
@@ -175,6 +179,7 @@ function composeFinancialFinding(input: {
     program: input.program,
     countableCents: comparison ? comparison.countableCents : null,
     limitCents: comparison ? comparison.limitCents : null,
+    ruleVersion: FINANCIAL_RULE_VERSION,
   };
 }
 
@@ -192,8 +197,8 @@ function irweLine(irweCents: number): string {
 
 /**
  * QMB income. A DAC exclusion used for the waiver or Healthy Horizons is not
- * applied here. When DAC is enrolled and the earned income alone has not
- * crossed the limit, the benefit deposits are not a verified QMB budget.
+ * applied here. The published screen is not a finding that QMB was lost.
+ * The category and the SSDI-versus-DAC split have to be known first.
  */
 export function qmbIncomeFinding(input: {
   programs: string[];
@@ -206,57 +211,36 @@ export function qmbIncomeFinding(input: {
   observedAt: Date;
 }): { finding: FinancialFinding; level: "warning" | "breach" } {
   const onDac = enrolled(input.programs, "DAC");
-  const wagesAloneCrossed = input.level === "breach" && input.earnedCountableCents > input.limitCents;
+  const wagesAlonePastScreen = input.earnedCountableCents > input.limitCents;
   const formula =
-    "The stored QMB addition counts every benefit deposit and other income, then earned income after the $65 exclusion, recorded work expenses, and one-half. The $20 general exclusion is already inside the published limit and is not subtracted again.";
-  if (onDac && !wagesAloneCrossed) {
-    return {
-      level: "warning",
-      finding: composeFinancialFinding({
-        program: "QMB",
-        monthPrefix: input.monthPrefix,
-        detectedCents: input.countableCents,
-        detectedLabel: "the stored QMB addition",
-        formula: `${formula} A DAC benefit is left out of the waiver special-income limit and of Healthy Horizons. That exclusion is not applied to this QMB figure. This case does not record whether QMB is categorically needy, Medicare cost-sharing, or Disabled Adult Child buy-in, and the benefit deposits are not identified as DAC or SSDI.`,
-        exclusions: [irweLine(input.irweCents), "The waiver DAC exclusion was not applied."],
-        risk: "insufficient_information",
-        riskDetail:
-          "The DAC exclusion used for waiver eligibility does not establish the income treatment for this Medicare Savings Program.",
-        action:
-          "Confirm the QMB category and which Social Security deposit is the DAC benefit before using this total. Do not report an amount from this unverified addition.",
-        deadline: withheldDeadline(NOTICE_ONLY),
-      }),
-    };
-  }
-  const crossed = input.level === "breach";
+    `The stored addition is ${money(input.countableCents)}. The published QMB screen for this household is ${money(input.limitCents)}. That screen already includes the $20 general exclusion, so the $20 is not subtracted again. The addition counts every benefit deposit and other income, then earned income after the $65 exclusion, recorded work expenses, and one-half. It does not identify own-record SSDI separately from a Disabled Adult Child benefit.`;
   return {
-    level: input.level,
+    level: "warning",
     finding: composeFinancialFinding({
       program: "QMB",
       monthPrefix: input.monthPrefix,
       detectedCents: input.countableCents,
-      detectedLabel: "QMB income from the stored addition",
-      formula: onDac
-        ? `${formula} Earned income after those earned-income steps is already past the stored limit, so the unidentified benefit deposits are not what crossed it. The waiver DAC exclusion was still not applied.`
-        : `${formula} DAC is not an enrolled program, so no DAC exclusion was applied.`,
-      exclusions: [irweLine(input.irweCents)],
-      risk: crossed ? "potential_ineligibility" : "reporting_obligation",
-      riskDetail: crossed
-        ? "The counted QMB income has crossed the stored QMB income limit."
-        : "The counted QMB income is inside the watch band and has not crossed the stored limit.",
-      action: "Report this QMB income change to the County Assistance Office. This action is for QMB only.",
+      detectedLabel: "the stored QMB addition",
+      formula: `${formula} ${
+        onDac
+          ? "A DAC benefit is left out of the waiver special-income limit and of Healthy Horizons. That exclusion is not applied here. This case does not record whether QMB is categorically needy, Medicare cost-sharing, or Disabled Adult Child buy-in."
+          : "DAC is not an enrolled program, so no DAC exclusion was applied. The QMB category on this case is still not recorded."
+      }${
+        wagesAlonePastScreen
+          ? ` Earned income after the earned-income steps is ${money(input.earnedCountableCents)}, which is past the published screen. That fact still does not identify the QMB pathway.`
+          : ""
+      }`,
+      exclusions: [irweLine(input.irweCents), "The waiver DAC exclusion was not applied to this QMB figure."],
+      risk: "insufficient_information",
+      riskDetail:
+        "Additional information is needed. The published screen is not a determination that QMB income was exceeded.",
+      action:
+        "Review the income change and whether it must be reported for this QMB category. Confirm the pathway and any Disabled Adult Child protection before acting. If a report is required, it is due by the 10th of the month after the change, not 10 days after this alert. A date on a QMB notice controls.",
       deadline: clockDeadline(
         "QMB",
         input.observedAt,
-        "QMB income changes are reported to the County Assistance Office within 10 days.",
+        "When a QMB report is required, it is due by the 10th of the month after the change. A November change is due December 10. A date on a notice controls.",
       ),
-      comparison: {
-        countableCents: input.countableCents,
-        limitCents: input.limitCents,
-        limitLabel: "QMB income limit",
-        crossed,
-        boundary: "Income equal to this limit still qualifies.",
-      },
     }),
   };
 }
@@ -287,30 +271,33 @@ export function snapReportingFinding(input: {
   monthPrefix: string;
   observedAt: Date;
 }): FinancialFinding {
-  const limit = snapGross130Cents(input.householdSize);
+  const reportingLine = snapGross130Cents(input.householdSize);
+  const screeningGuide = snapGross200Cents(input.householdSize);
+  const overReportingLine = input.grossCents > reportingLine;
+  const overScreeningGuide = input.grossCents > screeningGuide;
   return composeFinancialFinding({
     program: "SNAP",
     monthPrefix: input.monthPrefix,
     detectedCents: input.grossCents,
     detectedLabel: "SNAP gross income",
-    formula: `Simplified reporting uses gross income. A single other-income deposit of ${money(SNAP_LUMP_SUM_CENTS)} or more was left out before this figure. Earned-income, shelter, and medical deductions are not part of this test. The 200% gross ceiling is a different test and is not this alert.`,
+    formula: `Household size is ${input.householdSize}. Gross income is ${money(input.grossCents)}. Pennsylvania's 200% screening guide for this household is ${money(screeningGuide)}. The 130% simplified-reporting line is ${money(reportingLine)}. ${
+      overScreeningGuide
+        ? "Gross income is over both figures."
+        : overReportingLine
+          ? "Gross income is over the 130% line and under the 200% screening guide. That is not a loss of SNAP."
+          : "Gross income is not over the 130% line."
+    } A deposit of ${money(SNAP_LUMP_SUM_CENTS)} or more in other income was left out. The 20% earned-income deduction, medical expenses, and shelter were not calculated. Whether the household includes an elderly or disabled member, and which reporting category applies, are not on this alert.`,
     exclusions: [],
     risk: "reporting_obligation",
-    riskDetail: "Gross income over 130% of the poverty line is a simplified-reporting trigger.",
+    riskDetail:
+      "This is a reporting review. Income over 130% of the poverty line does not by itself threaten SNAP eligibility.",
     action:
-      "Report this gross income to the County Assistance Office through COMPASS or by phone. Keep the pay stubs for this month.",
+      "Review whether this household must report the change. A raise that stays at or under the 130% line waits for the semi-annual report unless a notice says otherwise. If simplified reporting applies and income is over that line, the report is due on the date below.",
     deadline: clockDeadline(
       "SNAP",
       input.observedAt,
-      "For a household that must report it, gross income over 130% of the poverty line is due within 10 days.",
+      "When simplified reporting applies, the report is due by the 10th of the month after the month income went over the line. A November change is due December 10. This is not 10 days from the alert. A date on a notice controls.",
     ),
-    comparison: {
-      countableCents: input.grossCents,
-      limitCents: limit,
-      limitLabel: "130% gross reporting line",
-      crossed: input.grossCents > limit,
-      boundary: "Income exactly on this line waits for the semi-annual report.",
-    },
   });
 }
 
@@ -326,24 +313,18 @@ export function snapGrossCeilingFinding(input: {
     monthPrefix: input.monthPrefix,
     detectedCents: input.grossCents,
     detectedLabel: "SNAP gross income",
-    formula: `This is the 200% gross ceiling. Other-income deposits of ${money(SNAP_LUMP_SUM_CENTS)} or more, totaling ${money(input.lumpLeftOutCents)}, were left out. Earned-income, shelter, and medical deductions were not applied. This is not the 10-day reporting line.`,
+    formula: `This comparison uses the Pennsylvania 200% screening guide of ${money(input.limitCents)}. Gross income is ${money(input.grossCents)}. ${
+      input.crossed ? "The guide has been reached." : "The guide has not been reached."
+    } Reaching the guide does not by itself end SNAP. Other-income deposits of ${money(SNAP_LUMP_SUM_CENTS)} or more, totaling ${money(input.lumpLeftOutCents)}, were left out. The 20% earned-income deduction, medical expenses, shelter, and the traditional net-income test were not calculated. The 130% line is a separate reporting review.`,
     exclusions: [],
-    risk: "potential_ineligibility",
-    riskDetail: input.crossed
-      ? "Gross income has reached the stored 200% ceiling. That can end broad-based categorical eligibility. The net-income test was not run."
-      : "Gross income is under the stored 200% ceiling. This is the watch band for that ceiling, not a 10-day reporting trigger.",
+    risk: "insufficient_information",
+    riskDetail:
+      "More information is needed before any conclusion about SNAP eligibility or the monthly benefit. This is not a reporting order.",
     action:
-      "Do not use this ceiling as a 10-day reporting deadline. Confirm the household's SNAP reporting category, and use the date on any notice. Net-income deductions were not calculated.",
+      "Review household size, income by source, and allowable deductions. Do not report this screening-guide comparison as if it were the simplified-reporting deadline.",
     deadline: withheldDeadline(
-      "This gross-ceiling comparison is not the 10-day simplified-reporting clock. A date printed on a notice controls.",
+      "The 200% screening guide does not set the reporting date. When a simplified-reporting report applies, it is due by the 10th of the next month. A date on a notice controls.",
     ),
-    comparison: {
-      countableCents: input.grossCents,
-      limitCents: input.limitCents,
-      limitLabel: "200% gross ceiling",
-      crossed: input.crossed,
-      boundary: "The 10-day income report is gross income over 130% of the poverty line, which is a separate alert.",
-    },
   });
 }
 
@@ -425,7 +406,7 @@ export function waiverIncomeFinding(input: {
     deadline: clockDeadline(
       "MedicaidWaiver",
       input.observedAt,
-      "Waiver income changes are reported to the County Assistance Office within 10 days.",
+      "Waiver income changes are due by the 10th of the month after the change. A November change is due December 10.",
     ),
     comparison: {
       countableCents: input.countableCents,
@@ -599,7 +580,7 @@ export function abdIncomeFinding(input: {
     deadline: clockDeadline(
       "MedicaidABD",
       input.observedAt,
-      "Healthy Horizons income changes are reported to the County Assistance Office within 10 days.",
+      "Healthy Horizons income changes are due by the 10th of the month after the change. A November change is due December 10.",
     ),
     comparison: {
       countableCents: input.countableCents,
@@ -638,7 +619,11 @@ export function mawdIncomeFinding(input: {
       ? "Countable income has reached the MAWD income limit on file for this enrollment."
       : "Countable income is inside the watch band and has not reached the MAWD income limit.",
     action: "Report this MAWD income change to the County Assistance Office. Paid employment is required for MAWD.",
-    deadline: clockDeadline("MAWD", input.observedAt, "MAWD income changes are reported to the County Assistance Office within 10 days."),
+    deadline: clockDeadline(
+      "MAWD",
+      input.observedAt,
+      "MAWD income changes are due by the 10th of the month after the change. A November change is due December 10.",
+    ),
     comparison: {
       countableCents: input.countableCents,
       limitCents: limit,

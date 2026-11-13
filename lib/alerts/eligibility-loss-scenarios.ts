@@ -161,7 +161,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "Healthy Horizons income is 100% of the poverty guideline for the household: $1,330 for one person, $1,804 for two, then $2,277, $2,750, $3,224, and $3,697. The test uses SSI-countable income. The SSI payment and a DAC benefit are left out. SSDI still counts.",
-    action: "Report the change to the County Assistance Office within 10 days. Someone over the limit may still qualify by spending down to the medically needy level, or through a waiver or MAWD.",
+    action: "Report the change to the County Assistance Office by the 10th of the month after the change. Someone over the limit may still qualify by spending down to the medically needy level, or through a waiver or MAWD.",
     autoDetect: true,
   },
   {
@@ -171,7 +171,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "The resource limit is $2,000 for one person and $3,000 for two or more. A waiver case uses $8,000. Exactly at the limit still qualifies. This test does not apply when the person is under 21.",
-    action: "Report a balance over the limit within 10 days. An ABLE account or a special needs trust can hold money that would otherwise count.",
+    action: "Report a balance over the limit by the 10th of the month after the change. An ABLE account or a special needs trust can hold money that would otherwise count.",
     autoDetect: true,
   },
   {
@@ -181,7 +181,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "The 2026 waiver special income limit is $2,982 a month, 300% of the SSI rate. Income equal to $2,982 still qualifies. The test is gross countable income: wages and SSDI count, and a DAC benefit is left out. This limit is not used when the person receives SSI.",
-    action: "Report the change to the County Assistance Office within 10 days. Someone over this limit may still qualify for another Medicaid category, including MAWD if paid work continues.",
+    action: "Report the change to the County Assistance Office by the 10th of the month after the change. Someone over this limit may still qualify for another Medicaid category, including MAWD if paid work continues.",
     autoDetect: true,
   },
   {
@@ -191,7 +191,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "The waiver resource limit is $8,000 for one person: the $2,000 limit plus a $6,000 disregard. Exactly at $8,000 still qualifies. This limit is not used when the person receives SSI. A married couple’s protected share is set at the waiver assessment and is not this $8,000 figure.",
-    action: "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    action: "Report a balance over the limit by the 10th of the month after the change. Do not give assets away to get under the limit.",
     autoDetect: true,
   },
   {
@@ -221,7 +221,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "MAWD countable income is 250% of the poverty guideline: $3,325 for one person and $4,509 for two. Workers with Job Success uses 600%: $7,980 for one person and $10,820 for two. This is countable income, not a gross paycheck.",
-    action: "Report the change to the County Assistance Office within 10 days. Paid work has to continue. The standard premium is about 5% of countable income.",
+    action: "Report the change to the County Assistance Office by the 10th of the month after the change. Paid work has to continue. The standard premium is about 5% of countable income.",
     autoDetect: true,
   },
   {
@@ -231,7 +231,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "Countable resources must be $10,000 or less, for any household size. Exactly at $10,000 still qualifies. Once Workers with Job Success is recorded, assets are no longer capped at $10,000.",
-    action: "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    action: "Report a balance over the limit by the 10th of the month after the change. Do not give assets away to get under the limit.",
     autoDetect: true,
   },
 
@@ -243,7 +243,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "HealthChoices for adults age 19–64 is 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test. This limit is not used when the person receives SSI.",
-    action: "Report the change to the County Assistance Office within 10 days. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
+    action: "Report the change to the County Assistance Office by the 10th of the month after the change. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
     autoDetect: true,
   },
   {
@@ -280,12 +280,12 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   // —— QMB / Extra Help ——
   {
     id: "qmb_income_resources",
-    title: "QMB income limit",
+    title: "QMB — Income change requires review",
     programs: ["QMB"],
     trigger: "cliff",
     level: "warning",
     risk: "The 2026 QMB income limit is $1,350 a month for one person and $1,824 for a couple. That figure already includes the $20 disregard. Income equal to the limit still qualifies. QMB pays Medicare premiums and cost-sharing. It is separate from full Medicaid.",
-    action: "Report the change to the County Assistance Office within 10 days. A waiver enrollment does not block QMB.",
+    action: "Review whether this QMB category requires a report. If it does, the report is due by the 10th of the month after the change. A waiver enrollment does not decide the QMB income calculation.",
     autoDetect: true,
   },
   {
@@ -295,7 +295,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "cliff",
     level: "warning",
     risk: "The 2026 QMB resource limit is $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB.",
-    action: "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    action: "Report a balance over the limit by the 10th of the month after the change. Do not give assets away to get under the limit.",
     autoDetect: true,
   },
   {
@@ -322,22 +322,22 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
   // —— SNAP ——
   {
     id: "snap_gross_200_fpl",
-    title: "SNAP gross income over 200% FPL",
+    title: "SNAP — Income change requires review",
     programs: ["SNAP"],
     trigger: "cliff",
-    level: "breach",
-    risk: "PA SNAP uses a 200% FPL gross test for the household size. Reaching it can end Broad-Based Categorical Eligibility. A household with a member age 60 or older, or with a disability, can still qualify on the net-income test. The 10-day income report is the 130% line, not this one.",
-    action: "Recalculate with the earned-income deduction, shelter, and allowable medical expenses. Report within 10 days only when gross income exceeds 130% FPL for the household size.",
+    level: "warning",
+    risk: "Pennsylvania's SNAP gross screening guide is 200% of the poverty line. Reaching it is not an automatic loss of SNAP. The 130% line is a separate reporting review.",
+    action: "Review deductions and household facts. Do not use the 200% guide as the reporting deadline.",
     autoDetect: false,
   },
   {
     id: "snap_report_130_fpl",
-    title: "SNAP income over 130% FPL",
+    title: "SNAP — Income change requires review",
     programs: ["SNAP"],
     trigger: "reporting",
     level: "warning",
-    risk: "Under simplified reporting, gross income over 130% of the poverty line for the household size is a 10-day report. Income exactly on the line waits for the semi-annual report.",
-    action: "Report the gross income to COMPASS within 10 days. A raise that stays at or under 130% FPL waits for the semi-annual report.",
+    risk: "Gross income over 130% of the poverty line can require a simplified-reporting review. It does not by itself threaten SNAP. The Pennsylvania screening guide is 200% of the poverty line.",
+    action: "Review whether a report is required. If simplified reporting applies, it is due by the 10th of the month after the change, not 10 days from the alert.",
     autoDetect: true,
   },
   {
@@ -357,7 +357,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "reporting",
     level: "breach",
     risk: "Lottery or gambling winnings of $4,750 or more from a single game must be reported and can end SNAP for every household, including one that is otherwise under 200% FPL.",
-    action: "Report the winnings to COMPASS within 10 days. A large deposit that is not described as lottery or gambling is not treated as this trigger.",
+    action: "Report the winnings to COMPASS within 10 days of receipt. A large deposit that is not described as lottery or gambling is not treated as this trigger.",
     autoDetect: true,
   },
   {
@@ -389,7 +389,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "reporting",
     level: "breach",
     risk: "A lump sum is income in the month it arrives. Money still held the next month is a resource, and it can put the total over $2,000 for one person or $3,000 for two or more.",
-    action: "Report to SSA by the 10th of the next month for SSI, and to COMPASS within 10 days for Medicaid. Ask counsel about a first-party SNT or ABLE before the money sits in checking.",
+    action: "Report to SSA by the 10th of the next month for SSI, and to COMPASS by the 10th of the month after the change for Medicaid. Ask counsel about a first-party SNT or ABLE before the money sits in checking.",
     autoDetect: true,
   },
   {
@@ -399,7 +399,7 @@ export const ELIGIBILITY_LOSS_SCENARIOS: EligibilityLossScenario[] = [
     trigger: "reporting",
     level: "warning",
     risk: "Someone moving in or out, a child turning 22, or a spouse joining can change Medicaid household size and SSI deeming. Under SNAP simplified reporting, a member moving in usually waits for the semi-annual report.",
-    action: "Report to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS within 10 days for Medicaid. For SNAP, report now only if the case is on change reporting.",
+    action: "Report to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS by the 10th of the month after the change for Medicaid. For SNAP, report now only if the case is on change reporting.",
     autoDetect: false,
   },
   {

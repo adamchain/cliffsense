@@ -35,10 +35,11 @@ describe("financial alert findings", () => {
     expect(text).toMatch(/waiver/i);
     expect(text).not.toMatch(/crossed that limit|over the limit|over that limit/i);
     expect(text).toMatch(/was not applied/i);
-    expect(built.finding.deadlineConfidence).toBe("unknown");
+    expect(text).toMatch(/December 10, 2026/);
+    expect(built.finding.deadlineConfidence).toBe("estimated");
   });
 
-  it("states the stored QMB addition when DAC is not enrolled", () => {
+  it("does not call a summed QMB deposit total a loss of QMB", () => {
     const built = qmbIncomeFinding({
       programs: ["QMB", "SSDI"],
       countableCents: 1500_00,
@@ -50,17 +51,17 @@ describe("financial alert findings", () => {
       observedAt: OBSERVED,
     });
     const text = renderFinancialFinding(built.finding);
-    expect(built.finding.risk).toBe("potential_ineligibility");
+    expect(built.level).toBe("warning");
+    expect(built.finding.risk).toBe("insufficient_information");
     expect(text).toMatch(/\$1,500\.00/);
     expect(text).toMatch(/\$1,350\.00/);
     expect(text).toMatch(/\$20/);
     expect(text).toMatch(/\$65/);
-    expect(text).toMatch(/no DAC exclusion was applied/i);
-    expect(text).toMatch(/within 10 days/i);
-    expect(built.finding.deadlineConfidence).toBe("estimated");
+    expect(text).toMatch(/December 10, 2026/);
+    expect(text).not.toMatch(/within 10 days/i);
   });
 
-  it("keeps a QMB result when earned income alone has crossed the limit", () => {
+  it("still asks for the QMB category when wages alone pass the published screen", () => {
     const built = qmbIncomeFinding({
       programs: ["QMB", "DAC"],
       countableCents: 2000_00,
@@ -71,8 +72,8 @@ describe("financial alert findings", () => {
       monthPrefix: "2026-11",
       observedAt: OBSERVED,
     });
-    expect(built.level).toBe("breach");
-    expect(built.finding.risk).toBe("potential_ineligibility");
+    expect(built.level).toBe("warning");
+    expect(built.finding.risk).toBe("insufficient_information");
     expect(renderFinancialFinding(built.finding)).toMatch(/earned income/i);
   });
 
@@ -86,23 +87,40 @@ describe("financial alert findings", () => {
     const text = renderFinancialFinding(finding);
     expect(finding.risk).toBe("reporting_obligation");
     expect(text).toMatch(/130%/);
-    expect(text).toMatch(/not this alert/);
-    expect(text).toMatch(/deductions are not part of this test/i);
+    expect(text).toMatch(/200%/);
+    expect(text).toMatch(/not a loss of SNAP/i);
+    expect(text).toMatch(/December 10, 2026/);
+    expect(text).not.toMatch(/within 10 days/i);
     expect(finding.deadlineConfidence).toBe("estimated");
   });
 
-  it("does not turn the SNAP 200% ceiling into a 10-day deadline", () => {
+  it("does not treat $2,000 of one-person gross income as a loss of SNAP", () => {
+    const finding = snapReportingFinding({
+      grossCents: 2000_00,
+      householdSize: 1,
+      monthPrefix: "2026-11",
+      observedAt: OBSERVED,
+    });
+    const text = renderFinancialFinding(finding);
+    expect(text).toMatch(/\$2,000\.00/);
+    expect(text).toMatch(/\$1,729\.00/);
+    expect(text).toMatch(/\$2,660\.00/);
+    expect(text).toMatch(/under the 200% screening guide/);
+    expect(text).toMatch(/December 10, 2026/);
+    expect(finding.risk).not.toBe("potential_ineligibility");
+  });
+
+  it("does not turn the SNAP 200% guide into a reporting deadline", () => {
     const finding = snapGrossCeilingFinding({
       grossCents: 2700_00,
-      limitCents: 2610_00,
+      limitCents: 2660_00,
       lumpLeftOutCents: 0,
       monthPrefix: "2026-11",
       crossed: true,
     });
     const text = renderFinancialFinding(finding);
     expect(text).toMatch(/200%/);
-    expect(text).toMatch(/not the 10-day/i);
-    expect(text).toMatch(/deductions were not applied/i);
+    expect(text).toMatch(/does not by itself end SNAP/i);
     expect(finding.deadlineConfidence).toBe("unknown");
     expect(finding.deadlineIso).toBeNull();
   });

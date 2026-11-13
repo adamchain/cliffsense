@@ -381,7 +381,7 @@ export function ThresholdsView({
               data?.rows.map((r) => {
                 const st =
                   r.statusNote === "snap_report_130" || r.statusNote === "wage_report"
-                    ? { label: "Report due", className: STATUS.watch.className }
+                    ? { label: "Review reporting", className: STATUS.watch.className }
                     : r.statusNote === "reference"
                       ? { label: "Reference", className: "bg-[var(--color-cs-surface)] text-[var(--color-cs-text-secondary)]" }
                       : (STATUS[r.status] ?? STATUS.ok);

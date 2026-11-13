@@ -4,9 +4,9 @@
  * these rules to tell the user what to report, to whom, and by when — prompt +
  * how-to + deadline. Informational only; not legal advice or a determination.
  *
- * Pennsylvania-focused. Clocks are not interchangeable: SSI and Extra Help use
- * the 10th of the next month, Medicaid uses 10 days, SSDI is prompt, and SNAP
- * simplified reporting has only three 10-day triggers.
+ * Pennsylvania-focused. SSI, Extra Help, Medicaid, waiver, MAWD, QMB, and
+ * simplified-reporting SNAP changes are due by the 10th of the month after the
+ * change. SSDI and DAC work reports are prompt. A notice date controls.
  */
 
 export type ProgramRule = {
@@ -54,7 +54,8 @@ function compassRule(
     reportsAssetChange,
     reportUrl: COMPASS,
     phone: PA_DHS_PHONE,
-    deadlineNote: "PA requires reporting income, asset, household, or work changes within 10 days.",
+    deadlineNote:
+      "Income, resource, household, and work changes are due by the 10th of the month after the month of the change. A November change is due December 10. This is not 10 days from the day the alert was sent. A date on a notice controls.",
     howTo: extraHow ? [...COMPASS_HOW_TO, ...extraHow] : COMPASS_HOW_TO,
   };
 }
@@ -102,7 +103,7 @@ export const PROGRAM_RULES: ProgramRule[] = [
     reportUrl: COMPASS,
     phone: PA_DHS_PHONE,
     deadlineNote:
-      "Depends on the SNAP reporting category. SAR households report within 10 days when gross income exceeds the household reporting line, someone moves in or out, or work-rule hours drop below 80 a month. A PA 564 is a separate deadline from recertification. ESAP households with no earned income do not file PA 564. Disability alone is not an exemption.",
+      "Depends on the SNAP reporting category. When simplified reporting applies, gross income over the household's 130% line is due by the 10th of the next month, not 10 days from the alert. A PA 564 is a separate deadline. ESAP households with no earned income do not file PA 564. Disability alone is not an exemption. A date on a notice controls.",
     howTo: [
       "Report through COMPASS (compass.state.pa.us) or the myCOMPASS PA app.",
       `Or call the Statewide Customer Service Center at ${PA_DHS_PHONE}, or your County Assistance Office.`,
@@ -169,17 +170,22 @@ function endOfUtcDaysAfter(changeDate: Date, days: number): Date {
 }
 
 /**
+ * The 10th of the month after the month of the change.
+ * A change in November is due December 10. This is not 10 days after the alert.
+ */
+export function tenthOfFollowingMonth(changeDate: Date): Date {
+  return new Date(Date.UTC(changeDate.getUTCFullYear(), changeDate.getUTCMonth() + 1, 10, 23, 59, 59, 999));
+}
+
+/**
  * Concrete due date for a change observed on `changeDate`, or null when the
  * program has no fixed calendar date (report promptly, or there is no wage clock).
  */
 export function reportingDueDate(program: string, changeDate: Date): Date | null {
   const p = program.toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (p === "SSI" || p === "LIS" || p.includes("EXTRA")) {
-    return new Date(Date.UTC(changeDate.getUTCFullYear(), changeDate.getUTCMonth() + 1, 10, 23, 59, 59, 999));
-  }
   if (p === "SSDI" || p === "DAC" || p === "WIC" || p === "LIHEAP" || p === "VA") return null;
   if (p === "ACA") return endOfUtcDaysAfter(changeDate, 30);
-  return endOfUtcDaysAfter(changeDate, 10);
+  return tenthOfFollowingMonth(changeDate);
 }
 
 /** Earliest concrete deadline among the programs that have one. */

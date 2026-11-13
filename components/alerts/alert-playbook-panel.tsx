@@ -34,7 +34,7 @@ export function AlertPlaybookPanel({
         />
       </summary>
       <dl className="mt-3 space-y-2.5 text-[13px] leading-snug text-[var(--color-cs-text-secondary)]">
-        <PlaybookField label="1. Threatened program" value={programs} />
+        <PlaybookField label="1. Program requiring review" value={programs} />
         {calculationAttached ? null : (
           <>
             <PlaybookField label="2. Triggering rule" value={playbook.triggeringRule} />

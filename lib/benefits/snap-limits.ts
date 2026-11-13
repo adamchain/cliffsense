@@ -1,21 +1,22 @@
 /**
- * Pennsylvania SNAP income limits for October 1, 2025 through October 2026.
- * 200% is the Broad-Based Categorical Eligibility gross ceiling (PA DHS).
- * 130% is the federal simplified-reporting line (USDA FY2026, 48 states).
+ * Pennsylvania SNAP income limits for October 1, 2026 through September 30, 2027.
+ * 200% is the Broad-Based Categorical Eligibility gross screening guide (PA DHS).
+ * 130% is the federal simplified-reporting line, not the Pennsylvania eligibility ceiling.
+ * Source: PA DHS SNAP Handbook Appendix A, effective October 1, 2026; USDA FY 2027 130% table.
  * Amounts are cents.
  */
 
 export const SNAP_GROSS_200_CENTS = [
-  2610_00, 3526_00, 4442_00, 5360_00, 6276_00, 7192_00, 8110_00, 9026_00,
+  2660_00, 3608_00, 4554_00, 5500_00, 6448_00, 7394_00, 8340_00, 9288_00,
 ] as const;
 
-export const SNAP_GROSS_200_EXTRA_CENTS = 918_00;
+export const SNAP_GROSS_200_EXTRA_CENTS = 948_00;
 
 export const SNAP_GROSS_130_CENTS = [
-  1696_00, 2292_00, 2888_00, 3483_00, 4079_00, 4675_00, 5271_00, 5867_00,
+  1729_00, 2345_00, 2960_00, 3575_00, 4191_00, 4806_00, 5421_00, 6037_00,
 ] as const;
 
-export const SNAP_GROSS_130_EXTRA_CENTS = 596_00;
+export const SNAP_GROSS_130_EXTRA_CENTS = 616_00;
 
 /** Elderly or disabled household that is over 200% and tested on net income. Also the substantial lottery or gambling line. */
 export const SNAP_ELDERLY_RESOURCE_CENTS = 4750_00;
@@ -41,14 +42,13 @@ export function snapGross130Cents(householdSize: number): number {
 
 export type SnapGrossDisplay = {
   status: "ok" | "watch" | "concern";
-  /** Gross income is over the 10-day simplified-reporting line and still under the 200% eligibility ceiling. */
+  /** Gross income is over the 130% reporting line and still under the 200% screening guide. */
   reportingDue: boolean;
 };
 
 /**
- * The in-app SNAP card uses the 200% eligibility ceiling. Alerts also fire when
- * gross income crosses the lower 130% reporting line. That reporting duty has
- * to show on the card, or the app says SNAP is fine while an alert goes out.
+ * The in-app SNAP card uses the 200% screening guide. Income over 130% and still
+ * under that guide is a reporting review, not a loss of SNAP.
  */
 export function snapGrossDisplayStatus(input: {
   currentCents: number | null;
@@ -71,7 +71,7 @@ export function snapGrossDisplayStatus(input: {
   return { status: "ok", reportingDue: false };
 }
 
-/** Households of 9 or more use the 8-person seed plus $918 for each extra person. */
+/** Households of 9 or more use the 8-person seed plus $948 for each extra person. */
 export function snapStoredGrossLimitCents(
   systemKey: string | undefined,
   limitCents: number,

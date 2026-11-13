@@ -42,7 +42,7 @@ describe("alert playbooks", () => {
     const snap = ALERT_PLAYBOOKS.snap_sar_renewal!;
     expect(snap.closureCodes).toEqual(expect.arrayContaining(["440", "474"]));
     const email = playbookEmailParagraphs(renewal).join("\n");
-    expect(email).toMatch(/Threatened program/);
+    expect(email).toMatch(/Program requiring review/);
     expect(email).toMatch(/042/);
     expect(email).toContain(APPEAL_AND_CONTINUE.slice(0, 40));
     expect(email).not.toMatch(/Informational only/);

@@ -76,7 +76,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Older combined Medicaid enrollment. Prefer the specific category: ABD, MAGI, HCBS Waiver, MAWD, or QMB.",
     reporting:
-      "Report income, resource, household, and work changes to PA DHS within 10 days.",
+      "Report income, resource, household, and work changes to PA DHS by the 10th of the month after the change.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MEDICAIDABD: {
@@ -87,7 +87,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Full Medical Assistance for aged, blind, or disabled adults. SSI-related counting. 2026 income is $1,330 a month for one person and $1,804 for two. Resources are $2,000 for one person and $3,000 for two or more, or $8,000 when Medicaid was entered through a waiver.",
     reporting:
-      "Report income, resources, household, and coverage changes within 10 days. The annual financial renewal is not a waiver service review, a QMB renewal, or an Extra Help application.",
+      "Report income, resources, household, and coverage changes by the 10th of the month after the change. The annual financial renewal is not a waiver service review, a QMB renewal, or an Extra Help application.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MEDICAIDMAGI: {
@@ -98,7 +98,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "MAGI Medical Assistance. Adults age 19–64 use 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test.",
     reporting:
-      "Report income, household, address, and other-coverage changes within 10 days. MAGI categories do not have an asset test.",
+      "Report income, household, address, and other-coverage changes by the 10th of the month after the change. MAGI categories do not have an asset test.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MEDICAIDWAIVER: {
@@ -109,7 +109,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Home- and community-based waiver (including CHC). 2026 gross income limit $2,982 a month. Income equal to that still qualifies. Resources are $8,000 for one person. Neither limit is used when the person receives SSI.",
     reporting:
-      "Report financial and household changes within 10 days. The annual service or level-of-care review is a separate obligation from the financial renewal. SSI can establish financial eligibility and still leave that service review in place.",
+      "Report financial and household changes by the 10th of the month after the change. The annual service or level-of-care review is a separate obligation from the financial renewal. SSI can establish financial eligibility and still leave that service review in place.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   MAWD: {
@@ -120,7 +120,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Medicaid for a Pennsylvania worker with a disability (generally age 16–64 with paid employment). 2026 countable income is $3,325 a month for one person and $4,509 for two. Resources are $10,000 or less. Workers with Job Success uses 600% of the poverty guideline and no longer caps assets at $10,000.",
     reporting:
-      "Report income, resource, and employment changes to PA DHS within 10 days. Paid employment is required.",
+      "Report income, resource, and employment changes to PA DHS by the 10th of the month after the change. Paid employment is required.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   QMB: {
@@ -131,7 +131,7 @@ const META: Record<string, ProgramMeta> = {
     blurb:
       "Medicare Savings Program that pays Medicare Part A and Part B premiums and cost-sharing. Separate from full Medicaid. 2026 income is $1,350 a month for one person and $1,824 for a couple. Resources are $9,950 or $14,910.",
     reporting:
-      "Report QMB income and resource changes within 10 days. QMB renews on its own notice. It is not full Medicaid and it does not renew a waiver. Keeping QMB deems Extra Help.",
+      "Report QMB income and resource changes by the 10th of the month after the change. QMB renews on its own notice. It is not full Medicaid and it does not renew a waiver. Keeping QMB deems Extra Help.",
     officialUrl: "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance.aspx",
   },
   EXTRAHELP: {

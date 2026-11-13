@@ -27,12 +27,11 @@ const FROM_2026 = new Date("2026-01-01T00:00:00.000Z");
 const END_2025 = new Date("2025-12-31T23:59:59.999Z");
 
 /**
- * Standard reporting reminder. Clocks differ: SSI and Extra Help use the 10th
- * of the next month, Medicaid uses 10 days, SSDI is prompt, and SNAP simplified
- * reporting has only three 10-day triggers.
+ * Standard reporting reminder. A change during a month is due by the 10th of the
+ * next month. That is not 10 days from the alert. SSDI and DAC work reports are prompt.
  */
 const PA_REPORTING_NOTE =
-  " Reporting clocks differ by program. A renewal date is not the only deadline. SSI financial changes are due by the 10th of the next month; a disability review is a separate notice. SSDI and DAC work reports are prompt. Medicaid financial renewal, a waiver service review, and QMB are separate. Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP PA 564 applies to ordinary SAR households and to elderly or disabled households with earned income. ESAP households with no earned income do not file PA 564.";
+  " Reporting clocks differ by program. A renewal date is not the only deadline. Income, resource, and household changes for SSI, Extra Help, Medicaid, a waiver, MAWD, QMB, and simplified-reporting SNAP are due by the 10th of the month after the change. A November change is due December 10. SSDI and DAC work reports are prompt. A disability review is a separate notice. Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP PA 564 is a separate form. ESAP households with no earned income do not file PA 564.";
 
 /** Suffix appended to every estimated (non-determinative) limit description. */
 const ESTIMATE_NOTE =
@@ -224,21 +223,22 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
   },
 
   // ===========================================================================
-  // 3. SNAP — food assistance (PA ACCESS Card, BBCE: gross limit at 200% FPL)
+  // 3. SNAP — food assistance (PA ACCESS Card). 200% is the screening guide.
+  //    Effective October 1, 2026–September 30, 2027. 130% is a separate report.
   // ===========================================================================
   {
     systemKey: "pa_snap_gross_hh1_2026",
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 2610_00,
+    limitCents: 2660_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 1 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 1 (200% FPL)",
     description:
-      "PA Broad-Based Categorical Eligibility (BBCE) raises the SNAP gross-income limit to 200% FPL and removes the asset test for most households. Household of 1: $2,610/month gross. Gross income includes SSDI, DAC, wages, VA benefits, and pensions. The net-income test (100% FPL) must still be met after deductions. A recurring SNT cash distribution available to the household can be SNAP income; a one-time lump sum is classified separately." +
+      "Pennsylvania's broad-based categorical eligibility gross screening guide for October 1, 2026 through September 30, 2027 is 200% of the poverty line: $2,660 for one person. Crossing it is not an automatic loss of SNAP. The traditional 130% gross line ($1,729 for one person) is a simplified-reporting review, not this ceiling. Net income, the 20% earned-income deduction, medical expenses, and shelter are a separate calculation. Gross income can include SSDI, DAC, wages, VA benefits, and pensions. A one-time lump sum is classified separately." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -248,14 +248,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 3526_00,
+    limitCents: 3608_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 2 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 2 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 2-person household: $3,526. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for a 2-person household, October 1, 2026 through September 30, 2027: $3,608. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -265,14 +265,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 4442_00,
+    limitCents: 4554_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 3 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 3 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 3-person household: $4,442. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for a 3-person household, October 1, 2026 through September 30, 2027: $4,554. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -282,14 +282,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 5360_00,
+    limitCents: 5500_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 4 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 4 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 4-person household: $5,360. Includes SSDI, DAC, and earned income." +
+      "Pennsylvania 200% gross screening guide for a 4-person household, October 1, 2026 through September 30, 2027: $5,500. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -299,14 +299,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 6276_00,
+    limitCents: 6448_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 5 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 5 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 5-person household: $6,276. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for a 5-person household, October 1, 2026 through September 30, 2027: $6,448. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -316,14 +316,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 7192_00,
+    limitCents: 7394_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 6 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 6 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 6-person household: $7,192. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for a 6-person household, October 1, 2026 through September 30, 2027: $7,394. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -333,14 +333,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 8110_00,
+    limitCents: 8340_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 7 (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 7 (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for a 7-person household: $8,110. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for a 7-person household, October 1, 2026 through September 30, 2027: $8,340. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,
@@ -350,14 +350,14 @@ export const SYSTEM_THRESHOLD_SEEDS: SystemThresholdSeed[] = [
     program: "SNAP",
     state: "PA",
     thresholdType: "monthly_gross_income",
-    limitCents: 9026_00,
+    limitCents: 9288_00,
     comparison: "lte",
     warnAtPercent: 0.9,
     effectiveFrom: FROM_2026,
     effectiveTo: null,
-    label: "PA SNAP — gross monthly income, household of 8+ (200% FPL)",
+    label: "PA SNAP — gross screening guide, household of 8+ (200% FPL)",
     description:
-      "Gross monthly income limit (200% FPL) for an 8-person household: $9,026. Add $918 for each additional person. Includes SSDI, DAC, and earned income. A one-time lump sum is not counted in this gross figure." +
+      "Pennsylvania 200% gross screening guide for an 8-person household, October 1, 2026 through September 30, 2027: $9,288. Add $948 for each additional person. This is not an automatic eligibility cutoff. The 130% reporting line is separate." +
       ESTIMATE_NOTE +
       PA_REPORTING_NOTE,
     sourceUrl: PA_DHS_SNAP,

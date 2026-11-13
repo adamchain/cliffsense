@@ -167,7 +167,7 @@ function LimitCard({
             : sc === "crit"
               ? "Over limit"
               : row.statusNote === "snap_report_130" || row.statusNote === "wage_report"
-                ? "Report due"
+                ? "Review reporting"
                 : sc === "warn"
                   ? "Near limit"
                   : "On track"}

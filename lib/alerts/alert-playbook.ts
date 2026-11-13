@@ -7,7 +7,7 @@ export type ClosureCode = "042" | "440" | "474";
 export type AlertPlaybook = {
   id: string;
   title: string;
-  /** (1) Threatened program(s). */
+  /** (1) Program requiring review. */
   programs: string[];
   /** (2) Triggering rule. */
   triggeringRule: string;
@@ -27,7 +27,7 @@ export type AlertPlaybook = {
 };
 
 export const REPORT_BY_10TH =
-  "The reporting clock depends on the program. SSI financial changes are due by the 10th of the month after the change. A disability review is a separate notice. SSDI and DAC work reports are prompt. Medicaid, waiver, MAWD, and QMB each have their own 10-day change report and their own renewal. Extra Help is deemed while Medicaid, SSI, or QMB continues. SNAP interim reports depend on the household category and are not calculated from the renewal. A notice with its own due date controls.";
+  "The reporting clock depends on the program. SSI, Extra Help, Medicaid, waiver, MAWD, QMB, and simplified-reporting SNAP changes are due by the 10th of the month after the change. A November change is due December 10. That is not 10 days from the alert. A disability review is a separate notice. SSDI and DAC work reports are prompt. Extra Help is deemed while Medicaid, SSI, or QMB continues. A SNAP PA 564 date is separate. A notice with its own due date controls.";
 
 export const APPEAL_AND_CONTINUE =
   "If an adverse notice has already issued, appeal by the date on that notice. Request continued cash, medical coverage, or services by any shorter continuation deadline on the same notice — it is often earlier than the appeal deadline. File a new application in parallel if reopening is uncertain.";
@@ -304,7 +304,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ABD / Healthy Horizons income ceiling",
     ["MedicaidABD"],
     "Healthy Horizons income is 100% of the poverty guideline for the household: $1,330 for one person, $1,804 for two, then $2,277, $2,750, $3,224, and $3,697. Count SSI-countable income. Leave out the SSI payment and a DAC benefit. SSDI still counts.",
-    "Report the change to the County Assistance Office within 10 days. Someone over the limit may still qualify by spending down to the medically needy level, or through a waiver or MAWD.",
+    "Report the change to the County Assistance Office by the 10th of the month after the change. Someone over the limit may still qualify by spending down to the medically needy level, or through a waiver or MAWD.",
   ),
 
   abd_resources_2k: pb(
@@ -312,7 +312,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "ABD Medicaid resource limit",
     ["MedicaidABD"],
     "The resource limit is $2,000 for one person and $3,000 for two or more. A waiver case uses $8,000. Exactly at the limit still qualifies. This test does not apply when the person is under 21.",
-    "Report a balance over the limit within 10 days. An ABLE account or a special needs trust can hold money that would otherwise count. Do not give assets away to get under the limit.",
+    "Report a balance over the limit by the 10th of the month after the change. An ABLE account or a special needs trust can hold money that would otherwise count. Do not give assets away to get under the limit.",
     { personaId: "sophia_inheritance_checking" },
   ),
 
@@ -321,7 +321,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "HCBS / CHC waiver income ceiling",
     ["MedicaidWaiver"],
     "The 2026 waiver special income limit is $2,982 a month, 300% of the SSI rate. Income equal to $2,982 still qualifies. Count gross income. Wages and SSDI count, and a DAC benefit is left out. This limit is not used when the person receives SSI.",
-    "Report the change to the County Assistance Office within 10 days. Someone over this limit may still qualify for another Medicaid category, including MAWD if paid work continues.",
+    "Report the change to the County Assistance Office by the 10th of the month after the change. Someone over this limit may still qualify for another Medicaid category, including MAWD if paid work continues.",
     {
       personaId: "noah_waiver_reassessment",
       documents: [
@@ -337,7 +337,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "HCBS / CHC waiver resource limit",
     ["MedicaidWaiver"],
     "The waiver resource limit is $8,000 for one person: the $2,000 limit plus a $6,000 disregard. Exactly at $8,000 still qualifies. This limit is not used when the person receives SSI. A married couple's protected share is set at the waiver assessment and is not this $8,000 figure.",
-    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    "Report a balance over the limit by the 10th of the month after the change. Do not give assets away to get under the limit.",
     {
       documents: [
         "Recent bank statements",
@@ -377,7 +377,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "MAWD countable income limit",
     ["MAWD"],
     "MAWD countable income is 250% of the poverty guideline: $3,325 for one person and $4,509 for two. Workers with Job Success uses 600%: $7,980 for one person and $10,820 for two. This is countable income, not a gross paycheck.",
-    "Report the change to the County Assistance Office within 10 days. Paid work has to continue. The standard premium is about 5% of countable income.",
+    "Report the change to the County Assistance Office by the 10th of the month after the change. Paid work has to continue. The standard premium is about 5% of countable income.",
   ),
 
   mawd_resources_10k: pb(
@@ -385,7 +385,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "MAWD resource limit",
     ["MAWD"],
     "Countable resources must be $10,000 or less, for any household size. Exactly at $10,000 still qualifies. Once Workers with Job Success is recorded, assets are no longer capped at $10,000.",
-    "Report a balance over the limit within 10 days. Do not give assets away to get under the limit.",
+    "Report a balance over the limit by the 10th of the month after the change. Do not give assets away to get under the limit.",
   ),
 
   magi_work_requirements_2027: pb(
@@ -436,22 +436,22 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "MAGI Medicaid current monthly income",
     ["MedicaidMAGI"],
     "HealthChoices for adults age 19–64 is 138% of the poverty guideline: $1,836 a month for one person and $2,489 for two. Income equal to the limit still qualifies. There is no asset test. This limit is not used when the person receives SSI.",
-    "Report the change to the County Assistance Office within 10 days. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
+    "Report the change to the County Assistance Office by the 10th of the month after the change. Children, pregnancy coverage, and someone age 65 or older follow different income lines.",
     { personaId: "lucas_magi_income" },
   ),
 
   qmb_income_resources: pb(
     "qmb_income_resources",
-    "QMB income limit",
+    "QMB — Income change requires review",
     ["QMB"],
-    "The 2026 QMB income limit is $1,350 a month for one person and $1,824 for a couple. That figure already includes the $20 disregard. Income equal to the limit still qualifies. QMB pays Medicare premiums and cost-sharing and is separate from full Medicaid.",
-    "Report this QMB change to the County Assistance Office within 10 days. This notice is about QMB only.",
+    "QMB uses countable income, not the total deposited. The published screen already includes the $20 exclusion, so it is not subtracted again. Own-record SSDI, a Disabled Adult Child benefit, wages, and other income are counted separately. A waiver DAC exclusion does not automatically apply. The QMB category has to be known before any limit is treated as exceeded.",
+    "Review the income change and whether this QMB category requires a report. If a report is required, it is due by the 10th of the month after the change. Confirm the date on the current QMB notice. This is about QMB only.",
     {
       personaId: "george_gift_qmb_lis",
       effectiveDateNote:
-        "QMB income and resource changes are due within 10 days. Use the date on the QMB notice. This deadline is only for QMB.",
+        "When a QMB report is required, it is due by the 10th of the month after the change. A November change is due December 10. Use the date on the QMB notice. This deadline is only for QMB.",
       alternativePathway:
-        "If QMB cannot continue, ask the County Assistance Office about SLMB or QI. Keeping QMB can deem Extra Help. Losing QMB can mean a separate Extra Help application.",
+        "If a QMB notice says the benefit is ending, ask the County Assistance Office about the recorded category and about SLMB or QI. Keeping QMB can deem Extra Help. This follow-up is for QMB, not for another program.",
       documents: [
         "Medicare card and premium notices",
         "Income and resource proof",
@@ -466,11 +466,11 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "QMB resource limit",
     ["QMB"],
     "The 2026 QMB resource limit is $9,950 for one person and $14,910 for a couple. Exactly at the limit still qualifies. SSDI has no asset test, and that does not carry over to QMB.",
-    "Report a QMB resource change to the County Assistance Office within 10 days. Do not give assets away to get under the limit. This notice is about QMB only.",
+    "Review whether this QMB category must report the resource change. If a report is required, it is due by the 10th of the month after the change. Do not give assets away to get under a limit. This notice is about QMB only.",
     {
       personaId: "george_gift_qmb_lis",
       effectiveDateNote:
-        "QMB resource changes are due within 10 days. Use the date on the QMB notice. This deadline is only for QMB.",
+        "When a QMB resource report is required, it is due by the 10th of the month after the change. A November change is due December 10. Use the date on the QMB notice.",
       alternativePathway:
         "If QMB cannot continue, ask the County Assistance Office about SLMB or QI. Keeping QMB can deem Extra Help. Losing QMB can mean a separate Extra Help application.",
     },
@@ -496,19 +496,35 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
 
   snap_gross_200_fpl: pb(
     "snap_gross_200_fpl",
-    "SNAP gross income may exceed 200% FPL",
+    "SNAP — Income change requires review",
     ["SNAP"],
-    "PA SNAP uses a 200% FPL gross test for the household size. Reaching it can end Broad-Based Categorical Eligibility. A household with a member age 60 or older, or with a disability, can still qualify on the net-income test. The 10-day income report is gross income over 130% FPL, not this ceiling.",
-    "Recalculate with the earned-income deduction, shelter, and allowable medical expenses. If overtime was temporary, say so and send later regular pay stubs so the agency does not project the spike forever.",
-    { personaId: "nicole_overtime_churn" },
+    "Pennsylvania's SNAP gross screening guide is 200% of the poverty line for the household size, effective October 1, 2026 through September 30, 2027. Reaching that guide is not an automatic loss of SNAP. A household with an elderly or disabled member can still be reviewed on the net-income test. The 130% line is a separate reporting review, not this guide.",
+    "Review income by source and the earned-income, medical, and shelter deductions. Do not treat this screening guide as a reporting deadline. If overtime was temporary, keep the later regular pay stubs.",
+    {
+      personaId: "nicole_overtime_churn",
+      effectiveDateNote:
+        "This 200% screening guide does not set a reporting date. A date on a SNAP notice controls.",
+      alternativePathway:
+        "If SNAP cannot continue, review SNAP deductions, household members, and the traditional net-income test. An adverse SNAP notice is reviewed on its own. Do not use this alert to screen Medicaid or Medicare.",
+      appealNote:
+        "If a SNAP notice has already been issued, use the appeal date on that notice. A shorter continued-benefit date on the same SNAP notice is separate. This appeal path is for SNAP only.",
+    },
   ),
 
   snap_report_130_fpl: pb(
     "snap_report_130_fpl",
-    "SNAP gross income is over 130% FPL",
+    "SNAP — Income change requires review",
     ["SNAP"],
-    "Under simplified reporting, gross income over 130% of the poverty line for the household size must be reported within 10 days. Income exactly on the line waits for the semi-annual report.",
-    "Report the gross income to COMPASS within 10 days. Keep pay stubs. A raise that stays at or under 130% FPL waits for the semi-annual report.",
+    "Gross income over 130% of the poverty line can be a simplified-reporting review. It does not by itself threaten SNAP. Pennsylvania's eligibility screening guide is 200% of the poverty line. Income exactly on the 130% line waits for the semi-annual report. Other notices can still create a separate duty.",
+    "Review the household's reporting category and whether a report is required. If simplified reporting applies, the report is due by the 10th of the month after the month income went over the line. Keep pay stubs.",
+    {
+      effectiveDateNote:
+        "When simplified reporting applies, the report is due by the 10th of the next month. A November change is due December 10. This is not 10 days from the alert. A date on a SNAP notice controls.",
+      alternativePathway:
+        "If the monthly SNAP amount may change, review the 20% earned-income deduction, medical expenses over $35, and shelter costs. This follow-up is for SNAP only.",
+      appealNote:
+        "Appeal instructions apply only after a SNAP notice is issued, and only for the date on that notice. This is not an appeal of cash assistance, Medicaid, or another program.",
+    },
   ),
 
   snap_elderly_resources: pb(
@@ -523,8 +539,8 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "snap_gambling_winnings",
     "Substantial lottery or gambling winnings",
     ["SNAP"],
-    "Winnings of $4,750 or more from a single lottery or gambling game must be reported within 10 days and can end SNAP even when the household is otherwise under 200% FPL.",
-    "Report the winnings to COMPASS within 10 days. Keep the ticket, payout record, and any statement showing how much is still left.",
+    "Winnings of $4,750 or more from a single lottery or gambling game must be reported within 10 days of receipt and can end SNAP even when the household is otherwise under 200% FPL. That clock is separate from the 10th-of-the-month income report.",
+    "Report the winnings to COMPASS within 10 days of receipt. Keep the ticket, payout record, and any statement showing how much is still left.",
   ),
 
   snap_sar_renewal: pb(
@@ -588,7 +604,7 @@ export const ALERT_PLAYBOOKS: Record<string, AlertPlaybook> = {
     "Household composition change",
     ["SSI", "MedicaidABD", "MedicaidMAGI", "MedicaidWaiver", "MAWD", "QMB", "ExtraHelp", "SNAP"],
     "Someone moving in or out, a child turning 22, or a spouse joining can change Medicaid household size and SSI deeming. A prenuptial agreement does not stop SSI deeming. Under SNAP simplified reporting, a member moving in usually waits for the semi-annual report.",
-    "Report the change to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS within 10 days for Medicaid. For SNAP, report now only if the case is on change reporting; otherwise keep it for the semi-annual report.",
+    "Report the change to SSA by the 10th of the next month for SSI and Extra Help, and to COMPASS by the 10th of the month after the change for Medicaid. For SNAP, report now only if the case is on change reporting; otherwise keep it for the semi-annual report.",
     { personaId: "denise_marriage_deeming" },
   ),
 
@@ -743,7 +759,7 @@ export function playbookEmailParagraphs(playbook: AlertPlaybook, programs?: stri
   const docs = playbook.documents.join("; ");
   const paras = [
     `${playbook.title}`,
-    `Threatened program: ${programLine}`,
+    `Program requiring review: ${programLine}`,
     `Triggering rule: ${playbook.triggeringRule}`,
     `Deadline: ${playbook.effectiveDateNote}`,
     `What to do: ${playbook.cureAction}`,
