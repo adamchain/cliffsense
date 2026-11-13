@@ -4,8 +4,21 @@ import type { Transaction as PlaidTransaction } from "plaid";
 import ClassificationRule from "@/lib/db/models/ClassificationRule";
 import Transaction, { type TransactionDoc } from "@/lib/db/models/Transaction";
 import { exclusionRuleMatches, RECURRING_EXCLUSION_REASON } from "@/lib/transactions/exclusion-rule";
-import { suggestUserCategoryFromPlaid } from "@/lib/transactions/suggest-user-category";
+import { suggestUserCategoryFromPlaid, type CliffUserCategory } from "@/lib/transactions/suggest-user-category";
 import type { Types } from "mongoose";
+
+const USER_CATEGORIES = new Set<string>([
+  "earned_income",
+  "benefit_deposit",
+  "other_income",
+  "expense",
+  "transfer",
+  "unclear",
+]);
+
+function asUserCategory(value: string | null | undefined, fallback: CliffUserCategory): CliffUserCategory {
+  return value && USER_CATEGORIES.has(value) ? (value as CliffUserCategory) : fallback;
+}
 
 function dollarsToCents(amount: number): number {
   return Math.round(amount * 100);
@@ -86,7 +99,7 @@ export async function syncTransactionsForConnection(
           }),
         );
         const setOnInsert: NonNullable<UpdateFilter<TransactionDoc>["$setOnInsert"]> = {
-          userCategory: exclusion?.action?.userCategory || initialCategory,
+          userCategory: asUserCategory(exclusion?.action?.userCategory, initialCategory),
           excludedFromThresholds: Boolean(exclusion?.action?.excludeFromThresholds),
           excludedPrograms: exclusion?.action?.excludedPrograms ?? [],
           excludeReason: exclusion ? exclusion.action?.reason || RECURRING_EXCLUSION_REASON : "",
