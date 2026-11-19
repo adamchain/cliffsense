@@ -16,7 +16,8 @@ const PRODUCT_META: Metadata = {
     "Bene-Watch tracks renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof as separate obligations.",
 };
 
-function showProduct(session: Awaited<ReturnType<typeof auth>>) {
+async function showProduct() {
+  const session = await auth();
   const user = session?.user;
   if (!user) return false;
   if (user.applicationStatus === "pending_review" || user.applicationStatus === "rejected") {
@@ -26,13 +27,11 @@ function showProduct(session: Awaited<ReturnType<typeof auth>>) {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const session = await auth();
-  return showProduct(session) ? PRODUCT_META : MARKETING_META;
+  return (await showProduct()) ? PRODUCT_META : MARKETING_META;
 }
 
 export default async function HowItWorksPage() {
-  const session = await auth();
-  if (showProduct(session)) {
+  if (await showProduct()) {
     return (
       <RequireAppShell>
         <ProductHowItWorks />

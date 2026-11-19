@@ -2,9 +2,13 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 
-const PAGES = ["home", "how-it-works", "testimonials", "pilot", "partners", "contact"] as const;
-
-export type MarketingPage = (typeof PAGES)[number];
+export type MarketingPage =
+  | "home"
+  | "how-it-works"
+  | "testimonials"
+  | "pilot"
+  | "partners"
+  | "contact";
 
 function readPage(file: string) {
   return fs.readFileSync(path.join(process.cwd(), "content/marketing", file), "utf8");
