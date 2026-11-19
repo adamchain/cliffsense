@@ -91,8 +91,13 @@ export async function middleware(req: NextRequest) {
     const allowed =
       pathname === "/" ||
       pathname.startsWith("/about") ||
+      pathname.startsWith("/contact") ||
       pathname.startsWith("/guides") ||
+      pathname.startsWith("/how-it-works") ||
+      pathname.startsWith("/partners") ||
+      pathname.startsWith("/pilot") ||
       pathname.startsWith("/resources") ||
+      pathname.startsWith("/testimonials") ||
       pathname.startsWith("/legal") ||
       pathname.startsWith("/application") ||
       pathname.startsWith("/api") ||

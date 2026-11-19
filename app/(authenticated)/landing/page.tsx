@@ -1,29 +1,12 @@
 import type { Metadata } from "next";
-import { auth } from "@/auth";
-import { StayConnectedPage } from "@/components/landing/stay-connected";
-import { continueDestination } from "@/lib/auth/continue-destination";
+import { MarketingDocument } from "@/components/landing/marketing-document";
 
 export const metadata: Metadata = {
   title: "Bene-Watch — Protecting PA Benefits",
   description:
-    "Bene-Watch helps you track benefit requirements so you don't get lost in the shuffle.",
+    "Bene-Watch is a Pennsylvania-first benefit-continuity system for households, caregivers and the organizations that support them.",
 };
 
-export default async function LandingPage() {
-  const session = await auth();
-  const continueTo = session?.user
-    ? continueDestination({
-        name: session.user.name,
-        onboardingStep: session.user.onboardingStep,
-        applicationStatus: session.user.applicationStatus,
-      })
-    : null;
-
-  return (
-    <StayConnectedPage
-      signInHref={continueTo ? null : "/auth/signin"}
-      startHref={continueTo?.href ?? "/auth/signup"}
-      startLabel={continueTo ? "Continue" : "Get Started"}
-    />
-  );
+export default function LandingPage() {
+  return <MarketingDocument page="home" />;
 }

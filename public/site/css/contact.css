@@ -1,0 +1,17 @@
+@scope (.bw-site.bw-contact) {
+
+.ways{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.way{padding:26px;display:flex;flex-direction:column;gap:12px;text-decoration:none;color:#111B2E;transition:transform .15s,box-shadow .15s}
+.way:hover{transform:translateY(-2px);color:#111B2E;box-shadow:0 1px 2px rgba(17,27,46,.06),0 24px 48px -16px rgba(17,27,46,.3)}
+.way h2{margin:0;font-size:20px;font-weight:800}
+.way p{margin:0;font-size:15px;line-height:1.6;color:#5B667A}
+.way .go{margin-top:auto;font-size:14px;font-weight:800;color:#1A7CF0;display:flex;gap:6px;align-items:center}
+.direct{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.direct .card{padding:26px}
+.direct .v{font-size:20px;font-weight:800;margin-top:12px;word-break:break-word}
+.direct .s{font-size:14px;color:#5B667A;margin-top:4px}
+@media (max-width:1060px){.ways{grid-template-columns:repeat(2,minmax(0,1fr))}.direct{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.ways{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.way{transition:none}}
+
+}

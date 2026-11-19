@@ -1,0 +1,34 @@
+@scope (.bw-site.bw-pilot) {
+
+.inv-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:center}
+.quote-h{font-size:clamp(38px,4.8vw,66px);font-weight:800;line-height:1.06;letter-spacing:-.03em;margin:18px 0 0;text-wrap:balance}
+.rule{width:96px;height:4px;border-radius:2px;background:#E78A15}
+.photo-card{background:#FFFFFF;border-radius:24px;padding:12px;box-shadow:0 30px 70px -24px rgba(0,0,0,.6)}
+.photo-card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:16px}
+.photo-card .cap2{padding:18px 10px 8px;color:#111B2E}
+.why{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.why .card{padding:30px}
+.why h3{margin:14px 0 0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.why p{margin:10px 0 0;font-size:16px;line-height:1.65;color:#33405A}
+.aud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.aud .card{padding:24px;display:flex;flex-direction:column;gap:12px}
+.aud h3{margin:0;font-size:19px;font-weight:800}
+.aud p{margin:0;font-size:15px;line-height:1.6;color:#33405A}
+.shape{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:48px;align-items:start}
+.dash{background:#FFFFFF;border-radius:20px;padding:10px;box-shadow:0 30px 60px -24px rgba(17,27,46,.35);border:1px solid #E3E8F1}
+.dash img{display:block;width:100%;border-radius:12px}
+.qa{display:flex;flex-direction:column;gap:0;border-left:3px solid #E78A15;padding-left:28px}
+.qa div{padding:18px 0;border-bottom:1px solid #E3E8F1}
+.qa div:last-child{border-bottom:0}
+.qa h3{margin:0;font-size:20px;font-weight:800;color:#0F2F5F}
+.qa p{margin:8px 0 0;font-size:16px;line-height:1.65;color:#33405A}
+.goal{margin:22px 0 0;font-size:22px;line-height:1.45;font-weight:700;font-style:italic;color:#3B7A1E}
+.assess{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.assess .card{padding:24px}
+.assess .t{margin-top:16px;font-size:19px;font-weight:800}
+.demo{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;background:#0F2F5F;border-radius:26px;padding:44px;color:#FFFFFF}
+.demo .big{font-size:clamp(28px,3.4vw,46px);font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+@media (max-width:1060px){.inv-hero,.shape{grid-template-columns:minmax(0,1fr)}.aud,.assess{grid-template-columns:repeat(2,minmax(0,1fr))}.demo{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.why,.aud,.assess{grid-template-columns:minmax(0,1fr)}.demo{padding:28px}.demo .big{white-space:normal}}
+
+}

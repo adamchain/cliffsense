@@ -4,7 +4,6 @@ import "./stay-connected.css";
 
 export function StayConnectedPage({
   signInHref = "/auth/signin",
-  signInLabel = "Sign in",
   startHref = "/auth/signup",
   startLabel = "Get Started",
 }: {
@@ -100,15 +99,9 @@ export function StayConnectedPage({
         </a>
       </nav>
       <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {signInHref ? (
-          <Link href={signInHref} style={{ fontSize: "15px", fontWeight: "600", textDecoration: "none", whiteSpace: "nowrap" }}>{signInLabel}</Link>
-        ) : null}
-        <a className="btn btn-n" href="mailto:frank@bene-watch.com?subject=Bene-Watch%20pilot" style={{ minHeight: "46px", padding: "0 20px" }}>
-          Join the pilot
-        </a>
-        <a className="btn btn-b" href="mailto:frank@bene-watch.com?subject=Bene-Watch%20strategic%20partnership" style={{ minHeight: "46px", padding: "0 20px" }}>
-          Become a strategic partner
-        </a>
+        <Link className="btn btn-b" href={startHref} style={{ minHeight: "46px", padding: "0 20px" }}>
+          {signInHref ? "Create account" : startLabel}
+        </Link>
       </div>
     </header>
     <div className="pawrap">

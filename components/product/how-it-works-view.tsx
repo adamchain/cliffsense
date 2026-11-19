@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
 import { OBLIGATION_EXPLANATION, TRACKING_SCOPE } from "@/lib/reporting/obligations";
 import {
   IconAlertTriangle,
@@ -19,11 +18,6 @@ import {
 } from "@tabler/icons-react";
 import { RENEWAL_IS_ONE_DEADLINE } from "@/lib/reporting/obligations";
 
-export const metadata: Metadata = {
-  title: "How it works · Bene-Watch",
-  description:
-    "Bene-Watch tracks renewals, interim reports, reportable changes, disability and eligibility reviews, and requests for proof as separate obligations.",
-};
 
 /* ---------------------------------------------------------------------------
  * How it works — the "brain" of the system. Where the Help page teaches how to
@@ -78,7 +72,7 @@ function Tip({ children }: { children: ReactNode }) {
   );
 }
 
-export default function HowItWorksPage() {
+export function ProductHowItWorks() {
   return (
     <div className="pb-10">
       {/* Hero */}
